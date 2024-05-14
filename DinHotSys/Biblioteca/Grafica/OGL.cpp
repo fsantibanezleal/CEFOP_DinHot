@@ -1,0 +1,479 @@
+//---------------------------------------------------------------------------
+#include <windows.h>
+#include <math.h>
+#include <stdio.h>
+
+#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "glu32.lib")
+#pragma comment(lib, "glaux.lib")
+
+//#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <gl\glaux.h>
+
+#include "OGL.h"
+
+using namespace System;
+using namespace System::Drawing;
+using namespace System::IO;
+using namespace System::Windows::Forms;
+
+//---------------------------------------------------------------------------
+void OGL::Crear(HWND vHwnd, int v)
+{
+	m_ventana=v;
+	m_show_obb=true;
+	m_show_axis=true;
+	m_selected=false;
+	m_ancho=m_alto=m_largo=50;
+	SetFull(m_origen,0,0,0);
+	Zero(center_box);
+	m_radio_centro=10;
+
+	CamaraVentana=NULL;
+	TYPE_MODELS=GL_SMOOTH;
+
+	hwnd=vHwnd;
+	int PixelFormat;
+	this->hdc= GetDC(vHwnd);
+	int bits = 32;
+	PIXELFORMATDESCRIPTOR pfd=						// pfd Tells Windows How We Want Things To Be
+	{
+		sizeof(PIXELFORMATDESCRIPTOR),				// Size Of This Pixel Format Descriptor
+		1,											// Version Number
+		PFD_DRAW_TO_WINDOW |						// Format Must Support Window
+		PFD_SUPPORT_OPENGL |						// Format Must Support OpenGL
+		PFD_DOUBLEBUFFER,							// Must Support Double Buffering
+		PFD_TYPE_RGBA,								// Request An RGBA Format
+		bits,										// Select Our Color Depth
+		0, 0, 0, 0, 0, 0,							// Color Bits Ignored
+		0,											// No Alpha Buffer
+		0,											// Shift Bit Ignored
+		0,											// No Accumulation Buffer
+		0, 0, 0, 0,									// Accumulation Bits Ignored
+		bits,										// 16Bit Z-Buffer (Depth Buffer)  
+		0,											// No Stencil Buffer
+		0,											// No Auxiliary Buffer
+		PFD_MAIN_PLANE,								// Main Drawing Layer
+		0,											// Reserved
+		0, 0, 0										// Layer Masks Ignored
+	};
+
+	PixelFormat = ChoosePixelFormat(this->hdc,&pfd);
+	SetPixelFormat(this->hdc, PixelFormat, &pfd);
+	this->hrc = wglCreateContext(this->hdc);
+	if(this->hrc == NULL)
+	{
+		MessageBox::Show("wglCreateContext Failed");
+	}
+	if(wglMakeCurrent(this->hdc,this->hrc)==false)
+	{
+		MessageBox::Show("wglMakeCurrent Failed");
+	}
+	InitOpenGL();
+	BuildFont();
+}
+
+void OGL::Destruir()
+{
+	wglMakeCurrent (NULL, NULL);
+	wglDeleteContext(this->hrc);
+	DestruirFont();
+
+}
+void OGL::DestruirFont(void)
+{
+	glDeleteLists(base, 96);							// Delete All 96 Characters
+
+}
+bool OGL::SetActual()
+{
+	wglMakeCurrent (NULL, NULL);
+	if( wglMakeCurrent(this->hdc,this->hrc) == false)
+	{
+		//MessageBox::Show("wglMakeCurrent Failed");
+		return false;
+	}
+	return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// Conjunto de funciones de dibujo ////////////////////////////////////////////////////////////
+
+void OGL::InitOpenGL()
+{
+	Key_Status = KEY_T_HOME;
+	Key_Status_Save= KEY_T_HOME;
+	LightAmbient[0]=0.0f;LightAmbient[1]=0.0f;LightAmbient[2]=0.0f;LightAmbient[3]=1.0f;
+	LightDiffuse[0]=1.0f;LightDiffuse[1]=1.0f;LightDiffuse[2]=1.0f;LightDiffuse[3]=1.0f;
+	LightSpecular[0]=1.0f;LightSpecular[1]=1.0f;LightSpecular[2]=1.0f;LightSpecular[3]=1.0f;
+
+	stVertex vector_direccion;
+	//SetFull(vector_direccion,16,16,11);
+	SetFull(vector_direccion,0,0,10);
+	NormalizeR(vector_direccion);
+	float radio = 100;
+	Amplificar(pos_eye_camara,radio,vector_direccion);
+	LightPosition[0]=pos_eye_camara.x;LightPosition[1]=pos_eye_camara.y;LightPosition[2]=pos_eye_camara.z;LightPosition[3]=1.0f;
+	
+	CamaraVentana = new GL_Camara(pos_eye_camara.x,pos_eye_camara.y,pos_eye_camara.z);
+
+	glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmbient);  // Setup The Ambient Light
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDiffuse);  // Setup The Diffuse Light
+	glLightfv(GL_LIGHT0, GL_SPECULAR, LightSpecular);  // Setup The Diffuse Light
+	glLightfv(GL_LIGHT0, GL_POSITION, LightPosition); // Position The Light
+
+	glEnable(GL_LIGHTING); // Enable Lighting
+	glEnable(GL_LIGHT0);   // Enable Light One
+	glEnable(GL_COLOR_MATERIAL );
+	glEnable(GL_DEPTH_TEST);
+
+	glClearDepth(1.0f);								
+	glDepthFunc(GL_LEQUAL);
+}
+
+//-------------------------Definidas-------------------------------------
+void OGL::Resize(int w, int h)
+{
+	m_Width_Windows_main=w;
+	m_Height_Windows_main=h;
+	//glViewport(0, 0, m_Width_Windows_main, m_Height_Windows_main);
+
+	stVertex ojo;
+	CamaraVentana->SetCamAt(0.0f,0.0f,0.0f);
+	SetFull(ojo,0.0f,0.0f,100.0f);
+	SetEyeCamara(ojo);
+
+	CamaraVentana->SetViewport(m_Width_Windows_main,m_Height_Windows_main);
+	CamaraVentana->SetGLAspectRatioCamera();
+}
+
+void OGL::Renderizar(void)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	CamaraVentana->SetGLCamera();
+	//CamaraVentana ->GetMatrix(modelview_First,projection_First,viewport_First);
+	SetLight();
+	glDrawAxis();
+	glFlush();
+	SwapBuffers(hdc);
+}
+
+void OGL::SetLight(bool setluz)
+{
+	if(setluz)
+	{	
+		stVertex LUZP = CamaraVentana->GetCamDirView();
+		NormalizeR(LUZP);
+		Amplificar(LUZP,LUZP,2000);
+		LightPosition[0]=LUZP.x;
+		LightPosition[1]=LUZP.y;
+		LightPosition[2]=LUZP.z;
+		LightPosition[3]=1.0f;
+	}
+	glShadeModel(TYPE_MODELS);
+	glLightfv(GL_LIGHT0, GL_POSITION, LightPosition); // Position The Light
+}
+
+void OGL::glDrawAxis(void)
+{
+	stVertex cent = m_origen;
+	glPushMatrix();
+	glTranslatef(cent.x,cent.y,cent.z);
+		glDisable (GL_LIGHTING);
+		float fact_2 = 15;
+		float fact_x = m_ancho+fact_2*3;
+		float fact_y = m_alto+fact_2*3;
+		float fact_z = m_largo+fact_2*3;
+		glColor3ub(255, 0, 0);
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(1.0*fact_x, 0.0, 0.0);
+		glVertex3f((fact_x-fact_2), 0.25*fact_2, 0.0);
+		glVertex3f((fact_x-fact_2), -0.25*fact_2, 0.0);
+		glVertex3f(1.0*fact_x, 0.0, 0.0);
+		glVertex3f((fact_x-fact_2), 0.0, 0.25*fact_2);
+		glVertex3f((fact_x-fact_2), 0.0, -0.25*fact_2);
+		glVertex3f(1.0*fact_x, 0.0, 0.0);
+		glEnd();
+		glColor3ub(0, 255, 0);
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 1.0*fact_y, 0.0);
+		glVertex3f(0.0, (fact_y-fact_2), 0.25*fact_2);
+		glVertex3f(0.0, (fact_y-fact_2), -0.25*fact_2);
+		glVertex3f(0.0, 1.0*fact_y, 0.0);
+		glVertex3f(0.25*fact_2, (fact_y-fact_2), 0.0);
+		glVertex3f(-0.25*fact_2, (fact_y-fact_2), 0.0);
+		glVertex3f(0.0, 1.0*fact_y, 0.0);
+		glEnd();
+		glColor3ub(0, 0, 255);
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 1.0*fact_z);
+		glVertex3f(0.25*fact_2, 0.0, (fact_z-fact_2));
+		glVertex3f(-0.25*fact_2, 0.0, (fact_z-fact_2));
+		glVertex3f(0.0, 0.0, 1.0*fact_z);
+		glVertex3f(0.0, 0.25*fact_2, (fact_z-fact_2));
+		glVertex3f(0.0, -0.25*fact_2, (fact_z-fact_2));
+		glVertex3f(0.0, 0.0, 1.0*fact_z);
+		glEnd();
+	    
+		glColor3ub(255, 255, 0);
+		glRasterPos3f(1.1*fact_x, 0.0, 0.0);
+		//glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'x');
+		glRasterPos3f(0.0, 1.1*fact_y, 0.0);
+		//glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'y');
+		glRasterPos3f(0.0, 0.0, 1.1*fact_z);
+		//glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, 'z');
+		glEnable (GL_LIGHTING);
+	glPopMatrix();
+}
+
+void OGL::KeyBoard(int key)
+{
+	if(CamaraVentana!=NULL)
+		CamaraVentana->KeyBoard(key);
+	Key_Status = key;
+	if(Key_Status==KEY_T_F1)
+		Key_Status_Save=Key_Status;
+}
+void OGL::MouseMove(int x, int y)
+{
+	if(CamaraVentana!=NULL)
+		CamaraVentana->MouseMove( x, y);
+	if(Key_Status==KEY_T_F3)
+		center_box = CamaraVentana->GetCamViewCenter();
+}
+void OGL::MouseLButtonDown(int x, int y)
+{
+	if(CamaraVentana!=NULL)
+	{
+		CamaraVentana->SetEstado(KEY_M_L_DOWN);
+		CamaraVentana->ClickMouse(x,y);
+	}
+}
+void OGL::MouseLButtonUp(int x, int y)
+{
+	if(CamaraVentana!=NULL)
+	{
+		CamaraVentana->SetEstado(KEY_M_L_UP);
+		CamaraVentana->ClickMouse(x,y);
+	}
+}
+
+void OGL::ViewportCircular(float factor, int angulo)
+{
+	int vp[4];
+	float j,radio,radioExt,delta,z;
+	stVertex externoIni,externoFin,puntoIni,puntoFin,centro,temp;
+
+	factor = 0.4;
+	SetFull(centro,0.5* m_Width_Windows_main,0.5* m_Height_Windows_main,0);
+	radioExt = 2.0 * ((m_Width_Windows_main > m_Height_Windows_main)? m_Width_Windows_main: m_Height_Windows_main);
+	radio = factor * ((m_Width_Windows_main < m_Height_Windows_main)? m_Width_Windows_main: m_Height_Windows_main);
+	delta = 1.0;
+	z = 1000;
+
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	glDisable (GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+
+	glMatrixMode(GL_TEXTURE);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glGetIntegerv(GL_VIEWPORT, vp);
+	glOrtho(vp[0],vp[2],vp[1],vp[3],-z,z);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDisable(GL_BLEND);
+
+	glColor3f(0.0f,0.0f,0.0f);
+
+	SetFull(puntoIni,centro.x + radio * cos(0.0f),centro.y + radio * sin(0.0f),z);
+	SetFull(externoIni,centro.x + radioExt * cos(0.0f),centro.y + radioExt * sin(0.0f),z);
+
+	for(j = 0; j < 360; j += delta)
+	{
+		SetFull(puntoFin,centro.x + radio * cos((j+delta) * PI/180.0f),centro.y + radio * sin((j+delta) * PI/180.0f),z);
+		SetFull(externoFin,centro.x + radioExt * cos((j+delta) * PI/180.0f),centro.y + radioExt * sin((j+delta) * PI/180.0f),z);
+
+		glBegin(GL_POLYGON);
+		glVertex3f(puntoIni.x,puntoIni.y,puntoIni.z);
+		glVertex3f(puntoFin.x,puntoFin.y,puntoFin.z);
+		glVertex3f(externoFin.x,externoFin.y,externoFin.z);
+		glVertex3f(externoIni.x,externoIni.y,externoIni.z);
+		glEnd();
+
+		puntoIni = puntoFin;
+		externoIni = externoFin;
+	}
+
+	stVertex a,b,c;
+	stVertex U,V,Pa,Pb,Pc;
+
+	float angulo_r =  angulo*PI/180.0f;
+	float angulo_2  = 30*PI/180.0f;
+
+	SetFull(U,0,1,0);
+	SetFull(V,1,0,0);
+
+	Amplificar(temp,cos(angulo_r),V);
+	Ray(Pa,temp,sin(angulo_r),U);
+	NormalizeR(Pa);
+
+	Amplificar(temp,cos(angulo_r+angulo_2),V);
+	Ray(Pb,temp,sin(angulo_r+angulo_2),U);
+	NormalizeR(Pb);
+
+	Amplificar(temp,cos(angulo_r-angulo_2),V);
+	Ray(Pc,temp,sin(angulo_r-angulo_2),U);
+	NormalizeR(Pc);
+
+	Ray(a,centro,(radio-radio*.1),Pa);
+	Ray(b,a,(radio*10000),Pb);
+	Ray(c,a,(radio*10000),Pc);
+
+	glBegin(GL_POLYGON);
+	glVertex3f(a.x,a.y,a.z);
+	glVertex3f(b.x,b.y,b.z);
+	glVertex3f(c.x,c.y,c.z);
+	glEnd();
+
+	glMatrixMode(GL_TEXTURE);
+	glPopMatrix();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	glEnable( GL_DEPTH_TEST );
+	glPopAttrib();
+}
+void OGL::Print(float color[3], float x, float y, string nombre )
+{
+	int vp[4];
+	int i;
+	float z = 1001;
+
+
+	//glPushAttrib(GL_ALL_ATTRIB_BITS);
+	glColor3f(color[0], color[1], color[2]);
+
+	glDisable (GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+
+	glMatrixMode(GL_TEXTURE);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glGetIntegerv(GL_VIEWPORT, vp);
+	glOrtho(vp[0],vp[2],vp[1],vp[3],-z,z);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDisable(GL_BLEND);
+	glRasterPos3f(x, vp[3] - 15 - y,z);
+	char text[256];
+	for (i = 0; i < (int)nombre.length(); i++)
+	{
+		text[i]=nombre[i];
+	}
+	text[i] = '\0';
+
+	glPushAttrib(GL_LIST_BIT);							// Pushes The Display List Bits
+		glListBase(base - 32); // apunta a la Display List del primer caracter
+		glCallLists(strlen(text), GL_UNSIGNED_BYTE, text); // dibuja las Display List correspondientes al texto
+	glPopAttrib();										// Pops The Display List Bits
+
+	glMatrixMode(GL_TEXTURE);
+	glPopMatrix();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	glEnable( GL_DEPTH_TEST );
+	//glPopAttrib();
+
+} 
+GLvoid OGL::BuildFont(int	dim	)								// Build Our Bitmap Font
+{
+	
+
+	HFONT	font;										// Windows Font ID
+	HFONT	oldfont;									// Used For Good House Keeping
+
+	base = glGenLists(96);								// Storage For 96 Characters
+	
+
+#ifdef UNICODE
+	font = CreateFont(	-dim,							// Height Of Font
+						0,								// Width Of Font
+						0,								// Angle Of Escapement
+						0,								// Orientation Angle
+						FW_BOLD,						// Font Weight
+						FALSE,							// Italic
+						FALSE,							// Underline
+						FALSE,							// Strikeout
+						ANSI_CHARSET,					// Character Set Identifier
+						OUT_TT_PRECIS,					// Output Precision
+						CLIP_DEFAULT_PRECIS,			// Clipping Precision
+						ANTIALIASED_QUALITY,			// Output Quality
+						FF_DONTCARE|DEFAULT_PITCH,		// Family And Pitch
+						LPTSTR("Courier New"));			// Font Name
+#else
+	font = CreateFont(	-dim,							// Height Of Font
+						0,								// Width Of Font
+						0,								// Angle Of Escapement
+						0,								// Orientation Angle
+						FW_BOLD,						// Font Weight
+						FALSE,							// Italic
+						FALSE,							// Underline
+						FALSE,							// Strikeout
+						ANSI_CHARSET,					// Character Set Identifier
+						OUT_TT_PRECIS,					// Output Precision
+						CLIP_DEFAULT_PRECIS,			// Clipping Precision
+						ANTIALIASED_QUALITY,			// Output Quality
+						FF_DONTCARE|DEFAULT_PITCH,		// Family And Pitch
+						"Courier New");					// Font Name
+#endif
+
+	if(font != NULL)
+	{
+
+		oldfont = (HFONT)SelectObject(hdc, font);           // Selects The Font We Want
+		wglUseFontBitmaps(hdc, 32, 96, base);				// Builds 96 Characters Starting At Character 32
+		SelectObject(hdc, oldfont);							// Selects The Font We Want
+		DeleteObject(font);									// Delete The Font
+	}
+}
+void OGL::SetCameraNearFarAngle(float n, float f, float a)
+{
+	CamaraVentana->SetCameraNear(n);
+	CamaraVentana->SetCameraFar(f);
+	CamaraVentana->SetCameraApertura(a);
+}
