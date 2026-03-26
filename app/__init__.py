@@ -8,4 +8,4 @@ This package reimplements the original C++/.NET DinHotSys application
 using NumPy for computation and HTML5 Canvas for visualization.
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
