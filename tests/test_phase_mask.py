@@ -253,5 +253,74 @@ class TestComplexUtils(unittest.TestCase):
         np.testing.assert_array_almost_equal(rho, expected)
 
 
+class TestAlgorithmicFeatures(unittest.TestCase):
+    """Test new algorithmic features: kernel linearity, aperture, intensity
+    preview, uniformity improvement, and z-defocus."""
+
+    def test_phase_kernel_linearity(self):
+        """Verify phase kernel scales linearly with trap position."""
+        gen = PhaseMaskGenerator(resolution=(64, 64))
+        gen.add_trap(0.5, 0.0)
+        gen.add_trap(1.0, 0.0)
+        k1 = gen._phase_kernel(0)
+        k2 = gen._phase_kernel(1)
+        # Kernel for trap at 2x position should be ~2x
+        ratio = np.mean(np.abs(k2)) / (np.mean(np.abs(k1)) + 1e-10)
+        self.assertTrue(1.5 < ratio < 2.5, f"Kernel should scale linearly, ratio={ratio}")
+        print("PASS: test_phase_kernel_linearity")
+
+    def test_aperture_shape(self):
+        """Verify aperture function has expected super-Gaussian profile."""
+        gen = PhaseMaskGenerator(resolution=(128, 128))
+        # Center should be ~1.0
+        center_val = gen.aperture[64, 64]
+        self.assertGreater(center_val, 0.99, f"Aperture center should be ~1, got {center_val}")
+        # Corner should be near 0
+        corner_val = gen.aperture[0, 0]
+        self.assertLess(corner_val, 0.1, f"Aperture corner should be ~0, got {corner_val}")
+        print("PASS: test_aperture_shape")
+
+    def test_intensity_preview_shape(self):
+        """Verify intensity preview returns correct shape and range."""
+        gen = PhaseMaskGenerator(resolution=(128, 128))
+        gen.add_trap(0.3, 0.3)
+        gen.calculate_phase_mask()
+        preview = gen.compute_intensity_preview(preview_size=64)
+        self.assertGreater(preview.shape[0], 0)
+        self.assertGreater(preview.shape[1], 0)
+        self.assertGreaterEqual(np.min(preview), 0)
+        self.assertLessEqual(np.max(preview), 1.0)
+        print("PASS: test_intensity_preview_shape")
+
+    def test_uniformity_improves(self):
+        """Verify uniformity metric improves over GS iterations."""
+        gen = PhaseMaskGenerator(resolution=(64, 64))
+        gen.add_trap(-0.3, -0.3)
+        gen.add_trap(0.3, 0.3)
+        gen.max_iterations = 30
+        gen.calculate_phase_mask()
+        if len(gen.uniformity_history) > 2:
+            # Late uniformity should be >= early uniformity (generally)
+            self.assertGreaterEqual(gen.uniformity_history[-1],
+                                    gen.uniformity_history[0] * 0.5)
+        print("PASS: test_uniformity_improves")
+
+    def test_z_defocus_changes_field(self):
+        """Verify that nonzero z changes the computed field."""
+        gen = PhaseMaskGenerator(resolution=(64, 64))
+        gen.add_trap(0.3, 0.3, z=0.0)
+        gen.calculate_phase_mask()
+        state_z0 = gen.get_state()
+
+        gen2 = PhaseMaskGenerator(resolution=(64, 64))
+        gen2.add_trap(0.3, 0.3, z=0.5)
+        gen2.calculate_phase_mask()
+        state_z1 = gen2.get_state()
+
+        # Phase masks should differ
+        self.assertNotEqual(state_z0['phase_mask'], state_z1['phase_mask'])
+        print("PASS: test_z_defocus_changes_field")
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

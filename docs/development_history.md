@@ -1,5 +1,60 @@
 # Development History
 
+## v2.1.0 (2026-03-26)
+
+### Algorithmic Improvements
+
+#### Weighted Gerchberg-Saxton (Di Leonardo et al., 2007)
+Implemented proper weighted GS with weight update rule:
+
+```
+w_j^{(n+1)} = w_j^{(n)} * <|V|> / |V_j^{(n)}|
+```
+
+This drives all trap intensities toward uniformity.
+
+#### Intensity Reconstruction Preview
+Added FFT-based focal plane reconstruction:
+
+```
+I(u,v) = |FFT{exp(i * φ(x,y))}|²
+```
+
+Shows the actual diffraction pattern produced by the phase mask.
+
+#### Super-Gaussian Aperture Function
+Applied smooth aperture to model SLM active area:
+
+```
+A(r) = exp(-(r/r₀)⁸)
+```
+
+Reduces edge ringing compared to hard circular aperture.
+
+#### Uniformity Metric
+Added quantitative trap uniformity measurement:
+
+```
+U = I_min / I_max
+```
+
+Displayed in real-time during computation.
+
+#### Phase Kernel Separation
+Separated optical path computation into reusable kernel:
+
+```
+K_j(x,y) = (k/f) * ρ_j - (k/f²) * (x²+y²) * z_j
+```
+
+where ρ_j = x*x_j + y*y_j (precomputed dot product).
+
+### Frontend Improvements
+- Help modal with optical tweezers usage guide
+- Tooltips on all parameters and controls
+- Intensity preview visualization
+- Uniformity percentage display
+
 ## v2.0.0 (2026-03-26) -- Python/FastAPI Rewrite
 
 A ground-up rewrite of the entire application, moving from a Windows-only desktop tool to a cross-platform web application.
