@@ -1,0 +1,419 @@
+/*
+ * CEFOP DinHot - Dynamic Holographic Optical Tweezers
+ * Dark theme with orange accent (optics-themed)
+ *
+ * Color scheme inspired by laser optics:
+ * - Dark background: optical table / lab environment
+ * - Orange accent: HeNe laser beam (632nm appears orange-red)
+ * - Cyan highlights: secondary laser / focus indicators
+ */
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --bg-canvas: #0a0e14;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #484f58;
+    --accent-orange: #e8863a;
+    --accent-orange-dim: #e8863a80;
+    --accent-cyan: #58a6ff;
+    --accent-green: #3fb950;
+    --accent-red: #f85149;
+    --border-color: #30363d;
+    --border-focus: #e8863a;
+    --font-mono: 'Consolas', 'Menlo', 'Monaco', monospace;
+    --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --canvas-size: min(38vw, 450px);
+}
+
+html, body {
+    height: 100%;
+    font-family: var(--font-main);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    min-height: 48px;
+}
+
+.app-header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent-orange);
+    letter-spacing: 0.5px;
+}
+
+.app-header h1 span {
+    color: var(--text-secondary);
+    font-weight: 400;
+    font-size: 13px;
+    margin-left: 8px;
+}
+
+.header-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-red);
+}
+
+.status-dot.connected {
+    background: var(--accent-green);
+}
+
+/* Main content area */
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Canvas panels */
+.canvas-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    min-width: 0;
+}
+
+.canvas-panel .panel-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.canvas-panel .panel-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 12px;
+    background: var(--accent-orange);
+    border-radius: 1px;
+}
+
+.canvas-wrapper {
+    position: relative;
+    width: var(--canvas-size);
+    height: var(--canvas-size);
+    background: var(--bg-canvas);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.canvas-wrapper canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+.canvas-wrapper .canvas-overlay {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+/* Divider between panels */
+.panel-divider {
+    width: 1px;
+    background: var(--border-color);
+    margin: 12px 0;
+}
+
+/* Bottom controls */
+.controls-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    min-height: 160px;
+}
+
+.control-section {
+    padding: 12px 16px;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.control-section:last-child {
+    border-right: none;
+    flex: 1;
+}
+
+.control-section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+/* Mode selector buttons */
+.mode-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.mode-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: var(--font-main);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.mode-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+.mode-btn.active {
+    background: var(--accent-orange);
+    color: #fff;
+    border-color: var(--accent-orange);
+}
+
+/* Parameter inputs */
+.param-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.param-row label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    min-width: 80px;
+}
+
+.param-row input {
+    width: 80px;
+    padding: 3px 6px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+}
+
+.param-row input:focus {
+    outline: none;
+    border-color: var(--border-focus);
+}
+
+/* Action buttons */
+.action-btn {
+    padding: 6px 16px;
+    font-size: 12px;
+    font-family: var(--font-main);
+    font-weight: 500;
+    background: var(--accent-orange);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.action-btn:hover {
+    opacity: 0.85;
+}
+
+.action-btn:active {
+    opacity: 0.7;
+}
+
+.action-btn.secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+/* Info panel */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 16px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+}
+
+.info-grid .label {
+    color: var(--text-secondary);
+}
+
+.info-grid .value {
+    color: var(--accent-cyan);
+}
+
+/* Convergence graph */
+.convergence-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+}
+
+.convergence-canvas-wrapper {
+    flex: 1;
+    position: relative;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    min-height: 80px;
+}
+
+.convergence-canvas-wrapper canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* Trap list */
+.trap-list {
+    max-height: 100px;
+    overflow-y: auto;
+    font-size: 11px;
+    font-family: var(--font-mono);
+}
+
+.trap-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.trap-list th {
+    text-align: left;
+    color: var(--text-muted);
+    font-weight: 400;
+    padding: 2px 6px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.trap-list td {
+    padding: 2px 6px;
+    color: var(--text-secondary);
+}
+
+.trap-list tr:hover td {
+    color: var(--text-primary);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* ============================================================
+   Responsive adjustments
+   ============================================================ */
+
+@media (max-width: 1000px) {
+    :root {
+        --canvas-size: min(42vw, 380px);
+    }
+
+    .controls-bar {
+        flex-wrap: wrap;
+    }
+
+    .control-section {
+        min-width: 150px;
+    }
+}
+
+@media (max-width: 700px) {
+    .main-content {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    :root {
+        --canvas-size: min(80vw, 350px);
+    }
+
+    .panel-divider {
+        width: auto;
+        height: 1px;
+        margin: 0 12px;
+    }
+}

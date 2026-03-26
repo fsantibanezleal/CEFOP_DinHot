@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEFOP DinHot - Dynamic Holographic Optical Tweezers</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="app-header">
+            <h1>CEFOP DinHot <span>Dynamic Holographic Optical Tweezers v2.0</span></h1>
+            <div class="header-status">
+                <span id="status-dot" class="status-dot"></span>
+                <span id="status-text">Disconnected</span>
+            </div>
+        </header>
+
+        <!-- Main content: dual canvas panels -->
+        <div class="main-content">
+
+            <!-- Left panel: Trap positions -->
+            <div class="canvas-panel">
+                <div class="panel-title">Trap Positions</div>
+                <div class="canvas-wrapper">
+                    <canvas id="trap-canvas"></canvas>
+                    <div class="canvas-overlay">[-1,1] normalized</div>
+                </div>
+            </div>
+
+            <div class="panel-divider"></div>
+
+            <!-- Right panel: Phase mask -->
+            <div class="canvas-panel">
+                <div class="panel-title">Phase Mask (SLM)</div>
+                <div class="canvas-wrapper">
+                    <canvas id="mask-canvas"></canvas>
+                    <div class="canvas-overlay">grayscale [0-255]</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom controls bar -->
+        <div class="controls-bar">
+
+            <!-- Mode selector -->
+            <div class="control-section">
+                <h3>Interaction Mode</h3>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="create">Create</button>
+                    <button class="mode-btn" data-mode="move">Move</button>
+                    <button class="mode-btn" data-mode="delete">Delete</button>
+                </div>
+                <div style="display:flex; gap:4px; margin-top:4px;">
+                    <button class="action-btn" id="btn-recalculate">Recalculate</button>
+                    <button class="action-btn secondary" id="btn-clear">Clear All</button>
+                </div>
+            </div>
+
+            <!-- Parameters -->
+            <div class="control-section">
+                <h3>Parameters</h3>
+                <div class="param-row">
+                    <label>Resolution</label>
+                    <input type="number" id="param-res-x" value="512" min="32" max="2048" step="64">
+                    x
+                    <input type="number" id="param-res-y" value="512" min="32" max="2048" step="64">
+                </div>
+                <div class="param-row">
+                    <label>Wavelength</label>
+                    <input type="number" id="param-wavelength" value="632" min="300" max="1100" step="1">
+                    nm
+                </div>
+                <div class="param-row">
+                    <label>Max Iters</label>
+                    <input type="number" id="param-max-iter" value="50" min="1" max="500" step="10">
+                </div>
+                <div class="param-row">
+                    <label>Tolerance</label>
+                    <input type="text" id="param-tolerance" value="1e-6">
+                </div>
+                <button class="action-btn" id="btn-init" style="margin-top:4px;">Initialize</button>
+            </div>
+
+            <!-- Info panel -->
+            <div class="control-section">
+                <h3>Simulation Info</h3>
+                <div class="info-grid">
+                    <span class="label">Traps:</span>
+                    <span class="value" id="info-num-traps">0</span>
+                    <span class="label">Iterations:</span>
+                    <span class="value" id="info-iterations">0</span>
+                    <span class="label">Converged:</span>
+                    <span class="value" id="info-converged">--</span>
+                    <span class="label">Error:</span>
+                    <span class="value" id="info-error">--</span>
+                </div>
+                <!-- Trap list -->
+                <div class="trap-list" style="margin-top: 6px;">
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>X</th><th>Y</th><th>Intensity</th></tr>
+                        </thead>
+                        <tbody id="trap-list-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Convergence graph -->
+            <div class="control-section convergence-container">
+                <h3>Convergence</h3>
+                <div class="convergence-canvas-wrapper">
+                    <canvas id="convergence-canvas"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts (loaded in dependency order) -->
+    <script src="/static/js/websocket.js"></script>
+    <script src="/static/js/renderer.js"></script>
+    <script src="/static/js/controls.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

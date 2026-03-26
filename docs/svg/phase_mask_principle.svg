@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="600" height="500">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', Arial, sans-serif; }
+      .title { font-size: 15px; font-weight: bold; fill: #e8e8e8; }
+      .label { font-size: 11px; fill: #e0e0e0; }
+      .small { font-size: 9px; fill: #aaaaaa; }
+      .accent-text { font-size: 11px; fill: #e8792b; font-weight: bold; }
+      .math { font-size: 10px; fill: #cccccc; font-family: 'Cambria Math', serif; font-style: italic; }
+    </style>
+    <marker id="pArr" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#e8792b"/>
+    </marker>
+    <marker id="redArr" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#ff5544"/>
+    </marker>
+    <!-- Phase color scale -->
+    <linearGradient id="phaseScale" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="25%" stop-color="#404040"/>
+      <stop offset="50%" stop-color="#808080"/>
+      <stop offset="75%" stop-color="#c0c0c0"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="500" rx="8" fill="#1a1a2e"/>
+
+  <!-- Title -->
+  <text x="300" y="28" text-anchor="middle" class="title">Phase Mask Principle -- How SLM Pixels Steer Light</text>
+
+  <!-- ===== SLM PIXEL GRID (Left Side) ===== -->
+  <text x="145" y="60" text-anchor="middle" class="accent-text">SLM Pixel Grid</text>
+
+  <!-- 8x8 pixel grid with varying gray levels -->
+  <g transform="translate(55, 72)">
+    <!-- Row 0 -->
+    <rect x="0" y="0" width="22" height="22" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+    <rect x="22" y="0" width="22" height="22" fill="#333333" stroke="#333" stroke-width="0.5"/>
+    <rect x="44" y="0" width="22" height="22" fill="#555555" stroke="#333" stroke-width="0.5"/>
+    <rect x="66" y="0" width="22" height="22" fill="#777777" stroke="#333" stroke-width="0.5"/>
+    <rect x="88" y="0" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <rect x="110" y="0" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="132" y="0" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="154" y="0" width="22" height="22" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
+    <!-- Row 1 -->
+    <rect x="0" y="22" width="22" height="22" fill="#333333" stroke="#333" stroke-width="0.5"/>
+    <rect x="22" y="22" width="22" height="22" fill="#555555" stroke="#333" stroke-width="0.5"/>
+    <rect x="44" y="22" width="22" height="22" fill="#777777" stroke="#333" stroke-width="0.5"/>
+    <rect x="66" y="22" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <rect x="88" y="22" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="110" y="22" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="132" y="22" width="22" height="22" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
+    <rect x="154" y="22" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <!-- Row 2 -->
+    <rect x="0" y="44" width="22" height="22" fill="#555555" stroke="#333" stroke-width="0.5"/>
+    <rect x="22" y="44" width="22" height="22" fill="#777777" stroke="#333" stroke-width="0.5"/>
+    <rect x="44" y="44" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <rect x="66" y="44" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="88" y="44" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="110" y="44" width="22" height="22" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
+    <rect x="132" y="44" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="154" y="44" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <!-- Row 3 -->
+    <rect x="0" y="66" width="22" height="22" fill="#777777" stroke="#333" stroke-width="0.5"/>
+    <rect x="22" y="66" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <rect x="44" y="66" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="66" y="66" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="88" y="66" width="22" height="22" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
+    <rect x="110" y="66" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="132" y="66" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="154" y="66" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <!-- Row 4 -->
+    <rect x="0" y="88" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <rect x="22" y="88" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="44" y="88" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="66" y="88" width="22" height="22" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
+    <rect x="88" y="88" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="110" y="88" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="132" y="88" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <rect x="154" y="88" width="22" height="22" fill="#777777" stroke="#333" stroke-width="0.5"/>
+    <!-- Rows 5-7 (mirror pattern) -->
+    <rect x="0" y="110" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="22" y="110" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="44" y="110" width="22" height="22" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
+    <rect x="66" y="110" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="88" y="110" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="110" y="110" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <rect x="132" y="110" width="22" height="22" fill="#777777" stroke="#333" stroke-width="0.5"/>
+    <rect x="154" y="110" width="22" height="22" fill="#555555" stroke="#333" stroke-width="0.5"/>
+    <rect x="0" y="132" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="22" y="132" width="22" height="22" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
+    <rect x="44" y="132" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="66" y="132" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="88" y="132" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <rect x="110" y="132" width="22" height="22" fill="#777777" stroke="#333" stroke-width="0.5"/>
+    <rect x="132" y="132" width="22" height="22" fill="#555555" stroke="#333" stroke-width="0.5"/>
+    <rect x="154" y="132" width="22" height="22" fill="#333333" stroke="#333" stroke-width="0.5"/>
+    <rect x="0" y="154" width="22" height="22" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
+    <rect x="22" y="154" width="22" height="22" fill="#dddddd" stroke="#333" stroke-width="0.5"/>
+    <rect x="44" y="154" width="22" height="22" fill="#bbbbbb" stroke="#333" stroke-width="0.5"/>
+    <rect x="66" y="154" width="22" height="22" fill="#999999" stroke="#333" stroke-width="0.5"/>
+    <rect x="88" y="154" width="22" height="22" fill="#777777" stroke="#333" stroke-width="0.5"/>
+    <rect x="110" y="154" width="22" height="22" fill="#555555" stroke="#333" stroke-width="0.5"/>
+    <rect x="132" y="154" width="22" height="22" fill="#333333" stroke="#333" stroke-width="0.5"/>
+    <rect x="154" y="154" width="22" height="22" fill="#1a1a1a" stroke="#333" stroke-width="0.5"/>
+  </g>
+
+  <!-- Phase color scale legend -->
+  <rect x="55" y="260" width="176" height="14" fill="url(#phaseScale)" stroke="#555" stroke-width="0.5"/>
+  <text x="55" y="286" text-anchor="start" class="small">0 (phase = 0)</text>
+  <text x="231" y="286" text-anchor="end" class="small">255 (phase = 2pi)</text>
+  <text x="145" y="306" text-anchor="middle" class="math">Each pixel applies a different phase delay</text>
+
+  <!-- ===== ARROWS showing beam steering ===== -->
+  <!-- Arrow from grid to upper-right trap -->
+  <line x1="240" y1="120" x2="400" y2="80" stroke="#ff5544" stroke-width="1.5" marker-end="url(#redArr)" opacity="0.6"/>
+  <!-- Arrow from grid center to center trap -->
+  <line x1="240" y1="160" x2="400" y2="160" stroke="#ff5544" stroke-width="1.5" marker-end="url(#redArr)" opacity="0.6"/>
+  <!-- Arrow from grid lower to lower trap -->
+  <line x1="240" y1="200" x2="400" y2="240" stroke="#ff5544" stroke-width="1.5" marker-end="url(#redArr)" opacity="0.6"/>
+
+  <!-- Annotation for beam steering -->
+  <text x="320" y="65" text-anchor="middle" class="small">Phase gradient steers</text>
+  <text x="320" y="77" text-anchor="middle" class="small">beam to different angles</text>
+
+  <!-- ===== FOCAL PLANE (Right Side) ===== -->
+  <text x="470" y="60" text-anchor="middle" class="accent-text">Focal Plane (traps)</text>
+
+  <rect x="400" y="72" width="140" height="188" rx="4" fill="#0a0a18" stroke="#e8792b" stroke-width="1.5"/>
+
+  <!-- Trap spots with glow -->
+  <circle cx="435" cy="100" r="12" fill="#e8792b" opacity="0.15"/>
+  <circle cx="435" cy="100" r="7" fill="#e8792b" opacity="0.6"/>
+  <circle cx="435" cy="100" r="3" fill="#ffffff" opacity="0.8"/>
+
+  <circle cx="505" cy="130" r="12" fill="#e8792b" opacity="0.15"/>
+  <circle cx="505" cy="130" r="7" fill="#e8792b" opacity="0.6"/>
+  <circle cx="505" cy="130" r="3" fill="#ffffff" opacity="0.8"/>
+
+  <circle cx="470" cy="170" r="12" fill="#e8792b" opacity="0.15"/>
+  <circle cx="470" cy="170" r="7" fill="#e8792b" opacity="0.6"/>
+  <circle cx="470" cy="170" r="3" fill="#ffffff" opacity="0.8"/>
+
+  <circle cx="430" cy="215" r="12" fill="#e8792b" opacity="0.15"/>
+  <circle cx="430" cy="215" r="7" fill="#e8792b" opacity="0.6"/>
+  <circle cx="430" cy="215" r="3" fill="#ffffff" opacity="0.8"/>
+
+  <circle cx="510" cy="235" r="12" fill="#e8792b" opacity="0.15"/>
+  <circle cx="510" cy="235" r="7" fill="#e8792b" opacity="0.6"/>
+  <circle cx="510" cy="235" r="3" fill="#ffffff" opacity="0.8"/>
+
+  <!-- ===== EXPLANATION SECTION (Bottom) ===== -->
+  <rect x="30" y="330" width="540" height="145" rx="6" fill="#16213e" stroke="#444" stroke-width="1"/>
+  <text x="300" y="352" text-anchor="middle" class="accent-text">How Phase-Only Modulation Creates Focused Spots</text>
+
+  <!-- Step boxes -->
+  <rect x="45" y="365" width="155" height="50" rx="4" fill="#0f3460" stroke="#666" stroke-width="1"/>
+  <text x="122" y="383" text-anchor="middle" class="label">1. Incoming Plane Wave</text>
+  <text x="122" y="397" text-anchor="middle" class="small">Uniform amplitude, flat phase</text>
+  <text x="122" y="409" text-anchor="middle" class="small">All pixels receive same light</text>
+
+  <line x1="205" y1="390" x2="220" y2="390" stroke="#888" stroke-width="1" marker-end="url(#pArr)"/>
+
+  <rect x="225" y="365" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
+  <text x="302" y="383" text-anchor="middle" class="label">2. SLM Applies Phase</text>
+  <text x="302" y="397" text-anchor="middle" class="small">Each pixel delays the wave</text>
+  <text x="302" y="409" text-anchor="middle" class="small">by phi(x,y) radians</text>
+
+  <line x1="385" y1="390" x2="400" y2="390" stroke="#888" stroke-width="1" marker-end="url(#pArr)"/>
+
+  <rect x="405" y="365" width="155" height="50" rx="4" fill="#0f3460" stroke="#666" stroke-width="1"/>
+  <text x="482" y="383" text-anchor="middle" class="label">3. Lens Performs FT</text>
+  <text x="482" y="397" text-anchor="middle" class="small">Phase gradients become</text>
+  <text x="482" y="409" text-anchor="middle" class="small">focused intensity spots</text>
+
+  <text x="300" y="455" text-anchor="middle" class="math">Phase gradient across pixels = beam steering angle. Curvature = focal shift along z-axis.</text>
+  <text x="300" y="470" text-anchor="middle" class="small">The GS algorithm finds the optimal phi(x,y) that creates the desired set of trap spots simultaneously.</text>
+</svg>

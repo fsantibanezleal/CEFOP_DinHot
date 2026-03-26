@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="600" height="500">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', Arial, sans-serif; }
+      .title { font-size: 15px; font-weight: bold; fill: #e8e8e8; }
+      .label { font-size: 11px; fill: #e0e0e0; }
+      .math { font-size: 10px; fill: #cccccc; font-family: 'Cambria Math', 'Times New Roman', serif; font-style: italic; }
+      .small { font-size: 9px; fill: #aaaaaa; }
+      .step { font-size: 10px; fill: #e8792b; font-weight: bold; }
+      .accent-text { font-size: 11px; fill: #e8792b; font-weight: bold; }
+    </style>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#e8792b"/>
+    </marker>
+    <marker id="arrGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="500" rx="8" fill="#1a1a2e"/>
+
+  <!-- Title -->
+  <text x="300" y="28" text-anchor="middle" class="title">Gerchberg-Saxton Iterative Algorithm</text>
+
+  <!-- ===== SLM PLANE (Left) ===== -->
+  <rect x="40" y="100" width="140" height="140" rx="6" fill="#16213e" stroke="#e8792b" stroke-width="1.5"/>
+  <!-- Phase pattern visualization (grid of varying gray) -->
+  <g opacity="0.6">
+    <rect x="52" y="112" width="22" height="22" fill="#333"/>
+    <rect x="76" y="112" width="22" height="22" fill="#777"/>
+    <rect x="100" y="112" width="22" height="22" fill="#555"/>
+    <rect x="124" y="112" width="22" height="22" fill="#999"/>
+    <rect x="148" y="112" width="22" height="22" fill="#444"/>
+    <rect x="52" y="136" width="22" height="22" fill="#aaa"/>
+    <rect x="76" y="136" width="22" height="22" fill="#333"/>
+    <rect x="100" y="136" width="22" height="22" fill="#888"/>
+    <rect x="124" y="136" width="22" height="22" fill="#555"/>
+    <rect x="148" y="136" width="22" height="22" fill="#bbb"/>
+    <rect x="52" y="160" width="22" height="22" fill="#666"/>
+    <rect x="76" y="160" width="22" height="22" fill="#ccc"/>
+    <rect x="100" y="160" width="22" height="22" fill="#444"/>
+    <rect x="124" y="160" width="22" height="22" fill="#777"/>
+    <rect x="148" y="160" width="22" height="22" fill="#555"/>
+    <rect x="52" y="184" width="22" height="22" fill="#888"/>
+    <rect x="76" y="184" width="22" height="22" fill="#444"/>
+    <rect x="100" y="184" width="22" height="22" fill="#aaa"/>
+    <rect x="124" y="184" width="22" height="22" fill="#333"/>
+    <rect x="148" y="184" width="22" height="22" fill="#999"/>
+    <rect x="52" y="208" width="22" height="22" fill="#555"/>
+    <rect x="76" y="208" width="22" height="22" fill="#999"/>
+    <rect x="100" y="208" width="22" height="22" fill="#666"/>
+    <rect x="124" y="208" width="22" height="22" fill="#bbb"/>
+    <rect x="148" y="208" width="22" height="22" fill="#444"/>
+  </g>
+  <text x="110" y="87" text-anchor="middle" class="accent-text">SLM Plane</text>
+  <text x="110" y="255" text-anchor="middle" class="math">phi(x,y) -- phase mask</text>
+
+  <!-- ===== FOCAL PLANE (Right) ===== -->
+  <rect x="420" y="100" width="140" height="140" rx="6" fill="#16213e" stroke="#e8792b" stroke-width="1.5"/>
+  <!-- Trap spots -->
+  <rect x="422" y="102" width="136" height="136" fill="#111122"/>
+  <circle cx="465" cy="145" r="8" fill="#e8792b" opacity="0.9"/>
+  <circle cx="465" cy="145" r="4" fill="#fff" opacity="0.7"/>
+  <circle cx="530" cy="145" r="8" fill="#e8792b" opacity="0.9"/>
+  <circle cx="530" cy="145" r="4" fill="#fff" opacity="0.7"/>
+  <circle cx="465" cy="210" r="8" fill="#e8792b" opacity="0.9"/>
+  <circle cx="465" cy="210" r="4" fill="#fff" opacity="0.7"/>
+  <circle cx="530" cy="210" r="8" fill="#e8792b" opacity="0.9"/>
+  <circle cx="530" cy="210" r="4" fill="#fff" opacity="0.7"/>
+  <text x="490" y="87" text-anchor="middle" class="accent-text">Focal Plane</text>
+  <text x="490" y="255" text-anchor="middle" class="math">I_j = |E_j|^2 -- trap intensities</text>
+
+  <!-- ===== FORWARD ARROW (Top) ===== -->
+  <line x1="185" y1="140" x2="412" y2="140" stroke="#e8792b" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="225" y="120" width="160" height="30" rx="4" fill="#1a1a2e" stroke="#e8792b" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="305" y="133" text-anchor="middle" class="step">Step 1: Forward Propagation</text>
+  <text x="305" y="145" text-anchor="middle" class="math">E_j = (1/N) * Sum exp(i * Phi_j)</text>
+
+  <!-- ===== INVERSE ARROW (Bottom) ===== -->
+  <line x1="415" y1="210" x2="188" y2="210" stroke="#e8792b" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="225" y="193" width="160" height="30" rx="4" fill="#1a1a2e" stroke="#e8792b" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="305" y="205" text-anchor="middle" class="step">Step 4: Inverse Propagation</text>
+  <text x="305" y="218" text-anchor="middle" class="math">F(x,y) = Sum alpha_j * exp(...)</text>
+
+  <!-- ===== ITERATION STEPS (Bottom Section) ===== -->
+  <rect x="30" y="285" width="540" height="190" rx="6" fill="#16213e" stroke="#444" stroke-width="1"/>
+  <text x="300" y="305" text-anchor="middle" class="accent-text">Algorithm Steps (each iteration)</text>
+
+  <!-- Step 1 -->
+  <rect x="45" y="318" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
+  <text x="122" y="335" text-anchor="middle" class="step">1. Compute Fields</text>
+  <text x="122" y="349" text-anchor="middle" class="math">E_j = Sum over all pixels</text>
+  <text x="122" y="361" text-anchor="middle" class="small">Forward propagation to traps</text>
+
+  <!-- Arrow 1->2 -->
+  <line x1="205" y1="343" x2="222" y2="343" stroke="#888" stroke-width="1" marker-end="url(#arrGray)"/>
+
+  <!-- Step 2 -->
+  <rect x="225" y="318" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
+  <text x="302" y="335" text-anchor="middle" class="step">2. Intensities</text>
+  <text x="302" y="349" text-anchor="middle" class="math">I_j = |E_j|^2</text>
+  <text x="302" y="361" text-anchor="middle" class="small">Compute trap brightness</text>
+
+  <!-- Arrow 2->3 -->
+  <line x1="385" y1="343" x2="402" y2="343" stroke="#888" stroke-width="1" marker-end="url(#arrGray)"/>
+
+  <!-- Step 3 -->
+  <rect x="405" y="318" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
+  <text x="482" y="335" text-anchor="middle" class="step">3. Weight Correction</text>
+  <text x="482" y="349" text-anchor="middle" class="math">alpha_new = f(alpha, |E|)</text>
+  <text x="482" y="361" text-anchor="middle" class="small">Equalize trap intensities</text>
+
+  <!-- Step 4 -->
+  <rect x="45" y="382" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
+  <text x="122" y="399" text-anchor="middle" class="step">4. Reconstruct Field</text>
+  <text x="122" y="413" text-anchor="middle" class="math">F(x,y) = Sum contributions</text>
+  <text x="122" y="425" text-anchor="middle" class="small">Inverse to SLM plane</text>
+
+  <!-- Arrow 3->4 -->
+  <path d="M 482 372 L 482 378 Q 482 382 478 382 L 205 382" stroke="#888" stroke-width="1" marker-end="url(#arrGray)" fill="none"/>
+
+  <!-- Arrow 4->5 -->
+  <line x1="205" y1="407" x2="222" y2="407" stroke="#888" stroke-width="1" marker-end="url(#arrGray)"/>
+
+  <!-- Step 5 -->
+  <rect x="225" y="382" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
+  <text x="302" y="399" text-anchor="middle" class="step">5. Extract Phase</text>
+  <text x="302" y="413" text-anchor="middle" class="math">phi = arg(F) mod 2pi</text>
+  <text x="302" y="425" text-anchor="middle" class="small">Discard amplitude info</text>
+
+  <!-- Arrow 5->6 -->
+  <line x1="385" y1="407" x2="402" y2="407" stroke="#888" stroke-width="1" marker-end="url(#arrGray)"/>
+
+  <!-- Step 6 -->
+  <rect x="405" y="382" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
+  <text x="482" y="399" text-anchor="middle" class="step">6. Convergence?</text>
+  <text x="482" y="413" text-anchor="middle" class="math">|err_new - err_old| / err</text>
+  <text x="482" y="425" text-anchor="middle" class="small">Stop if below tolerance</text>
+
+  <!-- Loop arrow back to Step 1 -->
+  <path d="M 560 407 Q 575 407 575 350 Q 575 290 300 280 Q 30 290 30 350 Q 30 343 45 343" stroke="#e8792b" stroke-width="1.5" fill="none" marker-end="url(#arr)" stroke-dasharray="5,3"/>
+  <text x="583" y="350" class="small" fill="#e8792b" transform="rotate(-90, 583, 350)">iterate</text>
+
+  <!-- Bottom note -->
+  <text x="300" y="490" text-anchor="middle" class="small">Typically converges in 10-50 iterations for well-separated traps</text>
+</svg>

@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="900" height="500">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', Arial, sans-serif; }
+      .header-text { font-size: 14px; font-weight: bold; fill: #e0e0e0; }
+      .header-sub { font-size: 10px; fill: #e8792b; }
+      .panel-title { font-size: 11px; fill: #bbbbbb; font-weight: bold; }
+      .label { font-size: 10px; fill: #cccccc; }
+      .small { font-size: 8px; fill: #999999; }
+      .value { font-size: 9px; fill: #e8792b; }
+      .btn-text { font-size: 9px; fill: #ffffff; font-weight: bold; }
+      .btn-text-inactive { font-size: 9px; fill: #888888; }
+    </style>
+    <!-- Phase mask radial gradient pattern -->
+    <radialGradient id="phaseCenter" cx="0.35" cy="0.35" r="0.7">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="15%" stop-color="#888888"/>
+      <stop offset="30%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#666666"/>
+      <stop offset="60%" stop-color="#dddddd"/>
+      <stop offset="75%" stop-color="#444444"/>
+      <stop offset="90%" stop-color="#bbbbbb"/>
+      <stop offset="100%" stop-color="#333333"/>
+    </radialGradient>
+    <radialGradient id="phaseCenter2" cx="0.7" cy="0.65" r="0.6">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="20%" stop-color="#777777"/>
+      <stop offset="40%" stop-color="#dddddd"/>
+      <stop offset="60%" stop-color="#555555"/>
+      <stop offset="80%" stop-color="#aaaaaa"/>
+      <stop offset="100%" stop-color="#333333"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Window frame -->
+  <rect width="900" height="500" rx="8" fill="#0d1117"/>
+
+  <!-- Title bar -->
+  <rect x="0" y="0" width="900" height="8" rx="8" fill="#161b22"/>
+  <rect x="0" y="4" width="900" height="4" fill="#161b22"/>
+
+  <!-- App header -->
+  <rect x="0" y="8" width="900" height="36" fill="#161b22"/>
+  <text x="20" y="30" class="header-text">CEFOP DinHot</text>
+  <text x="145" y="30" class="header-sub">Dynamic Holographic Optical Tweezers v2.0</text>
+  <!-- Status indicator -->
+  <circle cx="840" cy="26" r="5" fill="#22c55e"/>
+  <text x="855" y="30" class="small" fill="#22c55e">Connected</text>
+
+  <!-- ===== LEFT PANEL: Trap Positions ===== -->
+  <rect x="15" y="52" width="380" height="310" rx="4" fill="#0a0a14" stroke="#2a2a3a" stroke-width="1"/>
+  <text x="205" y="68" text-anchor="middle" class="panel-title">Trap Positions</text>
+
+  <!-- Grid lines -->
+  <g stroke="#1a1a2e" stroke-width="0.5" opacity="0.6">
+    <line x1="15" y1="127" x2="395" y2="127"/>
+    <line x1="15" y1="207" x2="395" y2="207"/>
+    <line x1="15" y1="287" x2="395" y2="287"/>
+    <line x1="110" y1="77" x2="110" y2="362"/>
+    <line x1="205" y1="77" x2="205" y2="362"/>
+    <line x1="300" y1="77" x2="300" y2="362"/>
+  </g>
+
+  <!-- Crosshair -->
+  <line x1="15" y1="207" x2="395" y2="207" stroke="#333355" stroke-width="1"/>
+  <line x1="205" y1="77" x2="205" y2="362" stroke="#333355" stroke-width="1"/>
+
+  <!-- Axis labels -->
+  <text x="205" y="372" text-anchor="middle" class="small">[-1, 1] normalized</text>
+
+  <!-- Trap dots -->
+  <circle cx="145" cy="147" r="8" fill="#e8792b" opacity="0.8"/>
+  <circle cx="145" cy="147" r="4" fill="#ffffff" opacity="0.6"/>
+  <text x="158" y="143" class="small" fill="#e8792b">T0 (-0.3, 0.5)</text>
+
+  <circle cx="280" cy="147" r="8" fill="#e8792b" opacity="0.8"/>
+  <circle cx="280" cy="147" r="4" fill="#ffffff" opacity="0.6"/>
+  <text x="293" y="143" class="small" fill="#e8792b">T1 (0.4, 0.5)</text>
+
+  <circle cx="145" cy="267" r="8" fill="#e8792b" opacity="0.8"/>
+  <circle cx="145" cy="267" r="4" fill="#ffffff" opacity="0.6"/>
+  <text x="158" y="263" class="small" fill="#e8792b">T2 (-0.3, -0.5)</text>
+
+  <circle cx="280" cy="267" r="8" fill="#e8792b" opacity="0.8"/>
+  <circle cx="280" cy="267" r="4" fill="#ffffff" opacity="0.6"/>
+  <text x="293" y="263" class="small" fill="#e8792b">T3 (0.4, -0.5)</text>
+
+  <circle cx="205" cy="190" r="8" fill="#44bbff" opacity="0.8"/>
+  <circle cx="205" cy="190" r="4" fill="#ffffff" opacity="0.6"/>
+  <text x="218" y="186" class="small" fill="#44bbff">T4 (0.0, 0.1)</text>
+
+  <!-- ===== RIGHT PANEL: Phase Mask ===== -->
+  <rect x="405" y="52" width="340" height="310" rx="4" fill="#0a0a14" stroke="#2a2a3a" stroke-width="1"/>
+  <text x="575" y="68" text-anchor="middle" class="panel-title">Phase Mask (SLM)</text>
+
+  <!-- Phase mask visualization (overlapping radial patterns simulating Fresnel zones) -->
+  <rect x="415" y="77" width="320" height="275" fill="#222222"/>
+  <!-- Multiple circular fringe patterns overlaid -->
+  <circle cx="485" cy="170" r="130" fill="url(#phaseCenter)" opacity="0.5"/>
+  <circle cx="600" cy="230" r="120" fill="url(#phaseCenter2)" opacity="0.5"/>
+  <!-- Concentric rings suggesting interference -->
+  <circle cx="530" cy="195" r="40" fill="none" stroke="#888" stroke-width="0.5" opacity="0.4"/>
+  <circle cx="530" cy="195" r="65" fill="none" stroke="#666" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="530" cy="195" r="90" fill="none" stroke="#555" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="530" cy="195" r="115" fill="none" stroke="#444" stroke-width="0.5" opacity="0.2"/>
+  <!-- Trap position overlay markers -->
+  <circle cx="475" cy="155" r="4" fill="none" stroke="#e8792b" stroke-width="1.5"/>
+  <circle cx="570" cy="155" r="4" fill="none" stroke="#e8792b" stroke-width="1.5"/>
+  <circle cx="475" cy="270" r="4" fill="none" stroke="#e8792b" stroke-width="1.5"/>
+  <circle cx="570" cy="270" r="4" fill="none" stroke="#e8792b" stroke-width="1.5"/>
+  <circle cx="527" cy="200" r="4" fill="none" stroke="#44bbff" stroke-width="1.5"/>
+
+  <text x="575" y="365" text-anchor="middle" class="small">grayscale [0-255]</text>
+
+  <!-- ===== SIDE INFO PANEL ===== -->
+  <rect x="755" y="52" width="135" height="310" rx="4" fill="#161b22" stroke="#2a2a3a" stroke-width="1"/>
+  <text x="822" y="70" text-anchor="middle" class="panel-title">Simulation Info</text>
+
+  <text x="765" y="90" class="label">Traps:</text>
+  <text x="870" y="90" text-anchor="end" class="value">5</text>
+  <text x="765" y="108" class="label">Iterations:</text>
+  <text x="870" y="108" text-anchor="end" class="value">23</text>
+  <text x="765" y="126" class="label">Converged:</text>
+  <text x="870" y="126" text-anchor="end" fill="#22c55e" font-size="9" font-family="Segoe UI, Arial, sans-serif">Yes</text>
+  <text x="765" y="144" class="label">Error:</text>
+  <text x="870" y="144" text-anchor="end" class="value">3.2e-4</text>
+
+  <!-- Trap list table -->
+  <line x1="765" y1="155" x2="880" y2="155" stroke="#333" stroke-width="0.5"/>
+  <text x="772" y="168" class="small" fill="#888">#</text>
+  <text x="792" y="168" class="small" fill="#888">X</text>
+  <text x="820" y="168" class="small" fill="#888">Y</text>
+  <text x="850" y="168" class="small" fill="#888">Intens.</text>
+  <line x1="765" y1="173" x2="880" y2="173" stroke="#333" stroke-width="0.5"/>
+  <text x="772" y="185" class="small">0</text>
+  <text x="792" y="185" class="small">-0.30</text>
+  <text x="820" y="185" class="small">0.50</text>
+  <text x="855" y="185" class="small">0.198</text>
+  <text x="772" y="198" class="small">1</text>
+  <text x="792" y="198" class="small">0.40</text>
+  <text x="820" y="198" class="small">0.50</text>
+  <text x="855" y="198" class="small">0.201</text>
+  <text x="772" y="211" class="small">2</text>
+  <text x="792" y="211" class="small">-0.30</text>
+  <text x="820" y="211" class="small">-0.50</text>
+  <text x="855" y="211" class="small">0.197</text>
+  <text x="772" y="224" class="small">3</text>
+  <text x="792" y="224" class="small">0.40</text>
+  <text x="820" y="224" class="small">-0.50</text>
+  <text x="855" y="224" class="small">0.203</text>
+  <text x="772" y="237" class="small">4</text>
+  <text x="792" y="237" class="small">0.00</text>
+  <text x="820" y="237" class="small">0.10</text>
+  <text x="855" y="237" class="small">0.200</text>
+
+  <!-- Mini convergence graph -->
+  <text x="822" y="262" text-anchor="middle" class="small" fill="#888">Convergence</text>
+  <rect x="765" y="268" width="115" height="50" fill="#0a0a14" stroke="#333" stroke-width="0.5"/>
+  <!-- Error curve (decreasing) -->
+  <polyline points="770,310 780,304 790,296 800,288 810,282 820,279 830,277 840,276 850,275 860,275 870,275" stroke="#e8792b" stroke-width="1.5" fill="none"/>
+  <!-- Converged dot -->
+  <circle cx="870" cy="275" r="3" fill="#22c55e"/>
+
+  <!-- ===== BOTTOM CONTROLS BAR ===== -->
+  <rect x="0" y="375" width="900" height="125" fill="#161b22"/>
+
+  <!-- Mode buttons -->
+  <text x="25" y="395" class="panel-title">Interaction Mode</text>
+  <!-- Create (active) -->
+  <rect x="25" y="402" width="65" height="26" rx="3" fill="#e8792b"/>
+  <text x="57" y="419" text-anchor="middle" class="btn-text">Create</text>
+  <!-- Move -->
+  <rect x="95" y="402" width="55" height="26" rx="3" fill="#2a2a3a" stroke="#444" stroke-width="1"/>
+  <text x="122" y="419" text-anchor="middle" class="btn-text-inactive">Move</text>
+  <!-- Delete -->
+  <rect x="155" y="402" width="60" height="26" rx="3" fill="#2a2a3a" stroke="#444" stroke-width="1"/>
+  <text x="185" y="419" text-anchor="middle" class="btn-text-inactive">Delete</text>
+
+  <!-- Action buttons -->
+  <rect x="25" y="435" width="85" height="22" rx="3" fill="#e8792b" opacity="0.8"/>
+  <text x="67" y="450" text-anchor="middle" class="btn-text">Recalculate</text>
+  <rect x="115" y="435" width="75" height="22" rx="3" fill="#2a2a3a" stroke="#e8792b" stroke-width="1"/>
+  <text x="152" y="450" text-anchor="middle" class="btn-text" fill="#e8792b">Clear All</text>
+
+  <!-- Parameters section -->
+  <text x="245" y="395" class="panel-title">Parameters</text>
+  <text x="245" y="413" class="label">Resolution</text>
+  <rect x="310" y="402" width="45" height="18" rx="2" fill="#0a0a14" stroke="#333" stroke-width="1"/>
+  <text x="332" y="415" text-anchor="middle" class="small" fill="#ccc">512</text>
+  <text x="360" y="413" class="small">x</text>
+  <rect x="370" y="402" width="45" height="18" rx="2" fill="#0a0a14" stroke="#333" stroke-width="1"/>
+  <text x="392" y="415" text-anchor="middle" class="small" fill="#ccc">512</text>
+
+  <text x="245" y="435" class="label">Wavelength</text>
+  <rect x="310" y="424" width="45" height="18" rx="2" fill="#0a0a14" stroke="#333" stroke-width="1"/>
+  <text x="332" y="437" text-anchor="middle" class="small" fill="#ccc">632</text>
+  <text x="360" y="435" class="small">nm</text>
+
+  <text x="245" y="457" class="label">Max Iters</text>
+  <rect x="310" y="446" width="45" height="18" rx="2" fill="#0a0a14" stroke="#333" stroke-width="1"/>
+  <text x="332" y="459" text-anchor="middle" class="small" fill="#ccc">50</text>
+
+  <text x="425" y="413" class="label">Tolerance</text>
+  <rect x="490" y="402" width="60" height="18" rx="2" fill="#0a0a14" stroke="#333" stroke-width="1"/>
+  <text x="520" y="415" text-anchor="middle" class="small" fill="#ccc">1e-6</text>
+
+  <rect x="425" y="435" width="70" height="22" rx="3" fill="#e8792b" opacity="0.7"/>
+  <text x="460" y="450" text-anchor="middle" class="btn-text">Initialize</text>
+
+  <!-- Bottom label -->
+  <text x="700" y="490" text-anchor="middle" class="small" fill="#555">CEFOP DinHot v2.0 -- http://localhost:8003</text>
+</svg>
