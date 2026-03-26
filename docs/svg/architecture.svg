@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', Arial, sans-serif; }
+      .title { font-size: 16px; font-weight: bold; fill: #e8e8e8; }
+      .subtitle { font-size: 11px; fill: #aaaaaa; }
+      .label { font-size: 11px; fill: #e0e0e0; }
+      .small { font-size: 9px; fill: #bbbbbb; }
+      .accent { fill: #e8792b; }
+      .accent-text { font-size: 11px; fill: #e8792b; font-weight: bold; }
+    </style>
+    <marker id="arrowOrange" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#e8792b"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#888888"/>
+    </marker>
+    <marker id="arrowWhite" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#cccccc"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" rx="8" fill="#1a1a2e"/>
+
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" class="title">CEFOP DinHot - System Architecture</text>
+
+  <!-- ===== BACKEND BOX (Left) ===== -->
+  <rect x="30" y="55" width="310" height="390" rx="6" fill="#16213e" stroke="#e8792b" stroke-width="1.5"/>
+  <text x="185" y="78" text-anchor="middle" class="accent-text">Python / FastAPI Backend</text>
+
+  <!-- main.py -->
+  <rect x="55" y="92" width="260" height="40" rx="4" fill="#0f3460" stroke="#444" stroke-width="1"/>
+  <text x="185" y="108" text-anchor="middle" class="label">main.py</text>
+  <text x="185" y="122" text-anchor="middle" class="small">FastAPI App Entry Point</text>
+
+  <!-- REST API routes -->
+  <rect x="55" y="145" width="120" height="55" rx="4" fill="#0f3460" stroke="#444" stroke-width="1"/>
+  <text x="115" y="165" text-anchor="middle" class="label">api/routes.py</text>
+  <text x="115" y="179" text-anchor="middle" class="small">REST Endpoints</text>
+  <text x="115" y="191" text-anchor="middle" class="small">POST/GET /api/*</text>
+
+  <!-- WebSocket handler -->
+  <rect x="195" y="145" width="120" height="55" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
+  <text x="255" y="165" text-anchor="middle" class="label">ws_handler</text>
+  <text x="255" y="179" text-anchor="middle" class="small">WebSocket /ws</text>
+  <text x="255" y="191" text-anchor="middle" class="small">Real-time Events</text>
+
+  <!-- Simulation Engine -->
+  <rect x="55" y="218" width="260" height="35" rx="4" fill="#1a1a40" stroke="#e8792b" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="185" y="240" text-anchor="middle" class="accent-text">Simulation Engine</text>
+
+  <!-- PhaseMaskGenerator -->
+  <rect x="55" y="265" width="125" height="68" rx="4" fill="#0f3460" stroke="#666" stroke-width="1"/>
+  <text x="117" y="283" text-anchor="middle" class="label">PhaseMaskGenerator</text>
+  <text x="117" y="297" text-anchor="middle" class="small">GS Algorithm</text>
+  <text x="117" y="309" text-anchor="middle" class="small">Phase Mask phi(x,y)</text>
+  <text x="117" y="321" text-anchor="middle" class="small">NumPy Vectorized</text>
+
+  <!-- TrapManager -->
+  <rect x="195" y="265" width="120" height="68" rx="4" fill="#0f3460" stroke="#666" stroke-width="1"/>
+  <text x="255" y="283" text-anchor="middle" class="label">TrapManager</text>
+  <text x="255" y="297" text-anchor="middle" class="small">Create/Move/Delete</text>
+  <text x="255" y="309" text-anchor="middle" class="small">Selection State</text>
+  <text x="255" y="321" text-anchor="middle" class="small">Recalculation</text>
+
+  <!-- complex_utils -->
+  <rect x="55" y="345" width="260" height="32" rx="4" fill="#0f3460" stroke="#444" stroke-width="1"/>
+  <text x="185" y="366" text-anchor="middle" class="label">complex_utils.py -- rho, phase normalization, grayscale</text>
+
+  <!-- Lines from main.py to REST and WS -->
+  <line x1="140" y1="132" x2="115" y2="145" stroke="#666" stroke-width="1"/>
+  <line x1="230" y1="132" x2="255" y2="145" stroke="#e8792b" stroke-width="1"/>
+
+  <!-- Lines from REST/WS to simulation -->
+  <line x1="115" y1="200" x2="115" y2="218" stroke="#666" stroke-width="1"/>
+  <line x1="255" y1="200" x2="255" y2="218" stroke="#e8792b" stroke-width="1"/>
+
+  <!-- ===== COMMUNICATION ARROWS (Center) ===== -->
+  <!-- WebSocket bidirectional -->
+  <line x1="340" y1="170" x2="455" y2="170" stroke="#e8792b" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <line x1="455" y1="185" x2="340" y2="185" stroke="#e8792b" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <text x="398" y="162" text-anchor="middle" class="accent-text">WebSocket</text>
+  <text x="398" y="202" text-anchor="middle" class="small">JSON bidirectional</text>
+
+  <!-- REST arrow -->
+  <line x1="340" y1="108" x2="455" y2="108" stroke="#888" stroke-width="1.5" marker-end="url(#arrowGray)" stroke-dasharray="5,3"/>
+  <text x="398" y="100" text-anchor="middle" class="small">REST /api/init</text>
+
+  <!-- ===== FRONTEND BOX (Right) ===== -->
+  <rect x="460" y="55" width="310" height="390" rx="6" fill="#16213e" stroke="#e8792b" stroke-width="1.5"/>
+  <text x="615" y="78" text-anchor="middle" class="accent-text">HTML5 / Canvas Frontend</text>
+
+  <!-- index.html -->
+  <rect x="485" y="92" width="260" height="40" rx="4" fill="#0f3460" stroke="#444" stroke-width="1"/>
+  <text x="615" y="108" text-anchor="middle" class="label">index.html</text>
+  <text x="615" y="122" text-anchor="middle" class="small">Single-Page Application</text>
+
+  <!-- websocket.js -->
+  <rect x="485" y="145" width="120" height="45" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
+  <text x="545" y="164" text-anchor="middle" class="label">websocket.js</text>
+  <text x="545" y="178" text-anchor="middle" class="small">WS Client</text>
+
+  <!-- app.js -->
+  <rect x="625" y="145" width="120" height="45" rx="4" fill="#0f3460" stroke="#444" stroke-width="1"/>
+  <text x="685" y="164" text-anchor="middle" class="label">app.js</text>
+  <text x="685" y="178" text-anchor="middle" class="small">Orchestrator</text>
+
+  <!-- Left Canvas -->
+  <rect x="485" y="210" width="120" height="80" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1.5"/>
+  <text x="545" y="232" text-anchor="middle" class="accent-text">Left Canvas</text>
+  <text x="545" y="248" text-anchor="middle" class="small">Trap Positions</text>
+  <text x="545" y="262" text-anchor="middle" class="small">Grid + Crosshair</text>
+  <text x="545" y="276" text-anchor="middle" class="small">Mouse Events</text>
+
+  <!-- Right Canvas -->
+  <rect x="625" y="210" width="120" height="80" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1.5"/>
+  <text x="685" y="232" text-anchor="middle" class="accent-text">Right Canvas</text>
+  <text x="685" y="248" text-anchor="middle" class="small">Phase Mask</text>
+  <text x="685" y="262" text-anchor="middle" class="small">Grayscale Image</text>
+  <text x="685" y="276" text-anchor="middle" class="small">ImageData Render</text>
+
+  <!-- renderer.js -->
+  <rect x="485" y="305" width="260" height="35" rx="4" fill="#0f3460" stroke="#666" stroke-width="1"/>
+  <text x="615" y="327" text-anchor="middle" class="label">renderer.js -- Dual-Canvas Rendering Engine</text>
+
+  <!-- controls.js -->
+  <rect x="485" y="352" width="120" height="45" rx="4" fill="#0f3460" stroke="#444" stroke-width="1"/>
+  <text x="545" y="371" text-anchor="middle" class="label">controls.js</text>
+  <text x="545" y="385" text-anchor="middle" class="small">Mode + Params</text>
+
+  <!-- Convergence canvas -->
+  <rect x="625" y="352" width="120" height="45" rx="4" fill="#0f3460" stroke="#444" stroke-width="1"/>
+  <text x="685" y="371" text-anchor="middle" class="label">Convergence</text>
+  <text x="685" y="385" text-anchor="middle" class="small">Error Graph</text>
+
+  <!-- Lines connecting frontend components -->
+  <line x1="570" y1="132" x2="545" y2="145" stroke="#e8792b" stroke-width="1"/>
+  <line x1="660" y1="132" x2="685" y2="145" stroke="#666" stroke-width="1"/>
+  <line x1="545" y1="190" x2="545" y2="210" stroke="#e8792b" stroke-width="1"/>
+  <line x1="685" y1="190" x2="685" y2="210" stroke="#666" stroke-width="1"/>
+
+  <!-- Bottom label -->
+  <text x="400" y="470" text-anchor="middle" class="subtitle">Data flow: User clicks trap canvas --> WebSocket --> TrapManager --> GS Algorithm --> Phase mask --> WebSocket --> Render</text>
+</svg>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', Arial, sans-serif; }
+      .title { font-size: 15px; font-weight: bold; fill: #e8e8e8; }
+      .label { font-size: 11px; fill: #e0e0e0; }
+      .small { font-size: 9px; fill: #aaaaaa; }
+      .accent-text { font-size: 11px; fill: #e8792b; font-weight: bold; }
+      .math { font-size: 10px; fill: #cccccc; font-family: 'Cambria Math', serif; font-style: italic; }
+    </style>
+    <marker id="beamArr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#ff4444"/>
+    </marker>
+    <marker id="labelArr" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 6 2.5, 0 5" fill="#888"/>
+    </marker>
+    <!-- Laser beam gradient -->
+    <linearGradient id="laserGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff2200" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#ff6644" stop-opacity="0.4"/>
+    </linearGradient>
+    <!-- Diverging beam -->
+    <linearGradient id="divBeam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff4422" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#ff8866" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" rx="8" fill="#1a1a2e"/>
+
+  <!-- Title -->
+  <text x="400" y="28" text-anchor="middle" class="title">Holographic Optical Tweezers -- Optical System</text>
+
+  <!-- Optical axis (dashed line) -->
+  <line x1="30" y1="200" x2="770" y2="200" stroke="#333" stroke-width="1" stroke-dasharray="8,4"/>
+
+  <!-- ===== LASER ===== -->
+  <rect x="30" y="165" width="70" height="70" rx="4" fill="#16213e" stroke="#ff4422" stroke-width="1.5"/>
+  <rect x="42" y="175" width="46" height="50" rx="2" fill="#220808"/>
+  <!-- Laser cavity lines -->
+  <line x1="48" y1="185" x2="82" y2="185" stroke="#ff3322" stroke-width="1" opacity="0.5"/>
+  <line x1="48" y1="195" x2="82" y2="195" stroke="#ff3322" stroke-width="1" opacity="0.5"/>
+  <line x1="48" y1="205" x2="82" y2="205" stroke="#ff3322" stroke-width="1" opacity="0.5"/>
+  <line x1="48" y1="215" x2="82" y2="215" stroke="#ff3322" stroke-width="1" opacity="0.5"/>
+  <text x="65" y="155" text-anchor="middle" class="accent-text">Laser</text>
+  <text x="65" y="250" text-anchor="middle" class="small">632 nm He-Ne</text>
+
+  <!-- Laser beam (collimated, narrow) -->
+  <rect x="100" y="194" width="100" height="12" fill="url(#laserGrad)" opacity="0.7"/>
+
+  <!-- ===== BEAM EXPANDER ===== -->
+  <!-- Lens 1 (small) -->
+  <ellipse cx="205" cy="200" rx="4" ry="20" fill="none" stroke="#4488cc" stroke-width="2"/>
+  <!-- Diverging beam -->
+  <polygon points="210,193 240,185 240,215 210,207" fill="url(#divBeam)"/>
+  <!-- Lens 2 (large) -->
+  <ellipse cx="245" cy="200" rx="5" ry="35" fill="none" stroke="#4488cc" stroke-width="2"/>
+  <text x="225" y="155" text-anchor="middle" class="label">Beam Expander</text>
+
+  <!-- Expanded collimated beam -->
+  <rect x="250" y="178" width="90" height="44" rx="2" fill="#ff4422" opacity="0.15"/>
+
+  <!-- ===== SLM ===== -->
+  <rect x="340" y="150" width="50" height="100" rx="3" fill="#16213e" stroke="#e8792b" stroke-width="2"/>
+  <!-- Phase pattern on SLM face -->
+  <g opacity="0.5">
+    <rect x="344" y="155" width="10" height="10" fill="#666"/>
+    <rect x="356" y="155" width="10" height="10" fill="#999"/>
+    <rect x="368" y="155" width="10" height="10" fill="#444"/>
+    <rect x="344" y="167" width="10" height="10" fill="#aaa"/>
+    <rect x="356" y="167" width="10" height="10" fill="#555"/>
+    <rect x="368" y="167" width="10" height="10" fill="#888"/>
+    <rect x="344" y="179" width="10" height="10" fill="#777"/>
+    <rect x="356" y="179" width="10" height="10" fill="#333"/>
+    <rect x="368" y="179" width="10" height="10" fill="#bbb"/>
+    <rect x="344" y="191" width="10" height="10" fill="#555"/>
+    <rect x="356" y="191" width="10" height="10" fill="#aaa"/>
+    <rect x="368" y="191" width="10" height="10" fill="#666"/>
+    <rect x="344" y="203" width="10" height="10" fill="#999"/>
+    <rect x="356" y="203" width="10" height="10" fill="#444"/>
+    <rect x="368" y="203" width="10" height="10" fill="#888"/>
+    <rect x="344" y="215" width="10" height="10" fill="#333"/>
+    <rect x="356" y="215" width="10" height="10" fill="#777"/>
+    <rect x="368" y="215" width="10" height="10" fill="#bbb"/>
+    <rect x="344" y="227" width="10" height="10" fill="#aaa"/>
+    <rect x="356" y="227" width="10" height="10" fill="#555"/>
+    <rect x="368" y="227" width="10" height="10" fill="#666"/>
+  </g>
+  <text x="365" y="140" text-anchor="middle" class="accent-text">SLM</text>
+  <text x="365" y="267" text-anchor="middle" class="math">phi(x,y)</text>
+  <text x="365" y="280" text-anchor="middle" class="small">Phase modulation</text>
+
+  <!-- Modulated beam (slightly diverging with structure) -->
+  <polygon points="390,178 490,168 490,232 390,222" fill="#ff4422" opacity="0.12"/>
+  <!-- Show multiple beam paths diverging -->
+  <line x1="390" y1="185" x2="490" y2="172" stroke="#ff6644" stroke-width="1" opacity="0.35"/>
+  <line x1="390" y1="200" x2="490" y2="200" stroke="#ff6644" stroke-width="1" opacity="0.35"/>
+  <line x1="390" y1="215" x2="490" y2="228" stroke="#ff6644" stroke-width="1" opacity="0.35"/>
+
+  <!-- ===== FOURIER LENS ===== -->
+  <ellipse cx="495" cy="200" rx="7" ry="45" fill="none" stroke="#4488cc" stroke-width="2.5"/>
+  <text x="495" y="140" text-anchor="middle" class="label">Fourier Lens</text>
+  <text x="495" y="262" text-anchor="middle" class="small">f = focal length</text>
+
+  <!-- Converging beams to focal spots -->
+  <!-- Beam to top trap -->
+  <line x1="502" y1="175" x2="600" y2="170" stroke="#ff6644" stroke-width="1.2" opacity="0.4"/>
+  <line x1="502" y1="195" x2="600" y2="170" stroke="#ff6644" stroke-width="1.2" opacity="0.4"/>
+  <!-- Beam to center-top trap -->
+  <line x1="502" y1="185" x2="600" y2="190" stroke="#ff6644" stroke-width="1.2" opacity="0.4"/>
+  <line x1="502" y1="200" x2="600" y2="190" stroke="#ff6644" stroke-width="1.2" opacity="0.4"/>
+  <!-- Beam to center-bottom trap -->
+  <line x1="502" y1="200" x2="600" y2="210" stroke="#ff6644" stroke-width="1.2" opacity="0.4"/>
+  <line x1="502" y1="215" x2="600" y2="210" stroke="#ff6644" stroke-width="1.2" opacity="0.4"/>
+  <!-- Beam to bottom trap -->
+  <line x1="502" y1="205" x2="600" y2="230" stroke="#ff6644" stroke-width="1.2" opacity="0.4"/>
+  <line x1="502" y1="225" x2="600" y2="230" stroke="#ff6644" stroke-width="1.2" opacity="0.4"/>
+
+  <!-- ===== OBJECTIVE ===== -->
+  <rect x="585" y="155" width="30" height="90" rx="5" fill="#16213e" stroke="#4488cc" stroke-width="1.5"/>
+  <ellipse cx="600" cy="165" rx="12" ry="3" fill="none" stroke="#4488cc" stroke-width="1"/>
+  <ellipse cx="600" cy="200" rx="12" ry="3" fill="none" stroke="#4488cc" stroke-width="1" opacity="0.4"/>
+  <ellipse cx="600" cy="235" rx="12" ry="3" fill="none" stroke="#4488cc" stroke-width="1"/>
+  <text x="600" y="145" text-anchor="middle" class="label">Objective</text>
+
+  <!-- Focused beams to sample -->
+  <line x1="615" y1="172" x2="680" y2="180" stroke="#ff4422" stroke-width="1.5" opacity="0.5"/>
+  <line x1="615" y1="190" x2="680" y2="192" stroke="#ff4422" stroke-width="1.5" opacity="0.5"/>
+  <line x1="615" y1="210" x2="680" y2="208" stroke="#ff4422" stroke-width="1.5" opacity="0.5"/>
+  <line x1="615" y1="228" x2="680" y2="220" stroke="#ff4422" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- ===== SAMPLE PLANE ===== -->
+  <rect x="680" y="155" width="80" height="90" rx="4" fill="#0a0a1a" stroke="#e8792b" stroke-width="1.5"/>
+  <!-- Trap spots -->
+  <circle cx="705" cy="180" r="6" fill="#e8792b" opacity="0.9"/>
+  <circle cx="705" cy="180" r="3" fill="#fff" opacity="0.7"/>
+  <circle cx="735" cy="192" r="6" fill="#e8792b" opacity="0.9"/>
+  <circle cx="735" cy="192" r="3" fill="#fff" opacity="0.7"/>
+  <circle cx="705" cy="208" r="6" fill="#e8792b" opacity="0.9"/>
+  <circle cx="705" cy="208" r="3" fill="#fff" opacity="0.7"/>
+  <circle cx="735" cy="220" r="6" fill="#e8792b" opacity="0.9"/>
+  <circle cx="735" cy="220" r="3" fill="#fff" opacity="0.7"/>
+  <!-- Trapped particles -->
+  <circle cx="705" cy="180" r="8" fill="none" stroke="#44aaff" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
+  <circle cx="735" cy="192" r="8" fill="none" stroke="#44aaff" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
+  <circle cx="705" cy="208" r="8" fill="none" stroke="#44aaff" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
+  <circle cx="735" cy="220" r="8" fill="none" stroke="#44aaff" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
+  <text x="720" y="145" text-anchor="middle" class="accent-text">Sample Plane</text>
+  <text x="720" y="262" text-anchor="middle" class="small">Trapped particles</text>
+
+  <!-- Distance annotations -->
+  <line x1="495" y1="300" x2="600" y2="300" stroke="#666" stroke-width="1"/>
+  <line x1="495" y1="295" x2="495" y2="305" stroke="#666" stroke-width="1"/>
+  <line x1="600" y1="295" x2="600" y2="305" stroke="#666" stroke-width="1"/>
+  <text x="547" y="315" text-anchor="middle" class="math">f (focal distance)</text>
+
+  <!-- Bottom description -->
+  <text x="400" y="360" text-anchor="middle" class="label">The SLM imprints a phase pattern onto the laser wavefront. The Fourier lens converts</text>
+  <text x="400" y="375" text-anchor="middle" class="label">spatial phase variations into intensity spots at the focal plane, creating optical traps.</text>
+  <text x="400" y="392" text-anchor="middle" class="small">Each phase pattern is computed by the Gerchberg-Saxton algorithm to produce the desired trap arrangement.</text>
+</svg>
