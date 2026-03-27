@@ -138,10 +138,10 @@ class TestPhysicsConsistency(unittest.TestCase):
                 self.assertGreater(I / mean_i, 0.3,
                     f"Intensity {I:.2e} too far from mean {mean_i:.2e}")
 
-    def test_wavelength_affects_computation(self):
-        """Different wavelengths should produce different phase masks."""
-        gen1 = PhaseMaskGenerator(resolution=(32, 32), wavelength=532e-9)
-        gen2 = PhaseMaskGenerator(resolution=(32, 32), wavelength=632e-9)
+    def test_phase_scale_affects_computation(self):
+        """Different phase_scale values should produce different phase masks."""
+        gen1 = PhaseMaskGenerator(resolution=(32, 32), phase_scale=np.pi)
+        gen2 = PhaseMaskGenerator(resolution=(32, 32), phase_scale=2 * np.pi)
 
         gen1.add_trap(0.3, 0.3)
         gen2.add_trap(0.3, 0.3)
@@ -152,8 +152,8 @@ class TestPhysicsConsistency(unittest.TestCase):
         np.random.seed(42)
         gen2.calculate_phase_mask()
 
-        # Wave vectors should differ
-        self.assertNotAlmostEqual(gen1.wave_vector, gen2.wave_vector)
+        # Phase scales should differ
+        self.assertNotAlmostEqual(gen1.phase_scale, gen2.phase_scale)
 
     def test_defocus_changes_field(self):
         """A trap with z != 0 should produce a different field."""

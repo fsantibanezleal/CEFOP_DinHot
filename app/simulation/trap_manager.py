@@ -18,6 +18,8 @@ kept in sync -- one for the control panel and one for the SLM display
 window. This Python version uses a single TrapManager that serves both
 the API and WebSocket endpoints.
 """
+import numpy as np
+
 from .phase_mask import PhaseMaskGenerator, OpticalTrap
 
 
@@ -35,15 +37,17 @@ class TrapManager:
     """
 
     def __init__(self, resolution: tuple = (512, 512),
-                 wavelength: float = 632e-9):
+                 phase_scale: float = np.pi):
         """Initialize trap manager.
 
         Args:
             resolution: Phase mask resolution (width, height) in pixels.
-            wavelength: Laser wavelength in meters (default: 632nm He-Ne).
+            phase_scale: Dimensionless phase scaling factor (default: pi).
+                Controls the maximum beam deflection angle. See
+                PhaseMaskGenerator.__init__ for details.
         """
         self.generator = PhaseMaskGenerator(
-            resolution=resolution, wavelength=wavelength
+            resolution=resolution, phase_scale=phase_scale
         )
         self.selected_trap = -1
         self.mode = 'create'  # 'create', 'move', 'delete'

@@ -13,10 +13,68 @@
         <header class="app-header">
             <h1>CEFOP DinHot <span>Dynamic Holographic Optical Tweezers v2.0</span></h1>
             <div class="header-status">
+                <button id="btn-help" class="help-btn" title="Open help and usage guide">?</button>
                 <span id="status-dot" class="status-dot"></span>
                 <span id="status-text">Disconnected</span>
             </div>
         </header>
+
+        <!-- Help Modal -->
+        <div id="help-modal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" id="modal-close-btn" title="Close help">&times;</button>
+                <h2>CEFOP DinHot &mdash; Help</h2>
+
+                <h3>What This App Does</h3>
+                <p>
+                    This application computes <strong>holographic phase masks</strong> for
+                    <strong>optical tweezers</strong>. A Spatial Light Modulator (SLM) displays
+                    the computed phase pattern, shaping a laser beam to create multiple
+                    tightly focused traps that can hold and manipulate microscopic particles.
+                </p>
+
+                <h3>How to Use</h3>
+                <ol>
+                    <li>Set the desired resolution, wavelength, and iteration parameters.</li>
+                    <li>Click <strong>Initialize</strong> to configure the phase mask generator.</li>
+                    <li>Select <strong>Create</strong> mode, then click on the Trap Positions canvas to place traps.</li>
+                    <li>The phase mask updates automatically after each action. You can also click <strong>Recalculate</strong> manually.</li>
+                </ol>
+
+                <h3>Interaction Modes</h3>
+                <ul>
+                    <li><strong>Create</strong> &mdash; Click on the trap canvas to add a new optical trap at that position.</li>
+                    <li><strong>Move</strong> &mdash; Click near an existing trap to select it, then drag to reposition.</li>
+                    <li><strong>Delete</strong> &mdash; Click near an existing trap to remove it.</li>
+                </ul>
+
+                <h3>Parameters</h3>
+                <ul>
+                    <li><strong>Resolution</strong> &mdash; Width and height of the phase mask in pixels (e.g., 512x512). Higher values give finer control but take longer to compute.</li>
+                    <li><strong>Wavelength</strong> &mdash; Laser wavelength in nanometers (e.g., 632 nm for He-Ne). Determines the wave vector used in phase calculations.</li>
+                    <li><strong>Max Iterations</strong> &mdash; Maximum number of Gerchberg-Saxton iterations. More iterations may improve trap uniformity.</li>
+                    <li><strong>Tolerance</strong> &mdash; Convergence threshold. The algorithm stops early if the relative change in error falls below this value.</li>
+                </ul>
+
+                <h3>Phase Mask Visualization</h3>
+                <p>
+                    The right panel shows the computed phase mask as a grayscale image.
+                    Each pixel value (0&ndash;255) maps to a phase shift of 0 to 2&pi; applied
+                    by the SLM. The pattern encodes the interference of all trap
+                    contributions and produces the desired focal-plane intensity distribution
+                    when illuminated by a plane wave.
+                </p>
+
+                <h3>Convergence Graph</h3>
+                <p>
+                    The convergence plot shows the RMS intensity error across iterations.
+                    A decreasing curve indicates the algorithm is successfully equalizing
+                    trap intensities. If the curve plateaus, the algorithm has converged to
+                    a stable solution. The uniformity metric (I<sub>min</sub>/I<sub>max</sub>)
+                    quantifies how equal the trap intensities are, with 1.0 being perfect.
+                </p>
+            </div>
+        </div>
 
         <!-- Main content: dual canvas panels -->
         <div class="main-content">
@@ -25,7 +83,7 @@
             <div class="canvas-panel">
                 <div class="panel-title">Trap Positions</div>
                 <div class="canvas-wrapper">
-                    <canvas id="trap-canvas"></canvas>
+                    <canvas id="trap-canvas" title="Trap positions in normalized [-1,1] coordinates. Click to interact based on the current mode."></canvas>
                     <div class="canvas-overlay">[-1,1] normalized</div>
                 </div>
             </div>
@@ -36,7 +94,7 @@
             <div class="canvas-panel">
                 <div class="panel-title">Phase Mask (SLM)</div>
                 <div class="canvas-wrapper">
-                    <canvas id="mask-canvas"></canvas>
+                    <canvas id="mask-canvas" title="Phase mask for the SLM. Grayscale values 0-255 map to phase shifts 0 to 2pi."></canvas>
                     <div class="canvas-overlay">grayscale [0-255]</div>
                 </div>
             </div>
@@ -50,13 +108,13 @@
             <div class="control-section">
                 <h3>Interaction Mode</h3>
                 <div class="mode-buttons">
-                    <button class="mode-btn active" data-mode="create">Create</button>
-                    <button class="mode-btn" data-mode="move">Move</button>
-                    <button class="mode-btn" data-mode="delete">Delete</button>
+                    <button class="mode-btn active" data-mode="create" title="Create mode: click on the trap canvas to add a new optical trap">Create</button>
+                    <button class="mode-btn" data-mode="move" title="Move mode: click near a trap to select it, then drag to reposition">Move</button>
+                    <button class="mode-btn" data-mode="delete" title="Delete mode: click near a trap to remove it">Delete</button>
                 </div>
                 <div style="display:flex; gap:4px; margin-top:4px;">
-                    <button class="action-btn" id="btn-recalculate">Recalculate</button>
-                    <button class="action-btn secondary" id="btn-clear">Clear All</button>
+                    <button class="action-btn" id="btn-recalculate" title="Force recalculation of the phase mask using the current trap positions">Recalculate</button>
+                    <button class="action-btn secondary" id="btn-clear" title="Remove all traps and reset the phase mask">Clear All</button>
                 </div>
             </div>
 
@@ -64,25 +122,25 @@
             <div class="control-section">
                 <h3>Parameters</h3>
                 <div class="param-row">
-                    <label>Resolution</label>
-                    <input type="number" id="param-res-x" value="512" min="32" max="2048" step="64">
+                    <label title="Phase mask width and height in pixels">Resolution</label>
+                    <input type="number" id="param-res-x" value="512" min="32" max="2048" step="64" title="Horizontal resolution of the SLM phase mask (pixels)">
                     x
-                    <input type="number" id="param-res-y" value="512" min="32" max="2048" step="64">
+                    <input type="number" id="param-res-y" value="512" min="32" max="2048" step="64" title="Vertical resolution of the SLM phase mask (pixels)">
                 </div>
                 <div class="param-row">
-                    <label>Wavelength</label>
-                    <input type="number" id="param-wavelength" value="632" min="300" max="1100" step="1">
+                    <label title="Laser wavelength used for computing the wave vector k = 2pi/lambda">Wavelength</label>
+                    <input type="number" id="param-wavelength" value="632" min="300" max="1100" step="1" title="Laser wavelength in nanometers (e.g., 632 for He-Ne)">
                     nm
                 </div>
                 <div class="param-row">
-                    <label>Max Iters</label>
-                    <input type="number" id="param-max-iter" value="50" min="1" max="500" step="10">
+                    <label title="Maximum Gerchberg-Saxton iterations before stopping">Max Iters</label>
+                    <input type="number" id="param-max-iter" value="50" min="1" max="500" step="10" title="Maximum number of GS iterations (more iterations may improve uniformity)">
                 </div>
                 <div class="param-row">
-                    <label>Tolerance</label>
-                    <input type="text" id="param-tolerance" value="1e-6">
+                    <label title="Convergence tolerance: algorithm stops when relative error change falls below this value">Tolerance</label>
+                    <input type="text" id="param-tolerance" value="1e-6" title="Convergence threshold for the GS algorithm (e.g., 1e-6)">
                 </div>
-                <button class="action-btn" id="btn-init" style="margin-top:4px;">Initialize</button>
+                <button class="action-btn" id="btn-init" style="margin-top:4px;" title="Initialize the phase mask generator with current parameters">Initialize</button>
             </div>
 
             <!-- Info panel -->
@@ -114,7 +172,7 @@
             <div class="control-section convergence-container">
                 <h3>Convergence</h3>
                 <div class="convergence-canvas-wrapper">
-                    <canvas id="convergence-canvas"></canvas>
+                    <canvas id="convergence-canvas" title="Convergence plot: RMS intensity error vs. iteration number. Decreasing curve indicates successful optimization."></canvas>
                 </div>
             </div>
 
@@ -127,5 +185,30 @@
     <script src="/static/js/renderer.js"></script>
     <script src="/static/js/controls.js"></script>
     <script src="/static/js/app.js"></script>
+
+    <!-- Help modal toggle -->
+    <script>
+    (function() {
+        var modal = document.getElementById('help-modal');
+        var btnOpen = document.getElementById('btn-help');
+        var btnClose = document.getElementById('modal-close-btn');
+
+        function openModal() { modal.classList.add('visible'); }
+        function closeModal() { modal.classList.remove('visible'); }
+
+        btnOpen.addEventListener('click', openModal);
+        btnClose.addEventListener('click', closeModal);
+
+        // Close when clicking the backdrop (outside modal-content)
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('visible')) closeModal();
+        });
+    })();
+    </script>
 </body>
 </html>
