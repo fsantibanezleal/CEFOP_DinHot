@@ -8,11 +8,15 @@ The algorithm finds a phase distribution phi(x,y) on the SLM (Spatial Light
 Modulator) plane that, when illuminated by a plane wave, produces focused
 spots at the desired trap positions.
 
-Physical parameters:
-    - Wavelength lambda = 632 nm (He-Ne laser)
-    - Wave vector k = 2*pi/lambda
-    - Focal distance f = 500 nm
-    - SLM resolution: configurable (default 512x512 for web)
+Physical parameters (dimensionless formulation):
+    - phase_scale alpha ~ pi : controls maximum beam deflection angle
+    - defocus_scale beta ~ 1 : controls z-axis trap positioning range
+    - Resolution: configurable (default 512x512 for web)
+
+The dimensionless formulation absorbs all physical constants (wavelength,
+focal length, pixel pitch) into two scaling factors. This makes the
+algorithm resolution-independent and avoids numerical overflow from
+carrying SI units (which produce phase values of ~10^16 radians).
 
 Mathematical model:
     The electric field at the j-th trap position is the coherent sum of
@@ -24,10 +28,12 @@ Mathematical model:
         phi(x,y)   = phase value at SLM pixel (x,y)
         K_j(x,y)   = phase kernel encoding the optical path from pixel
                      (x,y) to trap j, defined as:
-                     K_j = (k/f)*(x*x_j + y*y_j) - (k/f^2)*(x^2+y^2)*z_j
+                     K_j = alpha*(x*x_j + y*y_j) - beta*(x^2+y^2)*z_j
 
     The first term of K_j is the linear phase (beam steering) and the
     second is the quadratic phase (defocus for z-axis control).
+    alpha (phase_scale) and beta (defocus_scale) are dimensionless
+    parameters that absorb all physical constants.
 
     The intensity at trap j is I_j = |E_j|^2.
 
@@ -58,6 +64,12 @@ Implementation notes:
 
     This Python port uses NumPy vectorized operations to replace the
     explicit loops and OpenMP parallelism of the C++ version.
+
+    The original SI parameters (k/f ~ 10^16) produced phase values
+    that wrapped around 2*pi ~10^15 times per pixel, making the
+    exp(i*phase) essentially random. This port replaces k/f with a
+    dimensionless phase_scale ~ pi, giving O(1) radian phases that
+    allow the GS algorithm to converge properly.
 """
 import numpy as np
 from dataclasses import dataclass, field
@@ -113,56 +125,71 @@ class PhaseMaskGenerator:
     """
 
     def __init__(self, resolution: Tuple[int, int] = (512, 512),
-                 wavelength: float = 632e-9,
-                 focal_distance: float = 500e-9):
+                 phase_scale: float = np.pi,
+                 defocus_scale: float = 1.0):
         """Initialize the phase mask generator.
 
-        Sets up coordinate grids, physical parameters, and the aperture
-        function. The coordinate system is normalized to [-1, 1] on both
-        axes, matching the original C++ code's approach of mapping pixel
-        indices to physical positions via a scale factor
-        (FACTORESPACIO in MatDinHot.cpp).
+        ===== PARAMETER SCALING =====
+
+        In a real holographic optical tweezers setup, the phase contribution
+        of a trap at normalized position (x_j, y_j) to SLM pixel (u, v) is:
+
+            K_j(u,v) = (2*pi / lambda*f) * Delta_p^2 * N * (u*x_j + v*y_j)
+
+        where lambda is the wavelength, f the focal length, Delta_p the pixel
+        pitch, and N the linear resolution. All of these physical constants
+        collapse into a single dimensionless number that we call 'phase_scale':
+
+            phase_scale = (2*pi / lambda*f) * Delta_p^2 * N ~ pi  (typical)
+
+        This simplification:
+        - Avoids carrying around physically meaningless SI values
+        - Makes the algorithm resolution-independent
+        - Gives a single knob to match any real optical setup
+        - Ensures phase values are O(1) radians, not O(10^16)
+
+        ===== PHYSICAL CORRESPONDENCE =====
+
+        To recover physical trap positions from normalized coordinates:
+            x_physical = x_normalized * lambda*f / (Delta_p * N)
+
+        For a He-Ne laser (lambda=632nm), f=200mm objective, 20um pixel pitch,
+        512x512 SLM: phase_scale ~ pi, and a normalized position of 1.0
+        corresponds to ~61 um in the focal plane.
 
         Args:
             resolution: (width, height) of the phase mask in pixels.
-                The original C++ code used 1280x1024 for the SLM;
-                we default to 512x512 for responsive web display.
-            wavelength: Laser wavelength in meters.
-                Default 632e-9 m corresponds to a He-Ne laser (632 nm).
-            focal_distance: Focal distance of the Fourier lens in meters.
-                Default 500e-9 m. In the original code this was 0.0000005f.
+            phase_scale: Dimensionless scaling factor controlling the
+                maximum phase tilt per trap. Default pi gives a good
+                balance between trap range and diffraction efficiency.
+                Increase for wider trap spacing, decrease for finer.
+            defocus_scale: Scaling factor for the quadratic (z-axis)
+                phase term. Default 1.0.
         """
         self.res_x, self.res_y = resolution
-        self.wavelength = wavelength
-        self.focal_distance = focal_distance
-
-        # Wave vector magnitude k = 2*pi / lambda
-        self.wave_vector = 2 * np.pi / wavelength
+        self.phase_scale = phase_scale
+        self.defocus_scale = defocus_scale
 
         self.tolerance = 1e-6
         self.max_iterations = 50
 
-        # Phase mask array -- initialized to random values
+        # Phase mask array
         self.phi = np.random.uniform(0, 2 * np.pi, (self.res_y, self.res_x))
 
-        # Coordinate grids (normalized to [-1, 1])
-        # In the original C++ code, coordinates were pixel indices (1-based).
-        # Here we normalize to make the physics scale-independent.
+        # Normalized coordinate grids [-1, 1]
         x = np.linspace(-1, 1, self.res_x)
         y = np.linspace(-1, 1, self.res_y)
         self.coord_x, self.coord_y = np.meshgrid(x, y)
-        self.coord_x_sq = self.coord_x ** 2
-        self.coord_y_sq = self.coord_y ** 2
+        self.coord_r_sq = self.coord_x**2 + self.coord_y**2
 
-        # Circular aperture (pupil function)
-        # Models the finite extent of the SLM active area.
-        # A super-Gaussian profile provides a smooth roll-off at the edges,
-        # reducing ringing artifacts in the reconstructed intensity pattern
-        # compared to a hard circular aperture.
-        r_grid = np.sqrt(self.coord_x ** 2 + self.coord_y ** 2)
-        self.aperture = np.exp(-(r_grid / 1.0) ** 8)
+        # Super-Gaussian aperture (pupil function)
+        # Models the circular active area of the SLM.
+        # The super-Gaussian (order 8) provides a smooth roll-off that
+        # reduces Gibbs ringing compared to a hard circular aperture.
+        r_grid = np.sqrt(self.coord_r_sq)
+        self.aperture = np.exp(-(r_grid / 0.95)**8)
 
-        # Traps and precomputed dot products
+        # Trap list and precomputed dot-product matrices
         self.traps: List[OpticalTrap] = []
         self._rho: List[np.ndarray] = []
 
@@ -178,8 +205,10 @@ class PhaseMaskGenerator:
         for this trap position. The rho matrix stores:
             rho(px, py) = coord_x(px,py) * trap_x + coord_y(px,py) * trap_y
 
-        This corresponds to the _rrho array in the original C++ code
-        (MatDinHot::AddTrampa).
+        The phase contribution of this trap to the hologram is then:
+            K_j(u,v) = phase_scale * rho(u,v)
+        which keeps values in the O(1) radian range for normalized
+        trap coordinates in [-1, 1].
 
         Args:
             x: X position in normalized coordinates [-1, 1].
@@ -270,33 +299,40 @@ class PhaseMaskGenerator:
     def _phase_kernel(self, trap_index: int) -> np.ndarray:
         """Compute the phase kernel for a given trap.
 
-        The kernel encodes the optical path difference between the SLM
-        pixel at (x,y) and the trap at position (x_j, y_j, z_j):
+        ===== PHASE KERNEL DECOMPOSITION =====
 
-            K_j(x,y) = (k/f) * (x*x_j + y*y_j) - (k/f^2) * (x^2+y^2) * z_j
+        The kernel encodes the optical path from each SLM pixel to the
+        trap position, decomposed into two terms:
 
-        The first term is the linear phase (beam steering): tilting the
-        wavefront to direct light toward the lateral position (x_j, y_j).
+        Linear (beam steering):
+            K_linear = alpha * (u*x_j + v*y_j)
 
-        The second term is the quadratic phase (defocus): adding a lens-like
-        curvature to shift the focal point along the optical axis by z_j.
+            This tilts the wavefront to redirect the beam toward the
+            lateral position (x_j, y_j). The tilt angle increases
+            linearly with trap displacement from center.
+
+        Quadratic (defocus):
+            K_quad = -beta * (u^2 + v^2) * z_j
+
+            This adds a lens-like curvature that shifts the focal point
+            along the optical axis by z_j. Positive z moves the trap
+            toward the SLM (closer), negative z moves it away.
+
+        Total kernel:
+            K_j(u,v) = alpha * (u*x_j + v*y_j) - beta * (u^2 + v^2) * z_j
 
         Args:
-            trap_index: Index of the target trap (0 to N_traps - 1).
+            trap_index: Index of the target trap.
 
         Returns:
-            2D array of phase values (radians) at each SLM pixel.
+            2D array of kernel phase values (radians).
         """
-        # Linear phase: beam steering toward lateral position
-        # k/f scales the normalized coordinates to optical phase
-        kf = self.wave_vector / self.focal_distance
-        kernel = kf * self._rho[trap_index]
+        # Linear phase: beam steering
+        kernel = self.phase_scale * self._rho[trap_index]
 
         # Quadratic phase: defocus for z-axis positioning
-        # Only computed when z != 0 to save unnecessary arithmetic
         if self.traps[trap_index].z != 0:
-            kf2 = self.wave_vector / (self.focal_distance ** 2)
-            kernel -= kf2 * (self.coord_x_sq + self.coord_y_sq) * self.traps[trap_index].z
+            kernel -= self.defocus_scale * self.coord_r_sq * self.traps[trap_index].z
 
         return kernel
 

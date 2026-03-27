@@ -131,16 +131,21 @@ def compute_rho(coord_x: np.ndarray, coord_y: np.ndarray,
     dot product between the SLM pixel coordinates and each trap position:
         rho = x_pixel * x_trap + y_pixel * y_trap
 
-    This dot product appears in the phase contribution of each trap
-    to the overall hologram.
+    This dot product appears in the phase kernel as:
+        K_j(u,v) = phase_scale * rho(u,v)
+
+    Since both the SLM coordinates and trap positions are normalized
+    to [-1, 1], the rho values lie in [-2, 2]. When multiplied by
+    phase_scale (typically pi), this gives phase contributions of
+    O(1) radians -- the correct regime for the GS algorithm to converge.
 
     Args:
-        coord_x: 2D array of x-coordinates on the SLM plane.
-        coord_y: 2D array of y-coordinates on the SLM plane.
-        trap_x: X position of the trap.
-        trap_y: Y position of the trap.
+        coord_x: 2D array of normalized x-coordinates on the SLM plane.
+        coord_y: 2D array of normalized y-coordinates on the SLM plane.
+        trap_x: X position of the trap in normalized coordinates.
+        trap_y: Y position of the trap in normalized coordinates.
 
     Returns:
-        2D array of dot-product values.
+        2D array of dot-product values in the range [-2, 2].
     """
     return coord_x * trap_x + coord_y * trap_y

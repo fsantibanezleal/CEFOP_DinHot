@@ -50,22 +50,23 @@ class TestPhaseMaskGenerator(unittest.TestCase):
         """Create a small generator for fast testing."""
         self.gen = PhaseMaskGenerator(
             resolution=(64, 64),
-            wavelength=632e-9,
-            focal_distance=500e-9,
+            phase_scale=np.pi,
         )
 
     def test_initialization(self):
         """Generator should initialize with correct parameters."""
         self.assertEqual(self.gen.res_x, 64)
         self.assertEqual(self.gen.res_y, 64)
-        self.assertAlmostEqual(self.gen.wavelength, 632e-9)
+        self.assertAlmostEqual(self.gen.phase_scale, np.pi)
+        self.assertAlmostEqual(self.gen.defocus_scale, 1.0)
         self.assertEqual(self.gen.phi.shape, (64, 64))
         self.assertEqual(len(self.gen.traps), 0)
 
-    def test_wave_vector(self):
-        """Wave vector k = 2*pi/lambda should be computed correctly."""
-        expected_k = 2 * np.pi / 632e-9
-        self.assertAlmostEqual(self.gen.wave_vector, expected_k, places=0)
+    def test_no_legacy_attributes(self):
+        """Generator should not have legacy wavelength/wave_vector attributes."""
+        self.assertFalse(hasattr(self.gen, 'wavelength'))
+        self.assertFalse(hasattr(self.gen, 'wave_vector'))
+        self.assertFalse(hasattr(self.gen, 'focal_distance'))
 
     def test_coordinate_grids(self):
         """Coordinate grids should span [-1, 1]."""
@@ -320,6 +321,36 @@ class TestAlgorithmicFeatures(unittest.TestCase):
         # Phase masks should differ
         self.assertNotEqual(state_z0['phase_mask'], state_z1['phase_mask'])
         print("PASS: test_z_defocus_changes_field")
+
+
+class TestGSConvergence(unittest.TestCase):
+    """Verify that the GS algorithm converges with dimensionless phase scaling."""
+
+    def test_gs_convergence(self):
+        """Verify GS converges and produces nonzero trap intensities."""
+        gen = PhaseMaskGenerator(resolution=(64, 64), phase_scale=np.pi)
+        gen.add_trap(0.3, 0.3)
+        gen.add_trap(-0.3, -0.3)
+        iters = gen.calculate_phase_mask()
+        self.assertGreater(iters, 0)
+        self.assertTrue(
+            all(t.intensity > 0 for t in gen.traps),
+            "All traps should have nonzero intensity"
+        )
+        print("PASS: test_gs_convergence")
+
+    def test_phase_kernel_magnitude_is_reasonable(self):
+        """Phase kernel values should be O(1) radians, not O(10^16)."""
+        gen = PhaseMaskGenerator(resolution=(64, 64), phase_scale=np.pi)
+        gen.add_trap(1.0, 1.0)  # worst case: corner trap
+        kernel = gen._phase_kernel(0)
+        max_phase = np.max(np.abs(kernel))
+        # With phase_scale=pi and rho_max~2, max_phase ~ 2*pi ~ 6.28
+        self.assertLess(max_phase, 20.0,
+                        f"Phase kernel too large: {max_phase}")
+        self.assertGreater(max_phase, 0.1,
+                           f"Phase kernel too small: {max_phase}")
+        print("PASS: test_phase_kernel_magnitude_is_reasonable")
 
 
 if __name__ == '__main__':

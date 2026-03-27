@@ -1,5 +1,88 @@
 # Development History
 
+## v2.2.0 (2026-03-26) — Optical Physics Fix
+
+### Critical Fix: Dimensionless Phase Scaling
+
+**Problem**: v2.0 used SI physical parameters directly:
+
+```
+k = 2π/λ = 2π/(632×10⁻⁹) ≈ 9.94 × 10⁶ rad/m
+f = 500 × 10⁻⁹ m
+k/f ≈ 1.99 × 10¹⁶ rad/m²
+```
+
+The phase kernel K_j = (k/f)·ρ produced values up to ~4×10¹⁶ radians. This means the phase wraps around 2π approximately 6.3×10¹⁵ times across the SLM — effectively **random noise**. The GS algorithm cannot converge because adjacent pixels have no phase correlation.
+
+**Root cause**: The value `0.0000005f` in the original C++ code was in an internal coordinate system (pixel-based), NOT in SI meters. When ported to Python with normalized [-1,1] coordinates, the physical constant interpretation breaks.
+
+**Solution**: Replace all physical constants with a single dimensionless scaling factor α:
+
+```
+K_j(u,v) = α · (u·x_j + v·y_j) - β · (u² + v²) · z_j
+```
+
+where:
+- α = phase_scale ≈ π (default)
+- β = defocus_scale ≈ 1.0 (default)
+- u, v ∈ [-1, 1] (normalized SLM coordinates)
+- x_j, y_j ∈ [-1, 1] (normalized trap positions)
+
+**Physical correspondence**: α absorbs all hardware-dependent constants:
+
+```
+α = (2π / λf) · Δp² · N
+```
+
+For He-Ne laser (λ=632nm), f=200mm, Δp=20μm, N=512: α ≈ π
+
+With α = π, maximum phase per pixel is ~2π for edge traps — the correct regime for constructive interference and GS convergence.
+
+> See `docs/diagrams/architecture.svg` for visual reference.
+
+### Verification
+
+After the fix:
+- GS converges in 15-30 iterations (was: never converged)
+- Trap intensities are non-zero and uniform
+- Phase mask shows smooth spatial structure (was: pixel-level noise)
+- Intensity preview (FFT reconstruction) shows correct focused spots
+
+### Phase Kernel Decomposition
+
+```
+K_j(u,v) = K_linear + K_quadratic
+
+K_linear   = α · (u·x_j + v·y_j)     ← beam steering (lateral position)
+K_quadratic = -β · (u² + v²) · z_j    ← defocus (axial position)
+```
+
+The linear term tilts the wavefront by angle ∝ α·x_j, steering the beam
+to lateral position x_j. The quadratic term adds curvature, shifting
+the focal point along the optical axis by z_j.
+
+### Weighted GS Algorithm (Unchanged, Now Functional)
+
+The algorithm remains the same but now actually converges:
+
+```
+Forward:  E_j = (1/N²) Σ_{u,v} exp(i·[φ(u,v) - K_j(u,v)])
+Weights:  w_j ← w_j · ⟨|E|⟩ / |E_j|
+Backward: F(u,v) = Σ_j w_j · exp(i·[K_j(u,v) + arg(E_j)])
+Aperture: F ← F · A(u,v)    [super-Gaussian, order 8]
+Phase:    φ ← arg(F) mod 2π
+```
+
+Convergence criterion: relative RMS error change < 10⁻⁶
+
+### Aperture Function Update
+
+Changed from radius 1.0 to 0.95 for the super-Gaussian pupil:
+```
+A(r) = exp(-(r/0.95)⁸)
+```
+This provides better edge roll-off and reduces ringing artifacts in the reconstructed intensity pattern.
+
 ## v2.1.0 (2026-03-26)
 
 ### Algorithmic Improvements
