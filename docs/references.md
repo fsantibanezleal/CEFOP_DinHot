@@ -85,3 +85,26 @@ This page lists the key academic publications that inform the physics, algorithm
     DOI: [10.1364/OL.11.000288](https://doi.org/10.1364/OL.11.000288)
 
     First experimental observation of stable three-dimensional trapping using a single tightly focused laser beam -- the invention of optical tweezers as we know them today. All subsequent work on holographic tweezers builds upon this single-beam trapping concept.
+
+## Optical Tweezers Reviews and Advanced Techniques
+
+12. **Padgett, M. J. & Bowman, R.** (2011).
+    "Tweezers with a twist."
+    *Nature Photonics*, 5, 343-348.
+    DOI: [10.1038/nphoton.2011.81](https://doi.org/10.1038/nphoton.2011.81)
+
+    A review of optical tweezers that exploit orbital angular momentum (optical vortex beams) to rotate and manipulate microscopic particles. Covers how helical phase patterns `exp(i*l*theta)` create donut-shaped traps that transfer angular momentum to trapped objects, enabling controlled rotation and orbital motion.
+
+13. **Jesacher, A., Schwaighofer, A., Furhapter, S., Maurer, C., Bernet, S. & Ritsch-Marte, M.** (2008).
+    "Wavefront correction of spatial light modulators using an optical vortex image."
+    *Optics Express*, 15(9), 5801-5808.
+    DOI: [10.1364/OE.15.005801](https://doi.org/10.1364/OE.15.005801)
+
+    Demonstrates a practical method for measuring and correcting the phase aberrations inherent in SLM devices using optical vortex images as wavefront sensors. The technique uses Zernike polynomial decomposition to characterize SLM non-uniformities and applies correction phases to the hologram, directly relevant to improving trap quality in real experimental setups.
+
+14. **Roichman, Y. & Grier, D. G.** (2005).
+    "Holographic assembly of quasicrystalline photonic heterostructures."
+    *Optics Express*, 13(14), 5434-5439.
+    DOI: [10.1364/OPEX.13.005434](https://doi.org/10.1364/OPEX.13.005434)
+
+    Demonstrated the use of holographic optical tweezers to assemble complex three-dimensional structures from colloidal particles, including quasicrystalline arrangements. This work showcases the power of multi-trap holographic systems for materials science applications and validated the precision achievable with GS-optimized phase masks.

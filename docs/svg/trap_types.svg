@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', Arial, sans-serif; }
+    </style>
+    <!-- Point trap Gaussian gradient -->
+    <radialGradient id="gaussGrad" cx="50%" cy="50%" r="35%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="30%" stop-color="#3fb950" stop-opacity="0.7"/>
+      <stop offset="70%" stop-color="#3fb950" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#3fb950" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Donut gradient for vortex -->
+    <radialGradient id="donutOuter" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a371f7" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#a371f7" stop-opacity="0.05"/>
+      <stop offset="55%" stop-color="#a371f7" stop-opacity="0.8"/>
+      <stop offset="70%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="85%" stop-color="#a371f7" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#a371f7" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Line trap gradient -->
+    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f0883e" stop-opacity="0"/>
+      <stop offset="30%" stop-color="#f0883e" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#f0883e" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#f0883e" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="400" y="28" fill="#e6edf3" font-size="16" font-weight="bold" text-anchor="middle">Types of Optical Traps</text>
+
+  <!-- 1. Point Trap (Gaussian focus) -->
+  <g transform="translate(20, 50)">
+    <rect x="0" y="0" width="175" height="240" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="87" y="25" fill="#3fb950" font-size="12" font-weight="bold" text-anchor="middle">Point Trap</text>
+    <text x="87" y="40" fill="#8b949e" font-size="9" text-anchor="middle">(Gaussian focus)</text>
+
+    <!-- Intensity profile circle -->
+    <circle cx="87" cy="110" r="50" fill="url(#gaussGrad)"/>
+    <!-- Cross-section intensity curve below -->
+    <line x1="20" y1="190" x2="155" y2="190" stroke="#30363d" stroke-width="0.5"/>
+    <!-- Gaussian curve -->
+    <path d="M 20,190 C 30,190 45,188 55,185 C 65,178 75,155 87,148 C 99,155 109,178 119,185 C 129,188 144,190 155,190"
+          fill="none" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="87" y="205" fill="#8b949e" font-size="8" text-anchor="middle">I(r) = I_0 * exp(-2r^2/w^2)</text>
+
+    <!-- Phase info -->
+    <text x="87" y="225" fill="#8b949e" font-size="8" text-anchor="middle">Phase: linear tilt</text>
+    <text x="87" y="236" fill="#8b949e" font-size="8" text-anchor="middle">phi = alpha*(u*x + v*y)</text>
+  </g>
+
+  <!-- 2. Line Trap (cylindrical lens phase) -->
+  <g transform="translate(210, 50)">
+    <rect x="0" y="0" width="175" height="240" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="87" y="25" fill="#f0883e" font-size="12" font-weight="bold" text-anchor="middle">Line Trap</text>
+    <text x="87" y="40" fill="#8b949e" font-size="9" text-anchor="middle">(cylindrical lens phase)</text>
+
+    <!-- Line intensity profile -->
+    <rect x="37" y="70" width="100" height="80" fill="none"/>
+    <rect x="77" y="70" width="20" height="80" fill="url(#lineGrad)"/>
+    <!-- Side glow -->
+    <rect x="67" y="70" width="10" height="80" fill="#f0883e" opacity="0.15"/>
+    <rect x="97" y="70" width="10" height="80" fill="#f0883e" opacity="0.15"/>
+
+    <!-- Cross-section -->
+    <line x1="20" y1="190" x2="155" y2="190" stroke="#30363d" stroke-width="0.5"/>
+    <!-- Sinc-like profile -->
+    <path d="M 20,190 L 50,189 C 60,188 70,183 77,170 C 82,158 85,148 87,148 C 89,148 92,158 97,170 C 104,183 114,188 124,189 L 155,190"
+          fill="none" stroke="#f0883e" stroke-width="1.5"/>
+    <text x="87" y="205" fill="#8b949e" font-size="8" text-anchor="middle">I(x) = I_0 / cosh^2(x/w)</text>
+
+    <text x="87" y="225" fill="#8b949e" font-size="8" text-anchor="middle">Phase: cylindrical</text>
+    <text x="87" y="236" fill="#8b949e" font-size="8" text-anchor="middle">phi = alpha*u*x + beta*v^2</text>
+  </g>
+
+  <!-- 3. Optical Vortex (donut shape) -->
+  <g transform="translate(400, 50)">
+    <rect x="0" y="0" width="175" height="240" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="87" y="25" fill="#a371f7" font-size="12" font-weight="bold" text-anchor="middle">Optical Vortex</text>
+    <text x="87" y="40" fill="#8b949e" font-size="9" text-anchor="middle">(helical phase, l=1)</text>
+
+    <!-- Donut intensity -->
+    <circle cx="87" cy="110" r="50" fill="url(#donutOuter)"/>
+    <!-- Dark center -->
+    <circle cx="87" cy="110" r="15" fill="#161b22"/>
+    <!-- Rotation arrow -->
+    <path d="M 107,90 A 25,25 0 1,1 100,83" fill="none" stroke="#a371f7" stroke-width="1" opacity="0.6"/>
+    <polygon points="100,83 103,88 96,87" fill="#a371f7" opacity="0.6"/>
+    <text x="87" y="115" fill="#a371f7" font-size="7" text-anchor="middle">OAM</text>
+
+    <!-- Cross-section -->
+    <line x1="20" y1="190" x2="155" y2="190" stroke="#30363d" stroke-width="0.5"/>
+    <!-- Donut cross-section (two peaks) -->
+    <path d="M 20,190 L 40,190 C 50,189 55,185 60,175 C 63,168 65,165 67,168 C 70,175 75,188 87,190 C 99,188 104,175 107,168 C 109,165 111,168 114,175 C 119,185 124,189 134,190 L 155,190"
+          fill="none" stroke="#a371f7" stroke-width="1.5"/>
+    <text x="87" y="205" fill="#8b949e" font-size="8" text-anchor="middle">I(r) ~ r^(2|l|) * exp(-2r^2/w^2)</text>
+
+    <text x="87" y="225" fill="#8b949e" font-size="8" text-anchor="middle">Phase: helical</text>
+    <text x="87" y="236" fill="#8b949e" font-size="8" text-anchor="middle">phi = l*theta (l=1,2,...)</text>
+  </g>
+
+  <!-- 4. Multi-plane Trap -->
+  <g transform="translate(590, 50)">
+    <rect x="0" y="0" width="185" height="240" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="92" y="25" fill="#58a6ff" font-size="12" font-weight="bold" text-anchor="middle">Multi-Plane Trap</text>
+    <text x="92" y="40" fill="#8b949e" font-size="9" text-anchor="middle">(3 traps at different z)</text>
+
+    <!-- 3D perspective view -->
+    <!-- Back plane (z=+1) -->
+    <rect x="55" y="60" width="70" height="35" rx="2" fill="none" stroke="#58a6ff" stroke-width="0.5" opacity="0.4"/>
+    <circle cx="90" cy="78" r="6" fill="#58a6ff" opacity="0.3"/>
+    <circle cx="90" cy="78" r="2" fill="#ffffff" opacity="0.5"/>
+    <text x="130" y="82" fill="#8b949e" font-size="7">z = +1</text>
+
+    <!-- Middle plane (z=0) -->
+    <rect x="40" y="90" width="85" height="45" rx="2" fill="none" stroke="#58a6ff" stroke-width="0.8" opacity="0.6"/>
+    <circle cx="82" cy="112" r="8" fill="#58a6ff" opacity="0.5"/>
+    <circle cx="82" cy="112" r="3" fill="#ffffff" opacity="0.7"/>
+    <text x="130" y="116" fill="#8b949e" font-size="7">z = 0</text>
+
+    <!-- Front plane (z=-1) -->
+    <rect x="25" y="125" width="100" height="55" rx="2" fill="none" stroke="#58a6ff" stroke-width="1" opacity="0.8"/>
+    <circle cx="75" cy="152" r="10" fill="#58a6ff" opacity="0.6"/>
+    <circle cx="75" cy="152" r="4" fill="#ffffff" opacity="0.9"/>
+    <text x="130" y="156" fill="#8b949e" font-size="7">z = -1</text>
+
+    <!-- z-axis arrow -->
+    <line x1="145" y1="170" x2="145" y2="65" stroke="#58a6ff" stroke-width="1" opacity="0.5"/>
+    <polygon points="145,65 142,72 148,72" fill="#58a6ff" opacity="0.5"/>
+    <text x="155" y="70" fill="#58a6ff" font-size="7">z</text>
+
+    <text x="92" y="205" fill="#8b949e" font-size="8" text-anchor="middle">Defocus encodes z:</text>
+    <text x="92" y="218" fill="#8b949e" font-size="8" text-anchor="middle">phi_z = beta*(u^2+v^2)*z_j</text>
+    <text x="92" y="236" fill="#8b949e" font-size="8" text-anchor="middle">2D hologram encodes 3D</text>
+  </g>
+
+  <!-- Bottom summary -->
+  <g transform="translate(20, 310)">
+    <rect x="0" y="0" width="760" height="75" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="20" y="22" fill="#e6edf3" font-size="10" font-weight="bold">All trap types are generated by the same SLM + GS algorithm framework:</text>
+    <text x="20" y="40" fill="#8b949e" font-size="9">The total phase at each SLM pixel is: phi(u,v) = arg( SUM_j w_j * exp(i * [K_linear_j + K_quadratic_j + K_vortex_j]) )</text>
+    <text x="20" y="55" fill="#8b949e" font-size="9">where K_linear steers laterally, K_quadratic shifts axially, and K_vortex = l*theta adds orbital angular momentum.</text>
+    <text x="20" y="68" fill="#8b949e" font-size="9">The GS algorithm optimizes phi(u,v) to equalize intensities across all traps simultaneously.</text>
+  </g>
+</svg>
