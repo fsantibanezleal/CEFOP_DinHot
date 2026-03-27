@@ -104,6 +104,7 @@ class OpticalTrap:
     z: float = 0.0
     amplitude: float = 1.0
     intensity: float = 0.0
+    topological_charge: int = 0  # l=0: point trap, l!=0: optical vortex
 
 
 class PhaseMaskGenerator:
@@ -269,6 +270,22 @@ class PhaseMaskGenerator:
         if 0 <= index < len(self.traps):
             self.traps[index].z = z
 
+    def set_trap_charge(self, index: int, charge: int):
+        """Set the topological charge of an existing trap.
+
+        A nonzero topological charge l converts the point trap into an
+        optical vortex carrying orbital angular momentum (OAM) of l*hbar
+        per photon. The resulting donut-shaped intensity profile can trap
+        and rotate absorptive or birefringent particles.
+
+        Args:
+            index: Zero-based index of the trap to modify.
+            charge: Integer topological charge (l). l=0 is a standard
+                point trap; l=+/-1 is the fundamental vortex mode.
+        """
+        if 0 <= index < len(self.traps):
+            self.traps[index].topological_charge = charge
+
     def find_nearest_trap(self, x: float, y: float,
                           threshold: float = 0.05) -> int:
         """Find the trap nearest to (x, y) within a distance threshold.
@@ -333,6 +350,12 @@ class PhaseMaskGenerator:
         # Quadratic phase: defocus for z-axis positioning
         if self.traps[trap_index].z != 0:
             kernel -= self.defocus_scale * self.coord_r_sq * self.traps[trap_index].z
+
+        # Helical phase for optical vortex (OAM l*hbar per photon)
+        if self.traps[trap_index].topological_charge != 0:
+            l = self.traps[trap_index].topological_charge
+            theta_grid = np.arctan2(self.coord_y, self.coord_x)
+            kernel += l * theta_grid
 
         return kernel
 
@@ -598,6 +621,7 @@ class PhaseMaskGenerator:
                     'z': float(t.z),
                     'amplitude': float(t.amplitude),
                     'intensity': float(t.intensity),
+                    'topological_charge': int(t.topological_charge),
                 }
                 for t in self.traps
             ],
