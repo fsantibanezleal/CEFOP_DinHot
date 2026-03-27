@@ -28,13 +28,14 @@ class DinHotConfig(BaseModel):
     Attributes:
         resolution_x: Phase mask width in pixels (32-2048).
         resolution_y: Phase mask height in pixels (32-2048).
-        wavelength_nm: Laser wavelength in nanometers.
+        phase_scale: Dimensionless phase scaling factor (default pi).
+            Controls beam deflection range. See PhaseMaskGenerator docs.
         max_iterations: Maximum GS algorithm iterations per computation.
         tolerance: Convergence tolerance for the GS algorithm.
     """
     resolution_x: int = Field(default=512, ge=32, le=2048)
     resolution_y: int = Field(default=512, ge=32, le=2048)
-    wavelength_nm: float = Field(default=632.0, gt=0)
+    phase_scale: float = Field(default=3.141592653589793, gt=0)
     max_iterations: int = Field(default=50, ge=1, le=500)
     tolerance: float = Field(default=1e-6, gt=0)
 
@@ -63,7 +64,7 @@ async def init(config: DinHotConfig):
     """
     manager = TrapManager(
         resolution=(config.resolution_x, config.resolution_y),
-        wavelength=config.wavelength_nm * 1e-9,
+        phase_scale=config.phase_scale,
     )
     manager.generator.max_iterations = config.max_iterations
     manager.generator.tolerance = config.tolerance
@@ -178,9 +179,8 @@ async def get_params():
         return {"error": "Not initialized"}
     gen = manager.generator
     return {
-        "wavelength_nm": gen.wavelength * 1e9,
-        "focal_distance_nm": gen.focal_distance * 1e9,
-        "wave_vector": gen.wave_vector,
+        "phase_scale": gen.phase_scale,
+        "defocus_scale": gen.defocus_scale,
         "resolution": [gen.res_x, gen.res_y],
         "max_iterations": gen.max_iterations,
         "tolerance": gen.tolerance,

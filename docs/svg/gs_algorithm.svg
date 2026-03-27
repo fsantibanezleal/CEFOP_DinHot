@@ -1,148 +1,143 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="600" height="500">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
   <defs>
     <style>
       text { font-family: 'Segoe UI', Arial, sans-serif; }
-      .title { font-size: 15px; font-weight: bold; fill: #e8e8e8; }
+      .title { font-size: 16px; font-weight: bold; fill: #e8e8e8; }
+      .box-title { font-size: 13px; font-weight: bold; fill: #ffffff; }
       .label { font-size: 11px; fill: #e0e0e0; }
       .math { font-size: 10px; fill: #cccccc; font-family: 'Cambria Math', 'Times New Roman', serif; font-style: italic; }
       .small { font-size: 9px; fill: #aaaaaa; }
-      .step { font-size: 10px; fill: #e8792b; font-weight: bold; }
-      .accent-text { font-size: 11px; fill: #e8792b; font-weight: bold; }
+      .arrow-label { font-size: 10px; font-weight: bold; }
     </style>
-    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#e8792b"/>
+    <!-- Arrow markers in different colors -->
+    <marker id="arrOrange" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#e8792b"/>
     </marker>
-    <marker id="arrGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#888"/>
+    <marker id="arrCyan" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#00bcd4"/>
+    </marker>
+    <marker id="arrGreen" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4caf50"/>
+    </marker>
+    <marker id="arrPurple" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#ab47bc"/>
+    </marker>
+    <marker id="arrYellow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#ffd54f"/>
+    </marker>
+    <marker id="arrRed" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#ef5350"/>
     </marker>
   </defs>
 
   <!-- Background -->
-  <rect width="600" height="500" rx="8" fill="#1a1a2e"/>
+  <rect width="800" height="500" rx="8" fill="#1a1a2e"/>
 
   <!-- Title -->
-  <text x="300" y="28" text-anchor="middle" class="title">Gerchberg-Saxton Iterative Algorithm</text>
+  <text x="400" y="30" text-anchor="middle" class="title">Weighted Gerchberg-Saxton Algorithm Loop</text>
 
-  <!-- ===== SLM PLANE (Left) ===== -->
-  <rect x="40" y="100" width="140" height="140" rx="6" fill="#16213e" stroke="#e8792b" stroke-width="1.5"/>
-  <!-- Phase pattern visualization (grid of varying gray) -->
-  <g opacity="0.6">
-    <rect x="52" y="112" width="22" height="22" fill="#333"/>
-    <rect x="76" y="112" width="22" height="22" fill="#777"/>
-    <rect x="100" y="112" width="22" height="22" fill="#555"/>
-    <rect x="124" y="112" width="22" height="22" fill="#999"/>
-    <rect x="148" y="112" width="22" height="22" fill="#444"/>
-    <rect x="52" y="136" width="22" height="22" fill="#aaa"/>
-    <rect x="76" y="136" width="22" height="22" fill="#333"/>
-    <rect x="100" y="136" width="22" height="22" fill="#888"/>
-    <rect x="124" y="136" width="22" height="22" fill="#555"/>
-    <rect x="148" y="136" width="22" height="22" fill="#bbb"/>
-    <rect x="52" y="160" width="22" height="22" fill="#666"/>
-    <rect x="76" y="160" width="22" height="22" fill="#ccc"/>
-    <rect x="100" y="160" width="22" height="22" fill="#444"/>
-    <rect x="124" y="160" width="22" height="22" fill="#777"/>
-    <rect x="148" y="160" width="22" height="22" fill="#555"/>
-    <rect x="52" y="184" width="22" height="22" fill="#888"/>
-    <rect x="76" y="184" width="22" height="22" fill="#444"/>
-    <rect x="100" y="184" width="22" height="22" fill="#aaa"/>
-    <rect x="124" y="184" width="22" height="22" fill="#333"/>
-    <rect x="148" y="184" width="22" height="22" fill="#999"/>
-    <rect x="52" y="208" width="22" height="22" fill="#555"/>
-    <rect x="76" y="208" width="22" height="22" fill="#999"/>
-    <rect x="100" y="208" width="22" height="22" fill="#666"/>
-    <rect x="124" y="208" width="22" height="22" fill="#bbb"/>
-    <rect x="148" y="208" width="22" height="22" fill="#444"/>
+  <!-- ===== SLM PLANE BOX (Left) ===== -->
+  <rect x="40" y="120" width="220" height="160" rx="8" fill="#16213e" stroke="#e8792b" stroke-width="2"/>
+  <rect x="40" y="120" width="220" height="28" rx="8" fill="#e8792b"/>
+  <rect x="40" y="140" width="220" height="8" fill="#e8792b"/>
+  <text x="150" y="140" text-anchor="middle" class="box-title" fill="#1a1a2e">SLM PLANE</text>
+
+  <!-- Phase mask mini-visualization -->
+  <g opacity="0.7">
+    <rect x="65" y="165" width="18" height="18" fill="#2b2b5e" rx="1"/>
+    <rect x="85" y="165" width="18" height="18" fill="#43437f" rx="1"/>
+    <rect x="105" y="165" width="18" height="18" fill="#5b5ba0" rx="1"/>
+    <rect x="125" y="165" width="18" height="18" fill="#7373c1" rx="1"/>
+    <rect x="145" y="165" width="18" height="18" fill="#8b8be2" rx="1"/>
+    <rect x="165" y="165" width="18" height="18" fill="#a0a0ff" rx="1"/>
+    <rect x="185" y="165" width="18" height="18" fill="#b8b8ff" rx="1"/>
+    <rect x="205" y="165" width="18" height="18" fill="#d0d0ff" rx="1"/>
+    <rect x="65" y="185" width="18" height="18" fill="#333369" rx="1"/>
+    <rect x="85" y="185" width="18" height="18" fill="#4b4b8a" rx="1"/>
+    <rect x="105" y="185" width="18" height="18" fill="#6363ab" rx="1"/>
+    <rect x="125" y="185" width="18" height="18" fill="#7b7bcc" rx="1"/>
+    <rect x="145" y="185" width="18" height="18" fill="#9393ed" rx="1"/>
+    <rect x="165" y="185" width="18" height="18" fill="#a8a8ff" rx="1"/>
+    <rect x="185" y="185" width="18" height="18" fill="#c0c0ff" rx="1"/>
+    <rect x="205" y="185" width="18" height="18" fill="#d8d8ff" rx="1"/>
   </g>
-  <text x="110" y="87" text-anchor="middle" class="accent-text">SLM Plane</text>
-  <text x="110" y="255" text-anchor="middle" class="math">phi(x,y) -- phase mask</text>
+  <text x="150" y="225" text-anchor="middle" class="math">phi(u,v) in [0, 2pi]</text>
+  <text x="150" y="240" text-anchor="middle" class="small">Phase-only modulation</text>
+  <text x="150" y="260" text-anchor="middle" class="small">Aperture: A(r) = exp(-(r/0.95)^8)</text>
 
-  <!-- ===== FOCAL PLANE (Right) ===== -->
-  <rect x="420" y="100" width="140" height="140" rx="6" fill="#16213e" stroke="#e8792b" stroke-width="1.5"/>
+  <!-- ===== FOCAL PLANE BOX (Right) ===== -->
+  <rect x="540" y="120" width="220" height="160" rx="8" fill="#16213e" stroke="#00bcd4" stroke-width="2"/>
+  <rect x="540" y="120" width="220" height="28" rx="8" fill="#00bcd4"/>
+  <rect x="540" y="140" width="220" height="8" fill="#00bcd4"/>
+  <text x="650" y="140" text-anchor="middle" class="box-title" fill="#1a1a2e">FOCAL PLANE</text>
+
   <!-- Trap spots -->
-  <rect x="422" y="102" width="136" height="136" fill="#111122"/>
-  <circle cx="465" cy="145" r="8" fill="#e8792b" opacity="0.9"/>
-  <circle cx="465" cy="145" r="4" fill="#fff" opacity="0.7"/>
-  <circle cx="530" cy="145" r="8" fill="#e8792b" opacity="0.9"/>
-  <circle cx="530" cy="145" r="4" fill="#fff" opacity="0.7"/>
-  <circle cx="465" cy="210" r="8" fill="#e8792b" opacity="0.9"/>
-  <circle cx="465" cy="210" r="4" fill="#fff" opacity="0.7"/>
-  <circle cx="530" cy="210" r="8" fill="#e8792b" opacity="0.9"/>
-  <circle cx="530" cy="210" r="4" fill="#fff" opacity="0.7"/>
-  <text x="490" y="87" text-anchor="middle" class="accent-text">Focal Plane</text>
-  <text x="490" y="255" text-anchor="middle" class="math">I_j = |E_j|^2 -- trap intensities</text>
+  <rect x="565" y="160" width="150" height="80" rx="4" fill="#0a0a1a"/>
+  <circle cx="600" cy="185" r="10" fill="#00bcd4" opacity="0.4"/>
+  <circle cx="600" cy="185" r="5" fill="#00bcd4" opacity="0.8"/>
+  <circle cx="600" cy="185" r="2" fill="#ffffff"/>
+  <circle cx="680" cy="185" r="10" fill="#00bcd4" opacity="0.4"/>
+  <circle cx="680" cy="185" r="5" fill="#00bcd4" opacity="0.8"/>
+  <circle cx="680" cy="185" r="2" fill="#ffffff"/>
+  <circle cx="640" cy="215" r="10" fill="#00bcd4" opacity="0.4"/>
+  <circle cx="640" cy="215" r="5" fill="#00bcd4" opacity="0.8"/>
+  <circle cx="640" cy="215" r="2" fill="#ffffff"/>
 
-  <!-- ===== FORWARD ARROW (Top) ===== -->
-  <line x1="185" y1="140" x2="412" y2="140" stroke="#e8792b" stroke-width="2" marker-end="url(#arr)"/>
-  <rect x="225" y="120" width="160" height="30" rx="4" fill="#1a1a2e" stroke="#e8792b" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="305" y="133" text-anchor="middle" class="step">Step 1: Forward Propagation</text>
-  <text x="305" y="145" text-anchor="middle" class="math">E_j = (1/N) * Sum exp(i * Phi_j)</text>
+  <text x="650" y="258" text-anchor="middle" class="math">E_j = (1/N^2) Sum exp(i*[phi - K_j])</text>
+  <text x="650" y="272" text-anchor="middle" class="small">Trap field amplitudes |E_j|</text>
 
-  <!-- ===== INVERSE ARROW (Bottom) ===== -->
-  <line x1="415" y1="210" x2="188" y2="210" stroke="#e8792b" stroke-width="2" marker-end="url(#arr)"/>
-  <rect x="225" y="193" width="160" height="30" rx="4" fill="#1a1a2e" stroke="#e8792b" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="305" y="205" text-anchor="middle" class="step">Step 4: Inverse Propagation</text>
-  <text x="305" y="218" text-anchor="middle" class="math">F(x,y) = Sum alpha_j * exp(...)</text>
+  <!-- ===== ARROW 1: Forward FFT (Top, left to right) ===== -->
+  <path d="M 265 165 Q 400 60 530 165" stroke="#e8792b" stroke-width="2.5" fill="none" marker-end="url(#arrOrange)"/>
+  <rect x="330" y="68" width="140" height="38" rx="6" fill="#1a1a2e" stroke="#e8792b" stroke-width="1"/>
+  <text x="400" y="84" text-anchor="middle" class="arrow-label" fill="#e8792b">Forward Propagation</text>
+  <text x="400" y="98" text-anchor="middle" class="math">Evaluate E_j at each trap</text>
 
-  <!-- ===== ITERATION STEPS (Bottom Section) ===== -->
-  <rect x="30" y="285" width="540" height="190" rx="6" fill="#16213e" stroke="#444" stroke-width="1"/>
-  <text x="300" y="305" text-anchor="middle" class="accent-text">Algorithm Steps (each iteration)</text>
+  <!-- ===== ARROW 2: Weight Correction (Right side loop) ===== -->
+  <path d="M 765 190 Q 790 230 765 260" stroke="#4caf50" stroke-width="2.5" fill="none" marker-end="url(#arrGreen)"/>
+  <text x="785" y="220" class="arrow-label" fill="#4caf50" transform="rotate(90, 785, 220)" text-anchor="middle">Weights</text>
+  <!-- Weight formula box -->
+  <rect x="560" y="290" width="190" height="45" rx="6" fill="#16213e" stroke="#4caf50" stroke-width="1.5"/>
+  <text x="655" y="308" text-anchor="middle" class="arrow-label" fill="#4caf50">Weight Correction</text>
+  <text x="655" y="324" text-anchor="middle" class="math">w_j = w_j * &lt;|E|&gt; / |E_j|</text>
 
-  <!-- Step 1 -->
-  <rect x="45" y="318" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
-  <text x="122" y="335" text-anchor="middle" class="step">1. Compute Fields</text>
-  <text x="122" y="349" text-anchor="middle" class="math">E_j = Sum over all pixels</text>
-  <text x="122" y="361" text-anchor="middle" class="small">Forward propagation to traps</text>
+  <!-- ===== ARROW 3: Backward Synthesis (Bottom, right to left) ===== -->
+  <path d="M 535 300 Q 400 380 265 240" stroke="#ab47bc" stroke-width="2.5" fill="none" marker-end="url(#arrPurple)"/>
+  <rect x="310" y="320" width="170" height="38" rx="6" fill="#1a1a2e" stroke="#ab47bc" stroke-width="1"/>
+  <text x="395" y="336" text-anchor="middle" class="arrow-label" fill="#ab47bc">Backward Synthesis</text>
+  <text x="395" y="350" text-anchor="middle" class="math">F = Sum w_j * exp(i*[K_j + arg(E_j)])</text>
 
-  <!-- Arrow 1->2 -->
-  <line x1="205" y1="343" x2="222" y2="343" stroke="#888" stroke-width="1" marker-end="url(#arrGray)"/>
+  <!-- ===== ARROW 4: Phase Extraction (Left side loop) ===== -->
+  <path d="M 35 240 Q 10 200 35 165" stroke="#ffd54f" stroke-width="2.5" fill="none" marker-end="url(#arrYellow)"/>
+  <text x="18" y="200" class="arrow-label" fill="#ffd54f" transform="rotate(-90, 18, 200)" text-anchor="middle">Phase</text>
+  <!-- Phase extraction box -->
+  <rect x="50" y="290" width="190" height="45" rx="6" fill="#16213e" stroke="#ffd54f" stroke-width="1.5"/>
+  <text x="145" y="308" text-anchor="middle" class="arrow-label" fill="#ffd54f">Phase Extraction</text>
+  <text x="145" y="324" text-anchor="middle" class="math">phi = arg(F * A) mod 2pi</text>
 
-  <!-- Step 2 -->
-  <rect x="225" y="318" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
-  <text x="302" y="335" text-anchor="middle" class="step">2. Intensities</text>
-  <text x="302" y="349" text-anchor="middle" class="math">I_j = |E_j|^2</text>
-  <text x="302" y="361" text-anchor="middle" class="small">Compute trap brightness</text>
+  <!-- ===== CONVERGENCE CHECK ===== -->
+  <!-- Diamond shape -->
+  <polygon points="400,400 450,430 400,460 350,430" fill="#16213e" stroke="#ef5350" stroke-width="2"/>
+  <text x="400" y="428" text-anchor="middle" class="small" fill="#ef5350">Converged?</text>
+  <text x="400" y="440" text-anchor="middle" class="math" fill="#ef5350">delta &lt; 10^-6</text>
 
-  <!-- Arrow 2->3 -->
-  <line x1="385" y1="343" x2="402" y2="343" stroke="#888" stroke-width="1" marker-end="url(#arrGray)"/>
+  <!-- Arrow from phase extraction down to convergence -->
+  <line x1="145" y1="335" x2="145" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="145" y1="430" x2="345" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrRed)"/>
 
-  <!-- Step 3 -->
-  <rect x="405" y="318" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
-  <text x="482" y="335" text-anchor="middle" class="step">3. Weight Correction</text>
-  <text x="482" y="349" text-anchor="middle" class="math">alpha_new = f(alpha, |E|)</text>
-  <text x="482" y="361" text-anchor="middle" class="small">Equalize trap intensities</text>
+  <!-- NO branch: loop back up -->
+  <path d="M 400 460 L 400 480 Q 400 490 390 490 L 150 490 Q 100 490 100 450 L 100 285" stroke="#ef5350" stroke-width="1.5" fill="none" marker-end="url(#arrRed)" stroke-dasharray="5,3"/>
+  <text x="250" y="486" text-anchor="middle" class="small" fill="#ef5350">NO: iterate again</text>
 
-  <!-- Step 4 -->
-  <rect x="45" y="382" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
-  <text x="122" y="399" text-anchor="middle" class="step">4. Reconstruct Field</text>
-  <text x="122" y="413" text-anchor="middle" class="math">F(x,y) = Sum contributions</text>
-  <text x="122" y="425" text-anchor="middle" class="small">Inverse to SLM plane</text>
+  <!-- YES branch: output -->
+  <line x1="455" y1="430" x2="530" y2="430" stroke="#4caf50" stroke-width="2" marker-end="url(#arrGreen)"/>
+  <text x="490" y="422" text-anchor="middle" class="small" fill="#4caf50">YES</text>
 
-  <!-- Arrow 3->4 -->
-  <path d="M 482 372 L 482 378 Q 482 382 478 382 L 205 382" stroke="#888" stroke-width="1" marker-end="url(#arrGray)" fill="none"/>
+  <!-- Output box -->
+  <rect x="535" y="412" width="160" height="36" rx="6" fill="#16213e" stroke="#4caf50" stroke-width="1.5"/>
+  <text x="615" y="428" text-anchor="middle" class="arrow-label" fill="#4caf50">Output Phase Mask</text>
+  <text x="615" y="442" text-anchor="middle" class="math">phi(u,v) -- final hologram</text>
 
-  <!-- Arrow 4->5 -->
-  <line x1="205" y1="407" x2="222" y2="407" stroke="#888" stroke-width="1" marker-end="url(#arrGray)"/>
-
-  <!-- Step 5 -->
-  <rect x="225" y="382" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
-  <text x="302" y="399" text-anchor="middle" class="step">5. Extract Phase</text>
-  <text x="302" y="413" text-anchor="middle" class="math">phi = arg(F) mod 2pi</text>
-  <text x="302" y="425" text-anchor="middle" class="small">Discard amplitude info</text>
-
-  <!-- Arrow 5->6 -->
-  <line x1="385" y1="407" x2="402" y2="407" stroke="#888" stroke-width="1" marker-end="url(#arrGray)"/>
-
-  <!-- Step 6 -->
-  <rect x="405" y="382" width="155" height="50" rx="4" fill="#0f3460" stroke="#e8792b" stroke-width="1"/>
-  <text x="482" y="399" text-anchor="middle" class="step">6. Convergence?</text>
-  <text x="482" y="413" text-anchor="middle" class="math">|err_new - err_old| / err</text>
-  <text x="482" y="425" text-anchor="middle" class="small">Stop if below tolerance</text>
-
-  <!-- Loop arrow back to Step 1 -->
-  <path d="M 560 407 Q 575 407 575 350 Q 575 290 300 280 Q 30 290 30 350 Q 30 343 45 343" stroke="#e8792b" stroke-width="1.5" fill="none" marker-end="url(#arr)" stroke-dasharray="5,3"/>
-  <text x="583" y="350" class="small" fill="#e8792b" transform="rotate(-90, 583, 350)">iterate</text>
-
-  <!-- Bottom note -->
-  <text x="300" y="490" text-anchor="middle" class="small">Typically converges in 10-50 iterations for well-separated traps</text>
+  <!-- Iteration counter note -->
+  <text x="400" y="16" text-anchor="middle" class="small">Typically converges in 15-30 iterations for well-separated traps (max 200)</text>
 </svg>
