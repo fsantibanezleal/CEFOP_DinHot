@@ -35,9 +35,9 @@ class DinHotConfig(BaseModel):
     """
     resolution_x: int = Field(default=512, ge=32, le=2048)
     resolution_y: int = Field(default=512, ge=32, le=2048)
-    phase_scale: float = Field(default=3.141592653589793, gt=0)
-    max_iterations: int = Field(default=50, ge=1, le=500)
-    tolerance: float = Field(default=1e-6, gt=0)
+    phase_scale: Optional[float] = Field(default=None, gt=0)
+    max_iterations: int = Field(default=100, ge=1, le=500)
+    tolerance: float = Field(default=1e-8, gt=0)
 
 
 # Module-level simulation state, shared with main.py's WebSocket handler

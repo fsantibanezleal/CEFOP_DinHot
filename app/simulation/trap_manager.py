@@ -37,14 +37,14 @@ class TrapManager:
     """
 
     def __init__(self, resolution: tuple = (512, 512),
-                 phase_scale: float = np.pi):
+                 phase_scale: float = None):
         """Initialize trap manager.
 
         Args:
             resolution: Phase mask resolution (width, height) in pixels.
-            phase_scale: Dimensionless phase scaling factor (default: pi).
-                Controls the maximum beam deflection angle. See
-                PhaseMaskGenerator.__init__ for details.
+            phase_scale: Phase scaling factor. Default None uses
+                2*pi*N/4 which gives realistic holographic patterns.
+                See PhaseMaskGenerator.__init__ for details.
         """
         self.generator = PhaseMaskGenerator(
             resolution=resolution, phase_scale=phase_scale
