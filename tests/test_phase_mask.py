@@ -525,5 +525,66 @@ class TestFFTForwardPropagation(unittest.TestCase):
         print("PASS: test_calculate_uses_fft_for_many_traps")
 
 
+class TestTrapGrid(unittest.TestCase):
+    """Test the add_trap_grid convenience method."""
+
+    def setUp(self):
+        self.gen = PhaseMaskGenerator(resolution=(64, 64), phase_scale=np.pi)
+
+    def test_grid_default_z(self):
+        """Grid with no z_planes should create traps at z=0."""
+        self.gen.add_trap_grid(2, 3, spacing=0.3)
+        self.assertEqual(len(self.gen.traps), 6)
+        for t in self.gen.traps:
+            self.assertAlmostEqual(t.z, 0.0)
+
+    def test_grid_positions(self):
+        """Grid traps should be centered and evenly spaced."""
+        self.gen.add_trap_grid(2, 2, spacing=0.4)
+        xs = sorted([t.x for t in self.gen.traps])
+        ys = sorted([t.y for t in self.gen.traps])
+        self.assertAlmostEqual(xs[0], -0.2)
+        self.assertAlmostEqual(xs[-1], 0.2)
+        self.assertAlmostEqual(ys[0], -0.2)
+        self.assertAlmostEqual(ys[-1], 0.2)
+
+    def test_grid_multi_z_planes(self):
+        """Grid with multiple z-planes should replicate at each z."""
+        self.gen.add_trap_grid(2, 2, spacing=0.3, z_planes=[-0.5, 0.0, 0.5])
+        self.assertEqual(len(self.gen.traps), 12)  # 2*2*3
+        z_vals = sorted(set(t.z for t in self.gen.traps))
+        self.assertAlmostEqual(z_vals[0], -0.5)
+        self.assertAlmostEqual(z_vals[1], 0.0)
+        self.assertAlmostEqual(z_vals[2], 0.5)
+
+    def test_grid_single_trap(self):
+        """1x1 grid should create a single trap at origin."""
+        self.gen.add_trap_grid(1, 1, spacing=0.3)
+        self.assertEqual(len(self.gen.traps), 1)
+        self.assertAlmostEqual(self.gen.traps[0].x, 0.0)
+        self.assertAlmostEqual(self.gen.traps[0].y, 0.0)
+
+    def test_grid_compute_succeeds(self):
+        """Grid traps should produce a valid phase mask."""
+        self.gen.add_trap_grid(2, 2, spacing=0.3)
+        iters = self.gen.calculate_phase_mask()
+        self.assertGreater(iters, 0)
+        for t in self.gen.traps:
+            self.assertGreater(t.intensity, 0)
+
+    def test_trap_3d_positions_in_state(self):
+        """get_state should include trap_3d_positions with x,y,z."""
+        self.gen.add_trap_grid(2, 2, spacing=0.3, z_planes=[-0.5, 0.5])
+        self.gen.calculate_phase_mask()
+        state = self.gen.get_state()
+        self.assertIn('trap_3d_positions', state)
+        self.assertEqual(len(state['trap_3d_positions']), 8)
+        for pos in state['trap_3d_positions']:
+            self.assertIn('x', pos)
+            self.assertIn('y', pos)
+            self.assertIn('z', pos)
+        print("PASS: test_trap_3d_positions_in_state")
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
