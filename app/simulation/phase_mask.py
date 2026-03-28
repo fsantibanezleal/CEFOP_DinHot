@@ -434,6 +434,98 @@ class PhaseMaskGenerator:
 
         return kernel
 
+    def _forward_propagation_fft(self) -> np.ndarray:
+        """Compute electric field at ALL trap positions via single FFT.
+
+        Instead of summing exp(i*(phi-K_j)) for each trap separately,
+        compute the full focal-plane field via FFT:
+
+            E(u,v) = FFT{ A(x,y) * exp(i * phi(x,y)) }
+
+        Then sample E at the spatial frequencies corresponding to
+        each trap position. This is O(N^2 log N) regardless of
+        the number of traps, vs O(N^2 * M) for direct summation.
+
+        For M > ~10 traps, FFT is faster.
+
+        Returns:
+            Complex array of shape (n_traps,) with field at each trap.
+        """
+        # Full SLM field
+        slm_field = self.aperture * np.exp(1j * self.phi)
+
+        # 2D FFT -> full focal plane
+        focal = np.fft.fftshift(np.fft.fft2(slm_field))
+
+        # Map normalized trap positions to FFT bin indices
+        # Trap at (x_j, y_j) in [-1,1] -> FFT bin
+        # The relationship depends on phase_scale:
+        # bin = x_j * phase_scale / (2*pi) + N/2
+        fields = np.zeros(len(self.traps), dtype=complex)
+        N = self.res_x  # assume square
+
+        for j, trap in enumerate(self.traps):
+            # Convert normalized position to FFT bin
+            bin_x = int(round(trap.x * self.phase_scale / (2 * np.pi) + N / 2))
+            bin_y = int(round(trap.y * self.phase_scale / (2 * np.pi) + N / 2))
+
+            # Clamp to valid range
+            bin_x = max(0, min(N - 1, bin_x))
+            bin_y = max(0, min(N - 1, bin_y))
+
+            fields[j] = focal[bin_y, bin_x] / (N * N)
+
+        return fields
+
+    def _should_use_fft(self) -> bool:
+        """Determine whether FFT-based propagation is appropriate.
+
+        FFT is preferred when n_traps > 10 (speed advantage), but only
+        works accurately if all trap positions map to integer FFT bins.
+        For sub-bin positions (which happen with low phase_scale), we
+        must fall back to direct summation.
+
+        Returns:
+            True if FFT propagation should be used, False for direct.
+        """
+        if len(self.traps) <= 10:
+            return False
+
+        N = self.res_x
+        for trap in self.traps:
+            bin_x_exact = trap.x * self.phase_scale / (2 * np.pi) + N / 2
+            bin_y_exact = trap.y * self.phase_scale / (2 * np.pi) + N / 2
+
+            # Check if bin position is close to integer (within 0.1)
+            if abs(bin_x_exact - round(bin_x_exact)) > 0.1:
+                return False
+            if abs(bin_y_exact - round(bin_y_exact)) > 0.1:
+                return False
+
+            # Check bins are within valid range
+            if round(bin_x_exact) < 0 or round(bin_x_exact) >= N:
+                return False
+            if round(bin_y_exact) < 0 or round(bin_y_exact) >= N:
+                return False
+
+        return True
+
+    def _forward_propagation_direct(self) -> np.ndarray:
+        """Compute electric field at each trap via direct summation.
+
+        This is the original O(N^2 * M) approach that works for any
+        trap configuration, including sub-bin positions.
+
+        Returns:
+            Complex array of shape (n_traps,) with field at each trap.
+        """
+        n_traps = len(self.traps)
+        fields = np.zeros(n_traps, dtype=complex)
+        for j in range(n_traps):
+            phase = self.phi - self._phase_kernel(j)
+            fields[j] = np.sum(np.exp(1j * phase)) / (self.res_x * self.res_y)
+        return fields
+
     def compute_electric_field(self, trap_index: int) -> complex:
         """Compute the complex electric field at a specific trap position.
 
@@ -510,17 +602,19 @@ class PhaseMaskGenerator:
         self.converged = False
         prev_error = float('inf')
 
+        # Decide propagation strategy: FFT for many traps on integer bins,
+        # direct summation otherwise
+        use_fft = self._should_use_fft()
+
         for iteration in range(self.max_iterations):
             # ---- FORWARD PROPAGATION ----
-            # Compute complex field amplitude at each trap position
-            # by evaluating the discrete Fourier component corresponding
-            # to each trap's spatial frequency
-            fields = np.zeros(n_traps, dtype=complex)
-            for j in range(n_traps):
-                # Phase at each SLM pixel contributing to trap j
-                phase = self.phi - self._phase_kernel(j)
-                # Coherent sum over all pixels (discrete Fourier component)
-                fields[j] = np.sum(np.exp(1j * phase)) / (self.res_x * self.res_y)
+            # Compute complex field amplitude at each trap position.
+            # Use FFT when beneficial (many traps on integer bins),
+            # otherwise fall back to direct summation.
+            if use_fft:
+                fields = self._forward_propagation_fft()
+            else:
+                fields = self._forward_propagation_direct()
 
             # Decompose fields into amplitude and phase
             amplitudes = np.abs(fields)
