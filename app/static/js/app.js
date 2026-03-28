@@ -47,13 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render initial empty state
     renderer.render();
 
-    // Auto-initialize on page load
+    // Auto-initialize on page load (use server defaults for phase_scale,
+    // max_iterations, tolerance — do NOT override them here)
     handleInit({
         resolution_x: 512,
         resolution_y: 512,
-        wavelength_nm: 632.0,
-        max_iterations: 50,
-        tolerance: 1e-6,
     });
 });
 
@@ -153,9 +151,6 @@ async function handleClearAll() {
     const config = {
         resolution_x: parseInt(document.getElementById('param-res-x').value) || 512,
         resolution_y: parseInt(document.getElementById('param-res-y').value) || 512,
-        wavelength_nm: parseFloat(document.getElementById('param-wavelength').value) || 632.0,
-        max_iterations: parseInt(document.getElementById('param-max-iter').value) || 50,
-        tolerance: parseFloat(document.getElementById('param-tolerance').value) || 1e-6,
     };
     await handleInit(config);
     // Request fresh state
