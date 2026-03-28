@@ -300,6 +300,29 @@ class PhaseMaskGenerator:
         rho = compute_rho(self.coord_x, self.coord_y, x, y)
         self._rho.append(rho)
 
+    def add_trap_grid(self, rows, cols, spacing=0.3, z_planes=None):
+        """Add a grid of traps, optionally at multiple z-planes.
+
+        Creates a rectangular array of traps centered at the origin.
+        When z_planes is provided, the entire grid is replicated at each
+        z value, enabling 3D trap arrays for multi-plane trapping.
+
+        Args:
+            rows: Number of trap rows.
+            cols: Number of trap columns.
+            spacing: Distance between traps (normalized coords).
+            z_planes: List of z values. If None, uses z=0.
+        """
+        if z_planes is None:
+            z_planes = [0.0]
+
+        for z in z_planes:
+            for r in range(rows):
+                for c in range(cols):
+                    x = (c - (cols - 1) / 2) * spacing
+                    y = (r - (rows - 1) / 2) * spacing
+                    self.add_trap(x, y, z)
+
     def remove_trap(self, index: int):
         """Remove a trap by index.
 
@@ -815,4 +838,8 @@ class PhaseMaskGenerator:
             'uniformity': self.uniformity_history[-1] if self.uniformity_history else 0,
             'uniformity_history': [float(u) for u in self.uniformity_history[-20:]],
             'intensity_preview': intensity_list,
+            'trap_3d_positions': [
+                {'x': float(t.x), 'y': float(t.y), 'z': float(t.z)}
+                for t in self.traps
+            ],
         }

@@ -17,11 +17,12 @@ class DinHotControls {
      * @param {function} onRecalculate - Callback when recalculate is pressed
      * @param {function} onClearAll - Callback when clear all is pressed
      */
-    constructor(onModeChange, onInit, onRecalculate, onClearAll) {
+    constructor(onModeChange, onInit, onRecalculate, onClearAll, onAddGrid) {
         this.onModeChange = onModeChange;
         this.onInit = onInit;
         this.onRecalculate = onRecalculate;
         this.onClearAll = onClearAll;
+        this.onAddGrid = onAddGrid || function() {};
 
         this.currentMode = 'create';
 
@@ -71,6 +72,14 @@ class DinHotControls {
                 this.onClearAll();
             });
         }
+
+        const gridBtn = document.getElementById('btn-add-grid');
+        if (gridBtn) {
+            gridBtn.addEventListener('click', () => {
+                const gridConfig = this._getGridConfig();
+                this.onAddGrid(gridConfig);
+            });
+        }
     }
 
     /**
@@ -93,6 +102,22 @@ class DinHotControls {
             wavelength_nm: parseFloat(document.getElementById('param-wavelength').value) || 632.0,
             max_iterations: parseInt(document.getElementById('param-max-iter').value) || 50,
             tolerance: parseFloat(document.getElementById('param-tolerance').value) || 1e-6,
+        };
+    }
+
+    /**
+     * Get grid configuration from input fields.
+     * @returns {object} Grid config with rows, cols, spacing, z_planes
+     * @private
+     */
+    _getGridConfig() {
+        const zStr = (document.getElementById('grid-z-planes').value || '0').trim();
+        const zPlanes = zStr.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+        return {
+            rows: parseInt(document.getElementById('grid-rows').value) || 2,
+            cols: parseInt(document.getElementById('grid-cols').value) || 2,
+            spacing: parseFloat(document.getElementById('grid-spacing').value) || 0.3,
+            z_planes: zPlanes.length > 0 ? zPlanes : [0.0],
         };
     }
 
@@ -147,10 +172,12 @@ class DinHotControls {
         tbody.innerHTML = '';
         traps.forEach((trap, i) => {
             const row = document.createElement('tr');
+            const zVal = (trap.z !== undefined && trap.z !== null) ? trap.z.toFixed(2) : '0.00';
             row.innerHTML = `
                 <td>${i}</td>
                 <td>${trap.x.toFixed(3)}</td>
                 <td>${trap.y.toFixed(3)}</td>
+                <td>${zVal}</td>
                 <td>${trap.intensity.toExponential(2)}</td>
             `;
             tbody.appendChild(row);
