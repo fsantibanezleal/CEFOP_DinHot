@@ -15,7 +15,7 @@ Endpoints:
 """
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 from ..simulation.trap_manager import TrapManager
 
@@ -149,6 +149,51 @@ async def move_trap(
     manager.generator.move_trap(index, x, y)
     manager.generator.calculate_phase_mask()
     return {"status": "moved", "state": manager.get_state()}
+
+
+class TrapGridConfig(BaseModel):
+    """Configuration for creating a grid of traps.
+
+    Attributes:
+        rows: Number of trap rows (1-10).
+        cols: Number of trap columns (1-10).
+        spacing: Distance between traps in normalized coords (0.05-1.0).
+        z_planes: List of z values for multi-plane arrays. Defaults to [0.0].
+    """
+    rows: int = Field(default=2, ge=1, le=10)
+    cols: int = Field(default=2, ge=1, le=10)
+    spacing: float = Field(default=0.3, gt=0.05, le=1.0)
+    z_planes: Optional[List[float]] = Field(default=None)
+
+
+@router.post("/trap/grid")
+async def add_trap_grid(config: TrapGridConfig):
+    """Add a grid of traps, optionally at multiple z-planes.
+
+    Creates a rectangular array of traps centered at the origin.
+    Recalculates the phase mask after adding all traps.
+
+    Args:
+        config: Grid configuration with rows, cols, spacing, z_planes.
+
+    Returns:
+        Status, number of traps added, iteration count, and full state.
+    """
+    manager = get_manager()
+    if manager is None:
+        return {"error": "Not initialized"}
+    n_before = len(manager.generator.traps)
+    manager.generator.add_trap_grid(
+        config.rows, config.cols, config.spacing, config.z_planes
+    )
+    n_added = len(manager.generator.traps) - n_before
+    iters = manager.generator.calculate_phase_mask()
+    return {
+        "status": "grid_added",
+        "traps_added": n_added,
+        "iterations": iters,
+        "state": manager.get_state(),
+    }
 
 
 @router.get("/state")
