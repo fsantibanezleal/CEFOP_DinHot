@@ -29,6 +29,10 @@ A laser beam is expanded to fill the SLM aperture. The SLM applies a computed ph
 
 The interface has two main canvases: the left panel shows trap positions on a normalized grid, and the right panel displays the computed phase mask as a grayscale image. Controls at the bottom allow switching between create/move/delete modes and adjusting simulation parameters.
 
+## Frontend
+
+![Frontend](docs/png/frontend.png)
+
 ## Quick Start
 
 ```bash
