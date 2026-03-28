@@ -340,7 +340,7 @@ class PhaseMaskGenerator:
             self.traps[index].topological_charge = charge
 
     def find_nearest_trap(self, x: float, y: float,
-                          threshold: float = 0.05) -> int:
+                          threshold: float = 0.15) -> int:
         """Find the trap nearest to (x, y) within a distance threshold.
 
         Used for mouse-based selection of traps. Corresponds to
@@ -581,36 +581,65 @@ class PhaseMaskGenerator:
     def compute_intensity_preview(self, preview_size: int = 128) -> np.ndarray:
         """Compute the reconstructed intensity pattern at the focal plane.
 
-        This evaluates the far-field diffraction pattern produced by the
-        current phase mask, showing where light actually focuses.
+        This evaluates the far-field intensity produced by the current
+        phase mask by directly computing the coherent field at each point
+        in a grid spanning the focal plane.
 
-        Uses a 2D FFT of the phase-only SLM field:
-            I(u,v) = |FFT{exp(i * phi(x,y))}|^2
+        For each output pixel at normalized position (fx, fy), the field is:
+            E(fx,fy) = sum_{x,y} A(x,y) * exp(i * [phi(x,y) - K(x,y)])
 
-        The result is a preview of the actual trap pattern that would
-        be produced by the hologram on a real SLM.
+        where K(x,y) = phase_scale * (x*fx + y*fy) is the propagation
+        kernel for that focal-plane point.
+
+        This direct summation approach correctly resolves trap positions
+        regardless of the phase_scale value. A naive FFT approach fails
+        because phase_scale ~ pi produces sub-pixel angular tilts in the
+        FFT output, causing all spots to collapse onto the DC component.
+
+        The computation is done on a downsampled SLM grid for speed.
 
         Args:
             preview_size: Resolution of the output intensity map.
-                The phase mask is downsampled to this size before computing
-                the FFT, balancing detail against computation time.
 
         Returns:
             2D numpy array of intensity values, normalized to [0, 1].
         """
-        # Downsample phase mask to preview resolution
-        step_y = max(1, self.res_y // preview_size)
-        step_x = max(1, self.res_x // preview_size)
+        # Downsample for speed: use a small SLM grid
+        calc_size = min(32, self.res_x, self.res_y)
+        step_y = max(1, self.res_y // calc_size)
+        step_x = max(1, self.res_x // calc_size)
         phi_small = self.phi[::step_y, ::step_x]
+        aperture_small = self.aperture[::step_y, ::step_x]
+        cx_small = self.coord_x[::step_y, ::step_x]
+        cy_small = self.coord_y[::step_y, ::step_x]
 
-        # Create phase-only field (unit amplitude, variable phase)
-        field = np.exp(1j * phi_small)
+        # SLM field (phase-only with aperture)
+        slm_field = aperture_small * np.exp(1j * phi_small)
 
-        # Compute far-field via 2D FFT and center the zero-frequency component
-        far_field = np.fft.fftshift(np.fft.fft2(field))
+        # Focal plane grid in normalized coordinates [-1, 1]
+        fx = np.linspace(-1, 1, preview_size)
+        fy = np.linspace(-1, 1, preview_size)
 
-        # Intensity is the squared magnitude of the complex field
-        intensity = np.abs(far_field) ** 2
+        # Compute intensity at each focal-plane point via direct summation.
+        # Vectorized: for each row of output, compute for all columns at once.
+        intensity = np.zeros((preview_size, preview_size))
+        n_pixels = phi_small.size
+
+        for j in range(preview_size):
+            # Phase kernel for all output columns at this row
+            # K(x,y) = phase_scale * (x*fx_col + y*fy_row)
+            # Shape: (n_cols, ny_small, nx_small)
+            rho_row = cy_small[np.newaxis, :, :] * fy[j]  # (1, ny, nx)
+            rho_cols = cx_small[np.newaxis, :, :] * fx[:, np.newaxis, np.newaxis]  # (n_cols, ny, nx)
+            kernel = self.phase_scale * (rho_cols + rho_row)  # (n_cols, ny, nx)
+
+            # E(fx,fy) = sum of slm_field * exp(-i * kernel)
+            fields = np.sum(
+                slm_field[np.newaxis, :, :] * np.exp(-1j * kernel),
+                axis=(1, 2)
+            ) / n_pixels
+
+            intensity[j, :] = np.abs(fields) ** 2
 
         # Normalize to [0, 1] for display
         max_val = np.max(intensity)
