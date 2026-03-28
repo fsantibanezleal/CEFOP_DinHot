@@ -428,5 +428,102 @@ class TestZernikeAberration(unittest.TestCase):
         print("PASS: test_aberration_phase_range")
 
 
+class TestFFTForwardPropagation(unittest.TestCase):
+    """Test FFT-based forward propagation against direct summation."""
+
+    def test_fft_vs_direct_integer_bins(self):
+        """FFT and direct propagation should give similar results for
+        a single on-axis trap at the center (bin = N/2)."""
+        # The FFT computes E(u,v) = FFT{A*exp(i*phi)}, which is the
+        # field contribution with the aperture weighting. The direct
+        # method computes sum(exp(i*(phi - K_j))) without the aperture.
+        # They agree best for the center trap (K_j=0) when the aperture
+        # is factored in. For a trap at (0,0), K_j = 0, so:
+        #   direct: sum(exp(i*phi)) / N^2
+        #   FFT center bin: sum(A*exp(i*phi)) / N^2
+        # Since A~1 near center, both should be similar.
+        N = 64
+        phase_scale = 8 * 2 * np.pi
+        gen = PhaseMaskGenerator(resolution=(N, N), phase_scale=phase_scale)
+
+        # Single trap at center: bin = 0*8 + 32 = 32, which is N/2
+        gen.add_trap(0.0, 0.0)
+
+        # Set a known phase pattern
+        gen.phi = np.random.RandomState(42).uniform(0, 2 * np.pi, (N, N))
+
+        # Compute via direct summation
+        fields_direct = gen._forward_propagation_direct()
+
+        # Compute via FFT
+        fields_fft = gen._forward_propagation_fft()
+
+        # For center trap, both should produce nonzero fields with
+        # similar magnitude (FFT includes aperture weighting ~0.9 average)
+        amp_direct = np.abs(fields_direct[0])
+        amp_fft = np.abs(fields_fft[0])
+        self.assertGreater(amp_direct, 1e-6, "Direct field should be nonzero")
+        self.assertGreater(amp_fft, 1e-6, "FFT field should be nonzero")
+
+        # The aperture is a super-Gaussian that averages ~0.7-0.9 over the grid,
+        # so FFT result should be within an order of magnitude of direct
+        ratio = amp_fft / amp_direct
+        self.assertTrue(
+            0.1 < ratio < 10.0,
+            f"Center trap: FFT amp={amp_fft:.6f} vs direct amp={amp_direct:.6f}, "
+            f"ratio={ratio:.3f}"
+        )
+        print("PASS: test_fft_vs_direct_integer_bins")
+
+    def test_should_use_fft_few_traps(self):
+        """With few traps, should not use FFT."""
+        gen = PhaseMaskGenerator(resolution=(64, 64))
+        gen.add_trap(0.1, 0.1)
+        gen.add_trap(-0.1, -0.1)
+        self.assertFalse(gen._should_use_fft())
+        print("PASS: test_should_use_fft_few_traps")
+
+    def test_should_use_fft_many_traps_integer_bins(self):
+        """With many traps on integer bins, should use FFT."""
+        N = 64
+        phase_scale = 8 * 2 * np.pi
+        gen = PhaseMaskGenerator(resolution=(N, N), phase_scale=phase_scale)
+        # Add 12 traps at integer-bin positions
+        for i in range(12):
+            bx = 26 + i * 1  # bins 26..37
+            x = (bx - 32) / 8.0
+            gen.add_trap(x, 0.0)
+        self.assertTrue(gen._should_use_fft())
+        print("PASS: test_should_use_fft_many_traps_integer_bins")
+
+    def test_should_use_fft_sub_bin_fallback(self):
+        """With sub-bin positions (low phase_scale), should fall back to direct."""
+        gen = PhaseMaskGenerator(resolution=(64, 64), phase_scale=np.pi)
+        # Add 12 traps - with phase_scale=pi, most positions are sub-bin
+        for i in range(12):
+            gen.add_trap(0.1 * i - 0.5, 0.0)
+        self.assertFalse(gen._should_use_fft())
+        print("PASS: test_should_use_fft_sub_bin_fallback")
+
+    def test_calculate_uses_fft_for_many_traps(self):
+        """calculate_phase_mask should complete with many traps (FFT path)."""
+        N = 64
+        phase_scale = 8 * 2 * np.pi
+        gen = PhaseMaskGenerator(resolution=(N, N), phase_scale=phase_scale)
+        gen.max_iterations = 10
+        gen.min_iterations = 5
+        # Add 15 traps at integer-bin positions
+        for i in range(15):
+            bx = 25 + i
+            x = (bx - 32) / 8.0
+            gen.add_trap(x, 0.0)
+        iters = gen.calculate_phase_mask()
+        self.assertGreater(iters, 0)
+        # All traps should have nonzero intensity
+        for t in gen.traps:
+            self.assertGreater(t.intensity, 0)
+        print("PASS: test_calculate_uses_fft_for_many_traps")
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
