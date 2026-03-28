@@ -116,6 +116,24 @@
                     <button class="action-btn" id="btn-recalculate" title="Force recalculation of the phase mask using the current trap positions">Recalculate</button>
                     <button class="action-btn secondary" id="btn-clear" title="Remove all traps and reset the phase mask">Clear All</button>
                 </div>
+                <div style="margin-top:6px; border-top:1px solid #444; padding-top:6px;">
+                    <strong style="font-size:0.85em;">Add Grid</strong>
+                    <div class="param-row" style="margin-top:2px;">
+                        <label title="Number of rows in the trap grid">Rows</label>
+                        <input type="number" id="grid-rows" value="2" min="1" max="10" step="1" style="width:48px;" title="Number of rows">
+                        <label title="Number of columns in the trap grid">Cols</label>
+                        <input type="number" id="grid-cols" value="2" min="1" max="10" step="1" style="width:48px;" title="Number of columns">
+                    </div>
+                    <div class="param-row" style="margin-top:2px;">
+                        <label title="Spacing between traps in normalized coordinates">Spacing</label>
+                        <input type="number" id="grid-spacing" value="0.3" min="0.05" max="1.0" step="0.05" style="width:60px;" title="Spacing (normalized coords)">
+                    </div>
+                    <div class="param-row" style="margin-top:2px;">
+                        <label title="Comma-separated z-plane values for 3D arrays (e.g. -0.5,0,0.5)">Z planes</label>
+                        <input type="text" id="grid-z-planes" value="0" style="width:100px;" title="Comma-separated z values (e.g. -0.5,0,0.5)">
+                    </div>
+                    <button class="action-btn" id="btn-add-grid" style="margin-top:4px;" title="Add a rectangular grid of traps at the specified z-planes">Add Grid</button>
+                </div>
             </div>
 
             <!-- Parameters -->
@@ -160,7 +178,7 @@
                 <div class="trap-list" style="margin-top: 6px;">
                     <table>
                         <thead>
-                            <tr><th>#</th><th>X</th><th>Y</th><th>Intensity</th></tr>
+                            <tr><th>#</th><th>X</th><th>Y</th><th>Z</th><th>Intensity</th></tr>
                         </thead>
                         <tbody id="trap-list-body">
                         </tbody>

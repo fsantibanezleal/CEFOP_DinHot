@@ -210,5 +210,42 @@ class TestEdgeCases(unittest.TestCase):
         self.assertEqual(len(state['traps']), 0)
 
 
+class TestTrapGridWorkflow(unittest.TestCase):
+    """Test grid trap creation workflow."""
+
+    def test_grid_create_compute_inspect(self):
+        """Create a grid of traps, compute mask, inspect results."""
+        tm = TrapManager(resolution=(64, 64))
+        tm.generator.add_trap_grid(2, 3, spacing=0.3)
+        tm.needs_recalculation = True
+        tm.recalculate_if_needed()
+
+        state = tm.get_state()
+        self.assertEqual(len(state['traps']), 6)
+        self.assertGreater(state['iterations'], 0)
+        for trap in state['traps']:
+            self.assertGreater(trap['intensity'], 0)
+
+    def test_grid_3d_state(self):
+        """3D grid should include trap_3d_positions in state."""
+        tm = TrapManager(resolution=(64, 64))
+        tm.generator.add_trap_grid(2, 2, spacing=0.3, z_planes=[-0.3, 0, 0.3])
+        tm.needs_recalculation = True
+        tm.recalculate_if_needed()
+
+        state = tm.get_state()
+        self.assertEqual(len(state['traps']), 12)
+        self.assertIn('trap_3d_positions', state)
+        self.assertEqual(len(state['trap_3d_positions']), 12)
+
+    def test_grid_then_delete(self):
+        """Should be able to delete traps after adding a grid."""
+        tm = TrapManager(resolution=(64, 64))
+        tm.generator.add_trap_grid(2, 2, spacing=0.3)
+        self.assertEqual(len(tm.generator.traps), 4)
+        tm.generator.remove_trap(0)
+        self.assertEqual(len(tm.generator.traps), 3)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
