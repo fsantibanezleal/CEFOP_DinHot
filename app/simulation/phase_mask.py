@@ -104,6 +104,7 @@ class OpticalTrap:
     z: float = 0.0
     amplitude: float = 1.0
     intensity: float = 0.0
+    topological_charge: int = 0  # l=0: point trap, l!=0: optical vortex
 
 
 class PhaseMaskGenerator:
@@ -189,6 +190,9 @@ class PhaseMaskGenerator:
         r_grid = np.sqrt(self.coord_r_sq)
         self.aperture = np.exp(-(r_grid / 0.95)**8)
 
+        # Aberration correction (Zernike polynomial coefficients)
+        self._aberration = np.zeros((self.res_y, self.res_x))
+
         # Trap list and precomputed dot-product matrices
         self.traps: List[OpticalTrap] = []
         self._rho: List[np.ndarray] = []
@@ -197,6 +201,56 @@ class PhaseMaskGenerator:
         self.error_history: List[float] = []
         self.uniformity_history: List[float] = []
         self.converged = False
+
+    def compute_zernike(self, n: int, m: int) -> np.ndarray:
+        """Compute Zernike polynomial Z_n^m on the normalized aperture.
+
+        First few Zernike modes:
+            Z_1^1  = 2r*cos(theta)           (tilt X)
+            Z_1^-1 = 2r*sin(theta)           (tilt Y)
+            Z_2^0  = sqrt(3)*(2r^2-1)        (defocus)
+            Z_2^2  = sqrt(6)*r^2*cos(2theta) (astigmatism)
+            Z_3^1  = sqrt(8)*(3r^3-2r)*cos(theta)  (coma X)
+            Z_4^0  = sqrt(5)*(6r^4-6r^2+1)         (spherical)
+        """
+        r = np.sqrt(self.coord_r_sq)
+        theta = np.arctan2(self.coord_y, self.coord_x)
+
+        # Radial polynomial R_n^m
+        if (n, abs(m)) == (1, 1):
+            R = 2 * r
+        elif (n, abs(m)) == (2, 0):
+            R = np.sqrt(3) * (2 * r**2 - 1)
+        elif (n, abs(m)) == (2, 2):
+            R = np.sqrt(6) * r**2
+        elif (n, abs(m)) == (3, 1):
+            R = np.sqrt(8) * (3 * r**3 - 2 * r)
+        elif (n, abs(m)) == (3, 3):
+            R = np.sqrt(8) * r**3
+        elif (n, abs(m)) == (4, 0):
+            R = np.sqrt(5) * (6 * r**4 - 6 * r**2 + 1)
+        else:
+            R = np.zeros_like(r)
+
+        if m >= 0:
+            return R * np.cos(m * theta)
+        else:
+            return R * np.sin(abs(m) * theta)
+
+    def set_aberration_correction(self, coefficients: dict):
+        """Apply Zernike aberration correction.
+
+        Args:
+            coefficients: Dict mapping (n, m) tuples to coefficient values.
+                Example: {(2,0): -0.5, (2,2): 0.3} for defocus + astigmatism.
+        """
+        self._aberration = np.zeros((self.res_y, self.res_x))
+        for (n, m), coeff in coefficients.items():
+            self._aberration += coeff * self.compute_zernike(n, m)
+
+    def clear_aberration(self):
+        """Remove aberration correction."""
+        self._aberration = np.zeros((self.res_y, self.res_x))
 
     def add_trap(self, x: float, y: float, z: float = 0.0):
         """Add a new optical trap at the specified position.
@@ -269,6 +323,22 @@ class PhaseMaskGenerator:
         if 0 <= index < len(self.traps):
             self.traps[index].z = z
 
+    def set_trap_charge(self, index: int, charge: int):
+        """Set the topological charge of an existing trap.
+
+        A nonzero topological charge l converts the point trap into an
+        optical vortex carrying orbital angular momentum (OAM) of l*hbar
+        per photon. The resulting donut-shaped intensity profile can trap
+        and rotate absorptive or birefringent particles.
+
+        Args:
+            index: Zero-based index of the trap to modify.
+            charge: Integer topological charge (l). l=0 is a standard
+                point trap; l=+/-1 is the fundamental vortex mode.
+        """
+        if 0 <= index < len(self.traps):
+            self.traps[index].topological_charge = charge
+
     def find_nearest_trap(self, x: float, y: float,
                           threshold: float = 0.05) -> int:
         """Find the trap nearest to (x, y) within a distance threshold.
@@ -333,6 +403,12 @@ class PhaseMaskGenerator:
         # Quadratic phase: defocus for z-axis positioning
         if self.traps[trap_index].z != 0:
             kernel -= self.defocus_scale * self.coord_r_sq * self.traps[trap_index].z
+
+        # Helical phase for optical vortex (OAM l*hbar per photon)
+        if self.traps[trap_index].topological_charge != 0:
+            l = self.traps[trap_index].topological_charge
+            theta_grid = np.arctan2(self.coord_y, self.coord_x)
+            kernel += l * theta_grid
 
         return kernel
 
@@ -471,7 +547,8 @@ class PhaseMaskGenerator:
             # ---- PHASE EXTRACTION ----
             # Keep only the phase (discard amplitude -- the SLM is phase-only).
             # The modulo operation wraps the result to [0, 2*pi).
-            self.phi = np.angle(complex_field) % (2 * np.pi)
+            # After phase extraction, apply aberration correction
+            self.phi = (np.angle(complex_field) + self._aberration) % (2 * np.pi)
 
             # ---- CONVERGENCE CHECK ----
             # RMS intensity deviation (uniformity metric):
@@ -598,6 +675,7 @@ class PhaseMaskGenerator:
                     'z': float(t.z),
                     'amplitude': float(t.amplitude),
                     'intensity': float(t.intensity),
+                    'topological_charge': int(t.topological_charge),
                 }
                 for t in self.traps
             ],

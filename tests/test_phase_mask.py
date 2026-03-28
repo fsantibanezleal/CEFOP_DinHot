@@ -353,5 +353,80 @@ class TestGSConvergence(unittest.TestCase):
         print("PASS: test_phase_kernel_magnitude_is_reasonable")
 
 
+class TestZernikeAberration(unittest.TestCase):
+    """Test Zernike polynomial aberration correction."""
+
+    def setUp(self):
+        self.gen = PhaseMaskGenerator(resolution=(64, 64), phase_scale=np.pi)
+
+    def test_zernike_defocus_shape(self):
+        """Defocus Zernike Z_2^0 should have correct shape."""
+        z = self.gen.compute_zernike(2, 0)
+        self.assertEqual(z.shape, (64, 64))
+        # Center value: r=0 => Z_2^0 = sqrt(3)*(0-1) = -sqrt(3)
+        center_val = z[32, 32]
+        # At center r~0, so Z ~ -sqrt(3)
+        self.assertLess(center_val, 0, "Defocus should be negative at center")
+        print("PASS: test_zernike_defocus_shape")
+
+    def test_zernike_tilt_x(self):
+        """Tilt X Zernike Z_1^1 should be antisymmetric in x."""
+        z = self.gen.compute_zernike(1, 1)
+        # Left side should be negative, right side positive
+        left_mean = np.mean(z[:, :16])
+        right_mean = np.mean(z[:, 48:])
+        self.assertLess(left_mean, 0, "Left side of tilt X should be negative")
+        self.assertGreater(right_mean, 0, "Right side of tilt X should be positive")
+        print("PASS: test_zernike_tilt_x")
+
+    def test_zernike_unknown_mode(self):
+        """Unknown Zernike mode should return zeros."""
+        z = self.gen.compute_zernike(10, 7)
+        self.assertTrue(np.allclose(z, 0), "Unknown mode should be zero")
+        print("PASS: test_zernike_unknown_mode")
+
+    def test_set_aberration_correction(self):
+        """Setting aberration should modify internal state."""
+        self.gen.set_aberration_correction({(2, 0): -0.5, (2, 2): 0.3})
+        self.assertFalse(np.allclose(self.gen._aberration, 0),
+                         "Aberration should be nonzero after setting coefficients")
+        print("PASS: test_set_aberration_correction")
+
+    def test_clear_aberration(self):
+        """Clearing aberration should reset to zeros."""
+        self.gen.set_aberration_correction({(2, 0): 1.0})
+        self.gen.clear_aberration()
+        self.assertTrue(np.allclose(self.gen._aberration, 0),
+                        "Aberration should be zero after clearing")
+        print("PASS: test_clear_aberration")
+
+    def test_aberration_affects_phase_mask(self):
+        """Aberration correction should change the computed phase mask."""
+        self.gen.add_trap(0.3, 0.3)
+
+        # Compute without aberration
+        self.gen.calculate_phase_mask()
+        phi_clean = self.gen.phi.copy()
+
+        # Compute with aberration
+        self.gen.set_aberration_correction({(2, 0): -1.0, (4, 0): 0.5})
+        self.gen.calculate_phase_mask()
+        phi_corrected = self.gen.phi.copy()
+
+        # Phase masks should differ
+        self.assertFalse(np.allclose(phi_clean, phi_corrected),
+                         "Aberration should change the phase mask")
+        print("PASS: test_aberration_affects_phase_mask")
+
+    def test_aberration_phase_range(self):
+        """Phase mask with aberration should remain in [0, 2*pi)."""
+        self.gen.add_trap(0.2, -0.2)
+        self.gen.set_aberration_correction({(2, 0): -2.0, (3, 1): 1.0})
+        self.gen.calculate_phase_mask()
+        self.assertTrue(np.all(self.gen.phi >= 0))
+        self.assertTrue(np.all(self.gen.phi < 2 * np.pi + 1e-10))
+        print("PASS: test_aberration_phase_range")
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
