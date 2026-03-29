@@ -28,51 +28,50 @@ Holographic Optical Tweezers use SLMs to shape laser beams into multiple focused
 
 ## Mathematical Model
 
-### Phase Contribution of Trap j
-
-The phase kernel contributed by trap *j* at SLM pixel (u, v) combines a linear tilt and a quadratic defocus:
-
-```
-K_j(u, v) = alpha * (u * x_j + v * y_j) - beta * (u^2 + v^2) * z_j
-```
-
-where `alpha` encodes the lateral scaling and `beta` encodes the axial defocus.
-
-### Trap Intensity (Coherent Summation)
-
-The intensity at trap *j* is the coherent sum over all SLM pixels:
+### Phase Kernel — Beam Steering
+Each trap at position (xⱼ, yⱼ, zⱼ) contributes a phase tilt to the SLM hologram. The kernel encodes the optical path from each SLM pixel to the trap:
 
 ```
-E_j = (1 / N^2) * Sum exp(i * [phi(u, v) - K_j(u, v)])
+K_j(u,v) = α · (u·xⱼ + v·yⱼ) − β · (u² + v²) · zⱼ
 ```
 
-where `phi(u, v)` is the SLM phase mask being optimized.
+The **linear term** (α·ρ) tilts the wavefront to steer the beam laterally. The **quadratic term** (β·r²·z) adds lens-like curvature for axial positioning. **α = 10·2π ≈ 63** controls the fringe density — producing 8-15 visible fringes per off-center trap.
 
-### GS Weight Update Rule
-
-After each iteration, trap weights are updated to equalize intensities:
-
-```
-w_j <- w_j * (< |V| > / |V_j|)^gamma    (gamma = 0.5)
-```
-
-where `< |V| >` is the mean trap amplitude and `|V_j|` is the amplitude at trap *j*.
-
-### Phase Extraction (Inverse Update)
-
-The updated SLM phase mask after each GS iteration:
+### Forward Propagation — Field at Traps
+The electric field at trap j is the coherent sum of all SLM pixel contributions:
 
 ```
-phi_new = arg(Sum_j  w_j * exp(i * [K_j + arg(E_j)])) mod 2*pi
+E_j = (1/N²) · Σ_{u,v} exp(i · [φ(u,v) − K_j(u,v)])
 ```
+
+Each pixel contributes a phasor; their sum determines the trap intensity **I_j = |E_j|²**. For >10 traps, an FFT-based approach computes all fields simultaneously.
+
+### Weight Correction — Uniform Trap Intensities
+The damped weighted Gerchberg-Saxton update equalizes trap brightness:
+
+```
+w_j ← w_j · (⟨|V|⟩ / |V_j|)^γ    (γ = 0.5)
+```
+
+The damping exponent **γ = 0.5** prevents oscillations between traps. Without damping (γ=1), symmetric traps alternate bright/dim and never converge. With γ=0.5, uniformity converges monotonically to >0.97.
+
+### Phase Extraction — Inverse Update
+The updated SLM phase mask after each GS iteration reconstructs the hologram from all trap contributions:
+
+```
+φ_new = arg(Σ_j  w_j · exp(i · [K_j + arg(E_j)])) mod 2π
+```
+
+The **arg** function extracts the phase angle, discarding amplitude information since the SLM is phase-only. The **mod 2π** wraps the result into the displayable range [0, 2π].
 
 ### Optical Vortex Phase
-
-For generating vortex beams with topological charge `l`:
+For generating vortex beams that carry orbital angular momentum with topological charge **l**:
 
 ```
-K_vortex = l * arctan2(v, u)
+K_vortex = l · arctan2(v, u)
 ```
+
+The **arctan2** function creates a helical phase ramp around the beam axis. Particles trapped in a vortex beam orbit around the beam center — useful for driving microfluidic rotation.
 
 ---
 
