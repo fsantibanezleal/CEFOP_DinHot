@@ -14,15 +14,24 @@ Holographic Optical Tweezers use SLMs to shape laser beams into multiple focused
 
 ---
 
-## KPIs & Metrics
+## KPIs — Impact & Value
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| Phase mask fringes | Visible blazed grating | 8-15 fringes (phase_scale=10·2π) |
-| GS convergence | Stable, monotonic | Damped weights γ=0.5 |
-| Trap uniformity | >0.9 for symmetric | 1.000 (4 symmetric traps) |
-| FFT propagation | O(N² log N) for >10 traps | Auto-select integer bins |
-| Test coverage | Comprehensive | 54 tests passing |
+| KPI | Impact |
+|-----|--------|
+| Hardware independence | SLM phase mask computation without physical optical setup |
+| Real-time feedback | Interactive trap placement with instant hologram update |
+| Cost reduction | Replaces C++/OpenMP codebase with single Python process |
+| Educational value | Visual understanding of Fourier optics and GS algorithm |
+
+## Project Metrics & Status
+
+| Metric | Status |
+|--------|--------|
+| Tests | 54 passing |
+| Trap uniformity | 1.000 for 4 symmetric traps (damped GS γ=0.5) |
+| Phase mask fringes | 8-15 visible (phase_scale=10·2π) |
+| FFT propagation | Auto-select for >10 traps at integer bins |
+| Zernike correction | 6 aberration modes supported |
 
 ---
 
