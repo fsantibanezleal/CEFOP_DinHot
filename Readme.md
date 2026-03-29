@@ -67,40 +67,52 @@ python -m uvicorn app.main:app --reload --port 8003
 
 ```
 CEFOP_DinHot/
-  app/                          # Main application
-    main.py                     # FastAPI server, WebSocket handler
-    api/
-      routes.py                 # REST API endpoints (/api/init, /api/trap/*, /api/state)
-    simulation/
-      phase_mask.py             # PhaseMaskGenerator -- GS algorithm core
-      trap_manager.py           # TrapManager -- interaction controller
-      complex_utils.py          # NumPy wrappers for complex operations
-    static/
-      index.html                # Single-page application
-      css/style.css             # Dark theme styling
-      js/
-        app.js                  # Main orchestrator, mouse event binding
-        websocket.js            # WebSocket client with auto-reconnect
-        renderer.js             # Dual-canvas rendering engine
-        controls.js             # Mode buttons, parameters, info panel
-  tests/                        # Test suite (59 tests)
-    test_phase_mask.py          # Generator unit tests
-    test_trap_manager.py        # Manager unit tests
-    test_integration.py         # End-to-end tests
-  docs/                         # Documentation
-    architecture.md             # System design and component overview
-    physics_model.md            # GS algorithm, HOT physics, equations
-    development_history.md      # Version history (v0.1.2 C++ to v2.0 Python)
-    references.md               # Academic literature
-    user_guide.md               # Installation, usage, troubleshooting
-    svg/                        # Diagrams
-      architecture.svg          # System architecture diagram
-      gs_algorithm.svg          # GS algorithm flow
-      optical_tweezers.svg      # HOT optical system
-      phase_mask_principle.svg  # Phase modulation concept
-      app_screenshot.svg        # Application interface mockup
-  legacy/                       # Original C++/.NET code (DinHotSys)
-  requirements.txt              # Python dependencies (pinned)
+├── app/
+│   ├── __init__.py
+│   ├── main.py                     # FastAPI server, WebSocket handler
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── routes.py               # REST API endpoints (/api/init, /api/trap/*, /api/state)
+│   ├── simulation/
+│   │   ├── __init__.py
+│   │   ├── phase_mask.py           # PhaseMaskGenerator -- GS algorithm core
+│   │   ├── trap_manager.py         # TrapManager -- interaction controller
+│   │   └── complex_utils.py        # NumPy wrappers for complex operations
+│   └── static/
+│       ├── index.html              # Single-page application
+│       ├── css/style.css           # Dark theme styling
+│       └── js/
+│           ├── app.js              # Main orchestrator, mouse event binding
+│           ├── renderer.js         # Dual-canvas rendering engine
+│           ├── controls.js         # Mode buttons, parameters, info panel
+│           └── websocket.js        # WebSocket client with auto-reconnect
+├── tests/                          # Test suite (59 tests)
+│   ├── __init__.py
+│   ├── test_phase_mask.py          # Generator unit tests
+│   ├── test_trap_manager.py        # Manager unit tests
+│   └── test_integration.py         # End-to-end tests
+├── docs/
+│   ├── architecture.md             # System design and component overview
+│   ├── physics_model.md            # GS algorithm, HOT physics, equations
+│   ├── development_history.md      # Version history (v0.1.2 C++ to v2.0 Python)
+│   ├── references.md               # Academic literature
+│   ├── user_guide.md               # Installation, usage, troubleshooting
+│   ├── png/
+│   │   └── frontend.png            # Frontend screenshot
+│   └── svg/
+│       ├── architecture.svg        # System architecture diagram
+│       ├── gs_algorithm.svg        # GS algorithm flow
+│       ├── optical_tweezers.svg    # HOT optical system
+│       ├── phase_mask_principle.svg # Phase modulation concept
+│       ├── fourier_optics.svg      # Fourier optics diagram
+│       ├── phase_scaling_fix.svg   # Phase scaling correction
+│       ├── trap_types.svg          # Trap type comparison
+│       └── app_screenshot.svg      # Application interface mockup
+├── legacy/                         # Original C++/.NET code (DinHotSys)
+├── build.spec                      # PyInstaller spec file
+├── Build_PyInstaller.ps1           # PowerShell build script
+├── run_app.py                      # Uvicorn launcher with auto-browser
+└── requirements.txt                # Python dependencies (pinned)
 ```
 
 ## API Summary
