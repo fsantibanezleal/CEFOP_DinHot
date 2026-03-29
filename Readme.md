@@ -4,6 +4,84 @@ A web application for real-time computation and visualization of holographic pha
 
 This is a modernized Python/FastAPI rewrite of the original C++/.NET DinHotSys desktop application (preserved in `legacy/`). The new version runs cross-platform in any browser.
 
+---
+
+## Motivation & Problem
+
+Holographic Optical Tweezers use SLMs to shape laser beams into multiple focused traps that hold and manipulate microscopic particles. Computing the optimal phase mask requires solving an inverse problem: what phase distribution produces the desired trap configuration in the focal plane?
+
+---
+
+## Mathematical Model
+
+### Phase Contribution of Trap j
+
+The phase kernel contributed by trap *j* at SLM pixel (u, v) combines a linear tilt and a quadratic defocus:
+
+```
+K_j(u, v) = alpha * (u * x_j + v * y_j) - beta * (u^2 + v^2) * z_j
+```
+
+where `alpha` encodes the lateral scaling and `beta` encodes the axial defocus.
+
+### Trap Intensity (Coherent Summation)
+
+The intensity at trap *j* is the coherent sum over all SLM pixels:
+
+```
+E_j = (1 / N^2) * Sum exp(i * [phi(u, v) - K_j(u, v)])
+```
+
+where `phi(u, v)` is the SLM phase mask being optimized.
+
+### GS Weight Update Rule
+
+After each iteration, trap weights are updated to equalize intensities:
+
+```
+w_j <- w_j * (< |V| > / |V_j|)^gamma    (gamma = 0.5)
+```
+
+where `< |V| >` is the mean trap amplitude and `|V_j|` is the amplitude at trap *j*.
+
+### Phase Extraction (Inverse Update)
+
+The updated SLM phase mask after each GS iteration:
+
+```
+phi_new = arg(Sum_j  w_j * exp(i * [K_j + arg(E_j)])) mod 2*pi
+```
+
+### Optical Vortex Phase
+
+For generating vortex beams with topological charge `l`:
+
+```
+K_vortex = l * arctan2(v, u)
+```
+
+---
+
+## Optical Tweezers Concept
+
+![Optical Tweezers](docs/svg/optical_tweezers.svg)
+
+A laser beam is expanded to fill the SLM aperture. The SLM applies a computed phase pattern to the wavefront. A Fourier lens then converts this phase-modulated beam into multiple focused intensity spots at the focal plane, each capable of trapping a microscopic particle.
+
+---
+
+## Application Interface
+
+![App](docs/svg/app_screenshot.svg)
+
+The interface has two main canvases: the left panel shows trap positions on a normalized grid, and the right panel displays the computed phase mask as a grayscale image. Controls at the bottom allow switching between create/move/delete modes and adjusting simulation parameters.
+
+## Frontend
+
+![Frontend](docs/png/frontend.png)
+
+---
+
 ## Architecture
 
 ![Architecture](docs/svg/architecture.svg)
@@ -17,21 +95,20 @@ The system consists of a Python backend that runs the physics simulation and a b
 | Communication | REST API + WebSocket |
 | Computation | NumPy vectorized operations |
 
-## Optical Tweezers Concept
+---
 
-![Optical Tweezers](docs/svg/optical_tweezers.svg)
+## Features
 
-A laser beam is expanded to fill the SLM aperture. The SLM applies a computed phase pattern to the wavefront. A Fourier lens then converts this phase-modulated beam into multiple focused intensity spots at the focal plane, each capable of trapping a microscopic particle.
+- **Interactive trap placement** -- Click to add, drag to move, click to delete optical traps in real time.
+- **Weighted Gerchberg-Saxton algorithm** -- Iteratively computes phase masks that produce uniform trap intensities using NumPy vectorized operations.
+- **Dual-canvas visualization** -- Trap positions on the left, computed phase hologram on the right, updated live after every interaction.
+- **Convergence monitoring** -- Error graph shows the GS algorithm convergence over iterations, with a green indicator when the tolerance threshold is reached.
+- **Configurable parameters** -- Wavelength, SLM resolution, iteration limit, and convergence tolerance can all be adjusted through the UI.
+- **WebSocket communication** -- Low-latency bidirectional protocol for responsive drag interactions.
+- **Cross-platform** -- Runs on Windows, Linux, and macOS with any modern browser.
+- **Comprehensive test suite** -- 59 tests covering the phase mask generator, trap manager, and integration scenarios.
 
-## Application Interface
-
-![App](docs/svg/app_screenshot.svg)
-
-The interface has two main canvases: the left panel shows trap positions on a normalized grid, and the right panel displays the computed phase mask as a grayscale image. Controls at the bottom allow switching between create/move/delete modes and adjusting simulation parameters.
-
-## Frontend
-
-![Frontend](docs/png/frontend.png)
+---
 
 ## Quick Start
 
@@ -52,16 +129,7 @@ python -m uvicorn app.main:app --reload --port 8003
 # Open http://localhost:8003
 ```
 
-## Features
-
-- **Interactive trap placement** -- Click to add, drag to move, click to delete optical traps in real time.
-- **Weighted Gerchberg-Saxton algorithm** -- Iteratively computes phase masks that produce uniform trap intensities using NumPy vectorized operations.
-- **Dual-canvas visualization** -- Trap positions on the left, computed phase hologram on the right, updated live after every interaction.
-- **Convergence monitoring** -- Error graph shows the GS algorithm convergence over iterations, with a green indicator when the tolerance threshold is reached.
-- **Configurable parameters** -- Wavelength, SLM resolution, iteration limit, and convergence tolerance can all be adjusted through the UI.
-- **WebSocket communication** -- Low-latency bidirectional protocol for responsive drag interactions.
-- **Cross-platform** -- Runs on Windows, Linux, and macOS with any modern browser.
-- **Comprehensive test suite** -- 59 tests covering the phase mask generator, trap manager, and integration scenarios.
+---
 
 ## Project Structure
 
@@ -115,6 +183,8 @@ CEFOP_DinHot/
 └── requirements.txt                # Python dependencies (pinned)
 ```
 
+---
+
 ## API Summary
 
 ### REST Endpoints
@@ -132,6 +202,14 @@ CEFOP_DinHot/
 
 JSON-based bidirectional protocol. Client sends actions (`click`, `drag`, `release`, `mode`, `recalculate`, `state`), server responds with updated simulation state including the phase mask, trap positions, and convergence data.
 
+---
+
+## Port
+
+**8003** -- http://localhost:8003
+
+---
+
 ## Documentation
 
 - [Architecture](docs/architecture.md) -- System design, components, API protocol, deployment
@@ -139,60 +217,6 @@ JSON-based bidirectional protocol. Client sends actions (`click`, `drag`, `relea
 - [Development History](docs/development_history.md) -- Version changelog from C++ to Python
 - [References](docs/references.md) -- Academic publications
 - [User Guide](docs/user_guide.md) -- Installation, interface walkthrough, tips, troubleshooting
-
-## Mathematical Model
-
-### Phase Contribution of Trap j
-
-The phase kernel contributed by trap *j* at SLM pixel (u, v) combines a linear tilt and a quadratic defocus:
-
-```
-K_j(u, v) = alpha * (u * x_j + v * y_j) - beta * (u^2 + v^2) * z_j
-```
-
-where `alpha` encodes the lateral scaling and `beta` encodes the axial defocus.
-
-### Trap Intensity (Coherent Summation)
-
-The intensity at trap *j* is the coherent sum over all SLM pixels:
-
-```
-E_j = (1 / N^2) * Sum exp(i * [phi(u, v) - K_j(u, v)])
-```
-
-where `phi(u, v)` is the SLM phase mask being optimized.
-
-### GS Weight Update Rule
-
-After each iteration, trap weights are updated to equalize intensities:
-
-```
-w_j <- w_j * (< |V| > / |V_j|)^gamma    (gamma = 0.5)
-```
-
-where `< |V| >` is the mean trap amplitude and `|V_j|` is the amplitude at trap *j*.
-
-### Phase Extraction (Inverse Update)
-
-The updated SLM phase mask after each GS iteration:
-
-```
-phi_new = arg(Sum_j  w_j * exp(i * [K_j + arg(E_j)])) mod 2*pi
-```
-
-### Optical Vortex Phase
-
-For generating vortex beams with topological charge `l`:
-
-```
-K_vortex = l * arctan2(v, u)
-```
-
----
-
-## Port
-
-**8003** -- http://localhost:8003
 
 ---
 
