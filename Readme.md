@@ -23,19 +23,27 @@ Holographic Optical Tweezers use SLMs to shape laser beams into multiple focused
 | Cost reduction | Replaces C++/OpenMP codebase with single Python process |
 | Educational value | Visual understanding of Fourier optics and GS algorithm |
 
-## Project Metrics & Status
+## Optical Tweezers Concept
 
-| Metric | Status |
-|--------|--------|
-| Tests | 54 passing |
-| Trap uniformity | 1.000 for 4 symmetric traps (damped GS γ=0.5) |
-| Phase mask fringes | 8-15 visible (phase_scale=10·2π) |
-| FFT propagation | Auto-select for >10 traps at integer bins |
-| Zernike correction | 6 aberration modes supported |
+![Optical Tweezers](docs/svg/optical_tweezers.svg)
+
+A laser beam is expanded to fill the SLM aperture. The SLM applies a computed phase pattern to the wavefront. A Fourier lens then converts this phase-modulated beam into multiple focused intensity spots at the focal plane, each capable of trapping a microscopic particle.
 
 ---
 
-## Mathematical Model
+## Application Interface
+
+![App](docs/svg/app_screenshot.svg)
+
+The interface has two main canvases: the left panel shows trap positions on a normalized grid, and the right panel displays the computed phase mask as a grayscale image. Controls at the bottom allow switching between create/move/delete modes and adjusting simulation parameters.
+
+## Frontend
+
+![Frontend](docs/png/frontend.png)
+
+---
+
+## Technical Approach — Phase Hologram Computation
 
 ### Phase Kernel — Beam Steering
 Each trap at position (xⱼ, yⱼ, zⱼ) contributes a phase tilt to the SLM hologram. The kernel encodes the optical path from each SLM pixel to the trap:
@@ -84,26 +92,6 @@ The **arctan2** function creates a helical phase ramp around the beam axis. Part
 
 ---
 
-## Optical Tweezers Concept
-
-![Optical Tweezers](docs/svg/optical_tweezers.svg)
-
-A laser beam is expanded to fill the SLM aperture. The SLM applies a computed phase pattern to the wavefront. A Fourier lens then converts this phase-modulated beam into multiple focused intensity spots at the focal plane, each capable of trapping a microscopic particle.
-
----
-
-## Application Interface
-
-![App](docs/svg/app_screenshot.svg)
-
-The interface has two main canvases: the left panel shows trap positions on a normalized grid, and the right panel displays the computed phase mask as a grayscale image. Controls at the bottom allow switching between create/move/delete modes and adjusting simulation parameters.
-
-## Frontend
-
-![Frontend](docs/png/frontend.png)
-
----
-
 ## Architecture
 
 ![Architecture](docs/svg/architecture.svg)
@@ -129,6 +117,16 @@ The system consists of a Python backend that runs the physics simulation and a b
 - **WebSocket communication** -- Low-latency bidirectional protocol for responsive drag interactions.
 - **Cross-platform** -- Runs on Windows, Linux, and macOS with any modern browser.
 - **Comprehensive test suite** -- 59 tests covering the phase mask generator, trap manager, and integration scenarios.
+
+## Project Metrics & Status
+
+| Metric | Status |
+|--------|--------|
+| Tests | 54 passing |
+| Trap uniformity | 1.000 for 4 symmetric traps (damped GS γ=0.5) |
+| Phase mask fringes | 8-15 visible (phase_scale=10·2π) |
+| FFT propagation | Auto-select for >10 traps at integer bins |
+| Zernike correction | 6 aberration modes supported |
 
 ---
 
