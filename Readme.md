@@ -128,6 +128,73 @@ JSON-based bidirectional protocol. Client sends actions (`click`, `drag`, `relea
 - [References](docs/references.md) -- Academic publications
 - [User Guide](docs/user_guide.md) -- Installation, interface walkthrough, tips, troubleshooting
 
+## Mathematical Model
+
+### Phase Contribution of Trap j
+
+The phase kernel contributed by trap *j* at SLM pixel (u, v) combines a linear tilt and a quadratic defocus:
+
+```
+K_j(u, v) = alpha * (u * x_j + v * y_j) - beta * (u^2 + v^2) * z_j
+```
+
+where `alpha` encodes the lateral scaling and `beta` encodes the axial defocus.
+
+### Trap Intensity (Coherent Summation)
+
+The intensity at trap *j* is the coherent sum over all SLM pixels:
+
+```
+E_j = (1 / N^2) * Sum exp(i * [phi(u, v) - K_j(u, v)])
+```
+
+where `phi(u, v)` is the SLM phase mask being optimized.
+
+### GS Weight Update Rule
+
+After each iteration, trap weights are updated to equalize intensities:
+
+```
+w_j <- w_j * (< |V| > / |V_j|)^gamma    (gamma = 0.5)
+```
+
+where `< |V| >` is the mean trap amplitude and `|V_j|` is the amplitude at trap *j*.
+
+### Phase Extraction (Inverse Update)
+
+The updated SLM phase mask after each GS iteration:
+
+```
+phi_new = arg(Sum_j  w_j * exp(i * [K_j + arg(E_j)])) mod 2*pi
+```
+
+### Optical Vortex Phase
+
+For generating vortex beams with topological charge `l`:
+
+```
+K_vortex = l * arctan2(v, u)
+```
+
+---
+
+## Port
+
+**8003** -- http://localhost:8003
+
+---
+
+## References
+
+- Curtis, J.E. et al. (2002). Dynamic holographic optical tweezers. *Optics Communications*, 207(1-6):169-175.
+- Gerchberg, R.W. & Saxton, W.O. (1972). A practical algorithm for the determination of phase. *Optik*, 35:237-246.
+- Grier, D.G. (2003). A revolution in optical manipulation. *Nature*, 424:810-816.
+- Di Leonardo, R. et al. (2007). Computer generation of optimal holograms. *Optics Express*, 15:1913-1922.
+
+See [docs/references.md](docs/references.md) for the full reference list.
+
+---
+
 ## Requirements
 
 - Python 3.9+
