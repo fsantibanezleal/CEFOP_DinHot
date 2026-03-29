@@ -10,6 +10,20 @@ This is a modernized Python/FastAPI rewrite of the original C++/.NET DinHotSys d
 
 Holographic Optical Tweezers use SLMs to shape laser beams into multiple focused traps that hold and manipulate microscopic particles. Computing the optimal phase mask requires solving an inverse problem: what phase distribution produces the desired trap configuration in the focal plane?
 
+![GS Algorithm](docs/svg/gs_algorithm.svg)
+
+---
+
+## KPIs & Metrics
+
+| Metric | Target | Current |
+|--------|--------|---------|
+| Phase mask fringes | Visible blazed grating | 8-15 fringes (phase_scale=10·2π) |
+| GS convergence | Stable, monotonic | Damped weights γ=0.5 |
+| Trap uniformity | >0.9 for symmetric | 1.000 (4 symmetric traps) |
+| FFT propagation | O(N² log N) for >10 traps | Auto-select integer bins |
+| Test coverage | Comprehensive | 54 tests passing |
+
 ---
 
 ## Mathematical Model
