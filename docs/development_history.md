@@ -38,7 +38,7 @@ For He-Ne laser (λ=632nm), f=200mm, Δp=20μm, N=512: α ≈ π
 
 With α = π, maximum phase per pixel is ~2π for edge traps — the correct regime for constructive interference and GS convergence.
 
-> See `docs/diagrams/architecture.svg` for visual reference.
+> See `docs/svg/architecture.svg` for visual reference.
 
 ### Verification
 
