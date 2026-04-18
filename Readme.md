@@ -98,6 +98,12 @@ The **arctan2** function creates a helical phase ramp around the beam axis. Part
 
 The system consists of a Python backend that runs the physics simulation and a browser frontend that provides interactive dual-canvas visualization. Communication happens over WebSocket for low-latency, bidirectional updates.
 
+### Processing Pipeline
+
+![Pipeline](docs/svg/pipeline.svg)
+
+From a single user click on the trap canvas to the updated phase mask render: the WebSocket dispatches the action to the `TrapManager`, which builds the steering kernel `K_j` for every trap, computes forward fields `E_j`, runs the damped GS weight update inside the convergence loop (until `err < tol` or `max_iter`), extracts the new phase `φ(u,v)`, and streams a state JSON payload back to the dual canvas for re-render.
+
 | Component | Technology |
 |---|---|
 | Backend | Python 3.9+, FastAPI, NumPy |
@@ -116,13 +122,13 @@ The system consists of a Python backend that runs the physics simulation and a b
 - **Configurable parameters** -- Wavelength, SLM resolution, iteration limit, and convergence tolerance can all be adjusted through the UI.
 - **WebSocket communication** -- Low-latency bidirectional protocol for responsive drag interactions.
 - **Cross-platform** -- Runs on Windows, Linux, and macOS with any modern browser.
-- **Comprehensive test suite** -- 59 tests covering the phase mask generator, trap manager, and integration scenarios.
+- **Comprehensive test suite** -- 87 tests covering the phase mask generator, trap manager, and integration scenarios.
 
 ## Project Metrics & Status
 
 | Metric | Status |
 |--------|--------|
-| Tests | 54 passing |
+| Tests | 87 passing |
 | Trap uniformity | 1.000 for 4 symmetric traps (damped GS γ=0.5) |
 | Phase mask fringes | 8-15 visible (phase_scale=10·2π) |
 | FFT propagation | Auto-select for >10 traps at integer bins |
@@ -174,7 +180,7 @@ CEFOP_DinHot/
 │           ├── renderer.js         # Dual-canvas rendering engine
 │           ├── controls.js         # Mode buttons, parameters, info panel
 │           └── websocket.js        # WebSocket client with auto-reconnect
-├── tests/                          # Test suite (59 tests)
+├── tests/                          # Test suite (87 tests)
 │   ├── __init__.py
 │   ├── test_phase_mask.py          # Generator unit tests
 │   ├── test_trap_manager.py        # Manager unit tests
@@ -189,6 +195,7 @@ CEFOP_DinHot/
 │   │   └── frontend.png            # Frontend screenshot
 │   └── svg/
 │       ├── architecture.svg        # System architecture diagram
+│       ├── pipeline.svg            # End-to-end processing pipeline
 │       ├── gs_algorithm.svg        # GS algorithm flow
 │       ├── optical_tweezers.svg    # HOT optical system
 │       ├── phase_mask_principle.svg # Phase modulation concept
