@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 420" width="860" height="420">
+  <rect width="860" height="420" fill="#0d1117"/>
+  <style>
+    .title { font: 700 20px 'Segoe UI', sans-serif; fill: #f0f6fc; }
+    .stage-title { font: 600 14px 'Segoe UI', sans-serif; fill: #f0f6fc; }
+    .stage-sub { font: 400 11px 'Segoe UI', sans-serif; fill: #8b949e; }
+    .label { font: 500 12px 'Segoe UI', sans-serif; fill: #c9d1d9; }
+    .arrow { stroke: #58a6ff; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .loop-arrow { stroke: #f85149; stroke-width: 2; stroke-dasharray: 5,3; fill: none; marker-end: url(#arrow-red); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f85149"/>
+    </marker>
+    <linearGradient id="user-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1f6feb"/>
+      <stop offset="100%" stop-color="#1158c7"/>
+    </linearGradient>
+    <linearGradient id="sim-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#238636"/>
+      <stop offset="100%" stop-color="#196c2e"/>
+    </linearGradient>
+    <linearGradient id="out-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a371f7"/>
+      <stop offset="100%" stop-color="#7d54c2"/>
+    </linearGradient>
+  </defs>
+
+  <text x="430" y="30" text-anchor="middle" class="title">DinHot Holographic Pipeline — Trap Click to Phase Mask</text>
+
+  <!-- Stage 1: User input -->
+  <rect x="30" y="70" width="150" height="100" rx="10" fill="url(#user-grad)" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="105" y="95" text-anchor="middle" class="stage-title">1. User Input</text>
+  <text x="105" y="115" text-anchor="middle" class="stage-sub">Click / drag trap</text>
+  <text x="105" y="131" text-anchor="middle" class="stage-sub">on normalized canvas</text>
+  <text x="105" y="150" text-anchor="middle" class="label">(x, y, z) ∈ [-1,1]</text>
+
+  <!-- Stage 2: WebSocket -->
+  <rect x="215" y="70" width="150" height="100" rx="10" fill="#30363d" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="290" y="95" text-anchor="middle" class="stage-title">2. WebSocket /ws</text>
+  <text x="290" y="115" text-anchor="middle" class="stage-sub">JSON action payload</text>
+  <text x="290" y="131" text-anchor="middle" class="stage-sub">click | drag | release</text>
+  <text x="290" y="150" text-anchor="middle" class="label">TrapManager dispatch</text>
+
+  <!-- Stage 3: Kernel build -->
+  <rect x="400" y="70" width="160" height="100" rx="10" fill="url(#sim-grad)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="480" y="95" text-anchor="middle" class="stage-title">3. Kernel K_j</text>
+  <text x="480" y="115" text-anchor="middle" class="stage-sub">Beam-steering phase</text>
+  <text x="480" y="131" text-anchor="middle" class="stage-sub">α·(u·xⱼ+v·yⱼ)</text>
+  <text x="480" y="150" text-anchor="middle" class="label">− β·r²·zⱼ</text>
+
+  <!-- Stage 4: Forward prop -->
+  <rect x="595" y="70" width="160" height="100" rx="10" fill="url(#sim-grad)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="675" y="95" text-anchor="middle" class="stage-title">4. Forward Field</text>
+  <text x="675" y="115" text-anchor="middle" class="stage-sub">E_j = Σ exp(i[φ−K_j])</text>
+  <text x="675" y="131" text-anchor="middle" class="stage-sub">Direct sum or FFT</text>
+  <text x="675" y="150" text-anchor="middle" class="label">I_j = |E_j|²</text>
+
+  <!-- Stage 5: Weight update -->
+  <rect x="595" y="230" width="160" height="100" rx="10" fill="url(#sim-grad)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="675" y="255" text-anchor="middle" class="stage-title">5. Weight Update</text>
+  <text x="675" y="275" text-anchor="middle" class="stage-sub">w_j ← w_j·(⟨|V|⟩/|V_j|)^γ</text>
+  <text x="675" y="291" text-anchor="middle" class="stage-sub">Damped GS (γ=0.5)</text>
+  <text x="675" y="310" text-anchor="middle" class="label">Uniform trap intensity</text>
+
+  <!-- Stage 6: Phase extract -->
+  <rect x="400" y="230" width="160" height="100" rx="10" fill="url(#sim-grad)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="480" y="255" text-anchor="middle" class="stage-title">6. New φ(u,v)</text>
+  <text x="480" y="275" text-anchor="middle" class="stage-sub">arg( Σ w_j · exp(i·ψ_j) )</text>
+  <text x="480" y="291" text-anchor="middle" class="stage-sub">mod 2π</text>
+  <text x="480" y="310" text-anchor="middle" class="label">Phase-only constraint</text>
+
+  <!-- Stage 7: State emit -->
+  <rect x="215" y="230" width="150" height="100" rx="10" fill="url(#out-grad)" stroke="#a371f7" stroke-width="1.5"/>
+  <text x="290" y="255" text-anchor="middle" class="stage-title">7. State JSON</text>
+  <text x="290" y="275" text-anchor="middle" class="stage-sub">phase_mask[H×W]</text>
+  <text x="290" y="291" text-anchor="middle" class="stage-sub">traps + convergence</text>
+  <text x="290" y="310" text-anchor="middle" class="label">Base64 grayscale PNG</text>
+
+  <!-- Stage 8: Canvas render -->
+  <rect x="30" y="230" width="150" height="100" rx="10" fill="url(#out-grad)" stroke="#a371f7" stroke-width="1.5"/>
+  <text x="105" y="255" text-anchor="middle" class="stage-title">8. Dual Canvas</text>
+  <text x="105" y="275" text-anchor="middle" class="stage-sub">Left: trap layout</text>
+  <text x="105" y="291" text-anchor="middle" class="stage-sub">Right: phase mask</text>
+  <text x="105" y="310" text-anchor="middle" class="label">Convergence graph</text>
+
+  <!-- Arrows top row -->
+  <path class="arrow" d="M180,120 L215,120"/>
+  <path class="arrow" d="M365,120 L400,120"/>
+  <path class="arrow" d="M560,120 L595,120"/>
+
+  <!-- Down arrow -->
+  <path class="arrow" d="M675,170 L675,230"/>
+
+  <!-- Arrows bottom row (right → left) -->
+  <path class="arrow" d="M595,280 L560,280"/>
+  <path class="arrow" d="M400,280 L365,280"/>
+  <path class="arrow" d="M215,280 L180,280"/>
+
+  <!-- GS iteration loop -->
+  <path class="loop-arrow" d="M480,230 C480,195 630,195 675,230"/>
+  <text x="570" y="210" text-anchor="middle" class="label" fill="#f85149">GS iteration (≤ max_iter, err &gt; tol)</text>
+
+  <!-- Bottom legend -->
+  <rect x="30" y="360" width="14" height="14" fill="url(#user-grad)"/>
+  <text x="50" y="372" class="label">User</text>
+  <rect x="100" y="360" width="14" height="14" fill="#30363d"/>
+  <text x="120" y="372" class="label">Transport</text>
+  <rect x="200" y="360" width="14" height="14" fill="url(#sim-grad)"/>
+  <text x="220" y="372" class="label">Simulation core (NumPy)</text>
+  <rect x="380" y="360" width="14" height="14" fill="url(#out-grad)"/>
+  <text x="400" y="372" class="label">Output / UI</text>
+  <line x1="500" y1="367" x2="520" y2="367" class="loop-arrow"/>
+  <text x="528" y="372" class="label">GS loop (convergence)</text>
+
+  <text x="430" y="400" text-anchor="middle" class="stage-sub">Port 8003 · FastAPI · NumPy 2.x · vanilla JS HTML5 Canvas · WebSocket JSON</text>
+</svg>
