@@ -247,5 +247,50 @@ class TestTrapGridWorkflow(unittest.TestCase):
         self.assertEqual(len(tm.generator.traps), 3)
 
 
+class TestSystemEndpoints(unittest.TestCase):
+    """Test the /api/health and /api/version liveness endpoints."""
+
+    def setUp(self):
+        from fastapi.testclient import TestClient
+        from app.main import app
+        from app.api.routes import sim_state
+
+        self.client = TestClient(app)
+        # Reset shared sim state so tests are deterministic
+        sim_state["manager"] = None
+        sim_state["running"] = False
+
+    def test_health_uninitialized(self):
+        """/api/health returns ok with sim_initialized=False on fresh start."""
+        response = self.client.get("/api/health")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["status"], "ok")
+        self.assertFalse(body["sim_initialized"])
+
+    def test_health_after_init(self):
+        """/api/health reflects sim_initialized=True after /api/init."""
+        init_response = self.client.post(
+            "/api/init",
+            json={"resolution_x": 64, "resolution_y": 64},
+        )
+        self.assertEqual(init_response.status_code, 200)
+
+        response = self.client.get("/api/health")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["status"], "ok")
+        self.assertTrue(body["sim_initialized"])
+
+    def test_version(self):
+        """/api/version returns the package __version__."""
+        from app import __version__
+
+        response = self.client.get("/api/version")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["version"], __version__)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

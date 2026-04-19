@@ -12,11 +12,14 @@ Endpoints:
     POST /api/trap/move     - Move a trap to a new position
     GET  /api/state         - Get current simulation state
     GET  /api/params        - Get current physical parameters
+    GET  /api/health        - Liveness probe for deployment
+    GET  /api/version       - Application version
 """
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
+from .. import __version__
 from ..simulation.trap_manager import TrapManager
 
 router = APIRouter(prefix="/api", tags=["simulation"])
@@ -210,6 +213,36 @@ async def get_state():
     if manager is None:
         return {"error": "Not initialized"}
     return manager.get_state()
+
+
+@router.get("/health", tags=["system"])
+async def health():
+    """Liveness probe for load balancers and deployment platforms.
+
+    Returns a cheap 200 OK response indicating the ASGI process is
+    responsive. Does not touch the simulation lock or trigger any
+    computation — safe to hit at high frequency.
+
+    Returns:
+        {"status": "ok", "sim_initialized": bool}
+    """
+    return {
+        "status": "ok",
+        "sim_initialized": sim_state.get("manager") is not None,
+    }
+
+
+@router.get("/version", tags=["system"])
+async def version():
+    """Return the application version.
+
+    Sources the version from ``app.__version__`` so a single edit in
+    ``app/__init__.py`` propagates across REST, docs, and logging.
+
+    Returns:
+        {"version": "<semver>"}
+    """
+    return {"version": __version__}
 
 
 @router.get("/params")
