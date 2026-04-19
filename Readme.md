@@ -187,7 +187,7 @@ CEFOP_DinHot/
 │   └── test_integration.py         # End-to-end tests
 ├── docs/
 │   ├── architecture.md             # System design and component overview
-│   ├── physics_model.md            # GS algorithm, HOT physics, equations
+│   ├── optical_trapping_theory.md  # GS algorithm, HOT physics, equations
 │   ├── development_history.md      # Version history (v0.1.2 C++ to v2.0 Python)
 │   ├── references.md               # Academic literature
 │   ├── user_guide.md               # Installation, usage, troubleshooting
@@ -224,6 +224,8 @@ CEFOP_DinHot/
 | `POST` | `/api/trap/move` | Move a trap and recalculate |
 | `GET` | `/api/state` | Get current simulation state |
 | `GET` | `/api/params` | Get current physical parameters |
+| `GET` | `/api/health` | Liveness probe — `{status, sim_initialized}` |
+| `GET` | `/api/version` | Application version from `app.__version__` |
 
 ### WebSocket (`/ws`)
 
@@ -240,7 +242,7 @@ JSON-based bidirectional protocol. Client sends actions (`click`, `drag`, `relea
 ## Documentation
 
 - [Architecture](docs/architecture.md) -- System design, components, API protocol, deployment
-- [Physics Model](docs/physics_model.md) -- Optical trapping, SLMs, GS algorithm with equations
+- [Optical Trapping Theory](docs/optical_trapping_theory.md) -- Optical trapping, SLMs, GS algorithm with equations
 - [Development History](docs/development_history.md) -- Version changelog from C++ to Python
 - [References](docs/references.md) -- Academic publications
 - [User Guide](docs/user_guide.md) -- Installation, interface walkthrough, tips, troubleshooting
