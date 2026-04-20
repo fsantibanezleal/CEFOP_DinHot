@@ -73,6 +73,26 @@
                     a stable solution. The uniformity metric (I<sub>min</sub>/I<sub>max</sub>)
                     quantifies how equal the trap intensities are, with 1.0 being perfect.
                 </p>
+
+                <h3>Keyboard Shortcuts</h3>
+                <table class="shortcut-table">
+                    <thead>
+                        <tr><th>Key / Action</th><th>Effect</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><kbd>?</kbd></td><td>Open this help dialog (disabled while typing in an input)</td></tr>
+                        <tr><td><kbd>Esc</kbd></td><td>Close this help dialog</td></tr>
+                        <tr><td>Click <span class="kbd-note">(Create mode)</span></td><td>Add a new trap at the click location</td></tr>
+                        <tr><td>Click <span class="kbd-note">(Move mode)</span></td><td>Select the nearest trap to drag</td></tr>
+                        <tr><td>Drag <span class="kbd-note">(Move mode)</span></td><td>Reposition the selected trap; recalculation fires on mouse-up</td></tr>
+                        <tr><td>Click <span class="kbd-note">(Delete mode)</span></td><td>Remove the nearest trap within a small radius</td></tr>
+                        <tr><td>Click backdrop</td><td>Close this help dialog (same effect as <kbd>Esc</kbd>)</td></tr>
+                    </tbody>
+                </table>
+                <p class="modal-hint">
+                    Tip: hover any control in the main view to read an inline tooltip
+                    describing what it does and what ranges are expected.
+                </p>
             </div>
         </div>
 
@@ -199,34 +219,10 @@
     </div>
 
     <!-- Scripts (loaded in dependency order) -->
+    <!-- Help-modal toggle (open/close, `?` shortcut, Esc, backdrop) lives in controls.js -->
     <script src="/static/js/websocket.js"></script>
     <script src="/static/js/renderer.js"></script>
     <script src="/static/js/controls.js"></script>
     <script src="/static/js/app.js"></script>
-
-    <!-- Help modal toggle -->
-    <script>
-    (function() {
-        var modal = document.getElementById('help-modal');
-        var btnOpen = document.getElementById('btn-help');
-        var btnClose = document.getElementById('modal-close-btn');
-
-        function openModal() { modal.classList.add('visible'); }
-        function closeModal() { modal.classList.remove('visible'); }
-
-        btnOpen.addEventListener('click', openModal);
-        btnClose.addEventListener('click', closeModal);
-
-        // Close when clicking the backdrop (outside modal-content)
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeModal();
-        });
-
-        // Close on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.classList.contains('visible')) closeModal();
-        });
-    })();
-    </script>
 </body>
 </html>
