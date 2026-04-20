@@ -100,6 +100,24 @@ Below the stats is a table listing each trap's index, (x, y) position, and compu
 
 A small canvas that plots the error metric over iterations from the most recent phase mask computation. The orange line should show a decreasing trend. A green dot at the end indicates that the algorithm converged before reaching the iteration limit.
 
+## Keyboard Shortcuts
+
+The interface is primarily mouse-driven, but a small set of keyboard shortcuts is wired for fast access to help and for closing dialogs.
+
+| Key / Action | Effect |
+|---|---|
+| `?` | Open the help dialog. Suppressed while a text or number input is focused, so typing `?` in a parameter field never pops the modal. |
+| `Esc` | Close the help dialog if it is open. |
+| Click `?` button (header, top-right) | Same as the `?` shortcut. Always works, including while an input is focused. |
+| Click on the modal backdrop | Close the help dialog. Same effect as `Esc`. |
+| Click on the trap canvas (Create mode) | Add a new trap at the clicked location. |
+| Click on the trap canvas (Move mode) | Select the nearest trap; drag to reposition, release to recalculate. |
+| Click on the trap canvas (Delete mode) | Remove the nearest trap within a small radius. |
+
+Hover any control (mode button, parameter input, canvas) to reveal an inline tooltip that describes what it does and the expected value range. Tooltips are rendered by the browser via `title=` attributes -- no custom tooltip library is loaded.
+
+The help dialog itself lists the same shortcut table under the **Keyboard Shortcuts** heading, so you can re-read it at any time without leaving the app.
+
 ## Typical Workflow
 
 1. **Launch the server** and open the browser. The interface loads with default parameters.

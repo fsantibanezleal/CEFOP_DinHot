@@ -29,6 +29,7 @@ class DinHotControls {
         this._bindModeButtons();
         this._bindActionButtons();
         this._bindParamInputs();
+        this._bindHelpModal();
     }
 
     /**
@@ -88,6 +89,57 @@ class DinHotControls {
      */
     _bindParamInputs() {
         // Parameters update on change -- no live binding needed
+    }
+
+    /**
+     * Bind the help modal: header button, close button, backdrop click,
+     * Escape key (always), and `?` shortcut (only when no input/textarea
+     * is focused, so typing `?` inside a field never pops the modal).
+     *
+     * Silent no-op if the modal markup is absent -- keeps this safe to call
+     * from any page that reuses `controls.js` without the help modal.
+     *
+     * @private
+     */
+    _bindHelpModal() {
+        const modal = document.getElementById('help-modal');
+        const btnOpen = document.getElementById('btn-help');
+        const btnClose = document.getElementById('modal-close-btn');
+        if (!modal || !btnOpen) return;
+
+        const openModal = () => modal.classList.add('visible');
+        const closeModal = () => modal.classList.remove('visible');
+        const isOpen = () => modal.classList.contains('visible');
+
+        btnOpen.addEventListener('click', openModal);
+        if (btnClose) btnClose.addEventListener('click', closeModal);
+
+        // Close when clicking the backdrop (target is the modal, not its content).
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Guard so `?` pressed inside a text/number input does NOT open the modal.
+        const isTypingInField = () => {
+            const el = document.activeElement;
+            if (!el) return false;
+            const tag = el.tagName;
+            return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
+                   el.isContentEditable === true;
+        };
+
+        document.addEventListener('keydown', (e) => {
+            // `?` on US layouts is `Shift+/`; e.key resolves to '?' directly.
+            if (e.key === '?' && !isTypingInField() && !isOpen()) {
+                e.preventDefault();
+                openModal();
+                return;
+            }
+            if (e.key === 'Escape' && isOpen()) {
+                e.preventDefault();
+                closeModal();
+            }
+        });
     }
 
     /**
