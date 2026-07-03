@@ -1,5 +1,8 @@
 # CEFOP DinHot -- Dynamic Holographic Optical Tweezers
 
+[![License](https://img.shields.io/github/license/fsantibanezleal/CEFOP_DinHot)](LICENSE)
+[![Live demo](https://img.shields.io/badge/demo-live-2ea44f)](https://dinhot.fasl-work.com)
+
 A web application for real-time computation and visualization of holographic phase masks for optical tweezers. Given a set of desired trap positions, the application uses the weighted Gerchberg-Saxton algorithm to find the optimal phase distribution for a Spatial Light Modulator (SLM) that produces focused laser spots at those positions.
 
 This is a modernized Python/FastAPI rewrite of the original C++/.NET DinHotSys desktop application (preserved in `legacy/`). The new version runs cross-platform in any browser.
