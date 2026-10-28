@@ -1,39 +1,33 @@
 """Typed objects passed between pipeline stages, the inter-stage contract. Plain dataclasses."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+import numpy as np
 
 
-@dataclass(frozen=True)
-class SIRParams:
-    """One validated operating point (EXAMPLE domain: an SIR epidemic)."""
-    case_id: str
-    beta: float        # 1/day, effective contact rate
-    gamma: float       # 1/day, recovery rate
-    N: float           # population
-    I0: float          # initial infected
-    days: int = 160    # horizon
+@dataclass
+class MethodOutcome:
+    """One method run on one case: the final phase, the trace-form history, the independent score and the timing.
+
+    ``score`` is ``core.score`` output (final metrics, per-trap intensities, the focal field). ``seconds`` is the wall
+    clock of the run and never reaches a manifest (ADR-0054); it feeds the lane gate and the benchmark.
+    """
+
+    method: str
+    spec_lane: str
+    phi: np.ndarray
+    history: list
+    score: dict
+    iterations: int
+    converged: bool
+    seconds: float
+    meta: dict = field(default_factory=dict)
 
 
-@dataclass(frozen=True)
-class FeatureRow:
-    """Derived features for the surrogate (feature_extraction stage)."""
-    case_id: str
-    r0: float          # beta / gamma (basic reproduction number)
-    beta: float
-    gamma: float
-    n_scaled: float    # log10(N)
-    i0_frac: float     # I0 / N
+@dataclass
+class MethodFailure:
+    """A method that raised on a case (it is recorded in the manifest flags; the bake fails unless the case drops it)."""
 
-
-@dataclass(frozen=True)
-class SIRResult:
-    """The engine output for one case (infer stage), the raw, undecimated trajectory + scalars."""
-    case_id: str
-    t: list[float]
-    S: list[float]
-    I: list[float]
-    R: list[float]
-    peak_I: float
-    t_peak: float
-    attack_rate: float
+    method: str
+    error: str

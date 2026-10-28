@@ -16,6 +16,11 @@ NO_READINESS = {"en": "The readiness document is not in this build.",
                 "es": "El documento de disponibilidad no está en esta versión."}
 
 
+NO_BENCHMARK = {"en": "The benchmark has not run for this build.", "es": "El benchmark no se ha ejecutado para esta versión."}
+NO_METRICS = {"en": "The model metrics have not been computed for this build.",
+              "es": "Las métricas de los modelos no se han calculado para esta versión."}
+
+
 def _unavailable(reason: dict[str, str]) -> HTTPException:
     return HTTPException(status_code=503, detail={"state": "missing", "reason": reason})
 
@@ -26,7 +31,7 @@ def _unreadable(exc: content.Unreadable) -> HTTPException:
 
 @router.get("/cases")
 def list_cases() -> Any:
-    """The index (contract 2): every baked case and the path of its manifest."""
+    """The index (contract 2): every case, baked (with the path of its manifest) or refused (with its reason)."""
     try:
         index = content.load_index()
     except content.Unreadable as exc:
@@ -59,6 +64,30 @@ def get_artifact(rel_path: str) -> Any:
     if art is None:
         raise HTTPException(status_code=404, detail="no such artifact")
     return art
+
+
+@router.get("/benchmark")
+def get_benchmark() -> Any:
+    """The benchmark results (contract benchmark-results): the committed document, unchanged."""
+    try:
+        doc = content.load_benchmark()
+    except content.Unreadable as exc:
+        raise _unreadable(exc) from exc
+    if doc is None:
+        raise _unavailable(NO_BENCHMARK)
+    return doc
+
+
+@router.get("/models/metrics")
+def get_model_metrics() -> Any:
+    """The held-out metrics of the model slots (contract model-metrics): the committed document, unchanged."""
+    try:
+        doc = content.load_metrics()
+    except content.Unreadable as exc:
+        raise _unreadable(exc) from exc
+    if doc is None:
+        raise _unavailable(NO_METRICS)
+    return doc
 
 
 @router.get("/readiness")

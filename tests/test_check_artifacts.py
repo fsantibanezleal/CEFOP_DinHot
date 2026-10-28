@@ -1,49 +1,82 @@
-"""The example's artifact guard (scripts/check_artifacts.py) reads one artifact or many per manifest and the index's
-declared files. The guard is the example's, shaped by its manifest contract: a product adapts it to its own manifests and
-replaces this test with its own (BD-4: it lived in test_guards.py, which a product takes as it is)."""
+"""The artifact guard (scripts/check_artifacts.py) for DinHot's contract 2: it passes on a bake and fails on each kind of drift
+(byte drift, lane/gate mismatch, an oversize trace, a refused case with a manifest, a units violation, a missing trace)."""
+# ruff: noqa: F811  (pytest fixtures imported from tests/bake/bakefix.py are used by name)
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = ROOT / "scripts"
+sys.path.insert(0, str(ROOT / "tests" / "bake"))
+
+from bakefix import planted_registry, sandbox_bake  # noqa: E402,F401
 
 
-def _run(script: str, *args: str) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, str(SCRIPTS / script), *args], capture_output=True, text=True)
+def run(root: Path) -> subprocess.CompletedProcess:
+    return subprocess.run([sys.executable, str(ROOT / "scripts" / "check_artifacts.py"), str(root)], capture_output=True, text=True)
 
 
-def _put(root: Path, rel: str, doc) -> int:
-    p = root / rel
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_bytes(json.dumps(doc).encode("utf-8"))
-    return p.stat().st_size
-
-
-def test_check_artifacts_reads_one_or_many_artifacts_and_the_index_files(tmp_path):
+@pytest.fixture()
+def tree(tmp_path, sandbox_bake):
     d = tmp_path / "data" / "derived"
-    n_single = _put(d, "A/trace.json", {"t": [0, 1]})
-    n_v1 = _put(d, "B/v1.json", {"x": 1})
-    n_v2 = _put(d, "B/v2.json", {"x": 22})
-    _put(d, "contract/index.json", {"families": []})
-    gate = {"lane": "live"}
-    _put(d, "manifests/A.json", {"artifact": {"path": "A/trace.json", "bytes": n_single}, "lane": "live", "gate": gate})
-    _put(d, "manifests/B.json", {"artifacts": [{"path": "B/v1.json", "bytes": n_v1, "lane": "live", "gate": gate},
-                                               {"path": "B/v2.json", "bytes": n_v2, "lane": "live", "gate": gate}]})
-    index = {"files": ["contract/index.json"], "cases": [{"case_id": "A", "manifest_path": "manifests/A.json"},
-                                                         {"case_id": "B", "manifest_path": "manifests/B.json"}]}
-    _put(d, "manifests/index.json", index)
-    ok = _run("check_artifacts.py", str(tmp_path))
-    assert ok.returncode == 0 and "2 cases, 3 artifacts" in ok.stdout, ok.stdout
-    # drift in the second variant, a lane that disagrees with its gate, a declared file gone
-    _put(d, "manifests/B.json", {"artifacts": [{"path": "B/v1.json", "bytes": n_v1, "lane": "live", "gate": gate},
-                                               {"path": "B/v2.json", "bytes": n_v2 + 1, "lane": "precompute", "gate": gate}]})
-    (d / "contract" / "index.json").unlink()
-    bad = _run("check_artifacts.py", str(tmp_path))
-    assert bad.returncode == 1
-    assert "byte drift" in bad.stdout and "B/v2.json" in bad.stdout
-    assert "lane/gate mismatch: B B/v2.json" in bad.stdout
-    assert "declared by the index but missing or empty" in bad.stdout
+    shutil.copytree(sandbox_bake[0], d)
+    return tmp_path
+
+
+def edit(path: Path, change) -> None:
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    change(doc)
+    path.write_text(json.dumps(doc, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
+
+
+def test_passes_on_a_bake(tree):
+    p = run(tree)
+    assert p.returncode == 0, p.stdout
+    assert "3 baked and 1 refused cases, 3 artifacts" in p.stdout and "units gate holds" in p.stdout
+
+
+def test_adversarial_each_drift_is_reported(tree):
+    d = tree / "data" / "derived"
+    edit(d / "manifests" / "C91_mini.json", lambda m: m["artifact"].__setitem__("bytes", m["artifact"]["bytes"] + 1))
+    edit(d / "manifests" / "C92_disc.json", lambda m: m.__setitem__("lane", "live" if m["lane"] == "precompute" else "precompute"))
+    (d / "manifests" / "C94_far.json").write_text("{}", encoding="utf-8")
+    edit(d / "C93_rearr" / "trace.json", lambda t: t["methods"]["M06"]["final"].__setitem__("rel_std_pct", 1e-4))
+    p = run(tree)
+    assert p.returncode == 1
+    assert "byte drift" in p.stdout and "C91_mini" in p.stdout
+    assert "lane/gate mismatch: C92_disc" in p.stdout
+    assert "C94_far: refused in the index but a manifest exists" in p.stdout
+    assert "units: C93_rearr M06" in p.stdout
+
+
+def test_adversarial_oversize_trace_and_missing_trace(tree):
+    d = tree / "data" / "derived"
+    big = d / "C91_mini" / "trace.json"
+    big.write_bytes(big.read_bytes() + b" " * (256 * 1024))
+    edit(d / "manifests" / "C91_mini.json", lambda m: m["artifact"].__setitem__("bytes", big.stat().st_size))
+    (d / "C93_rearr" / "trace.json").unlink()
+    p = run(tree)
+    assert p.returncode == 1
+    assert "over the 262144 byte lane gate" in p.stdout and "missing artifact" in p.stdout
+
+
+def test_a_declared_absent_trace_is_a_warning_only_when_readiness_says_so(tree):
+    d = tree / "data" / "derived"
+    (d / "C93_rearr" / "trace.json").unlink()
+    rd = json.loads((d / "readiness.json").read_text(encoding="utf-8"))
+    for e in rd["contracts"]:
+        if e["id"] == "trace":
+            e.update(state="partial", missing=["C93_rearr/trace.json"])
+    (d / "readiness.json").write_text(json.dumps(rd), encoding="utf-8")
+    p = run(tree)
+    assert p.returncode == 0 and "declared absent" in p.stdout
+
+
+def test_no_index_is_a_failure(tmp_path):
+    (tmp_path / "data" / "derived").mkdir(parents=True)
+    assert run(tmp_path).returncode == 1
