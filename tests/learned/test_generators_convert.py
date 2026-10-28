@@ -9,6 +9,14 @@ from pipeline.model.holo.core.traps import Trap, TrapSet
 from pipeline.model.holo.learned import convert, generators, heldout
 
 
+def _held(name):
+    import os
+    from pathlib import Path
+    d = os.environ.get("DINHOT_LEARNED_DIR")
+    return Path(d) / name if d else Path("absent") / name
+
+
+
 @pytest.fixture(scope="module")
 def setup():
     return Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=256, pitch_m=12.5e-6, pad=2)
@@ -65,7 +73,7 @@ def test_benchmark_geometries_in_model_units():
 
 
 def test_heldout_files_have_the_recorded_hashes_and_are_disjoint_from_training_seeds():
-    p = heldout.LEARNED_ROOT / "cgh-heldout.npz"
+    p = _held("cgh-heldout.npz")
     if not p.is_file():
         pytest.skip("held-out files are in the data root of the training device")
     gen, kinds, bench, names = heldout.load_cgh(p)
@@ -75,6 +83,6 @@ def test_heldout_files_have_the_recorded_hashes_and_are_disjoint_from_training_s
     rng = np.random.default_rng(heldout.CGH_SEED)
     first = generators.sample_target(rng, generators.SHAPE_KINDS[0])
     np.testing.assert_array_equal(first, gen[0])
-    w = heldout.LEARNED_ROOT / "warmstart-heldout.npz"
+    w = _held("warmstart-heldout.npz")
     wg, wb = heldout.load_warm(w)
     assert len(wg) == heldout.WARM_GEN_N and all(len(a) >= 40 for a in wg) and [n for n, _a, _p in wb] == ["G1", "G2", "G3", "G4", "G5", "G6"]

@@ -22,8 +22,16 @@ from pipeline.model.holo.learned import evaluation, heldout  # noqa: E402
 from pipeline.model.holo.methods.baseline import m04_gs  # noqa: E402
 from pipeline.model.holo.methods.learned import m17_cgh_net  # noqa: E402
 
+
+def _held(name):
+    import os
+    from pathlib import Path
+    d = os.environ.get("DINHOT_LEARNED_DIR")
+    return Path(d) / name if d else Path("absent") / name
+
+
 MODELS = REPO_ROOT / "models"
-HELD = heldout.LEARNED_ROOT / "cgh-heldout.npz"
+HELD = _held("cgh-heldout.npz")
 
 pytestmark = pytest.mark.skipif(not is_valid_slot(MODELS, "cgh-net"), reason="cgh-net is not released: the GS baseline answers")
 

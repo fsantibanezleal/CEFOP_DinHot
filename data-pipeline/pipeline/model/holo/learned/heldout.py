@@ -14,6 +14,7 @@ show a warm start; the filter looks at the baseline only, never at a model. ``be
 from __future__ import annotations
 
 import hashlib
+import os
 from pathlib import Path
 
 import numpy as np
@@ -29,7 +30,15 @@ WARM_SEED = 20269002
 WARM_SELECT_SEED = 20269003
 CGH_GEN_PER_KIND = 30
 WARM_GEN_N = 60
-LEARNED_ROOT = Path("E:/_Datos/dinhot/learned")
+LEARNED_ENV = "DINHOT_LEARNED_DIR"   # <data root>/dinhot/learned on the training device; never a path written in the repo
+
+
+def learned_root() -> Path:
+    """The directory of the held-out files (datasets live in the data root, never in the repository)."""
+    v = os.environ.get(LEARNED_ENV)
+    if not v:
+        raise RuntimeError(f"set {LEARNED_ENV} to the held-out directory (<data root>/dinhot/learned)")
+    return Path(v)
 
 
 def sha256_file(path: Path) -> str:

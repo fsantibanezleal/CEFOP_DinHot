@@ -11,11 +11,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 from ..io.contract import REPO_ROOT
 
-TRAINING_ROOT = Path("D:/_Training/dinhot")
+TRAINING_ENV = "DINHOT_TRAINING_DIR"   # <training root>/dinhot on the training device
 SLOTS = ("cgh-net", "warmstart-model")
 
 
@@ -63,7 +64,7 @@ def release(slot: str, run_dir: Path, repo_root: Path = REPO_ROOT) -> dict:
         net.load_state_dict(ck["net"])
         export.export_cgh(net, out)
         probes = [(generators.sample_target(rng)[None, None],) for _ in range(8)]
-        held = heldout.LEARNED_ROOT / "cgh-heldout.npz"
+        held = heldout.learned_root() / "cgh-heldout.npz"
         gen, _k, bench, _n = heldout.load_cgh(held)
         n = len(gen) + len(bench)
     else:
@@ -71,7 +72,7 @@ def release(slot: str, run_dir: Path, repo_root: Path = REPO_ROOT) -> dict:
         net.load_state_dict(ck["net"])
         export.export_warm(net, out)
         probes = [generators.pad_batch([generators.sample_traps(rng)], 1024) for _ in range(8)]
-        held = heldout.LEARNED_ROOT / "warmstart-heldout.npz"
+        held = heldout.learned_root() / "warmstart-heldout.npz"
         gen, bench = heldout.load_warm(held)
         n = len(gen) + len(bench)
     bad = export.check_ops(out)
@@ -94,7 +95,9 @@ def main(argv=None) -> int:
     ap.add_argument("--unroll", type=int, default=None)
     ap.add_argument("--export-only", action="store_true", help="skip training, release the checkpoint in the run directory")
     a = ap.parse_args(argv)
-    run_dir = a.run_dir or TRAINING_ROOT / a.slot
+    if a.run_dir is None and not os.environ.get(TRAINING_ENV):
+        ap.error(f"give --run-dir or set {TRAINING_ENV}")
+    run_dir = a.run_dir or Path(os.environ[TRAINING_ENV]) / a.slot
     if not a.export_only:
         from ..model.holo.learned import training
         if a.slot == "cgh-net":
