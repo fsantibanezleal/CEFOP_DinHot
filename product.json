@@ -1,0 +1,14 @@
+{
+  "name": "DinHot",
+  "slug": "dinhot",
+  "tagline": {
+    "en": "Holographic optical trap arrays computed, corrected and tested in the browser",
+    "es": "Arreglos de trampas ópticas holográficas calculados, corregidos y probados en el navegador"
+  },
+  "repo": "https://github.com/fsantibanezleal/CEFOP_DinHot",
+  "visibility": "public",
+  "license": "Apache-2.0",
+  "holder": "Felipe Santibáñez-Leal",
+  "year": 2026,
+  "method_entrypoints": []
+}

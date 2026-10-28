@@ -1,0 +1,4 @@
+# Optional GPU lane, empty until the offline engine needs CUDA or ROCm: then pin the verified packages here and
+# record the driver and runtime matrix in docs/guides/03_gpu-lane.md. A product without a GPU step deletes this
+# file and that guide.
+-r requirements-precompute.txt

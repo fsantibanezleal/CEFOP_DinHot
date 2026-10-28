@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "readiness.schema.json",
+  "title": "Readiness",
+  "description": "Catalog row readiness 1.0.0 (ADR-0080 decision 4): what is real in this build, per catalog row except readiness itself, written by data-pipeline/pipeline/core/readiness.py to data/derived/readiness.json from docs/contracts/catalog.md and the repository state, and read by the frontend and the dormant API. Deterministic: the product version and the catalog's SHA-256 identify it, no wall-clock time. The states and what each surface does with them: docs/contracts/catalog.md, section Missing-data states.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "product_version", "catalog_sha256", "contracts"],
+  "properties": {
+    "schema": {"const": "example.readiness/v1"},
+    "product_version": {"$ref": "#/$defs/version"},
+    "catalog_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of docs/contracts/catalog.md (its UTF-8 bytes with CRLF normalised to LF) the document was computed from."},
+    "contracts": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/entry"}}
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "status", "provenance", "state", "reason", "missing"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The catalog row id."},
+        "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "The catalog row's contract version (semver)."},
+        "status": {"enum": ["real", "active"], "description": "The catalog's design status: real once the real producer serves the row, active while its provider does."},
+        "provenance": {"enum": ["real", "stub", "simulator", "fixture", "baseline", null], "description": "What actually served the row in this build; null when nothing did (state missing)."},
+        "state": {"$ref": "#/$defs/state"},
+        "reason": {"oneOf": [{"$ref": "#/$defs/text"}, {"type": "null"}], "description": "Why the state is not available; null only when it is."},
+        "missing": {"type": "array", "items": {"type": "string"}, "description": "For partial: what is absent (file paths, rejected record ids). Empty otherwise."}
+      },
+      "allOf": [
+        {"if": {"properties": {"state": {"const": "available"}}}, "then": {"properties": {"reason": {"type": "null"}, "provenance": {"const": "real"}}}, "else": {"properties": {"reason": {"$ref": "#/$defs/text"}}}},
+        {"if": {"properties": {"state": {"const": "partial"}}}, "then": {"properties": {"missing": {"minItems": 1}}}, "else": {"properties": {"missing": {"maxItems": 0}}}},
+        {"if": {"properties": {"state": {"const": "missing"}}}, "then": {"properties": {"provenance": {"type": "null"}}}, "else": {"properties": {"provenance": {"type": "string"}}}},
+        {"if": {"properties": {"state": {"const": "provider"}}}, "then": {"properties": {"provenance": {"enum": ["stub", "simulator", "fixture", "baseline"]}}}},
+        {"if": {"properties": {"state": {"const": "training"}}}, "then": {"properties": {"provenance": {"enum": ["real", "baseline"]}}}},
+        {"if": {"properties": {"status": {"const": "active"}}}, "then": {"properties": {"provenance": {"not": {"const": "real"}}}}}
+      ]
+    },
+    "state": {
+      "enum": ["available", "partial", "stale", "provider", "training", "missing"],
+      "description": "available: the real producer answered. partial: some of it exists (missing lists the rest). stale: an older bake answered (reason says how old). provider: the row's provider answered (provenance says which kind). training: a model slot answered with the released model or the baseline while a newer model trains, or with the baseline while no released model exists. missing: nothing answered."
+    },
+    "text": {
+      "type": "object",
+      "description": "Every reader-facing string is bilingual at the source.",
+      "additionalProperties": false,
+      "required": ["en", "es"],
+      "properties": {"en": {"type": "string", "minLength": 1}, "es": {"type": "string", "minLength": 1}}
+    },
+    "version": {"type": "string", "pattern": "^\\d+\\.\\d{2}\\.\\d{3}$", "description": "The product version format X.XX.XXX."}
+  }
+}

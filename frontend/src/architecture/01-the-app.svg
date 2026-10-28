@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="The App route: the rail and the instrument">
+  <!-- Hand-authored. Every colour is a shell token, so the diagram repaints with the theme; every label is written
+       twice (l-en, l-es) and the modal shows one language (ADR-0058). -->
+  <style>
+    .arch-svg text { font-family: var(--font-sans); }
+    .arch-svg .mono { font-family: var(--font-mono); }
+    .arch-svg .pn { fill: var(--color-surface); stroke: var(--color-border); stroke-width: 1.2; }
+    .arch-svg .bx { fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1; }
+    .arch-svg .on { fill: var(--color-accent-soft); stroke: var(--color-accent); stroke-width: 1.2; }
+    .arch-svg .ttl { fill: var(--color-fg); font-size: 15px; font-weight: 700; }
+    .arch-svg .h { fill: var(--color-fg); font-size: 12px; font-weight: 700; }
+    .arch-svg .it { fill: var(--color-fg); font-size: 11px; }
+    .arch-svg .sub { fill: var(--color-fg-subtle); font-size: 10.5px; }
+    .arch-svg .acc { fill: var(--color-accent); font-size: 11px; font-weight: 600; }
+    .arch-svg .s { fill: none; stroke: var(--color-accent); stroke-width: 2; }
+    .arch-svg .i { fill: none; stroke: var(--color-bad); stroke-width: 2; }
+    .arch-svg .r { fill: none; stroke: var(--color-good); stroke-width: 2; }
+    .arch-svg .rp { fill: none; stroke: var(--color-fg-subtle); stroke-width: 1.4; stroke-dasharray: 6 4; }
+    .arch-svg .ax { stroke: var(--color-fg-faint); stroke-width: 1; }
+  </style>
+
+  <text class="ttl l-en" x="20" y="30">The App: what you choose on the left, what it shows on the right</text>
+  <text class="ttl l-es" x="20" y="30">La App: lo que se elige a la izquierda, lo que muestra a la derecha</text>
+
+  <!-- the rail -->
+  <rect class="pn" x="20" y="50" width="250" height="390" rx="10"/>
+  <text class="h l-en" x="34" y="74">Rail</text>
+  <text class="h l-es" x="34" y="74">Panel</text>
+  <rect class="bx" x="34" y="86" width="222" height="40" rx="6"/>
+  <text class="it l-en" x="46" y="104">Case: Epidemic</text>
+  <text class="it l-es" x="46" y="104">Caso: Epidemia</text>
+  <text class="sub l-en" x="46" y="118">from the index; ?case= links it</text>
+  <text class="sub l-es" x="46" y="118">desde el índice; ?case= lo enlaza</text>
+  <rect class="bx" x="34" y="136" width="222" height="56" rx="6"/>
+  <text class="it l-en" x="46" y="154">Immunisation: 0%, 30%, 60%</text>
+  <text class="it l-es" x="46" y="154">Inmunización: 0%, 30%, 60%</text>
+  <text class="sub l-en" x="46" y="170">the variants of the case,</text>
+  <text class="sub l-es" x="46" y="170">las variantes del caso,</text>
+  <text class="sub l-en" x="46" y="184">re-run by the live engine</text>
+  <text class="sub l-es" x="46" y="184">recalculadas por el motor en vivo</text>
+  <rect class="bx" x="34" y="202" width="222" height="70" rx="6"/>
+  <text class="it l-en" x="46" y="220">Contact rate and recovery rate</text>
+  <text class="it l-es" x="46" y="220">Tasa de contacto y de recuperación</text>
+  <line class="ax" x1="46" y1="238" x2="244" y2="238"/>
+  <circle cx="120" cy="238" r="5" fill="var(--color-accent)"/>
+  <line class="ax" x1="46" y1="258" x2="244" y2="258"/>
+  <circle cx="90" cy="258" r="5" fill="var(--color-accent)"/>
+  <rect class="bx" x="34" y="282" width="222" height="96" rx="6"/>
+  <text class="it l-en" x="46" y="300">Live values</text>
+  <text class="it l-es" x="46" y="300">Valores en vivo</text>
+  <text class="sub l-en" x="46" y="318">R0, peak infected, peak day,</text>
+  <text class="sub l-es" x="46" y="318">R0, pico de contagiados, día del pico,</text>
+  <text class="sub l-en" x="46" y="332">attack rate, recomputed on</text>
+  <text class="sub l-es" x="46" y="332">tasa de ataque, recalculados en</text>
+  <text class="sub l-en" x="46" y="346">every change, with their units</text>
+  <text class="sub l-es" x="46" y="346">cada cambio, con sus unidades</text>
+  <text class="sub l-en" x="46" y="366">badges: live, synthetic</text>
+  <text class="sub l-es" x="46" y="366">insignias: en vivo, sintéticos</text>
+  <text class="sub l-en" x="34" y="410">Pickers and numbers live here, so</text>
+  <text class="sub l-es" x="34" y="410">Selectores y números viven aquí, así</text>
+  <text class="sub l-en" x="34" y="424">the drawing keeps the instrument.</text>
+  <text class="sub l-es" x="34" y="424">el dibujo conserva el instrumento.</text>
+
+  <!-- the instrument -->
+  <rect class="pn" x="286" y="50" width="594" height="390" rx="10"/>
+  <text class="h l-en" x="300" y="74">Instrument</text>
+  <text class="h l-es" x="300" y="74">Instrumento</text>
+  <rect class="on" x="300" y="84" width="90" height="26" rx="6"/>
+  <text class="acc l-en" x="314" y="101">Dynamics</text>
+  <text class="acc l-es" x="314" y="101">Dinámica</text>
+  <text class="it l-en" x="404" y="101">Validation</text>
+  <text class="it l-es" x="404" y="101">Validación</text>
+  <text class="it l-en" x="482" y="101">Compare immunisation</text>
+  <text class="it l-es" x="482" y="101">Comparar inmunización</text>
+  <text class="it l-en" x="640" y="101">Context</text>
+  <text class="it l-es" x="640" y="101">Contexto</text>
+  <line class="ax" x1="300" y1="116" x2="866" y2="116"/>
+
+  <rect class="bx" x="300" y="126" width="566" height="300" rx="8"/>
+  <line class="ax" x1="340" y1="390" x2="850" y2="390"/>
+  <line class="ax" x1="340" y1="150" x2="340" y2="390"/>
+  <path class="s" d="M340,160 C440,162 500,190 560,280 S700,372 850,376"/>
+  <path class="r" d="M340,388 C450,386 520,350 580,260 S720,180 850,176"/>
+  <path class="i" d="M340,388 C420,386 470,330 520,300 S600,350 700,384 L850,388"/>
+  <path class="rp" d="M340,388 C420,385 470,328 520,298 S600,348 700,383 L850,388"/>
+  <text class="sub l-en" x="560" y="146">solid: the live run; dashed: the committed replay</text>
+  <text class="sub l-es" x="560" y="146">continua: corrida en vivo; segmentada: reproducción comprometida</text>
+  <text class="sub l-en" x="560" y="408">day</text>
+  <text class="sub l-es" x="560" y="408">día</text>
+  <text class="sub l-en" x="300" y="420">The open view takes the height the tab row leaves.</text>
+  <text class="sub l-es" x="300" y="420">La vista abierta toma la altura que deja la fila de pestañas.</text>
+</svg>

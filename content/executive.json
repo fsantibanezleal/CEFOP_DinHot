@@ -1,0 +1,695 @@
+{
+  "title": {
+    "en": "Hospital capacity in respiratory seasons",
+    "es": "Capacidad hospitalaria en las temporadas respiratorias"
+  },
+  "key_statement": {
+    "en": "Hospitals now run close to full all year, so every respiratory season leaves patients waiting for a bed and planned care delayed. Planning capacity weeks ahead, with a named owner for each action, keeps beds and staff in step with demand.",
+    "es": "Los hospitales funcionan hoy casi llenos todo el año, así que cada temporada respiratoria deja pacientes esperando una cama y posterga la atención programada. Planificar la capacidad con semanas de anticipación, con un responsable para cada acción, mantiene camas y personal al ritmo de la demanda."
+  },
+  "headline_figures": [
+    {
+      "heading": { "en": "Beds in use", "es": "Camas en uso" },
+      "value": { "en": "92", "es": "92" },
+      "unit": {
+        "en": "percent of general and acute hospital beds occupied on average in England in 2025-26",
+        "es": "por ciento de las camas de agudos y generales ocupadas en promedio en Inglaterra en 2025-26"
+      },
+      "source": "nao"
+    },
+    {
+      "heading": { "en": "A severe season", "es": "Una temporada grave" },
+      "value": { "en": "710,000", "es": "710.000" },
+      "unit": {
+        "en": "people hospitalised with influenza in the United States in the 2024-2025 season, rated high severity",
+        "es": "personas hospitalizadas por influenza en Estados Unidos en la temporada 2024-2025, calificada de alta gravedad"
+      },
+      "source": "cdc-burden"
+    },
+    {
+      "heading": { "en": "Beds lost to delays", "es": "Camas perdidas por demoras" },
+      "value": { "en": "14.7", "es": "14,7" },
+      "unit": {
+        "en": "percent of hospital bed days in England used by patients well enough to go home, in April 2026",
+        "es": "por ciento de los días cama en Inglaterra usados por pacientes en condiciones de irse a casa, en abril de 2026"
+      },
+      "source": "nao"
+    }
+  ],
+  "pain": {
+    "key_message": {
+      "en": "Hospitals have little spare capacity left, so a respiratory season turns into waiting patients and delayed care.",
+      "es": "Los hospitales casi no tienen capacidad de reserva, así que una temporada respiratoria se convierte en pacientes en espera y atención postergada."
+    },
+    "paragraphs": [
+      {
+        "en": "Respiratory viruses return every winter and send more people to hospital within a few weeks. A hospital that already runs most of its beds full has no room to absorb that rise without a visible cost.",
+        "es": "Los virus respiratorios regresan cada invierno y llevan a más personas al hospital en pocas semanas. Un hospital que ya ocupa casi todas sus camas no puede absorber ese aumento sin un costo visible."
+      },
+      {
+        "en": "The cost appears in three places. Patients wait in corridors and emergency departments for a bed, planned operations are postponed to free beds, and staff work extra shifts that cannot be repeated every winter.",
+        "es": "El costo aparece en tres lugares. Los pacientes esperan una cama en pasillos y urgencias, se posponen operaciones programadas para liberar camas y el personal hace turnos extra que no pueden repetirse cada invierno."
+      }
+    ],
+    "bearers": [
+      {
+        "who": { "en": "Patients waiting for admission", "es": "Pacientes que esperan ingresar" },
+        "cost": {
+          "en": "Long waits in corridors and emergency departments until a bed is free",
+          "es": "Esperas largas en pasillos y urgencias hasta que hay una cama libre"
+        },
+        "measure": {
+          "en": "Share of patients admitted or discharged within four hours",
+          "es": "Proporción de pacientes admitidos o dados de alta en cuatro horas"
+        }
+      },
+      {
+        "who": { "en": "Patients on planned care lists", "es": "Pacientes en listas de atención programada" },
+        "cost": {
+          "en": "Operations postponed when beds are needed for emergencies",
+          "es": "Operaciones postergadas cuando las camas se necesitan para urgencias"
+        },
+        "measure": {
+          "en": "Planned operations cancelled for lack of a bed",
+          "es": "Operaciones programadas canceladas por falta de cama"
+        }
+      },
+      {
+        "who": { "en": "Nursing and ward staff", "es": "Personal de enfermería y de las salas" },
+        "cost": {
+          "en": "Extra shifts and moves between wards at short notice",
+          "es": "Turnos extra y traslados entre salas con poco aviso"
+        },
+        "measure": {
+          "en": "Overtime hours and agency shifts used",
+          "es": "Horas extra y turnos de agencia usados"
+        }
+      },
+      {
+        "who": { "en": "Hospital executives and funders", "es": "La dirección del hospital y quienes lo financian" },
+        "cost": {
+          "en": "Money spent on delayed discharges and emergency measures",
+          "es": "Dinero gastado en altas demoradas y medidas de emergencia"
+        },
+        "measure": {
+          "en": "Cost of bed days used by patients ready to leave",
+          "es": "Costo de los días cama usados por pacientes listos para irse"
+        }
+      },
+      {
+        "who": { "en": "Ambulance crews and emergency services", "es": "Equipos de ambulancia y de emergencias" },
+        "cost": {
+          "en": "Crews held at the hospital door while no bed is free",
+          "es": "Equipos retenidos en la puerta del hospital mientras no hay cama libre"
+        },
+        "measure": {
+          "en": "Minutes an ambulance waits to hand over a patient",
+          "es": "Minutos que una ambulancia espera para entregar a un paciente"
+        }
+      }
+    ],
+    "figures": [
+      {
+        "heading": { "en": "Where risk starts", "es": "Dónde empieza el riesgo" },
+        "value": { "en": "85", "es": "85" },
+        "unit": {
+          "en": "percent average occupancy, above which a hospital's risk of running out of beds becomes visible",
+          "es": "por ciento de ocupación promedio, desde el cual el riesgo de quedarse sin camas se hace visible"
+        },
+        "source": "bagust"
+      },
+      {
+        "heading": { "en": "Crisis level", "es": "Nivel de crisis" },
+        "value": { "en": "90", "es": "90" },
+        "unit": {
+          "en": "percent average occupancy, at which regular bed shortages and periodic crises are to be expected",
+          "es": "por ciento de ocupación promedio, desde el cual se esperan faltas regulares de camas y crisis periódicas"
+        },
+        "source": "bagust"
+      },
+      {
+        "heading": { "en": "Admissions from emergency", "es": "Ingresos desde urgencias" },
+        "value": { "en": "4.8 million", "es": "4,8 millones" },
+        "unit": {
+          "en": "patients admitted from emergency departments in England in 2025-26, up from 3.7 million in 2011-12",
+          "es": "pacientes ingresados desde urgencias en Inglaterra en 2025-26, frente a 3,7 millones en 2011-12"
+        },
+        "source": "nao"
+      }
+    ],
+    "causes": [
+      {
+        "cause": {
+          "en": "Little spare capacity: beds are already close to full before the season starts",
+          "es": "Poca capacidad de reserva: las camas ya están casi llenas antes de que empiece la temporada"
+        },
+        "weight": 35
+      },
+      {
+        "cause": {
+          "en": "Patients who cannot leave when ready, because care outside the hospital is not in place",
+          "es": "Pacientes que no pueden irse cuando están listos, porque falta la atención fuera del hospital"
+        },
+        "weight": 25
+      },
+      {
+        "cause": {
+          "en": "Late warning: demand is seen when it arrives, not weeks before",
+          "es": "Aviso tardío: la demanda se ve cuando llega, no semanas antes"
+        },
+        "weight": 25
+      },
+      {
+        "cause": {
+          "en": "Too few staff for the beds that exist",
+          "es": "Muy poco personal para las camas que existen"
+        },
+        "weight": 15
+      }
+    ]
+  },
+  "context": {
+    "key_message": {
+      "en": "Rules, funding and habits built for a steady year leave no room for the sharp and predictable rise of winter.",
+      "es": "Las reglas, el financiamiento y las costumbres hechos para un año estable no dejan espacio para el aumento brusco y previsible del invierno."
+    },
+    "paragraphs": [
+      {
+        "en": "Most hospitals are funded and planned around average demand. Beds are kept as full as safety allows because empty beds are costly, rosters are fixed weeks before the shift, and discharge depends on services outside the hospital walls.",
+        "es": "La mayoría de los hospitales se financia y planifica según la demanda promedio. Las camas se mantienen tan llenas como la seguridad lo permite porque las camas vacías cuestan, los turnos se fijan semanas antes y el alta depende de servicios externos."
+      }
+    ],
+    "setting": {
+      "en": "Acute hospitals in publicly funded or insured health systems, with fixed ward structures, rosters set weeks ahead, national reporting duties and a shared dependence on community and social care.",
+      "es": "Hospitales de agudos en sistemas de salud con financiamiento público o de seguros, con salas fijas, turnos fijados con semanas de antelación y dependencia de la atención comunitaria."
+    },
+    "forces": [
+      {
+        "force": {
+          "en": "Average occupancy keeps rising, so the margin for a surge shrinks",
+          "es": "La ocupación promedio sigue subiendo, así que el margen para un aumento súbito se reduce"
+        },
+        "direction": "rising"
+      },
+      {
+        "force": {
+          "en": "Respiratory viruses return every winter, and some seasons are severe",
+          "es": "Los virus respiratorios regresan cada invierno, y algunas temporadas son graves"
+        },
+        "direction": "steady"
+      },
+      {
+        "force": {
+          "en": "Delays in leaving hospital keep beds blocked",
+          "es": "Las demoras para salir del hospital mantienen camas bloqueadas"
+        },
+        "direction": "steady"
+      },
+      {
+        "force": {
+          "en": "Duties to report beds and respiratory patients keep growing",
+          "es": "Los deberes de reportar camas y pacientes respiratorios siguen creciendo"
+        },
+        "direction": "rising"
+      }
+    ],
+    "evidence": [
+      {
+        "statement": {
+          "en": "In England, average bed occupancy rose from 87 to 92 percent, and admissions through emergency departments rose from 3.7 million in 2011-12 to 4.8 million in 2025-26.",
+          "es": "En Inglaterra, la ocupación promedio de camas subió de 87 a 92 por ciento, y los ingresos por urgencias subieron de 3,7 millones en 2011-12 a 4,8 millones en 2025-26."
+        },
+        "source": "nao"
+      },
+      {
+        "statement": {
+          "en": "Across 29 countries of the Organisation for Economic Co-operation and Development, average bed occupancy was 72 percent in 2023, and only two countries exceeded 85 percent.",
+          "es": "En 29 países de la Organización para la Cooperación y el Desarrollo Económicos, la ocupación promedio fue 72 por ciento en 2023, y solo dos superaron el 85 por ciento."
+        },
+        "source": "oecd"
+      },
+      {
+        "statement": {
+          "en": "A simulation of emergency admissions found that risks become visible above about 85 percent average occupancy, with regular shortages at 90 percent or more.",
+          "es": "Una simulación de ingresos de urgencia halló que los riesgos se hacen visibles sobre un 85 por ciento de ocupación promedio, con faltas regulares desde el 90 por ciento."
+        },
+        "source": "bagust"
+      }
+    ]
+  },
+  "situation": {
+    "key_message": {
+      "en": "Each role sees a part of the problem and acts on it, but no shared view joins demand, discharge and staff weeks ahead.",
+      "es": "Cada rol ve una parte del problema y actúa sobre ella, pero ninguna vista compartida une demanda, altas y personal con semanas de anticipación."
+    },
+    "roles": [
+      {
+        "role": { "en": "Hospital executives", "es": "La dirección del hospital" },
+        "decides": {
+          "en": "How many beds and staff to fund, and when to postpone planned care",
+          "es": "Cuántas camas y cuánto personal financiar, y cuándo postergar la atención programada"
+        },
+        "needs": {
+          "en": "An early view of the coming pressure, while a decision can still change it",
+          "es": "Una vista temprana de la presión que viene, mientras una decisión aún puede cambiarla"
+        }
+      },
+      {
+        "role": { "en": "Patient-flow and bed managers", "es": "Gestores de camas y flujo de pacientes" },
+        "decides": {
+          "en": "Who is admitted, moved or discharged each day",
+          "es": "Quién ingresa, se traslada o recibe el alta cada día"
+        },
+        "needs": {
+          "en": "Expected admissions and discharges for the coming weeks",
+          "es": "Ingresos y altas esperados para las próximas semanas"
+        }
+      },
+      {
+        "role": { "en": "Nursing and clinical leaders", "es": "Jefaturas de enfermería y clínicas" },
+        "decides": {
+          "en": "Which staff work which shifts, and which wards open",
+          "es": "Qué personal trabaja en qué turno y qué salas se abren"
+        },
+        "needs": {
+          "en": "Early warning of a staffing gap, in time to change a roster",
+          "es": "Aviso temprano de una brecha de personal, a tiempo para cambiar un turno"
+        }
+      },
+      {
+        "role": { "en": "Public health agencies", "es": "Agencias de salud pública" },
+        "decides": {
+          "en": "What warnings and guidance reach hospitals during the season",
+          "es": "Qué alertas y guías llegan a los hospitales durante la temporada"
+        },
+        "needs": {
+          "en": "Timely counts of beds and respiratory patients from every hospital",
+          "es": "Conteos oportunos de camas y pacientes respiratorios de cada hospital"
+        }
+      }
+    ],
+    "interaction": {
+      "en": "Executives set the funding, flow managers set the daily moves, nursing leaders set the rosters and agencies set the warnings, each from different and later information.",
+      "es": "La dirección fija el financiamiento, los gestores los movimientos diarios, las jefaturas los turnos y las agencias las alertas, cada uno con información distinta y más tardía."
+    },
+    "state_of_the_art": [
+      {
+        "approach": {
+          "en": "Daily bed meetings and patient-flow bundles",
+          "es": "Reuniones diarias de camas y paquetes de flujo de pacientes"
+        },
+        "achieves": {
+          "en": "Faster discharge and shorter waits for a bed: in one study the wait in emergency fell from 16.6 to 9.5 hours",
+          "es": "Altas más rápidas y esperas más cortas por una cama: en un estudio la espera en urgencias bajó de 16,6 a 9,5 horas"
+        },
+        "falls_short": {
+          "en": "They act days ahead, and the study found no significant fall in length of stay",
+          "es": "Actúan con días de anticipación, y el estudio no halló una baja significativa de la estadía"
+        },
+        "source": "safer-flow"
+      },
+      {
+        "approach": {
+          "en": "National forecasts of hospital admissions",
+          "es": "Pronósticos nacionales de ingresos hospitalarios"
+        },
+        "achieves": {
+          "en": "A weekly forecast up to three weeks ahead that beats a simple baseline",
+          "es": "Un pronóstico semanal hasta tres semanas adelante que supera una referencia simple"
+        },
+        "falls_short": {
+          "en": "It misses the sharp rises at the start and peak of a season, and covers regions, not single hospitals",
+          "es": "Falla en las alzas bruscas del inicio y el pico de una temporada, y cubre regiones, no hospitales individuales"
+        },
+        "source": "flusight"
+      },
+      {
+        "approach": {
+          "en": "Mandatory reporting of beds and respiratory patients",
+          "es": "Reporte obligatorio de camas y pacientes respiratorios"
+        },
+        "achieves": {
+          "en": "One standard picture of beds and respiratory patients across all hospitals",
+          "es": "Una imagen estándar de camas y pacientes respiratorios de todos los hospitales"
+        },
+        "falls_short": {
+          "en": "It records what has happened and does not tell a hospital what to do next",
+          "es": "Registra lo que ya ocurrió y no dice a un hospital qué hacer después"
+        },
+        "source": "cms"
+      },
+      {
+        "approach": {
+          "en": "Occupancy limits such as 85 percent",
+          "es": "Límites de ocupación como el 85 por ciento"
+        },
+        "achieves": {
+          "en": "A clear and shared warning level for safety",
+          "es": "Un nivel de alerta claro y compartido para la seguridad"
+        },
+        "falls_short": {
+          "en": "It says when a hospital is unsafe, not when it will be or which action to take",
+          "es": "Dice cuándo un hospital es inseguro, no cuándo lo será ni qué acción tomar"
+        },
+        "source": "oecd"
+      }
+    ],
+    "status": {
+      "heading": {
+        "en": "Estimated cost of delays in discharge",
+        "es": "Costo estimado de las demoras en el alta"
+      },
+      "value": { "en": "2 billion", "es": "2 mil millones" },
+      "unit": {
+        "en": "pounds, over nine months from August 2025 to April 2026, in England",
+        "es": "libras, en nueve meses de agosto de 2025 a abril de 2026, en Inglaterra"
+      },
+      "date": { "en": "April 2026", "es": "abril de 2026" },
+      "source": "nao"
+    }
+  },
+  "trends": {
+    "key_message": {
+      "en": "Reporting, forecasting and prevention are changing fast while the staff shortage eases slowly, so planning ahead will soon be expected.",
+      "es": "El reporte, el pronóstico y la prevención cambian rápido mientras la escasez de personal cede despacio, así que pronto se esperará planificar con anticipación."
+    },
+    "items": [
+      {
+        "trend": {
+          "en": "Reporting of beds and respiratory patients becomes mandatory and standard",
+          "es": "El reporte de camas y pacientes respiratorios pasa a ser obligatorio y estándar"
+        },
+        "kind": "regulatory",
+        "direction": "rising",
+        "horizon": "now",
+        "signal": {
+          "statement": {
+            "en": "Since 1 November 2024, hospitals in the United States must report bed capacity and respiratory patients in a standard format or risk losing public insurance participation.",
+            "es": "Desde el 1 de noviembre de 2024, los hospitales de Estados Unidos deben reportar camas y pacientes respiratorios en formato estándar, o arriesgan perder su participación en el seguro público."
+          },
+          "source": "cms"
+        },
+        "effect": {
+          "en": "Public health agencies gain a shared picture, and hospital executives can no longer plan without comparable data.",
+          "es": "Las agencias de salud pública ganan una imagen compartida, y la dirección del hospital ya no puede planificar sin datos comparables."
+        },
+        "confidence": "high"
+      },
+      {
+        "trend": {
+          "en": "Forecasting of hospital admissions becomes routine, with known limits",
+          "es": "El pronóstico de ingresos hospitalarios se vuelve rutina, con límites conocidos"
+        },
+        "kind": "technological",
+        "direction": "rising",
+        "horizon": "two_years",
+        "signal": {
+          "statement": {
+            "en": "The national influenza forecast ensemble beat every submitted model in 2024-25 but missed the sharp rise of late December and January.",
+            "es": "El conjunto nacional de pronósticos de influenza superó a todos los modelos enviados en 2024-25, pero no anticipó el alza brusca de fines de diciembre y enero."
+          },
+          "source": "flusight"
+        },
+        "effect": {
+          "en": "Patient-flow and bed managers can plan on ranges, but must prepare for a miss at the start and the peak of a season.",
+          "es": "Los gestores de camas y flujo de pacientes pueden planificar con rangos, pero deben prepararse para un error al inicio y en el pico de una temporada."
+        },
+        "confidence": "medium"
+      },
+      {
+        "trend": {
+          "en": "Prevention reduces severe respiratory illness in infants",
+          "es": "La prevención reduce la enfermedad respiratoria grave en lactantes"
+        },
+        "kind": "practice",
+        "direction": "rising",
+        "horizon": "now",
+        "signal": {
+          "statement": {
+            "en": "In 2024-25, an antibody given to infants was 80 percent effective against intensive care admission for respiratory syncytial virus.",
+            "es": "En 2024-25, un anticuerpo dado a lactantes fue 80 por ciento efectivo contra el ingreso a cuidados intensivos por virus respiratorio sincicial."
+          },
+          "source": "nirsevimab"
+        },
+        "effect": {
+          "en": "Patient-flow and bed managers may see fewer infant intensive care admissions, but only where coverage is high.",
+          "es": "Los gestores de camas y flujo de pacientes pueden ver menos ingresos de lactantes a cuidados intensivos, pero solo donde la cobertura es alta."
+        },
+        "confidence": "medium"
+      },
+      {
+        "trend": {
+          "en": "The shortage of nurses narrows only slowly",
+          "es": "La escasez de enfermeras se reduce solo lentamente"
+        },
+        "kind": "market",
+        "direction": "easing",
+        "horizon": "ten_years",
+        "signal": {
+          "statement": {
+            "en": "The world shortage of nurses is projected to fall from 5.8 million in 2023 to 4.1 million in 2030.",
+            "es": "Se proyecta que la escasez mundial de enfermeras baje de 5,8 millones en 2023 a 4,1 millones en 2030."
+          },
+          "source": "who-nursing"
+        },
+        "effect": {
+          "en": "Nursing and clinical leaders must plan rosters with fewer staff than beds for years.",
+          "es": "Las jefaturas de enfermería y clínicas deberán planificar los turnos con menos personal que camas durante años."
+        },
+        "confidence": "medium"
+      }
+    ]
+  },
+  "proposal": {
+    "key_message": {
+      "en": "Plan capacity weeks ahead as one shared forecast of admissions, discharges and staff, and start by naming who owns it.",
+      "es": "Planificar la capacidad con semanas de anticipación como un pronóstico compartido de ingresos, altas y personal, y empezar por nombrar quién lo gestiona."
+    },
+    "paragraphs": [
+      {
+        "en": "The approach joins expected admissions, expected discharges and staff into one plan for the coming weeks. Pressure then shows while beds, rosters and planned care can still change. It answers the four causes of the pain: thin margins, blocked discharge, late warning and scarce staff.",
+        "es": "El enfoque une ingresos esperados, altas esperadas y personal en un solo plan para las próximas semanas. Así la presión se ve mientras camas, turnos y atención programada aún pueden cambiar. Responde a las cuatro causas del problema: márgenes estrechos, altas bloqueadas, aviso tardío y personal escaso."
+      },
+      {
+        "en": "Forecasts miss turning points, so the plan works with ranges and trigger levels, not a single number. Each trigger names who acts, and the plan is reviewed at the end of every season.",
+        "es": "Los pronósticos fallan en los puntos de quiebre, así que el plan trabaja con rangos y niveles de activación, no con una sola cifra. Cada nivel nombra quién actúa, y el plan se revisa al final de cada temporada."
+      }
+    ],
+    "four_cs": [
+      {
+        "c": { "en": "Choice", "es": "Elección" },
+        "applies": {
+          "en": "Forecasts can come from open or proprietary models, and a hospital can switch as evidence on their accuracy grows.",
+          "es": "Los pronósticos pueden venir de modelos abiertos o propietarios, y un hospital puede cambiar a medida que crece la evidencia sobre su exactitud."
+        }
+      },
+      {
+        "c": { "en": "Context", "es": "Contexto" },
+        "applies": {
+          "en": "Every number is tied to wards, patients and staff, so a forecast tells executives what to decide and not only what to expect.",
+          "es": "Cada cifra se ata a salas, pacientes y personal, de modo que un pronóstico dice a la dirección qué decidir y no solo qué esperar."
+        }
+      },
+      {
+        "c": { "en": "Cost", "es": "Costo" },
+        "applies": {
+          "en": "Executives see what each forecast and plan spends in staff time and computing, next to the cost of the delays they avoid.",
+          "es": "La dirección ve lo que gasta cada pronóstico y plan en tiempo del personal y cómputo, junto al costo de las demoras que evitan."
+        }
+      },
+      {
+        "c": { "en": "Control", "es": "Control" },
+        "applies": {
+          "en": "One set of rules covers the data, the models and the agents that propose plans, with a named owner for each.",
+          "es": "Un solo conjunto de reglas cubre los datos, los modelos y los agentes que proponen planes, con un responsable para cada uno."
+        }
+      }
+    ],
+    "actions": [
+      {
+        "action": {
+          "en": "Agree one shared forecast of admissions and discharges, with ranges, for the coming four weeks.",
+          "es": "Acordar un pronóstico compartido de ingresos y altas, con rangos, para las próximas cuatro semanas."
+        },
+        "owner": { "en": "Patient-flow and bed managers", "es": "Gestores de camas y flujo de pacientes" },
+        "horizon": { "en": "Before the next respiratory season", "es": "Antes de la próxima temporada respiratoria" },
+        "check": {
+          "en": "Actual admissions fall inside the forecast range in most weeks, reviewed after the season.",
+          "es": "Los ingresos reales caen dentro del rango pronosticado en la mayoría de las semanas, revisado tras la temporada."
+        }
+      },
+      {
+        "action": {
+          "en": "Set trigger levels of occupancy and staffing that start named actions before the safe limit is crossed.",
+          "es": "Fijar niveles de ocupación y de personal que activen acciones con responsable antes de cruzar el límite seguro."
+        },
+        "owner": { "en": "Hospital executives", "es": "La dirección del hospital" },
+        "horizon": { "en": "Before the season starts", "es": "Antes de que empiece la temporada" },
+        "check": {
+          "en": "Every trigger has an owner and was rehearsed once before winter.",
+          "es": "Cada nivel tiene un responsable y se ensayó una vez antes del invierno."
+        }
+      },
+      {
+        "action": {
+          "en": "Write rosters and plan elective care from the forecast ranges, not from last year.",
+          "es": "Escribir los turnos y planificar la atención electiva desde los rangos pronosticados, no desde el año pasado."
+        },
+        "owner": { "en": "Nursing and clinical leaders", "es": "Jefaturas de enfermería y clínicas" },
+        "horizon": { "en": "Within one planning quarter", "es": "Dentro de un trimestre de planificación" },
+        "check": {
+          "en": "Overtime and cancelled operations fall compared with the previous season.",
+          "es": "Las horas extra y las operaciones canceladas bajan respecto de la temporada anterior."
+        }
+      },
+      {
+        "action": {
+          "en": "Agree with community and social care how patients ready to leave are moved out each day.",
+          "es": "Acordar con la atención comunitaria y social cómo se traslada cada día a los pacientes listos para irse."
+        },
+        "owner": { "en": "Hospital executives", "es": "La dirección del hospital" },
+        "horizon": { "en": "Within two quarters", "es": "Dentro de dos trimestres" },
+        "check": {
+          "en": "Bed days used by patients ready to leave fall as a share of all bed days.",
+          "es": "Los días cama usados por pacientes listos para irse bajan como parte de todos los días cama."
+        }
+      },
+      {
+        "action": {
+          "en": "Share weekly bed and respiratory patient counts with neighbouring hospitals in one format.",
+          "es": "Compartir cada semana los conteos de camas y pacientes respiratorios con hospitales vecinos en un solo formato."
+        },
+        "owner": { "en": "Public health agencies", "es": "Agencias de salud pública" },
+        "horizon": { "en": "Within one year", "es": "Dentro de un año" },
+        "check": {
+          "en": "Every hospital receives the regional picture within two days of the week's end.",
+          "es": "Cada hospital recibe la imagen regional dentro de dos días del cierre de la semana."
+        }
+      }
+    ],
+    "risks": [
+      {
+        "en": "A forecast that misses a turning point could move staff away from a ward just before it fills.",
+        "es": "Un pronóstico que falla en un punto de quiebre podría sacar personal de una sala justo antes de que se llene."
+      },
+      {
+        "en": "Trigger levels can become routine alarms that teams learn to ignore.",
+        "es": "Los niveles de activación pueden volverse alarmas de rutina que los equipos aprenden a ignorar."
+      }
+    ],
+    "unknowns": [
+      {
+        "en": "How much pressure earlier discharge removes, and how much still needs more beds, is not yet known.",
+        "es": "Cuánta presión quita el alta más temprana, y cuánta aún requiere más camas, todavía no se sabe."
+      },
+      {
+        "en": "The size of each cause differs between hospitals, and the weights shown here are an editorial estimate, not a measurement.",
+        "es": "El tamaño de cada causa difiere entre hospitales, y los pesos mostrados aquí son una estimación editorial, no una medición."
+      }
+    ],
+    "handoff": {
+      "en": "One part of this problem, forecasting the course of an outbreak against capacity, is explored in the technical view.",
+      "es": "Una parte de este problema, pronosticar el curso de un brote frente a la capacidad, se explora en la vista técnica."
+    }
+  },
+  "illustrations": {
+    "pain": {
+      "file": "executive/pain.svg",
+      "caption": {
+        "en": "Winter demand meets wards that are already full, so patients wait and planned care is cancelled.",
+        "es": "La demanda de invierno encuentra salas ya llenas, así que los pacientes esperan y la atención programada se cancela."
+      }
+    },
+    "situation": {
+      "file": "executive/situation.svg",
+      "caption": {
+        "en": "Four roles each hold a part of the picture, and the tools they use look back or only days ahead.",
+        "es": "Cuatro roles tienen cada uno una parte del cuadro, y las herramientas que usan miran atrás o solo unos días adelante."
+      }
+    },
+    "proposal": {
+      "file": "executive/proposal.svg",
+      "caption": {
+        "en": "With one shared plan, demand is seen weeks ahead and beds, staff and discharge move in step.",
+        "es": "Con un plan compartido, la demanda se ve con semanas de anticipación y camas, personal y altas avanzan al mismo ritmo."
+      }
+    }
+  },
+  "sources": [
+    {
+      "id": "nao",
+      "title": {
+        "en": "National Audit Office, Managing the flow of patients through hospital from accident and emergency, September 2026",
+        "es": "Oficina Nacional de Auditoría del Reino Unido, Gestión del flujo de pacientes en el hospital desde urgencias, septiembre de 2026"
+      },
+      "url": "https://www.nao.org.uk/wp-content/uploads/2026/09/Managing-the-flow-of-patients-through-hospital-from-AE-Summary.pdf",
+      "note": { "en": "Key facts and paragraph 2 of the summary; figures are for England.", "es": "Datos clave y párrafo 2 del resumen; las cifras son de Inglaterra." }
+    },
+    {
+      "id": "bagust",
+      "title": {
+        "en": "Bagust, Place and Posnett, Dynamics of bed use in accommodating emergency admissions: stochastic simulation model, British Medical Journal, 1999",
+        "es": "Bagust, Place y Posnett, Dinámica del uso de camas para atender ingresos de urgencia: modelo de simulación estocástica, British Medical Journal, 1999"
+      },
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC28163"
+    },
+    {
+      "id": "oecd",
+      "title": {
+        "en": "Organisation for Economic Co-operation and Development, Health at a Glance 2025, Hospital beds and occupancy",
+        "es": "Organización para la Cooperación y el Desarrollo Económicos, Panorama de la Salud 2025, Camas hospitalarias y ocupación"
+      },
+      "url": "https://www.oecd.org/en/publications/health-at-a-glance-2025_8f9e3f98-en/full-report/hospital-beds-and-occupancy_152d839e.html"
+    },
+    {
+      "id": "cdc-burden",
+      "title": {
+        "en": "United States Centers for Disease Control and Prevention, 2024-2025 influenza season summary: severity, disease burden and burden prevented",
+        "es": "Centros para el Control y la Prevención de Enfermedades de Estados Unidos, Resumen de la temporada de influenza 2024-2025: gravedad, carga de enfermedad y carga evitada"
+      },
+      "url": "https://www.cdc.gov/flu-burden/php/data-vis-vac/2024-2025-prevented.html",
+      "note": { "en": "Page updated on 12 March 2026.", "es": "Página actualizada el 12 de marzo de 2026." }
+    },
+    {
+      "id": "flusight",
+      "title": {
+        "en": "United States Centers for Disease Control and Prevention, FluSight 2024-2025 evaluation",
+        "es": "Centros para el Control y la Prevención de Enfermedades de Estados Unidos, Evaluación de FluSight 2024-2025"
+      },
+      "url": "https://www.cdc.gov/flu-forecasting/evaluation/2024-2025-report.html"
+    },
+    {
+      "id": "cms",
+      "title": {
+        "en": "Centers for Medicare and Medicaid Services, Updates to the condition of participation requirements for hospitals to report acute respiratory illnesses, October 2024",
+        "es": "Centros de Servicios de Medicare y Medicaid, Actualización de los requisitos de condición de participación de los hospitales para reportar enfermedades respiratorias agudas, octubre de 2024"
+      },
+      "url": "https://cms.gov/files/document/qso-25-05-hospitals-cahs.pdf"
+    },
+    {
+      "id": "who-nursing",
+      "title": {
+        "en": "World Health Organization, Nursing workforce grows, but inequities threaten global health goals, 12 May 2025",
+        "es": "Organización Mundial de la Salud, La fuerza laboral de enfermería crece, pero las inequidades amenazan las metas de salud mundial, 12 de mayo de 2025"
+      },
+      "url": "https://www.who.int/news/item/12-05-2025-nursing-workforce-grows--but-inequities-threaten-global-health-goals"
+    },
+    {
+      "id": "nirsevimab",
+      "title": {
+        "en": "Morbidity and Mortality Weekly Report, Nirsevimab effectiveness against intensive care unit admission for respiratory syncytial virus in infants, 24 states, December 2024 to April 2025",
+        "es": "Morbidity and Mortality Weekly Report, Efectividad de nirsevimab contra el ingreso a cuidados intensivos por virus respiratorio sincicial en lactantes, 24 estados, diciembre de 2024 a abril de 2025"
+      },
+      "url": "https://www.cdc.gov/mmwr/volumes/74/wr/mm7437a1.htm"
+    },
+    {
+      "id": "safer-flow",
+      "title": {
+        "en": "Alotaibi, Alnowaiser and Alamry, Improving hospital flow: the Ensiab project, BMJ Open Quality, 2021",
+        "es": "Alotaibi, Alnowaiser y Alamry, Mejorar el flujo hospitalario: el proyecto Ensiab, BMJ Open Quality, 2021"
+      },
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8479940",
+      "note": { "en": "Six hospitals compared for 12 months before and after; length of stay did not fall significantly.", "es": "Seis hospitales comparados 12 meses antes y después; la estadía no bajó de forma significativa." }
+    }
+  ]
+}

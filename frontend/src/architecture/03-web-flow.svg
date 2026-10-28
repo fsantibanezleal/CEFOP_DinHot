@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="The web flow, from the index to a measured view">
+  <!-- Hand-authored; shell tokens only; both languages in one file (ADR-0058). -->
+  <style>
+    .arch-svg text { font-family: var(--font-sans); }
+    .arch-svg .mono { font-family: var(--font-mono); }
+    .arch-svg .bx { fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1; }
+    .arch-svg .gt { fill: var(--color-surface); stroke: var(--color-warn); stroke-width: 1.4; }
+    .arch-svg .ttl { fill: var(--color-fg); font-size: 15px; font-weight: 700; }
+    .arch-svg .n { fill: var(--color-accent); font-size: 12px; font-weight: 700; }
+    .arch-svg .it { fill: var(--color-fg); font-size: 11px; font-weight: 600; }
+    .arch-svg .sub { fill: var(--color-fg-subtle); font-size: 10.5px; }
+    .arch-svg .cd { fill: var(--color-fg-subtle); font-size: 10px; }
+    .arch-svg .wt { fill: var(--color-warn); font-size: 12px; font-weight: 700; }
+    .arch-svg .flow { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.4; }
+  </style>
+  <defs>
+    <marker id="wf3-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 z" fill="var(--color-fg-faint)"/>
+    </marker>
+  </defs>
+
+  <text class="ttl l-en" x="20" y="30">From the index to a view a reader can trust</text>
+  <text class="ttl l-es" x="20" y="30">Del índice a una vista en la que el lector puede confiar</text>
+
+  <rect class="bx" x="20" y="60" width="200" height="110" rx="8"/>
+  <text class="n" x="34" y="84">1</text>
+  <text class="it l-en" x="52" y="84">Load the index</text>
+  <text class="it l-es" x="52" y="84">Cargar el índice</text>
+  <text class="cd mono" x="34" y="104">manifests/index.json</text>
+  <text class="sub l-en" x="34" y="124">cases, titles, categories,</text>
+  <text class="sub l-es" x="34" y="124">casos, títulos, categorías,</text>
+  <text class="sub l-en" x="34" y="140">the default case</text>
+  <text class="sub l-es" x="34" y="140">el caso por defecto</text>
+
+  <rect class="bx" x="245" y="60" width="200" height="110" rx="8"/>
+  <text class="n" x="259" y="84">2</text>
+  <text class="it l-en" x="277" y="84">Pick a case</text>
+  <text class="it l-es" x="277" y="84">Elegir un caso</text>
+  <text class="cd mono" x="259" y="104">?case=EX02_epidemic</text>
+  <text class="sub l-en" x="259" y="124">the picker or a deep link;</text>
+  <text class="sub l-es" x="259" y="124">el selector o un enlace directo;</text>
+  <text class="sub l-en" x="259" y="140">the workbench shows that case</text>
+  <text class="sub l-es" x="259" y="140">el banco muestra ese caso</text>
+
+  <rect class="bx" x="470" y="60" width="200" height="110" rx="8"/>
+  <text class="n" x="484" y="84">3</text>
+  <text class="it l-en" x="502" y="84">Load its artifacts</text>
+  <text class="it l-es" x="502" y="84">Cargar sus artefactos</text>
+  <text class="cd mono" x="484" y="104">data-state="loading"</text>
+  <text class="sub l-en" x="484" y="124">manifest and trace, as JSON,</text>
+  <text class="sub l-es" x="484" y="124">manifiesto y traza, como JSON,</text>
+  <text class="sub l-en" x="484" y="140">with ?v= the release version</text>
+  <text class="sub l-es" x="484" y="140">con ?v= la versión publicada</text>
+
+  <rect class="bx" x="695" y="60" width="185" height="110" rx="8"/>
+  <text class="n" x="709" y="84">4</text>
+  <text class="it l-en" x="727" y="84">Run it live</text>
+  <text class="it l-es" x="727" y="84">Correrlo en vivo</text>
+  <text class="cd mono" x="709" y="104">simulate(params)</text>
+  <text class="sub l-en" x="709" y="124">with the rail values and</text>
+  <text class="sub l-es" x="709" y="124">con los valores del panel y</text>
+  <text class="sub l-en" x="709" y="140">the chosen immunisation</text>
+  <text class="sub l-es" x="709" y="140">la inmunización elegida</text>
+
+  <rect class="bx" x="245" y="200" width="425" height="100" rx="8"/>
+  <text class="n" x="259" y="224">5</text>
+  <text class="it l-en" x="277" y="224">Show the views, keyed by the selection</text>
+  <text class="it l-es" x="277" y="224">Mostrar las vistas, con la clave de la selección</text>
+  <text class="sub l-en" x="259" y="246">case, variant and controls form one key; each view carries the key of the</text>
+  <text class="sub l-es" x="259" y="246">caso, variante y controles forman una clave; cada vista lleva la clave de los</text>
+  <text class="sub l-en" x="259" y="262">data it draws, and a view still on an earlier key is shown as recomputing</text>
+  <text class="sub l-es" x="259" y="262">datos que dibuja, y una vista con una clave anterior se muestra recalculando</text>
+  <text class="cd mono" x="259" y="284">data-state-key · data-stale · data-drawn</text>
+
+  <rect class="gt" x="20" y="330" width="860" height="110" rx="8"/>
+  <text class="wt l-en" x="34" y="356">Before a deploy: the gate measures all of it</text>
+  <text class="wt l-es" x="34" y="356">Antes de desplegar: la compuerta lo mide todo</text>
+  <text class="cd mono" x="34" y="376">npm run gate  (caos-shell-gate --serve dist)</text>
+  <text class="sub l-en" x="34" y="398">every route, tab and case; five sizes; both themes and languages; waits for the declared state above,</text>
+  <text class="sub l-es" x="34" y="398">cada ruta, pestaña y caso; cinco tamaños; ambos temas e idiomas; espera el estado declarado arriba,</text>
+  <text class="sub l-en" x="34" y="414">never for the network, and fails on errors, unreachable controls, blank drawings, loops at rest,</text>
+  <text class="sub l-es" x="34" y="414">nunca la red, y falla ante errores, controles inalcanzables, dibujos en blanco, ciclos en reposo</text>
+  <text class="sub l-en" x="34" y="430">and controls that change nothing.</text>
+  <text class="sub l-es" x="34" y="430">y controles que no cambian nada.</text>
+
+  <path class="flow" d="M220,115 H243" marker-end="url(#wf3-arrow)"/>
+  <path class="flow" d="M445,115 H468" marker-end="url(#wf3-arrow)"/>
+  <path class="flow" d="M670,115 H693" marker-end="url(#wf3-arrow)"/>
+  <path class="flow" d="M787,170 V250 H672" marker-end="url(#wf3-arrow)"/>
+  <path class="flow" d="M457,300 V328" marker-end="url(#wf3-arrow)"/>
+</svg>

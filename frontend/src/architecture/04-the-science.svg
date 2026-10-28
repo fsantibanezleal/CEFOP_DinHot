@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="The SIR model, its threshold and its final size">
+  <!-- Hand-authored; shell tokens only; both languages in one file (ADR-0058). Replace with the product's science. -->
+  <style>
+    .arch-svg text { font-family: var(--font-sans); }
+    .arch-svg .mono { font-family: var(--font-mono); }
+    .arch-svg .cS { fill: var(--color-surface-2); stroke: var(--color-accent); stroke-width: 2; }
+    .arch-svg .cI { fill: var(--color-surface-2); stroke: var(--color-bad); stroke-width: 2; }
+    .arch-svg .cR { fill: var(--color-surface-2); stroke: var(--color-good); stroke-width: 2; }
+    .arch-svg .bx { fill: var(--color-surface); stroke: var(--color-border); stroke-width: 1; }
+    .arch-svg .ttl { fill: var(--color-fg); font-size: 15px; font-weight: 700; }
+    .arch-svg .big { fill: var(--color-fg); font-size: 22px; font-weight: 700; }
+    .arch-svg .h { fill: var(--color-fg); font-size: 12px; font-weight: 700; }
+    .arch-svg .eq { fill: var(--color-fg); font-size: 13px; }
+    .arch-svg .sub { fill: var(--color-fg-subtle); font-size: 10.5px; }
+    .arch-svg .rate { fill: var(--color-magenta); font-size: 12px; font-weight: 600; }
+    .arch-svg .flow { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.6; }
+    .arch-svg .curve { fill: none; stroke: var(--color-accent); stroke-width: 2; }
+    .arch-svg .ax { stroke: var(--color-fg-faint); stroke-width: 1; }
+  </style>
+  <defs>
+    <marker id="sc4-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 z" fill="var(--color-fg-faint)"/>
+    </marker>
+  </defs>
+
+  <text class="ttl l-en" x="20" y="30">The example science: SIR, its threshold and its final size</text>
+  <text class="ttl l-es" x="20" y="30">La ciencia del ejemplo: SIR, su umbral y su tamaño final</text>
+
+  <rect class="cS" x="60" y="70" width="140" height="80" rx="10"/>
+  <text class="big" x="122" y="118">S</text>
+  <rect class="cI" x="380" y="70" width="140" height="80" rx="10"/>
+  <text class="big" x="444" y="118">I</text>
+  <rect class="cR" x="700" y="70" width="140" height="80" rx="10"/>
+  <text class="big" x="762" y="118">R</text>
+  <path class="flow" d="M200,110 H378" marker-end="url(#sc4-arrow)"/>
+  <path class="flow" d="M520,110 H698" marker-end="url(#sc4-arrow)"/>
+  <text class="rate" x="250" y="100">β S I / N</text>
+  <text class="rate" x="590" y="100">γ I</text>
+  <text class="sub l-en" x="218" y="134">infection by homogeneous contact</text>
+  <text class="sub l-es" x="218" y="134">contagio por contacto homogéneo</text>
+  <text class="sub l-en" x="560" y="134">recovery, mean period 1/γ</text>
+  <text class="sub l-es" x="560" y="134">recuperación, período medio 1/γ</text>
+
+  <rect class="bx" x="20" y="180" width="420" height="120" rx="8"/>
+  <text class="h l-en" x="34" y="204">The threshold</text>
+  <text class="h l-es" x="34" y="204">El umbral</text>
+  <text class="eq mono" x="34" y="230">R0 = β / γ        Rt = R0 · S / N</text>
+  <text class="eq mono" x="34" y="254">p_c = 1 - 1 / R0</text>
+  <text class="sub l-en" x="34" y="278">infections grow while Rt &gt; 1; immunising more than p_c</text>
+  <text class="sub l-es" x="34" y="278">los contagios crecen mientras Rt &gt; 1; inmunizar más que p_c</text>
+  <text class="sub l-en" x="34" y="292">prevents the outbreak</text>
+  <text class="sub l-es" x="34" y="292">impide el brote</text>
+
+  <rect class="bx" x="460" y="180" width="420" height="260" rx="8"/>
+  <text class="h l-en" x="474" y="204">The final size, an independent check</text>
+  <text class="h l-es" x="474" y="204">El tamaño final, una verificación independiente</text>
+  <text class="eq mono" x="474" y="230">z = 1 - exp(-R0 · z)</text>
+  <line class="ax" x1="510" y1="410" x2="860" y2="410"/>
+  <line class="ax" x1="510" y1="250" x2="510" y2="410"/>
+  <path class="curve" d="M510,410 L566,410 C590,380 610,330 650,296 S760,262 860,256"/>
+  <circle cx="690" cy="278" r="5" fill="var(--color-magenta)"/>
+  <circle cx="842" cy="257" r="5" fill="var(--color-magenta)"/>
+  <circle cx="568" cy="372" r="5" fill="var(--color-magenta)"/>
+  <text class="sub" x="555" y="428">1</text>
+  <text class="sub" x="845" y="428">6</text>
+  <text class="sub" x="672" y="428">R0</text>
+  <text class="sub l-en" x="600" y="384">cases as baked, at their horizon</text>
+  <text class="sub l-es" x="600" y="384">casos precalculados, en su horizonte</text>
+
+  <rect class="bx" x="20" y="320" width="420" height="120" rx="8"/>
+  <text class="h l-en" x="34" y="344">How it is integrated</text>
+  <text class="h l-es" x="34" y="344">Cómo se integra</text>
+  <text class="eq mono" x="34" y="370">x(k+1) = max(0, x(k) + f(x(k)) · Δt),  Δt = 0.25 d</text>
+  <text class="sub l-en" x="34" y="394">explicit Euler, first order; the same operations in Python</text>
+  <text class="sub l-es" x="34" y="394">Euler explícito, de primer orden; las mismas operaciones en Python</text>
+  <text class="sub l-en" x="34" y="408">and TypeScript, held together by the parity test</text>
+  <text class="sub l-es" x="34" y="408">y TypeScript, unidas por la prueba de paridad</text>
+</svg>

@@ -1,0 +1,37 @@
+{
+  "params-record": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/params-record.schema.json",
+    "sha256": "9bb67b0438a99919879390e60ed4c4fa5622d954b671b4fe65d0c84fa58c08d7"
+  },
+  "case-index": {
+    "version": "2.0.0",
+    "schema": "docs/contracts/schemas/case-index.schema.json",
+    "sha256": "251a03c8b3443fbca43d836f6c3a317612bc0024cae17bd2eb0115ad8474e1b4"
+  },
+  "case-manifest": {
+    "version": "4.0.0",
+    "schema": "docs/contracts/schemas/case-manifest.schema.json",
+    "sha256": "ee989d8e0168baadeea2ee8b4636217456cd295a8c9934319cccc7de6698d257"
+  },
+  "trace": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/trace.schema.json",
+    "sha256": "289a6a33872155448b1c8b41d39d26606e828f90f7d7b8447d8614d49b26202d"
+  },
+  "surrogate-model": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/surrogate-model.schema.json",
+    "sha256": "8c4389be72823246f840283ceb2a2d1ee0527d30b089559a11dc052ed75eb814"
+  },
+  "readiness": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/readiness.schema.json",
+    "sha256": "de86ae161c0f333c11b95884ef07fd3e7f59b54f74d513cb823a093889f76d5a"
+  },
+  "api": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/api.openapi.json",
+    "sha256": "46a68a0faf5256d3e39e51316f645ce1593c6f2da77c76b2188d05cdb21b14e5"
+  }
+}
