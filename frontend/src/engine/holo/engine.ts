@@ -10,9 +10,11 @@ import { EmulatedCamera } from './camera';
 import { type Device, deviceFocalField, displayedPhase, makeDevice } from './device';
 import { atomParams, atomTrajectory, beadParams, beadTrajectory, boltzmannCheck, fitLorentzian, psd } from './dynamics';
 import type { Cx } from './fft';
-import { axialCut, fftFocalField, pointTrapFields, slmField } from './forward';
+import { axialCut, fftFocalField, pointTrapBackproject, pointTrapFields, slmField } from './forward';
+import { ampTargets, angle, polar } from './methods/common';
 import { type Setup, focalBinM, halfFieldM, makeSetup, nFft, slmAxis, wrapPhase } from './geometry';
 import { getMethod } from './methods';
+import { checkOnBins } from './methods/gs';
 import { efficiency, powerBudget, relStd, trapIntensities, uniformity, zeroOrderFraction } from './metrics';
 import { Rng } from './rng';
 import { type Trap, TrapSet, checkInField } from './traps';
@@ -225,6 +227,8 @@ export interface CaseRun {
   setup: Setup;
   device: Device | null;
   target: Target;
+  /** The starting hologram actually used (a warm start), or null for the method's own start. */
+  init: Float64Array | null;
 }
 
 /**
@@ -232,13 +236,17 @@ export interface CaseRun {
  * one), the seeded RNG, the budget, and the keywords the record implies (M12 feedback gain and camera, M14 injected aberration,
  * M16 loaded atoms). Throws `NotLive` for a method that is not ported.
  */
-export function buildRun(p: ParamsLike, method: string, o: CaseOptions = {}, init: Float64Array | null = null): CaseRun {
+export function buildRun(p: ParamsLike, method: string, o: CaseOptions = {}, init: Float64Array | null = null, trapPhases: Float64Array | null = null): CaseRun {
   const mod = getMethod(method);
   const setup = setupOf(p);
   const device = (o.device ?? 'case') === 'ideal' ? null : deviceOf(p);
   let target = targetOf(p, o.traps);
   const options: Record<string, unknown> = { ...(o.extra ?? {}) };
   if (method === 'M14' && p.aberration && options.injected === undefined) options.injected = aberrationCoeffs(p);
+  // M07's default form is the FFT one, which needs traps on bins; an edited or off-bin target uses the point form (identical on bins)
+  if (method === 'M07' && options.form === undefined && target.kind === 'traps') {
+    try { checkOnBins(setup, target.traps); } catch { options.form = 'point'; }
+  }
   if (method === 'M12' && p.feedback) {
     options.gain ??= p.feedback.gain;
     if (options.camera === undefined) {
@@ -253,9 +261,14 @@ export function buildRun(p: ParamsLike, method: string, o: CaseOptions = {}, ini
     const want = new Set(r.target_ids);
     target = { kind: 'traps', traps: new TrapSet(target.traps.traps.filter((t) => want.has(t.id))) };
   }
+  if (trapPhases && init === null) {
+    // a warm start (B3 inference): the superposition hologram with the given trap phases, `arg sum_m a_m exp(i (Delta^m + psi_m))`
+    if (target.kind !== 'traps' || trapPhases.length !== target.traps.length) throw new Error('trapPhases needs one phase per trap of a trap target');
+    init = angle(pointTrapBackproject(polar(ampTargets(target.traps), trapPhases), setup, target.traps));
+  }
   const budget = makeBudget(o.iterations ?? p.budget.iterations, p.budget.time_s);
   const ctx = { setup, target, device, budget, rng: new Rng(p.seed), init, options };
-  return { gen: mod.run(ctx), setup, device, target };
+  return { gen: mod.run(ctx), setup, device, target, init };
 }
 
 /** Progress of one iteration in the units of the workbench. */
