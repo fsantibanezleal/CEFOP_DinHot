@@ -13,7 +13,8 @@
     "build": "node scripts/gen-contract-types.mjs --check && tsc --noEmit && vite build && node scripts/materialize-routes.mjs",
     "preview": "node scripts/serve.mjs",
     "test": "vitest run",
-    "gate": "node scripts/gate.mjs"
+    "gate": "node scripts/gate.mjs",
+    "engine:browser": "node scripts/engine-browser.mjs --assert"
   },
   "dependencies": {
     "@fasl-work/caos-app-shell": "0.19.5",
