@@ -40,16 +40,27 @@ Data file: content/executive.json
 SCHEMA_REL = "frontend/node_modules/@fasl-work/caos-app-shell/src/content/executive.schema.json"
 
 
+LADDER = ("| id | tier | method | acceptance criterion | gate |\n|---|---|---|---|---|\n"
+          "| M-1 | classical | the textbook model | reproduces the closed form | `tests/test_x.py::test_a` |\n"
+          "| M-2 | sota | the current solver | agrees with the reference to 1e-6 | `tests/test_x.py::test_b` |\n"
+          "| BS-1 | beyond | a proposed method | beats the solver on the held-out cases or reports why not | `tests/test_x.py::test_b` |\n")
+BEYOND = "- BS-1: the hypothesis, the method and the evaluation that would confirm or refute it, with its source.\n"
+
+
 def sdd_text(research: str = RESEARCH, resources: str = RESOURCES, skip: str = "", brief: str | None = BRIEF,
-             brief_after: str = "Problem and non-goals") -> str:
+             brief_after: str = "Problem and non-goals", ladder: str = LADDER, beyond: str | None = BEYOND) -> str:
+    """A product SDD: the twelve sections, the executive brief, a method ladder with its tiers and the section on the beyond
+    (method tiers, 0.13.000); ``beyond=None`` leaves that section out."""
     out = ["# SDD\n"]
     for name in SECTIONS:
         if name == skip:
             continue
-        body = {"Research basis": research, "Resources": resources}.get(name, "text\n")
+        body = {"Research basis": research, "Resources": resources, "Method ladder": ladder}.get(name, "text\n")
         out.append(f"## {name}\n\n{body}\n")
         if name == brief_after and brief is not None:
             out.append(f"## Executive brief\n\n{brief}\n")
+        if name == "Oracles" and beyond is not None:
+            out.append(f"## Beyond the state of the art\n\n{beyond}\n")
     return "\n".join(out)
 
 
