@@ -7,6 +7,7 @@ skip otherwise.
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -28,7 +29,8 @@ SETUP = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=128, 
 MODELS = REPO_ROOT / "models"
 _d = os.environ.get("DINHOT_LEARNED_DIR")
 HELD = (Path(_d) if _d else Path("absent")) / "cgh-vol-heldout.npz"
-RELEASED = is_valid_slot(MODELS, "cgh-net")
+HAS_ORT = importlib.util.find_spec("onnxruntime") is not None
+RELEASED = is_valid_slot(MODELS, "cgh-net") and HAS_ORT   # the released graph can answer only with onnxruntime
 
 
 def _target(trap_rows):
@@ -62,7 +64,6 @@ def test_geometry_and_target_errors_name_the_requirement():
         m17_cgh_net.run(SETUP, Target.from_field(np.ones((128, 128)), np.ones((128, 128), bool)), budget=Budget(1), rng=Rng(1))
 
 
-@pytest.mark.skipif(RELEASED, reason="the slot is released: the baseline does not answer")
 def test_the_baseline_answers_while_unreleased(tmp_path):
     rows = generators.sample_volume(np.random.default_rng(2), "lattice")[1]
     t = _target(rows)
@@ -72,8 +73,9 @@ def test_the_baseline_answers_while_unreleased(tmp_path):
     np.testing.assert_array_equal(r.phi, ref.phi)
 
 
-@pytest.mark.skipif(not RELEASED, reason="cgh-net is not released: the M19 baseline answers")
 def test_committed_metrics_meet_the_criterion():
+    if not is_valid_slot(MODELS, "cgh-net"):
+        pytest.skip("cgh-net is not released: the M19 baseline answers")
     doc = json.loads((REPO_ROOT / "data" / "derived" / "models" / "metrics.json").read_text(encoding="utf-8"))
     e = doc["slots"]["cgh-net"]
     assert e["held_out_n"] >= 150
