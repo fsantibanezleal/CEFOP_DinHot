@@ -40,10 +40,13 @@ export function PhaseMaskView({ sel }: { sel: Selection }) {
   const maps = sel.maps;
   const n = maps?.nPix ?? 0;
   const shown = useMemo(() => (maps ? stagePhase(maps.phase, n, sel.data.manifest.params.device, sel.stage) : null), [maps, n, sel.data.manifest.params.device, sel.stage]);
+  const row = cursor?.row ?? Math.floor(n / 2);
+  // Arrays kept between renders: a new array every render (a run reports its progress many times a second) would reset the chart's zoom.
+  const xs = useMemo(() => Array.from({ length: n }, (_, i) => i), [n]);
+  const idealLine = useMemo(() => (maps ? Array.from({ length: n }, (_, c) => maps.phase[row * n + c]) : []), [maps, n, row]);
+  const stageLine = useMemo(() => (shown ? Array.from({ length: n }, (_, c) => shown[row * n + c]) : []), [shown, n, row]);
   if (!maps || !shown) return <Pending label={LOADING} />;
   const bits = sel.data.manifest.params.device?.bit_depth ?? null;
-  const row = cursor?.row ?? Math.floor(n / 2);
-  const line = (src: Float32Array) => Array.from({ length: n }, (_, c) => src[row * n + c]);
   const centre = region ? { col: Math.floor((region.c0 + region.c1) / 2), row: Math.floor((region.r0 + region.r1) / 2) } : null;
   const period = centre ? gratingPeriodPx(shown, n, centre.row, centre.col) : null;
   const pitch = sel.data.manifest.params.setup.pitch_um;
@@ -90,11 +93,11 @@ export function PhaseMaskView({ sel }: { sel: Selection }) {
           <UPlotChart
             height="fill"
             title={{ en: `Phase along pixel row ${row}`, es: `Fase a lo largo de la fila de píxeles ${row}` }}
-            x={{ values: Array.from({ length: n }, (_, i) => i), label: { en: 'Pixel column', es: 'Columna de píxeles' }, format: { decimals: 0 } }}
+            x={{ values: xs, label: { en: 'Pixel column', es: 'Columna de píxeles' }, format: { decimals: 0 } }}
             y={{ label: { en: 'Phase', es: 'Fase' }, unit: 'rad', range: [0, TWO_PI] }}
             series={[
-              { label: { en: 'Ideal', es: 'Ideal' }, values: line(maps.phase), color: '--color-accent', width: 1.5 },
-              ...(sel.stage !== 'ideal' ? [{ label: { en: sel.stage === 'quantized' ? 'Quantized' : 'With crosstalk', es: sel.stage === 'quantized' ? 'Cuantizada' : 'Con diafonía' }, values: line(shown), color: '--color-warn' as const, width: 1.5 }] : []),
+              { label: { en: 'Ideal', es: 'Ideal' }, values: idealLine, color: '--color-accent', width: 1.5 },
+              ...(sel.stage !== 'ideal' ? [{ label: { en: sel.stage === 'quantized' ? 'Quantized' : 'With crosstalk', es: sel.stage === 'quantized' ? 'Cuantizada' : 'Con diafonía' }, values: stageLine, color: '--color-warn' as const, width: 1.5 }] : []),
             ]}
           />
         </Fill>

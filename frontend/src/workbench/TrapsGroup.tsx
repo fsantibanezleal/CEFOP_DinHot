@@ -22,9 +22,9 @@ export function TrapsGroup() {
     <SubTabs
       ariaLabel={t('Trap views', 'Vistas de las trampas')}
       tabs={[
-        { id: 'uniformity', label: t('Per-trap intensity', 'Intensidad por trampa'), content: sel ? <IntensityView sel={sel} /> : <Pending label={LOADING} /> },
+        { id: 'uniformity', label: t('Per-trap intensity', 'Intensidad'), content: sel ? <IntensityView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'depth', label: t('Depth', 'Profundidad'), content: sel ? <DepthView sel={sel} /> : <Pending label={LOADING} /> },
-        { id: 'budget', label: t('Power budget', 'Balance de potencia'), content: sel ? <BudgetView sel={sel} /> : <Pending label={LOADING} /> },
+        { id: 'budget', label: t('Power budget', 'Potencia'), content: sel ? <BudgetView sel={sel} /> : <Pending label={LOADING} /> },
       ]}
     />
   );

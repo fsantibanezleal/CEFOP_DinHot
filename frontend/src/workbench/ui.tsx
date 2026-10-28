@@ -45,6 +45,14 @@ export function useFmt() {
   return (v: number | null | undefined, o: FormatOptions = {}) => formatNumber(v ?? null, lang, o);
 }
 
+/**
+ * A reason written by the pipeline (the index, the readiness document) reaches the screen as it was written: in Spanish its decimals carry a
+ * point. Spanish writes a comma (G11), so a decimal of the text is rewritten here; integers, versions with two dots and words are left alone.
+ */
+export function localizeDecimals(text: string, lang: 'en' | 'es'): string {
+  return lang === 'es' ? text.replace(/(?<![\d.])(\d+)\.(\d+)(?![\d.])/g, '$1,$2') : text;
+}
+
 export function Pending({ label }: { label: BiText }) {
   const lang = useShellLang();
   const reason = useContext(UnavailableContext);
@@ -52,7 +60,7 @@ export function Pending({ label }: { label: BiText }) {
   if (reason) {
     return (
       <p className="caos-pending" data-state="unavailable">
-        {reason[lang]}
+        {localizeDecimals(reason[lang], lang)}
       </p>
     );
   }
