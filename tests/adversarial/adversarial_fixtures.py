@@ -49,7 +49,7 @@ def repo(base_copy: Path, tmp_path: Path) -> Path:
 
 
 SDD_INPUTS = ("scripts/*.py", "docs/design", "tests", "data", "frontend/src/**/*.test.ts", "frontend/src/**/*.test.tsx", "frontend/scripts",
-              "requirements*.txt", "data-pipeline/requirements.txt", "content", "frontend/public/executive")
+              "requirements*.txt", "data-pipeline/requirements.txt", "content", "frontend/public/executive", ".template-source")
 
 
 @pytest.fixture

@@ -39,6 +39,11 @@
     "schema": "docs/contracts/schemas/model-metrics.schema.json",
     "sha256": "c3aff7cd0889572f11ff0e439e5f6a542fac1004b1d412e19ca1dfbfca620092"
   },
+  "model-evidence": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/model-evidence.schema.json",
+    "sha256": "c6f97b2a1432ccffc47f7e51b5298eb053111aa4beeeff30e4dcb0a1086000e1"
+  },
   "engine-reference": {
     "version": "1.0.0",
     "schema": "docs/contracts/schemas/engine-reference.schema.json",
