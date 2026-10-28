@@ -248,8 +248,8 @@ describe('CONTRACT 2: the checker', () => {
   it('the model slots are the catalog rows with a model io cell', () => {
     expect(modelSlots()).toEqual(['cgh-net', 'warmstart-model']);
   });
-  it('the catalog table is parsed: eleven rows, readiness among them', () => {
-    expect(catalogIds()).toEqual(['params-record', 'case-index', 'case-manifest', 'trace', 'benchmark-results', 'cgh-net', 'warmstart-model', 'model-metrics', 'engine-reference', 'readiness', 'api']);
+  it('the catalog table is parsed: twelve rows, readiness among them', () => {
+    expect(catalogIds()).toEqual(['params-record', 'case-index', 'case-manifest', 'trace', 'benchmark-results', 'cgh-net', 'warmstart-model', 'model-metrics', 'model-evidence', 'engine-reference', 'readiness', 'api']);
   });
   it('METRIC_KEYS name only keys of a method verdict', () => {
     const v: CaseManifest['methods'][string] = { lane: 'live', efficiency: 1, uniformity: 1, rel_std_pct: 0, zero_order: 0, ghost: 0, iterations: 1, converged: true };
