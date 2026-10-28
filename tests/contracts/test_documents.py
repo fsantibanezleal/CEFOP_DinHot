@@ -197,3 +197,92 @@ def test_adversarial_a_corrupted_document_is_seen(sandbox_bake, which):
     else:
         doc["reference"]["method"] = "not-a-method-id"
     assert cs.errors("case-manifest" if which == "manifest" else "trace", doc)
+
+
+# ---- engine-reference (catalog row engine-reference 1.0.0, unit T1) ------------------------------------------------------
+# The reference values the TypeScript parity tests read (frontend/src/engine/holo/*.parity.test.ts): written by
+# data-pipeline/pipeline/stages/engine_reference.py from the Python engine. The consumer side is those vitest files.
+
+ENGINE_DIR = cs.ROOT / "tests" / "fixtures" / "engine"
+ENGINE_EXAMPLE = cs.CONTRACTS / "examples" / "engine-reference.json"
+
+
+def _engine_files() -> list[Path]:
+    return sorted(ENGINE_DIR.glob("*.json"))
+
+
+def _number_arrays(node):
+    """Every encoded array ({shape, complex, data | b64}) inside a reference document."""
+    if isinstance(node, dict):
+        if "shape" in node and "complex" in node and ("data" in node or "b64" in node):
+            yield node
+        else:
+            for v in node.values():
+                yield from _number_arrays(v)
+    elif isinstance(node, list):
+        for v in node:
+            yield from _number_arrays(v)
+
+
+def test_engine_reference_validates():
+    files = _engine_files()
+    assert files, "tests/fixtures/engine holds no reference file (run python -m pipeline.stages.engine_reference)"
+    version = (cs.ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    for f in files:
+        doc = cs.load_json(f)
+        assert cs.errors("engine-reference", doc) == [], f.name
+        assert f.name == f"{doc['function']}.json", f.name
+        assert tuple(map(int, doc["engine_version"].split("."))) <= tuple(map(int, version.split("."))), f.name
+
+
+def test_engine_reference_example_validates():
+    assert cs.errors("engine-reference", cs.load_json(ENGINE_EXAMPLE)) == []
+
+
+def test_engine_reference_arrays_have_their_sizes():
+    for f in _engine_files():
+        for a in _number_arrays(cs.load_json(f)):
+            n = 1
+            for d in a["shape"]:
+                n *= d
+            n *= 2 if a["complex"] else 1
+            size = len(a["data"]) if "data" in a else len(base64.b64decode(a["b64"])) // 8
+            assert size == n, (f.name, a["shape"], a["complex"])
+
+
+def test_engine_reference_covers_every_live_method_and_the_core():
+    from pipeline.model.holo import methods as registry
+
+    have = {cs.load_json(f)["function"] for f in _engine_files()}
+    live = {s.id for s in registry.all_specs() if s.lane in ("live", "both")}
+    assert {f"methods.{m}" for m in live} <= have, sorted({f"methods.{m}" for m in live} - have)
+    core = {"rng.stream", "geometry.setup_functions", "traps.generators", "forward.point_trap_fields", "forward.fft_focal_field",
+            "forward.fft_inverse", "forward.angular_spectrum", "forward.axial_cut", "metrics.trap_metrics", "metrics.power_budget",
+            "device.device_focal_field", "device.crosstalk", "zernike.wavefront", "camera.measure", "trapphys.formulas",
+            "dynamics.trajectories", "dynamics.psd_fit", "live.M07"}
+    assert core <= have, sorted(core - have)
+
+
+def test_engine_reference_is_reproducible(tmp_path):
+    """The documents are a pure function of the engine code: regenerating writes the committed bytes (engine_version aside)."""
+    from pipeline.stages import engine_reference as er
+
+    written = er.write(tmp_path / "again", live=True)
+    assert {p.name for p in written} == {f.name for f in _engine_files()}, "the committed set differs from the generated set"
+    for p in written:
+        fresh, old = cs.load_json(p), cs.load_json(ENGINE_DIR / p.name)
+        fresh["engine_version"] = old["engine_version"]
+        assert er.dump(fresh) == er.dump(old), f"{p.name} differs from a fresh run of the Python engine"
+
+
+def test_adversarial_an_engine_reference_with_a_foreign_field_or_no_cases_fails():
+    doc = cs.load_json(next(iter(_engine_files())))
+    bad = copy.deepcopy(doc)
+    bad["tolerance"]["relative"] = 1e-9
+    assert cs.errors("engine-reference", bad)
+    bad = copy.deepcopy(doc)
+    bad["cases"] = []
+    assert cs.errors("engine-reference", bad)
+    bad = copy.deepcopy(doc)
+    bad["schema"] = "dinhot.engine-ref/v0"
+    assert cs.errors("engine-reference", bad)
