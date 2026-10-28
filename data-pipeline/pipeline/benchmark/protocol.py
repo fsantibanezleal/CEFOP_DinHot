@@ -53,8 +53,10 @@ MAX_WORKERS = 12
 FALLBACK_TUNING: dict[str, list[dict]] = {
     "M05": [{"alpha": a} for a in (0.25, 0.5, 0.75, 1.0)],
     "M08": [{"mixing": p} for p in (0.3, 0.4, 0.55, 0.7)],
-    "M10": [{"t": t} for t in (1.5, 2.0, 3.0, 4.0)],
-    "M11": [{"lr": r} for r in (3e-4, 1e-3, 3e-3, 1e-2)],
+    # t is an even cost power (Harte et al. 2014, Eq. 10): the basic cost, the powered one, and the sequential schedule.
+    "M10": [{"t": 2}, {"t": 4}, {"t": (4, 2)}, {"t": (4, 2), "efficiency": 0.8}],
+    # around the measured step of the quadratic loss (m11_wirtinger_adam docstring: 1.0 to 2.0 best, 4.0 diverges)
+    "M11": [{"lr": r} for r in (0.5, 1.0, 2.0, 4.0)],
 }
 
 
