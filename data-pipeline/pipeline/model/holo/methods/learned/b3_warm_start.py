@@ -11,7 +11,7 @@ many WGS fixed points would make labels ambiguous).
 
 Missing data: with no released model the random trap phases of the portable RNG answer (the M02 start, identical to M07's own
 start; ``meta['provenance']`` is ``'baseline'``). ``init`` (a start hologram) overrides the model. Vortex traps and more than
-1024 traps are a ``ValueError``. Defaults: ``n_fix=3`` (see ``N_FIX``), ``form='point'`` (the 3D traps need it).
+1024 traps are a ``ValueError``. Defaults: ``n_fix=12`` (see ``N_FIX``), ``form='point'`` (the 3D traps need it).
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from ..baseline._common import amp_targets
 from . import _slot
 from ...learned import convert
 
-N_FIX = 3   # a warm start allows freezing the phase early; M07 alone needs Kim's 12 (measured: an oracle start with 12 still needs ~13 iterations)
+N_FIX = 12   # M07's (Kim 2019). Freezing at 3 was measured with the trained candidate and did not help: see the M1 report
 SPEC = MethodSpec(id="B3", name="Learned warm start for phase-fixed WGS", family="learned", lane="live", targets=("traps",),
                   dims=(2, 3))
 
