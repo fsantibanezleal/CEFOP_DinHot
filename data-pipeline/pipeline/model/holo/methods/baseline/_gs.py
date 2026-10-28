@@ -26,25 +26,40 @@ from ...core.types import Budget, Result, Target
 from ._common import Recorder, amp_targets, fft_backproject, fft_fields, phasor, start_phase
 
 FORMS = ("point", "fft")
+AUTO = "auto"
+ON_BIN_TOL = 2e-3   # bins: a trap this close to a bin centre is on it (case coordinates are rounded to 1e-4 um)
 
 
 def check_form(form: str) -> str:
-    if form not in FORMS:
-        raise ValueError(f"form must be one of {list(FORMS)}, got {form!r}")
+    if form not in FORMS + (AUTO,):
+        raise ValueError(f"form must be one of {list(FORMS) + [AUTO]}, got {form!r}")
+    return form
+
+
+def on_bins(setup: Setup, traps: TrapSet) -> bool:
+    """True when every trap is on an FFT bin (to ``ON_BIN_TOL`` bins) with z = 0 and no vortex charge."""
+    b = focal_bin_m(setup)
+    off = np.abs(traps.x_m / b - np.rint(traps.x_m / b)) + np.abs(traps.y_m / b - np.rint(traps.y_m / b))
+    return not (np.any(off > ON_BIN_TOL) or np.any(traps.z_m != 0.0) or np.any(traps.charge != 0))
+
+
+def resolve_form(setup: Setup, traps: TrapSet, form: str) -> str:
+    """``form`` itself, or for ``'auto'`` the FFT form when the traps are on bins (z = 0, no vortex), else the point form."""
+    check_form(form)
+    if form == AUTO:
+        return "fft" if on_bins(setup, traps) else "point"
     return form
 
 
 def check_on_bins(setup: Setup, traps: TrapSet) -> None:
     """The FFT form samples the focal field at bins: traps must sit on bins with z = 0 and no vortex."""
-    b = focal_bin_m(setup)
-    off = np.abs(traps.x_m / b - np.rint(traps.x_m / b)) + np.abs(traps.y_m / b - np.rint(traps.y_m / b))
-    if np.any(off > 1e-6) or np.any(traps.z_m != 0.0) or np.any(traps.charge != 0):
-        raise ValueError("the fft form needs traps on FFT bins with z = 0 and no vortex (use form='point')")
+    if not on_bins(setup, traps):
+        raise ValueError("the fft form needs traps on FFT bins with z = 0 and no vortex (use form='point' or 'auto')")
 
 
 def make_engine(setup: Setup, traps: TrapSet, form: str):
     """``(fwd, back)``: ``fwd(phi) -> V_m`` and ``back(c) -> complex SLM field`` for the chosen form."""
-    check_form(form)
+    form = resolve_form(setup, traps, form)
     if form == "fft":
         check_on_bins(setup, traps)
         return (lambda phi: fft_fields(phi, setup, traps)[1]), (lambda c: fft_backproject(c, setup, traps))
@@ -97,6 +112,7 @@ def run_traps(
     meta: dict | None = None,
 ) -> Result:
     """Iterate ``rule`` from the SR start (or ``init``) until the budget is spent; ``history`` has one entry per iteration."""
+    form = resolve_form(setup, traps, form)
     fwd, back = make_engine(setup, traps, form)
     rec = Recorder(budget, traps.weight)
     phi = start_phase(setup, traps, rng, init)
