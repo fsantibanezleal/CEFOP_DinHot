@@ -41,7 +41,9 @@ def stat(x) -> dict:
 
 # ----------------------------------------------------------------------------------------------------- cgh-net
 
-plane_accuracy = _plane_accuracy
+def plane_accuracy(amps, phi, setup: Setup = SETUP128, z_planes=(-8.0, 0.0, 8.0)) -> float:
+    """Volume accuracy of the mask (``methods/learned/_planes.py``), on the 128 x 128 pad-1 setup by default."""
+    return _plane_accuracy(amps, phi, setup, z_planes)
 
 
 def _timed(fn):
@@ -78,12 +80,10 @@ def evaluate_cgh(models_dir: Path, heldout_path: Path) -> tuple[dict, dict]:
             raise RuntimeError("the cgh-net slot is not released in " + str(models_dir))
         hyb, t_hyb = _timed(lambda: m17_cgh_net.run(SETUP128, t, budget=Budget(BIG, budget_s), rng=Rng(1), models_dir=models_dir))
         base, t_base = _timed(lambda: m19_multiplane.run(SETUP128, t, budget=Budget(BIG, budget_s), rng=Rng(1), dz_m=dz))
-        g30 = m19_multiplane.run(SETUP128, t, budget=Budget(30), rng=Rng(1), dz_m=dz)
         rows.append({"volume": f"{i:03d}/{kinds[i]}", "ac_hybrid": plane_accuracy(a, hyb.phi), "time_hybrid_ms": 1000 * t_hyb,
                      "hybrid_refine_iterations": hyb.meta["refine_iterations"], "network_ms": 1000 * hyb.meta["network_s"],
                      "ac_net_alone": plane_accuracy(a, net.phi), "ac_m19_matched": plane_accuracy(a, base.phi),
-                     "time_m19_matched_ms": 1000 * t_base, "m19_matched_iterations": base.meta["iterations"],
-                     "ac_m19_30": plane_accuracy(a, g30.phi)})
+                     "time_m19_matched_ms": 1000 * t_base, "m19_matched_iterations": base.meta["iterations"]})
     curve = {}
     for frac in CURVE_FRACTIONS:
         tb, rr = frac * budget_s, []
@@ -100,7 +100,7 @@ def evaluate_cgh(models_dir: Path, heldout_path: Path) -> tuple[dict, dict]:
         "slot": "cgh-net", "variant": "three planes at Z = -8, 0, +8 Rayleigh ranges", "baseline_is": "M19 (the schema constant 'M04' names GS, the catalog baseline before this decision)",
         "wall_clock_budget_ms": 1000 * budget_s, "budget_definition": "median wall time of M19 at 30 iterations on the held-out volumes, this machine",
         "accuracy": "mean over planes of AC = 2 sum(TI) / (sum T^2 + sum I^2), unit-sum plane intensities",
-        "ac_median": {k: float(np.median(col(k))) for k in ("ac_hybrid", "ac_net_alone", "ac_m19_matched", "ac_m19_30")},
+        "ac_median": {k: float(np.median(col(k))) for k in ("ac_hybrid", "ac_net_alone", "ac_m19_matched")},
         "ratio_by_kind": {k: float(np.median(ratio[kinds_arr == k])) for k in sorted(set(kinds_arr))},
         "ratio_net_alone_over_m19_matched": stat(col("ac_net_alone") / col("ac_m19_matched")),
         "share_hybrid_above_m19": float(np.mean(ratio > 1.0)),
