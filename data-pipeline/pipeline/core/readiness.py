@@ -13,17 +13,19 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ..io.contract import validate_rows
-from ..io.formats import read_csv_rows, write_json
-from ..model.baseline import is_valid_bundle
+from ..io.contract import read_cases, validate_records
+from ..io.formats import write_json
+from ..io.model_card import is_valid_slot, marker_path
 
-SCHEMA = "example.readiness/v1"
+SCHEMA = "example.readiness/v1"   # the const of readiness.schema.json (byte-identical to the template's, U3a open question 1)
 CATALOG_REL = "docs/contracts/catalog.md"
 INDEX_REL = "manifests/index.json"
-PARAMS_REL = "data/examples/params.csv"
-MARKER_REL = "training/surrogate-model"
+CASES_REL = "data/examples/cases.json"
+BENCHMARK_REL = "benchmark/results.json"
+METRICS_REL = "models/metrics.json"
+ENGINE_REF_DIR = "tests/fixtures/engine"
 STATUSES = ("real", "active")  # the catalog's status vocabulary (its Contracts section), exactly, lower case
-MODEL_SLOT = "surrogate-model"
+SLOTS = ("cgh-net", "warmstart-model")
 
 # the catalog's reasons as (en, es) templates, in the order of its Missing-data table
 T_PROVIDER = ("Served by its provider ({provider}); the real producer is not built yet.",
@@ -33,16 +35,22 @@ T_MANIFESTS = ("{n} of {total} manifests are absent.", "Faltan {n} de {total} ma
 T_ARTIFACTS = ("{n} of {total} artifacts are absent.", "Faltan {n} de {total} artefactos.")
 T_STALE = ("Baked by {engine_version}; the product is {version}.",
            "Generado por {engine_version}; el producto es {version}.")
-T_NO_PARAMS = ("No source table; the bake uses the registry's cases.",
-               "No hay tabla de origen; la generación usa los casos del registro.")
-T_REJECTED = ("{n} of {total} rows rejected by contract 1.", "{n} de {total} filas rechazadas por el contrato 1.")
-T_NO_BUNDLE = ("No released surrogate; the analytic baseline answers.",
-               "No hay un sustituto publicado; responde la línea base analítica.")
-T_BASELINE_BAKE = ("The bake's metrics come from the analytic baseline; bake again to use the released surrogate.",
-                   "Las métricas de la generación vienen de la línea base analítica; genere de nuevo para usar el "
-                   "sustituto publicado.")
-T_TRAINING = ("The released surrogate answers; a newer one is training.",
-              "Responde el sustituto publicado; uno más nuevo está en entrenamiento.")
+T_NO_CASES = ("No source document; the bake uses the registry's cases.",
+              "No hay documento de origen; la generación usa los casos del registro.")
+T_REJECTED = ("{n} of {total} records rejected by contract 1.", "{n} de {total} registros rechazados por el contrato 1.")
+T_NO_BENCHMARK = ("The benchmark has not run for this build.", "El benchmark no se ha ejecutado para esta versión.")
+T_SKIPPED = ("{n} of {total} benchmark cells were not run.", "{n} de {total} celdas del benchmark no se ejecutaron.")
+T_NO_METRICS = ("The model metrics have not been computed for this build.",
+                "Las métricas de los modelos no se han calculado para esta versión.")
+T_NO_MODEL = ("No released model; the slot's baseline answers (GS for cgh-net, random trap phases for warmstart-model).",
+              "No hay un modelo publicado; responde la línea base del espacio (GS para cgh-net, fases aleatorias de las "
+              "trampas para warmstart-model).")
+T_BASELINE_BAKE = ("The bake's metrics come from the baseline; bake again to use the released model.",
+                   "Las métricas de la generación vienen de la línea base; genere de nuevo para usar el modelo publicado.")
+T_TRAINING = ("The released model answers; a newer one is training.",
+              "Responde el modelo publicado; uno más nuevo está en entrenamiento.")
+T_NO_ENGINE_REF = ("The engine reference values are absent; the parity tests cannot run.",
+                   "Faltan los valores de referencia del motor; las pruebas de paridad no pueden ejecutarse.")
 T_API = ("The API lane is dormant; the site reads the committed documents.",
          "La API está inactiva; el sitio lee los documentos versionados.")
 
@@ -78,15 +86,14 @@ def _json(path: Path) -> Any | None:
 
 
 def _artifact_paths(manifest: dict) -> list[str]:
-    """The artifact paths a manifest names, in either form of contract 2."""
-    if isinstance(manifest.get("artifacts"), list):
-        return [a["path"] for a in manifest["artifacts"] if isinstance(a, dict) and "path" in a]
+    """The artifact paths a manifest names."""
     single = manifest.get("artifact")
     return [single["path"]] if isinstance(single, dict) and "path" in single else []
 
 
 class _Facts:
-    """What the repository says, read once: the index, the absent manifests and artifacts, the rejected rows."""
+    """What the repository says, read once: the index, the absent manifests and artifacts, the rejected records, the
+    benchmark and metrics documents, the model slots."""
 
     def __init__(self, repo_root: Path, derived_root: Path, models_dir: Path, version: str) -> None:
         self.version = version
@@ -97,35 +104,55 @@ class _Facts:
         self.manifests_missing: list[str] = []
         self.artifacts_total = 0
         self.artifacts_missing: list[str] = []
-        self.baseline_bake = False  # a manifest records that the slot's baseline produced its metrics
+        self.baseline_bake = {slot: False for slot in SLOTS}   # a manifest records that a slot's baseline produced its metrics
         if self.index:
             for entry in self.index.get("cases", []):
-                rel = entry["manifest_path"]
+                rel = entry.get("path")
+                if rel is None:   # a refused case has no manifest
+                    continue
                 self.manifests_total += 1
                 manifest = _json(derived_root / rel)
                 if not isinstance(manifest, dict):
                     self.manifests_missing.append(rel)
                     continue
                 models = manifest.get("models")
-                if isinstance(models, dict) and models.get(MODEL_SLOT) == "baseline":
-                    self.baseline_bake = True
+                for slot in SLOTS:
+                    if isinstance(models, dict) and models.get(slot) == "baseline":
+                        self.baseline_bake[slot] = True
                 for art in _artifact_paths(manifest):
                     self.artifacts_total += 1
                     if not (derived_root / art).is_file():
                         self.artifacts_missing.append(art)
-        params = repo_root / PARAMS_REL
-        self.params_present = params.is_file()
-        self.params_total = 0
-        self.params_rejected_rows = 0
-        self.params_rejected: list[str] = []
-        if self.params_present:
-            rows = read_csv_rows(params)
-            report = validate_rows(rows)
-            self.params_total = len(rows)
-            self.params_rejected_rows = len(report.rejected)
-            self.params_rejected = sorted({r["case_id"] for r in report.rejected})
-        self.bundle_ok = is_valid_bundle(_json(models_dir / "surrogate.json"))
-        self.marker = (models_dir / MARKER_REL).is_file()
+        cases = repo_root / CASES_REL
+        self.cases_present = cases.is_file()
+        self.cases_total = 0
+        self.cases_rejected_n = 0
+        self.cases_rejected: list[str] = []
+        if self.cases_present:
+            try:
+                raw = read_cases(cases)
+            except (OSError, ValueError):
+                raw = []
+            report = validate_records(raw, repo_root)
+            self.cases_total = len(raw)
+            self.cases_rejected_n = len(report.rejected)
+            self.cases_rejected = sorted({r["case_id"] for r in report.rejected})
+        bench = _json(derived_root / BENCHMARK_REL)
+        self.benchmark: dict | None = bench if isinstance(bench, dict) else None
+        self.benchmark_version = str(self.benchmark.get("engine_version")) if self.benchmark else ""
+        self.skipped: list[str] = []
+        self.cells_total = 0
+        if self.benchmark:
+            self.skipped = sorted({f"{c['method']}/{c['geometry']}" for c in self.benchmark.get("skipped", [])})
+            ran = {(r["method"], r["geometry"]) for r in self.benchmark.get("rows", [])}
+            self.cells_total = len(ran) + len(self.skipped)
+        metrics = _json(derived_root / METRICS_REL)
+        self.metrics: dict | None = metrics if isinstance(metrics, dict) else None
+        self.metrics_version = str(self.metrics.get("engine_version")) if self.metrics else ""
+        self.valid_slot = {slot: is_valid_slot(models_dir, slot, repo_root) for slot in SLOTS}
+        self.marker = {slot: marker_path(models_dir, slot).is_file() for slot in SLOTS}
+        ref = repo_root / ENGINE_REF_DIR
+        self.engine_ref = ref.is_dir() and any(ref.glob("*.json"))
 
 
 def _entry(row: dict[str, str], state: str, provenance: str | None, reason: dict | None,
@@ -152,19 +179,30 @@ def _rule(row: dict[str, str], f: _Facts) -> dict:
     if rid == "trace" and f.artifacts_missing:
         return _entry(row, "partial", "real", _fill(T_ARTIFACTS, n=len(f.artifacts_missing), total=f.artifacts_total),
                       f.artifacts_missing)
-    if derived and f.engine_version != f.version:
-        return _entry(row, "stale", "real", _fill(T_STALE, engine_version=f.engine_version, version=f.version))
-    if rid == "params-record" and not f.params_present:
-        return _entry(row, "missing", None, _fill(T_NO_PARAMS))
-    if rid == "params-record" and f.params_rejected_rows:
-        return _entry(row, "partial", "real", _fill(T_REJECTED, n=f.params_rejected_rows, total=f.params_total),
-                      f.params_rejected)
-    if rid == "surrogate-model" and not f.bundle_ok:
-        return _entry(row, "training", "baseline", _fill(T_NO_BUNDLE))
-    if rid == MODEL_SLOT and f.baseline_bake:
+    stale = {"case-index": f.engine_version if f.index else None, "case-manifest": f.engine_version if f.index else None,
+             "trace": f.engine_version if f.index else None,
+             "benchmark-results": f.benchmark_version if f.benchmark else None,
+             "model-metrics": f.metrics_version if f.metrics else None}
+    if stale.get(rid) is not None and stale[rid] != f.version:
+        return _entry(row, "stale", "real", _fill(T_STALE, engine_version=stale[rid], version=f.version))
+    if rid == "params-record" and not f.cases_present:
+        return _entry(row, "missing", None, _fill(T_NO_CASES))
+    if rid == "params-record" and f.cases_rejected_n:
+        return _entry(row, "partial", "real", _fill(T_REJECTED, n=f.cases_rejected_n, total=f.cases_total), f.cases_rejected)
+    if rid == "benchmark-results" and f.benchmark is None:
+        return _entry(row, "missing", None, _fill(T_NO_BENCHMARK))
+    if rid == "benchmark-results" and f.skipped:
+        return _entry(row, "partial", "real", _fill(T_SKIPPED, n=len(f.skipped), total=f.cells_total), f.skipped)
+    if rid == "model-metrics" and f.metrics is None:
+        return _entry(row, "missing", None, _fill(T_NO_METRICS))
+    if rid in SLOTS and not f.valid_slot[rid]:
+        return _entry(row, "training", "baseline", _fill(T_NO_MODEL))
+    if rid in SLOTS and f.baseline_bake[rid]:
         return _entry(row, "training", "baseline", _fill(T_BASELINE_BAKE))
-    if rid == "surrogate-model" and f.marker:
+    if rid in SLOTS and f.marker[rid]:
         return _entry(row, "training", "real", _fill(T_TRAINING))
+    if rid == "engine-reference" and not f.engine_ref:
+        return _entry(row, "missing", None, _fill(T_NO_ENGINE_REF))
     if rid == "api":
         return _entry(row, "missing", None, _fill(T_API))
     return _entry(row, "available", "real", None)
@@ -173,7 +211,7 @@ def _rule(row: dict[str, str], f: _Facts) -> dict:
 def compute(*, repo_root: str | Path, derived_root: str | Path, models_dir: str | Path,
             catalog_path: str | Path | None = None, version: str | None = None) -> dict:
     """The readiness document of the repository at ``repo_root``, whose baked documents are under ``derived_root``
-    and whose released model is in ``models_dir``. ``catalog_path`` and ``version`` default to the repository's."""
+    and whose released models are in ``models_dir``. ``catalog_path`` and ``version`` default to the repository's."""
     root = Path(repo_root)
     catalog = Path(catalog_path) if catalog_path else root / CATALOG_REL
     raw = catalog.read_bytes().replace(b"\r\n", b"\n")
