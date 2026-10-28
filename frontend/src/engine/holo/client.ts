@@ -56,6 +56,8 @@ export interface RunResult {
   history: Progress[];
   metrics: { efficiency: number; uniformity: number; relStdPct: number; zeroOrder: number; ghost: number };
   timeMs: number;
+  /** Where the time went: the method (with `yieldMs` spent giving the event loop a turn between iterations) and the scoring. */
+  timing: { methodMs: number; scoreMs: number; yieldMs: number };
 }
 
 export interface ParticleRequest {

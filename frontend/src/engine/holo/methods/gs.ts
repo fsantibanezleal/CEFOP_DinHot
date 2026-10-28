@@ -8,7 +8,7 @@
  * et al. 2019, Pasienski and DeMarco 2008).
  */
 import type { Cx } from '../fft';
-import { fftFocalField, fftInverse, pointTrapBackproject, pointTrapFields } from '../forward';
+import { PointPlan, fftFocalField, fftInverse, slmField } from '../forward';
 import { type Setup, focalBinM, inputAmplitude, nFft, slmAxis } from '../geometry';
 import type { Rng } from '../rng';
 import type { TrapSet } from '../traps';
@@ -43,7 +43,8 @@ export function makeEngine(setup: Setup, traps: TrapSet, form: Form): { fwd: (ph
     checkOnBins(setup, traps);
     return { fwd: (phi) => fftFields(phi, setup, traps, amp).v, back: (c) => fftBackproject(c, setup, traps) };
   }
-  return { fwd: (phi) => pointTrapFields(phi, setup, traps, amp), back: (c) => pointTrapBackproject(c, setup, traps) };
+  const plan = new PointPlan(setup, traps); // the x and y factors are computed once for the whole run
+  return { fwd: (phi) => plan.project(slmField(phi, setup, amp)), back: (c) => plan.backproject(c) };
 }
 
 /** Rule state: target amplitudes `a`, weights `w`, and the keywords of the rule. */
