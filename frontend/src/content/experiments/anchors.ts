@@ -39,6 +39,20 @@ export const KIM_FEEDBACK = {
   },
 } as const;
 
+/** Kim et al. 2019: the disordered set of 819 foci after five adaptive steps (context for C13, not a band: the source used a flat beam and a 768-pixel device). */
+export const KIM_DISORDERED = {
+  cite: 'kim2019',
+  finalPct: 1.2,
+  spreadPct: 0.11,
+  steps: 5,
+  foci: 819,
+  pixels: 768,
+  conditions: {
+    en: 'Kim et al. 2019, Optics Letters 44, 3178: 819 disordered foci, 1.2 percent after five adaptive steps, with a flat beam and a 768-pixel device',
+    es: 'Kim et al. 2019, Optics Letters 44, 3178: 819 focos desordenados, 1,2 por ciento tras cinco pasos adaptativos, con un haz plano y un dispositivo de 768 píxeles',
+  },
+} as const;
+
 /** Nogrette et al. 2014 section III.D: the aberration correction. */
 export const NOGRETTE_ABERRATION = {
   cite: 'nogrette2014',
