@@ -43,6 +43,11 @@ def quasi_periodic_119(setup: Setup, bins_long: int = 9, bins_short: int = 6) ->
     return TrapSet(Trap(i, float(x) * b, float(y) * b) for i, (x, y) in enumerate(pts))
 
 
+def bin_grid(setup: Setup, nx: int, ny: int, spacing_bins: float) -> TrapSet:
+    """``nx x ny`` square lattice with the given spacing in FFT bins of ``setup`` (traps on bins for integer spacing)."""
+    return square_grid(nx, ny, spacing_bins * focal_bin_m(setup) * 1e6)
+
+
 def trap_stats(phi: np.ndarray, setup: Setup, traps: TrapSet) -> tuple[float, float, float]:
     """Efficiency, uniformity (with the leading 1 minus) and relative standard deviation in percent, ideal device."""
     v = point_trap_fields(phi, setup, traps)

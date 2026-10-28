@@ -6,7 +6,7 @@ intensity error is the relative standard deviation of I_m / w_m in percent. Seed
 from __future__ import annotations
 
 import numpy as np
-from e3_helpers import check_finite_difference, make_setup, task_10x10, trap_stats
+from e3_helpers import bin_grid, check_finite_difference, make_setup, task_10x10, trap_stats
 
 from pipeline.model.holo.core.forward import point_trap_fields
 from pipeline.model.holo.core.rng import Rng
@@ -36,9 +36,7 @@ def test_adam_decreases_the_loss_and_records_history():
     s = make_setup(64)
     traps = task_10x10(make_setup(256))
     # a 6x6 sub-lattice that fits the 64 pixel grid
-    from pipeline.model.holo.core.geometry import focal_bin_m
-    from pipeline.model.holo.core.traps import square_grid
-    traps = square_grid(4, 4, 8 * focal_bin_m(s) * 1e6)
+    traps = bin_grid(s, 4, 4, 8)
     res = M11.run(s, Target.from_traps(traps), budget=Budget(40), rng=Rng(1))
     assert len(res.history) == 40 and res.history[-1]["loss"] < res.history[0]["loss"]
     assert np.allclose(point_trap_fields(res.phi, s, traps), res.fields, atol=1e-10)
@@ -54,8 +52,7 @@ def test_field_target_runs_and_reduces_the_loss():
 
 def test_deterministic_for_a_seed():
     s = make_setup(32)
-    from pipeline.model.holo.core.traps import snap_to_bins, square_grid
-    traps = snap_to_bins(s, square_grid(3, 3, 8 * 8.32 * 2))
+    traps = bin_grid(s, 3, 3, 16)
     a = M11.run(s, Target.from_traps(traps), budget=Budget(5), rng=Rng(7))
     b = M11.run(s, Target.from_traps(traps), budget=Budget(5), rng=Rng(7))
     assert np.array_equal(a.phi, b.phi)
