@@ -3,7 +3,7 @@
     .venv-gpu/Scripts/python.exe -m pipeline.stages.evaluate [--slot cgh-net|warmstart-model|all] [--models-dir DIR]
 
 It loads ``models/<stem>.onnx`` through onnxruntime (by the method modules), runs them on the held-out files of the data root
-(default device ``E:/_Datos/dinhot/learned``, written before training), and writes ``data/derived/models/metrics.json`` (contract
+(``$DINHOT_LEARNED_DIR``, written before training), and writes ``data/derived/models/metrics.json`` (contract
 ``model-metrics``) and ``data/derived/models/evaluation-detail.json`` (per-target and per-geometry rows, secondary comparisons).
 A slot with no released model has no entry (its baseline answers). Offline, never in CI.
 """
@@ -28,7 +28,7 @@ def run(slots=SLOTS, models_dir: Path | None = None, heldout_root: Path | None =
         seeds=(301, 302, 303), budget: int = 60) -> dict:
     from ..model.holo.learned import evaluation, heldout
     models = Path(models_dir) if models_dir else REPO_ROOT / "models"
-    root = Path(heldout_root) if heldout_root else heldout.LEARNED_ROOT
+    root = Path(heldout_root) if heldout_root else heldout.learned_root()
     out = Path(out_dir) if out_dir else REPO_ROOT / "data" / "derived" / "models"
     mpath, dpath = out / "metrics.json", out / "evaluation-detail.json"
     doc = json.loads(mpath.read_text(encoding="utf-8")) if mpath.is_file() else {"schema": "dinhot.model-metrics/v1", "slots": {}}

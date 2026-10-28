@@ -14,10 +14,18 @@ pytest.importorskip("onnxruntime")
 
 from pipeline.io.contract import REPO_ROOT  # noqa: E402
 from pipeline.io.model_card import is_valid_slot  # noqa: E402
-from pipeline.model.holo.learned import evaluation, heldout  # noqa: E402
+from pipeline.model.holo.learned import evaluation  # noqa: E402
+
+
+def _held(name):
+    import os
+    from pathlib import Path
+    d = os.environ.get("DINHOT_LEARNED_DIR")
+    return Path(d) / name if d else Path("absent") / name
+
 
 MODELS = REPO_ROOT / "models"
-HELD = heldout.LEARNED_ROOT / "warmstart-heldout.npz"
+HELD = _held("warmstart-heldout.npz")
 
 pytestmark = pytest.mark.skipif(not is_valid_slot(MODELS, "warmstart-model"), reason="warmstart-model is not released: the random start answers")
 
