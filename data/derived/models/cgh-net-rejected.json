@@ -1,0 +1,107 @@
+{
+  "slot": "cgh-net",
+  "status": "not released: the acceptance criterion is not met, the GS baseline (M04, 30 iterations) answers",
+  "criterion": "on held-out targets, accuracy above GS at the same wall-clock budget (median of the per-target ratio above 1)",
+  "candidate": {
+    "steps": 38000,
+    "onnx_bytes": 4276382,
+    "opset": 17,
+    "operators": [
+      "Add",
+      "Atan",
+      "Concat",
+      "Constant",
+      "ConstantOfShape",
+      "Conv",
+      "ConvTranspose",
+      "Div",
+      "Equal",
+      "Expand",
+      "Greater",
+      "Less",
+      "MatMul",
+      "Mul",
+      "Relu",
+      "Slice",
+      "Sub",
+      "Where"
+    ],
+    "parity_wrapped_abs_diff": {
+      "max": 0.0008449554443359375,
+      "p999": 1.7149209976200647e-05,
+      "share_above_1e-5": 0.0030364990234375
+    },
+    "heldout_sha256": "0e1ca831181c22dd5aeb6c244fbb5e364024a3328f9b0c70d443b5d555e5a02a",
+    "config": {
+      "data_seed": 20261102,
+      "init_seed": 11,
+      "steps": 38000,
+      "batch": 32,
+      "lr": 0.001,
+      "max_hours": 1.5,
+      "channels": 14
+    }
+  },
+  "metrics": {
+    "held_out_n": 219,
+    "accuracy_vs_gs": {
+      "median": 0.9983304460175481,
+      "q1": 0.989419863141936,
+      "q3": 1.0055570458402108
+    },
+    "time_ms": {
+      "median": 35.788900044281036,
+      "q1": 35.01135000260547,
+      "q3": 36.81084999698214
+    },
+    "baseline": "M04"
+  },
+  "detail": {
+    "slot": "cgh-net",
+    "wall_clock_budget_ms": 35.788900044281036,
+    "accuracy": "AC, unit-sum intensities, 2 sum(TI) / (sum T^2 + sum I^2)",
+    "ac_median": {
+      "ac_net": 0.9745195308195626,
+      "ac_gs_matched": 0.9771311075288441,
+      "ac_gs30": 0.9872552080837074,
+      "ac_gs300": 0.9924788523882716,
+      "ac_lean_gs_matched": 0.9832499174601705
+    },
+    "ratio_vs": {
+      "ac_gs_matched": {
+        "median": 0.9983304460175481,
+        "q1": 0.989419863141936,
+        "q3": 1.0055570458402108
+      },
+      "ac_gs30": {
+        "median": 0.9880593096760516,
+        "q1": 0.9816346904694919,
+        "q3": 0.9943810708303715
+      },
+      "ac_gs300": {
+        "median": 0.9824755110850348,
+        "q1": 0.9764843906692673,
+        "q3": 0.9892490985380873
+      },
+      "ac_lean_gs_matched": {
+        "median": 0.9920159607617106,
+        "q1": 0.9851001117442347,
+        "q3": 0.9990833788276738
+      }
+    },
+    "share_net_above": {
+      "ac_gs_matched": 0.45662100456621,
+      "ac_gs30": 0.0867579908675799,
+      "ac_gs300": 0.0319634703196347,
+      "ac_lean_gs_matched": 0.2009132420091324
+    },
+    "gs_matched_iterations_median": 10.0,
+    "gs_lean_iterations_per_second_note": "lean GS runs for the same wall-clock as the network's median inference time"
+  },
+  "ratio_median_by_group": {
+    "gen": 0.9984021233045064,
+    "bench": 0.9943557940473552
+  },
+  "earlier_checkpoint": "30000 steps: ratio median 0.9994 (net 0.9745, GS 0.9755, 10 GS iterations in 34.4 ms); 8000 steps: 0.9948",
+  "reading": "the network and GS at 10 iterations are a statistical tie in accuracy (the network is above GS on 46 percent of the held-out targets); GS at 30 and 300 iterations is above the network (0.987 and 0.992 against 0.9745), so the network is a faster, not a more accurate, method at this size"
+}
