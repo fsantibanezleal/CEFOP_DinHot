@@ -114,3 +114,23 @@ def test_accuracy_is_one_for_equal_and_below_for_different():
     assert abs(tf.accuracy(a, t).item() - 1.0) < 1e-6
     b = torch.as_tensor(generators.sample_target(np.random.default_rng(2), "line"))[None]
     assert tf.accuracy(a, b**2 / (b**2).sum()).item() < 0.5
+
+
+def test_plane_intensity_matches_the_engine_point_trap_model_at_depth():
+    """A plane at depth Z of the torch model is the engine's trap field at a trap of that depth (Z in Rayleigh ranges)."""
+    s = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=128, pitch_m=12.5e-6, pad=1)
+    phi = np.random.default_rng(3).uniform(-np.pi, np.pi, (128, 128))
+    inten = tf.plane_intensities(_t(phi[None]).float(), tf.input_amplitude(128), tf.Z_PLANES)[0].numpy()
+    assert inten.shape == (3, 128, 128) and np.allclose(inten.sum((1, 2)), 1.0, atol=1e-5)
+    bin_m, zr = focal_bin_m(s), convert.rayleigh_range_m(s)
+    for p, z in enumerate(tf.Z_PLANES):
+        for kx, ky in ((0, 0), (5, -9), (-20, 13)):
+            v = point_trap_fields(phi, s, TrapSet([Trap(0, kx * bin_m, ky * bin_m, z * zr)]))[0]
+            # unit-sum intensity times N^2 is the trap intensity |V|^2 N^2 / N^2 ... : I_bin = |E|^2 / N^2, |V|^2 = |E|^2 / N^2 at pad 1
+            np.testing.assert_allclose(inten[p, ky + 64, kx + 64], abs(v) ** 2, rtol=2e-3, atol=1e-9)
+
+
+def test_volume_accuracy_is_one_for_the_exact_planes():
+    a = torch.as_tensor(np.stack([generators.sample_volume(np.random.default_rng(1), "random")[0]]))
+    t = a**2 / (a**2).sum((-2, -1), keepdim=True)
+    assert abs(tf.volume_accuracy(a, t).item() - 1.0) < 1e-6

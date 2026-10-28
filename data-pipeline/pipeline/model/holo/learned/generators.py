@@ -207,3 +207,51 @@ def sample_target(rng: np.random.Generator, kind: str | None = None) -> np.ndarr
     else:
         t = shaped_intensity("strokes", {"strokes": [(u(-45, 45), u(-45, 45), u(-45, 45), u(-45, 45), u(2.5, 6)) for _ in range(int(rng.integers(1, 5)))]})
     return np.sqrt(t).astype(np.float32)
+
+
+# ----------------------------------------------------------------- volumes (cgh-net, three planes)
+PLANE_Z = 8.0                 # plane depth step in SLM-limited Rayleigh ranges (torch_forward.Z_PLANES = -8, 0, 8)
+PLANE_INDEX = (-1, 0, 1)
+VOLUME_KINDS = ("random", "lattice", "ring", "mixed")
+
+
+def _int_unique(xy: np.ndarray) -> np.ndarray:
+    xy = np.rint(xy).astype(int)
+    _, idx = np.unique(xy, axis=0, return_index=True)
+    return xy[np.sort(idx)]
+
+
+def _plane_points(rng: np.random.Generator, kind: str, n: int, lim: int = 50):
+    if kind == "ring":
+        rad = float(rng.uniform(max(5.0, n * 2.2 / (2 * math.pi)), lim))
+        th = 2 * np.pi * np.arange(n) / n + rng.uniform(0, 2 * np.pi)
+        return _int_unique(np.stack([rad * np.cos(th), rad * np.sin(th)], 1))
+    return _int_unique((rng.random((n * 2, 2)) - 0.5) * 2 * lim)[:n]
+
+
+def sample_volume(rng: np.random.Generator, kind: str | None = None):
+    """One three-plane target: ``(amps float32 (3, 128, 128), traps float64 (3 n, 4))``.
+
+    ``amps[p]`` is the unit-energy amplitude of plane ``p`` (Gaussian spots of sigma 1 bin at integer bins, equal weights);
+    ``traps`` rows are ``(x_bin, y_bin, plane_index in -1, 0, 1, weight)`` for the point-voxel baseline (M19). Every plane has the same
+    number of spots, so the planes carry equal energy. ``kind``: random sets, shifted lattices, rings, or a different family per plane.
+    """
+    kind = kind or str(rng.choice(VOLUME_KINDS, p=[.35, .25, .2, .2]))
+    n = int(rng.choice([3, 4, 6, 9, 12, 16, 20, 25, 30, 36]))
+    planes = []
+    if kind == "lattice":
+        k = max(2, int(round(math.sqrt(n))))
+        sp = float(rng.uniform(4.0, min(14.0, 90.0 / max(k - 1, 1))))
+        g = (np.arange(k) - (k - 1) / 2) * sp
+        base = np.stack(np.meshgrid(g, g), -1).reshape(-1, 2)
+        shifts = rng.integers(-6, 7, (3, 2))
+        planes = [_int_unique(base + s) for s in shifts]
+    elif kind == "mixed":
+        planes = [_plane_points(rng, str(rng.choice(["random", "ring"])), n) for _ in range(3)]
+    else:
+        planes = [_plane_points(rng, kind, n) for _ in range(3)]
+    m = min(len(p) for p in planes)
+    planes = [p[:m] for p in planes]
+    amps = np.stack([np.sqrt(render_spots(p.astype(np.float64), np.ones(len(p)))) for p in planes]).astype(np.float32)
+    traps = np.concatenate([np.column_stack([p, np.full(len(p), PLANE_INDEX[i]), np.ones(len(p))]) for i, p in enumerate(planes)])
+    return amps, traps

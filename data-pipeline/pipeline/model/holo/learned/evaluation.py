@@ -19,10 +19,11 @@ from pathlib import Path
 import numpy as np
 
 from ..core.forward import fft_focal_field
-from ..core.geometry import Setup, input_amplitude
+from ..core.geometry import Setup, focal_bin_m
 from ..core.rng import Rng
+from ..core.traps import Trap, TrapSet
 from ..core.types import Budget, Target
-from ..methods.baseline import _gs, m04_gs
+from ..methods.baseline import m19_multiplane
 from ..methods.baseline import m07_phase_fixed_wgs as m07
 from ..methods.learned import b3_warm_start, m17_cgh_net
 from . import convert, heldout
@@ -30,7 +31,7 @@ from . import convert, heldout
 SETUP128 = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=128, pitch_m=12.5e-6, pad=1)
 SETUP256 = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=256, pitch_m=12.5e-6, pad=2)
 BIG = 10**6
-CURVE_FRACTIONS = (0.33, 0.45, 0.6, 0.8)
+CURVE_FRACTIONS = (0.33, 0.6)
 
 
 def stat(x) -> dict:
@@ -40,36 +41,20 @@ def stat(x) -> dict:
 
 # ----------------------------------------------------------------------------------------------------- cgh-net
 
-def accuracy(a: np.ndarray, phi: np.ndarray, setup: Setup = SETUP128) -> float:
-    """AC of the mask ``phi`` against the amplitude ``a`` through the engine's FFT model (same definition as the loss)."""
-    i = np.abs(fft_focal_field(phi, setup)) ** 2
-    i = i / i.sum()
-    t = np.asarray(a, dtype=np.float64) ** 2
-    t = t / t.sum()
-    return float(2.0 * np.sum(t * i) / (np.sum(t**2) + np.sum(i**2)))
-
-
-def lean_gs(a: np.ndarray, setup: Setup, time_s: float, iterations: int | None = None) -> np.ndarray:
-    """Plain Gerchberg-Saxton in numpy with two FFTs per iteration (the same start as M04: ``start_phase_field``), run for
-    ``time_s`` seconds or ``iterations`` iterations (at least one)."""
+def plane_accuracy(amps: np.ndarray, phi: np.ndarray, setup: Setup = SETUP128, z_planes=(-8.0, 0.0, 8.0)) -> float:
+    """Volume accuracy of the mask ``phi``: the mean over the planes of ``2 sum(TI) / (sum T^2 + sum I^2)`` with unit-sum plane
+    intensities, the plane field being the engine's focal field of the mask minus the plane's lens phase (same definition as the loss)."""
     n = setup.n_pix
-    amp_in = input_amplitude(setup)
-    t = np.fft.ifftshift(np.asarray(a, dtype=np.float64) / np.sqrt(np.sum(np.asarray(a, dtype=np.float64) ** 2)) * n)
-    phi = _gs.start_phase_field(setup, Rng(1), None, _gs.START_WAVES)
-    t0, k = time.perf_counter(), 0
-    while True:
-        e = np.fft.fft2(amp_in * np.exp(1j * phi), norm="ortho")
-        mag = np.abs(e)
-        e = t * np.where(mag > 1e-300, e / np.maximum(mag, 1e-300), 1.0)
-        phi = np.angle(np.fft.ifft2(e, norm="ortho"))
-        k += 1
-        if (iterations is not None and k >= iterations) or (iterations is None and time.perf_counter() - t0 >= time_s):
-            return phi
-
-
-def _target(a: np.ndarray) -> Target:
-    a64 = np.asarray(a, dtype=np.float64)
-    return Target.from_field(a64, a64 > 1e-2 * a64.max())
+    c = np.arange(n) - (n - 1) / 2.0
+    q = (c[None, :] ** 2 + c[:, None] ** 2) / (n / 2.0) ** 2
+    ac = []
+    for a, z in zip(amps, z_planes):
+        i = np.abs(fft_focal_field(phi - z * q, setup)) ** 2
+        i = i / i.sum()
+        t = np.asarray(a, dtype=np.float64) ** 2
+        t = t / t.sum()
+        ac.append(2.0 * np.sum(t * i) / (np.sum(t**2) + np.sum(i**2)))
+    return float(np.mean(ac))
 
 
 def _timed(fn):
@@ -78,65 +63,63 @@ def _timed(fn):
     return r, time.perf_counter() - t0
 
 
-def evaluate_cgh(models_dir: Path, heldout_path: Path) -> tuple[dict, dict]:
-    """``(metrics entry of the schema, detail document)``.
+def volume_target(traps_arr: np.ndarray) -> Target:
+    """The M19 / M17 target of a volume: its point voxels, positions in bins and plane indices converted to metres."""
+    b, zr = focal_bin_m(SETUP128), convert.rayleigh_range_m(SETUP128)
+    return Target.from_traps(TrapSet(Trap(i, float(r[0] * b), float(r[1] * b), float(r[2] * 8.0 * zr), float(r[3])) for i, r in enumerate(traps_arr)))
 
-    The wall-clock budget ``T`` is the median time of the catalog baseline (GS, 30 iterations) on this machine. Per target: GS alone
-    for ``T``; the hybrid (network pass, then GS from its phase in what is left of ``T``); the network alone; GS at 30 and 300
-    iterations; a lean numpy GS for ``T``. ``accuracy_vs_gs`` is the per-target ratio hybrid / GS alone; ``time_ms`` the hybrid's
-    wall time per target.
+
+def evaluate_cgh(models_dir: Path, heldout_path: Path) -> tuple[dict, dict]:
+    """``(metrics entry of the schema, detail document)`` of the multi-plane cgh-net.
+
+    The wall-clock budget ``T`` is the median time of the baseline (M19, volumetric 3D GS, 30 iterations) on this machine. Per volume:
+    M19 alone for ``T`` (the baseline), the hybrid (network pass, then M19 from its phase in what is left of ``T``), the network alone,
+    M19 at 30 iterations. ``accuracy_vs_gs`` is the per-volume ratio hybrid / M19 alone; ``time_ms`` the hybrid's wall time. The detail
+    adds the same ratio at fractions of ``T`` on every third volume.
     """
-    gen, kinds, bench, bench_names = heldout.load_cgh(heldout_path)
-    targets = list(gen) + list(bench)
-    names = [f"gen/{k}" for k in kinds] + [f"bench/{b}" for b in bench_names]
-    tg = [_target(a) for a in targets]
-    for _ in range(3):   # warm-up of the session and the caches
-        m17_cgh_net.run(SETUP128, tg[0], budget=Budget(1), rng=Rng(1), models_dir=models_dir)
-    t30 = []
-    for t in tg:
-        _r, dt = _timed(lambda: m04_gs.run(SETUP128, t, budget=Budget(30), rng=Rng(1)))
-        t30.append(dt)
+    amps, trap_sets, kinds = heldout.load_cgh_vol(heldout_path)
+    tgs = [volume_target(t) for t in trap_sets]
+    for _ in range(2):
+        m17_cgh_net.run(SETUP128, tgs[0], budget=Budget(1), rng=Rng(1), models_dir=models_dir)
+    t30 = [_timed(lambda: m19_multiplane.run(SETUP128, t, budget=Budget(30), rng=Rng(1), dz_m=m17_cgh_net.plane_dz_m(SETUP128)))[1] for t in tgs[::4]]
     budget_s = float(np.median(t30))
+    dz = m17_cgh_net.plane_dz_m(SETUP128)
     rows = []
-    for i, (a, t) in enumerate(zip(targets, tg)):
-        net, t_net = _timed(lambda: m17_cgh_net.run(SETUP128, t, budget=Budget(BIG), rng=Rng(1), models_dir=models_dir, refine=False))
+    for i, (a, t) in enumerate(zip(amps, tgs)):
+        net = m17_cgh_net.run(SETUP128, t, budget=Budget(BIG), rng=Rng(1), models_dir=models_dir, refine=False)
         if net.meta["provenance"] != "real":
             raise RuntimeError("the cgh-net slot is not released in " + str(models_dir))
         hyb, t_hyb = _timed(lambda: m17_cgh_net.run(SETUP128, t, budget=Budget(BIG, budget_s), rng=Rng(1), models_dir=models_dir))
-        gs_t, t_gs = _timed(lambda: m04_gs.run(SETUP128, t, budget=Budget(BIG, budget_s), rng=Rng(1)))
-        gs30 = m04_gs.run(SETUP128, t, budget=Budget(30), rng=Rng(1))
-        gs300 = m04_gs.run(SETUP128, t, budget=Budget(300), rng=Rng(1))
-        lean = lean_gs(a, SETUP128, budget_s)
-        rows.append({"target": names[i], "ac_hybrid": accuracy(a, hyb.phi), "time_hybrid_ms": 1000 * t_hyb,
+        base, t_base = _timed(lambda: m19_multiplane.run(SETUP128, t, budget=Budget(BIG, budget_s), rng=Rng(1), dz_m=dz))
+        g30 = m19_multiplane.run(SETUP128, t, budget=Budget(30), rng=Rng(1), dz_m=dz)
+        rows.append({"volume": f"{i:03d}/{kinds[i]}", "ac_hybrid": plane_accuracy(a, hyb.phi), "time_hybrid_ms": 1000 * t_hyb,
                      "hybrid_refine_iterations": hyb.meta["refine_iterations"], "network_ms": 1000 * hyb.meta["network_s"],
-                     "ac_net_alone": accuracy(a, net.phi), "ac_gs_matched": accuracy(a, gs_t.phi), "time_gs_matched_ms": 1000 * t_gs,
-                     "gs_matched_iterations": gs_t.meta["iterations"], "ac_gs30": accuracy(a, gs30.phi), "ac_gs300": accuracy(a, gs300.phi),
-                     "ac_lean_gs_matched": accuracy(a, lean)})
+                     "ac_net_alone": plane_accuracy(a, net.phi), "ac_m19_matched": plane_accuracy(a, base.phi),
+                     "time_m19_matched_ms": 1000 * t_base, "m19_matched_iterations": base.meta["iterations"],
+                     "ac_m19_30": plane_accuracy(a, g30.phi)})
     curve = {}
-    for frac in CURVE_FRACTIONS:   # the same comparison at smaller budgets (fractions of T), same targets
-        tb = frac * budget_s
-        rr = []
-        for a, t in zip(targets, tg):
+    for frac in CURVE_FRACTIONS:
+        tb, rr = frac * budget_s, []
+        for a, t in list(zip(amps, tgs))[::3]:
             h = m17_cgh_net.run(SETUP128, t, budget=Budget(BIG, tb), rng=Rng(1), models_dir=models_dir)
-            g = m04_gs.run(SETUP128, t, budget=Budget(BIG, tb), rng=Rng(1))
-            rr.append(accuracy(a, h.phi) / accuracy(a, g.phi))
-        curve[f"{1000 * tb:.0f} ms"] = {"fraction_of_T": frac, "ratio_hybrid_over_gs": stat(rr), "share_above_1": float(np.mean(np.array(rr) > 1.0))}
+            g = m19_multiplane.run(SETUP128, t, budget=Budget(BIG, tb), rng=Rng(1), dz_m=dz)
+            rr.append(plane_accuracy(a, h.phi) / plane_accuracy(a, g.phi))
+        curve[f"{1000 * tb:.0f} ms"] = {"fraction_of_T": frac, "n_volumes": len(rr), "ratio_hybrid_over_m19": stat(rr), "share_above_1": float(np.mean(np.array(rr) > 1.0))}
     col = lambda k: np.array([r[k] for r in rows])  # noqa: E731
-    ratio = col("ac_hybrid") / col("ac_gs_matched")
+    ratio = col("ac_hybrid") / col("ac_m19_matched")
     entry = {"held_out_n": len(rows), "accuracy_vs_gs": stat(ratio), "time_ms": stat(col("time_hybrid_ms")), "baseline": "M04"}
-    ks = ("ac_gs_matched", "ac_gs30", "ac_gs300", "ac_lean_gs_matched")
+    kinds_arr = np.array([k.split("/")[1] if "/" in k else k for k in kinds])
     detail = {
-        "slot": "cgh-net", "wall_clock_budget_ms": 1000 * budget_s,
-        "budget_definition": "median wall time of GS (M04) at 30 iterations on the held-out targets, this machine",
-        "accuracy": "AC, unit-sum intensities, 2 sum(TI) / (sum T^2 + sum I^2)",
-        "ac_median": {k: float(np.median(col(k))) for k in ("ac_hybrid", "ac_net_alone") + ks},
-        "ratio_hybrid_vs": {k: stat(col("ac_hybrid") / col(k)) for k in ks},
-        "share_hybrid_above": {k: float(np.mean(col("ac_hybrid") > col(k))) for k in ks},
-        "network_ms_median": float(np.median(col("network_ms"))),
-        "hybrid_refine_iterations_median": float(np.median(col("hybrid_refine_iterations"))),
-        "gs_matched_iterations_median": float(np.median(col("gs_matched_iterations"))),
-        "budget_curve": curve,
-        "rows": rows,
+        "slot": "cgh-net", "variant": "three planes at Z = -8, 0, +8 Rayleigh ranges", "baseline_is": "M19 (the schema constant 'M04' names GS, the catalog baseline before this decision)",
+        "wall_clock_budget_ms": 1000 * budget_s, "budget_definition": "median wall time of M19 at 30 iterations on the held-out volumes, this machine",
+        "accuracy": "mean over planes of AC = 2 sum(TI) / (sum T^2 + sum I^2), unit-sum plane intensities",
+        "ac_median": {k: float(np.median(col(k))) for k in ("ac_hybrid", "ac_net_alone", "ac_m19_matched", "ac_m19_30")},
+        "ratio_by_kind": {k: float(np.median(ratio[kinds_arr == k])) for k in sorted(set(kinds_arr))},
+        "ratio_net_alone_over_m19_matched": stat(col("ac_net_alone") / col("ac_m19_matched")),
+        "share_hybrid_above_m19": float(np.mean(ratio > 1.0)),
+        "network_ms_median": float(np.median(col("network_ms"))), "hybrid_refine_iterations_median": float(np.median(col("hybrid_refine_iterations"))),
+        "m19_matched_iterations_median": float(np.median(col("m19_matched_iterations"))),
+        "budget_curve": curve, "rows": rows,
     }
     return entry, detail
 

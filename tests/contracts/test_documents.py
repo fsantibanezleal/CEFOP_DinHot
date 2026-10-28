@@ -272,23 +272,25 @@ def test_onnx_graphs_match_their_cards():
 
 
 def test_adversarial_swap_gs_baseline_and_cgh_net(tmp_path):
-    """The baseline (GS, 30 iterations) and the network answer the same contract: a unit-energy 128 x 128 amplitude in, a finite
-    128 x 128 phase out; an unreleased or altered slot is never used."""
+    """The baseline (M19, volumetric 3D GS, 30 iterations) and the network answer the same contract: three plane amplitudes in, a
+    finite 128 x 128 phase out; an unreleased or altered slot is never used."""
     import numpy as np
-    from pipeline.model.holo.core.geometry import Setup
+    from pipeline.model.holo.core.geometry import Setup, focal_bin_m
     from pipeline.model.holo.core.rng import Rng
+    from pipeline.model.holo.core.traps import Trap, TrapSet
     from pipeline.model.holo.core.types import Budget, Target
-    from pipeline.model.holo.learned import generators
-    from pipeline.model.holo.methods.baseline import m04_gs
+    from pipeline.model.holo.learned import convert, generators
+    from pipeline.model.holo.methods.baseline import m19_multiplane
     from pipeline.model.holo.methods.learned import m17_cgh_net
     setup = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=128, pitch_m=12.5e-6, pad=1)
-    a = generators.sample_target(np.random.default_rng(1), "ring").astype(np.float64)
-    target = Target.from_field(a, a > 1e-2 * a.max())
+    b, zr = focal_bin_m(setup), convert.rayleigh_range_m(setup)
+    rows = generators.sample_volume(np.random.default_rng(1), "lattice")[1]
+    target = Target.from_traps(TrapSet(Trap(i, r[0] * b, r[1] * b, r[2] * 8.0 * zr) for i, r in enumerate(rows)))
     empty = tmp_path / "none"
     base = m17_cgh_net.run(setup, target, budget=Budget(1), rng=Rng(1), models_dir=empty)
-    ref = m04_gs.run(setup, target, budget=Budget(30), rng=Rng(1))
+    ref = m19_multiplane.run(setup, target, budget=Budget(30), rng=Rng(1), dz_m=m17_cgh_net.plane_dz_m(setup))
     assert base.meta["provenance"] == "baseline" and base.phi.shape == (128, 128)
-    np.testing.assert_array_equal(base.phi, ref.phi)                   # the baseline IS GS at 30 iterations
+    np.testing.assert_array_equal(base.phi, ref.phi)                   # the baseline IS M19 at 30 iterations
     models, _card = _fake_slot(tmp_path, "cgh-net")
     assert model_card.is_valid_slot(models, "cgh-net")
     (models / "cgh-net.onnx").write_bytes(b"onnx-bytez")             # same size, other bytes: the sha256 refuses it

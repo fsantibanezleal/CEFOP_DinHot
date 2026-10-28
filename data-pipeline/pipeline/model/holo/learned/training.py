@@ -162,3 +162,64 @@ def train_cgh(cfg: CghConfig, run_dir: Path, resume: bool = True) -> Path:
             torch.save({"net": net.state_dict(), "opt": opt.state_dict(), "step": step, "rng": rng.bit_generator.state, "cfg": asdict(cfg)}, ck)
     torch.save({"net": net.state_dict(), "opt": opt.state_dict(), "step": step, "rng": rng.bit_generator.state, "cfg": asdict(cfg)}, ck)
     return ck
+
+
+@dataclass
+class CghVolConfig:
+    """The multi-plane cgh-net (released form): three planes at ``torch_forward.Z_PLANES``."""
+    data_seed: int = 20261103
+    init_seed: int = 13
+    steps: int = 30000
+    batch: int = 32
+    lr: float = 1e-3
+    max_hours: float = 2.0
+    channels: int = 12
+
+
+def vol_batch(rng: np.random.Generator, batch: int, device):
+    return torch.as_tensor(np.stack([generators.sample_volume(rng)[0] for _ in range(batch)]), device=device)
+
+
+def vol_loss(net, target, amp_in):
+    phase = net(target)
+    inten = tf.plane_intensities(phase[:, 0], amp_in)
+    ac = tf.volume_accuracy(target, inten)
+    return (1.0 - ac).mean(), ac
+
+
+def train_cgh_vol(cfg: CghVolConfig, run_dir: Path, resume: bool = True) -> Path:
+    run_dir.mkdir(parents=True, exist_ok=True)
+    dev = torch.device("cuda")
+    torch.manual_seed(cfg.init_seed)
+    net = nets.CghVolNet(cfg.channels).to(dev)
+    opt = torch.optim.AdamW(net.parameters(), lr=cfg.lr, weight_decay=1e-6)
+    rng = np.random.default_rng(cfg.data_seed)
+    amp_in = tf.input_amplitude(CGH_N_PIX, device=dev)
+    ck = run_dir / "ckpt.pt"
+    step = 0
+    if resume and ck.is_file():
+        st = torch.load(ck, map_location=dev, weights_only=False)
+        net.load_state_dict(st["net"]), opt.load_state_dict(st["opt"])
+        step, rng.bit_generator.state = st["step"], st["rng"]
+    log = run_dir / "log.jsonl"
+    t0 = time.time()
+
+    def save():
+        torch.save({"net": net.state_dict(), "opt": opt.state_dict(), "step": step, "rng": rng.bit_generator.state, "cfg": asdict(cfg)}, ck)
+
+    while step < cfg.steps and (time.time() - t0) < cfg.max_hours * 3600:
+        lr = cfg.lr * min(1.0, (step + 1) / 200) * 0.5 * (1 + math.cos(math.pi * min(1.0, step / cfg.steps))) + 1e-5
+        for g in opt.param_groups:
+            g["lr"] = lr
+        loss, ac = vol_loss(net, vol_batch(rng, cfg.batch, dev), amp_in)
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(net.parameters(), 1.0)
+        opt.step()
+        step += 1
+        if step % 50 == 0:
+            _log(log, {"step": step, "loss": float(loss.detach()), "ac_median": float(ac.median()), "lr": lr, "t": round(time.time() - t0)})
+        if step % 500 == 0:
+            save()
+    save()
+    return ck

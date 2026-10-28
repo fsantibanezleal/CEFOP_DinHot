@@ -110,3 +110,38 @@ def test_cgh_graph_intensity_parity_is_relative_1e5_when_trained_like(cgh_net, t
     export.export_cgh(cgh_net, tmp_path / "c.onnx")
     probes = [(generators.sample_target(np.random.default_rng(i))[None, None],) for i in range(4)]
     assert export.intensity_parity(cgh_net, tmp_path / "c.onnx", probes) < 1e-4   # untrained weights; the trained value is in the card
+
+
+@pytest.fixture(scope="module")
+def vol_net():
+    torch.manual_seed(0)
+    return nets.CghVolNet(14).eval()
+
+
+def test_vol_net_reconstruction_path_is_the_inverse_transform_with_the_lens(vol_net, monkeypatch):
+    """With the network's focal fields replaced by known ones, the output is the phase of sum_p IDFT(F_p) exp(+i Z_p q)."""
+    rng = np.random.default_rng(0)
+    f = rng.normal(size=(1, 6, 128, 128)).astype(np.float32)
+    monkeypatch.setattr(vol_net, "focal_fields", lambda t: torch.as_tensor(f))
+    with torch.no_grad():
+        got = vol_net(torch.zeros(1, 3, 128, 128)).numpy()[0, 0]
+    lin = np.linspace(-1, 1, 128)
+    q = lin[None, :] ** 2 + lin[:, None] ** 2
+    tot = np.zeros((128, 128), complex)
+    for p, z in enumerate(tf.Z_PLANES):
+        fp = f[0, p] + 1j * f[0, 3 + p]
+        slm = np.fft.ifft2(np.fft.ifftshift(fp)) * 128 * 128
+        tot += slm * np.exp(1j * z * q)
+    ref = np.angle(tot)
+    assert export.wrapped_diff(got, ref).max() < 5e-3        # float32 matrices against float64 FFT, phase of a few near-zero pixels
+
+
+def test_vol_graph_is_web_safe_small_with_the_contract_io_and_intensity_parity(vol_net, tmp_path):
+    export.export_cgh(vol_net, tmp_path / "v.onnx")
+    assert export.check_ops(tmp_path / "v.onnx") == set()
+    assert (tmp_path / "v.onnx").stat().st_size <= 5 * 1024 * 1024
+    i, o = export.io_spec(tmp_path / "v.onnx")
+    assert i == [{"name": "target", "shape": [1, 3, 128, 128], "dtype": "float32"}]
+    assert o == [{"name": "phase", "shape": [1, 1, 128, 128], "dtype": "float32"}]
+    probes = [(generators.sample_volume(np.random.default_rng(i))[0][None],) for i in range(3)]
+    assert export.intensity_parity(vol_net, tmp_path / "v.onnx", probes) < 1e-4   # untrained; the trained value is in the card
