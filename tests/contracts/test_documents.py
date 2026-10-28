@@ -267,7 +267,9 @@ def _default_registry():
 def test_engine_reference_covers_every_live_method_and_the_core():
     have = {cs.load_json(f)["function"] for f in _engine_files()}
     with _default_registry() as registry:
-        live = {s.id for s in registry.all_specs() if s.lane in ("live", "both")}
+        # The learned methods run in the browser through onnxruntime-web, not the TypeScript engine: their live parity is
+        # the ONNX-against-torch check of the model slot (tests/learned/), so they need no engine-reference fixture.
+        live = {s.id for s in registry.all_specs() if s.lane in ("live", "both") and s.family != "learned"}
     assert {f"methods.{m}" for m in live} <= have, sorted({f"methods.{m}" for m in live} - have)
     core = {"rng.stream", "geometry.setup_functions", "traps.generators", "forward.point_trap_fields", "forward.fft_focal_field",
             "forward.fft_inverse", "forward.angular_spectrum", "forward.axial_cut", "metrics.trap_metrics", "metrics.power_budget",
@@ -300,3 +302,137 @@ def test_adversarial_an_engine_reference_with_a_foreign_field_or_no_cases_fails(
     bad = copy.deepcopy(doc)
     bad["schema"] = "dinhot.engine-ref/v0"
     assert cs.errors("engine-reference", bad)
+
+
+# ===== M1 block begin: the model slots (catalog rows cgh-net, warmstart-model), producer side =====
+import hashlib  # noqa: E402
+
+from pipeline.io import model_card  # noqa: E402
+
+MODELS = cs.ROOT / "models"
+SLOT_STEMS = {"cgh-net": "cgh-net", "warmstart-model": "warmstart"}
+
+
+def _examples():
+    return {slot: cs.load_json(cs.CONTRACTS / "examples" / f"{slot}.json") for slot in SLOT_STEMS}
+
+
+def _released_cards():
+    return {slot: cs.load_json(MODELS / f"{stem}.json") for slot, stem in SLOT_STEMS.items() if (MODELS / f"{stem}.json").is_file()}
+
+
+def _fake_slot(tmp_path, slot, payload=b"onnx-bytes"):
+    """A models directory whose card for ``slot`` is valid for ``payload`` standing in for the graph (the validity rule reads
+    the card, the size and the SHA-256 only)."""
+    models = tmp_path / "models"
+    models.mkdir(parents=True, exist_ok=True)
+    card = copy.deepcopy(_examples()[slot])
+    card["onnx"] = f"models/{SLOT_STEMS[slot]}.onnx"
+    card["sha256"], card["bytes"] = hashlib.sha256(payload).hexdigest(), len(payload)
+    (models / f"{SLOT_STEMS[slot]}.onnx").write_bytes(payload)
+    (models / f"{SLOT_STEMS[slot]}.json").write_text(json.dumps(card), encoding="utf-8")
+    return models, card
+
+
+def test_model_cards_validate():
+    cards = {**{f"example/{k}": v for k, v in _examples().items()}, **{f"released/{k}": v for k, v in _released_cards().items()}}
+    assert len(cards) >= 2
+    for label, card in cards.items():
+        assert cs.errors("model-card", card) == [], label
+        assert card["slot"] == label.split("/")[1], label
+        assert ("grid" in card) == (card["slot"] == "cgh-net"), label
+        assert card["metrics_path"] == "data/derived/models/metrics.json", label
+    for slot, card in _released_cards().items():
+        data = (MODELS.parent / card["onnx"]).read_bytes()
+        assert len(data) == card["bytes"] and hashlib.sha256(data).hexdigest() == card["sha256"], slot
+        assert model_card.is_valid_slot(MODELS, slot), slot
+        assert card["bytes"] <= (5 if slot == "cgh-net" else 1) * 1024 * 1024, slot
+    bad = copy.deepcopy(_examples()["warmstart-model"])
+    bad["grid"] = 128
+    assert cs.errors("model-card", bad)                               # a warm start has no grid
+    bad = copy.deepcopy(_examples()["cgh-net"])
+    del bad["grid"]
+    assert cs.errors("model-card", bad)                               # a cgh-net has one
+    bad = copy.deepcopy(_examples()["cgh-net"])
+    bad["onnx"] = "../elsewhere/cgh-net.onnx"
+    assert cs.errors("model-card", bad)
+
+
+def test_onnx_graphs_match_their_cards():
+    onnx = pytest.importorskip("onnx")
+    from pipeline.model.holo.learned.webops import WEB_SAFE_OPS
+    cards = _released_cards()
+    if not cards:
+        pytest.skip("no released model graph: the baselines answer (readiness says training)")
+    for slot, card in cards.items():
+        g = onnx.load(str(MODELS.parent / card["onnx"])).graph
+
+        def spec(vs):
+            return [{"name": v.name, "shape": [d.dim_value for d in v.type.tensor_type.shape.dim], "dtype": "float32"} for v in vs]
+
+        assert spec(g.input) == card["inputs"] and spec(g.output) == card["outputs"], slot
+        assert {n.op_type for n in g.node} <= WEB_SAFE_OPS, slot
+        opset = [o.version for o in onnx.load(str(MODELS.parent / card["onnx"])).opset_import if o.domain in ("", "ai.onnx")]
+        assert opset == [card["opset"]], slot
+
+
+def test_adversarial_swap_gs_baseline_and_cgh_net(tmp_path):
+    """The baseline (M19, volumetric 3D GS, 30 iterations) and the network answer the same contract: three plane amplitudes in, a
+    finite 128 x 128 phase out; an unreleased or altered slot is never used."""
+    import numpy as np
+    from pipeline.model.holo.core.geometry import Setup, focal_bin_m
+    from pipeline.model.holo.core.rng import Rng
+    from pipeline.model.holo.core.traps import Trap, TrapSet
+    from pipeline.model.holo.core.types import Budget, Target
+    from pipeline.model.holo.learned import convert, generators
+    from pipeline.model.holo.methods.baseline import m19_multiplane
+    from pipeline.model.holo.methods.learned import m17_cgh_net
+    setup = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=128, pitch_m=12.5e-6, pad=1)
+    b, zr = focal_bin_m(setup), convert.rayleigh_range_m(setup)
+    rows = generators.sample_volume(np.random.default_rng(1), "lattice")[1]
+    target = Target.from_traps(TrapSet(Trap(i, r[0] * b, r[1] * b, r[2] * 8.0 * zr) for i, r in enumerate(rows)))
+    empty = tmp_path / "none"
+    base = m17_cgh_net.run(setup, target, budget=Budget(1), rng=Rng(1), models_dir=empty)
+    ref = m19_multiplane.run(setup, target, budget=Budget(30), rng=Rng(1), dz_m=m17_cgh_net.plane_dz_m(setup))
+    assert base.meta["provenance"] == "baseline" and base.phi.shape == (128, 128)
+    np.testing.assert_array_equal(base.phi, ref.phi)                   # the baseline IS M19 at 30 iterations
+    models, _card = _fake_slot(tmp_path, "cgh-net")
+    assert model_card.is_valid_slot(models, "cgh-net")
+    (models / "cgh-net.onnx").write_bytes(b"onnx-bytez")             # same size, other bytes: the sha256 refuses it
+    assert not model_card.is_valid_slot(models, "cgh-net")
+    assert m17_cgh_net.run(setup, target, budget=Budget(1), rng=Rng(1), models_dir=models).meta["provenance"] == "baseline"
+    if "cgh-net" in _released_cards():
+        pytest.importorskip("onnxruntime")
+        real = m17_cgh_net.run(setup, target, budget=Budget(1), rng=Rng(1))
+        assert real.meta["provenance"] == "real" and real.phi.shape == base.phi.shape and np.isfinite(real.phi).all()
+        assert not np.array_equal(real.phi, base.phi)
+        assert set(real.history[0]) >= {"iteration", "efficiency", "uniformity", "rel_std", "time_s"}
+
+
+def test_adversarial_swap_random_start_and_warmstart_model(tmp_path):
+    """The random start (M07's own) and the learned start answer the same contract: a trap list in, a finite SLM phase and a
+    history out; the baseline result is exactly M07 from its random start."""
+    import numpy as np
+    from pipeline.model.holo.core.geometry import Setup, focal_bin_m
+    from pipeline.model.holo.core.rng import Rng
+    from pipeline.model.holo.core.traps import square_grid
+    from pipeline.model.holo.core.types import Budget, Target
+    from pipeline.model.holo.methods.baseline import m07_phase_fixed_wgs as m07
+    from pipeline.model.holo.methods.learned import b3_warm_start
+    setup = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=64, pitch_m=12.5e-6, pad=2)
+    target = Target.from_traps(square_grid(4, 4, 8 * focal_bin_m(setup) * 1e6))
+    empty = tmp_path / "none"
+    base = b3_warm_start.run(setup, target, budget=Budget(6), rng=Rng(3), n_fix=12, models_dir=empty)
+    ref = m07.run(setup, target, budget=Budget(6), rng=Rng(3), form="point")
+    assert base.meta["provenance"] == "baseline"
+    np.testing.assert_array_equal(base.phi, ref.phi)
+    models, _card = _fake_slot(tmp_path, "warmstart-model")
+    (models / "warmstart.onnx").write_bytes(b"onnx-bytez")
+    assert not model_card.is_valid_slot(models, "warmstart-model")
+    assert b3_warm_start.run(setup, target, budget=Budget(6), rng=Rng(3), n_fix=12, models_dir=models).meta["provenance"] == "baseline"
+    if "warmstart-model" in _released_cards():
+        pytest.importorskip("onnxruntime")
+        real = b3_warm_start.run(setup, target, budget=Budget(6), rng=Rng(3))
+        assert real.meta["provenance"] == "real" and real.phi.shape == base.phi.shape and np.isfinite(real.phi).all()
+        assert len(real.history) == 6 and not np.array_equal(real.phi, base.phi)
+# ===== M1 block end =====
