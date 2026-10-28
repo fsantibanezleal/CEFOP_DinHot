@@ -1,0 +1,118 @@
+"""The benchmark protocol on the reduced grid (64 pixels, 2 seeds, a handful of iterations), with the planted methods. The
+release run is the same code at 256/512/128 pixels and 20 seeds (not run in tests: ADR-0074)."""
+from __future__ import annotations
+
+import json
+
+import sys
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "contracts"))
+
+import contract_schemas as cs  # noqa: E402
+
+from bakefix import Planted  # noqa: F401
+from pipeline.benchmark import geometries as G
+from pipeline.benchmark import protocol
+from pipeline.core import units
+
+
+@pytest.fixture(scope="module")
+def bench(tmp_path_factory):
+    root = tmp_path_factory.mktemp("bench")
+    with Planted(root / "pl", ("M02", "M04", "M05", "M08"), "benchpkg") as p:
+        out = root / "out"
+        doc = protocol.run(out, seeds=2, workers=1, reduced=True, geometries=["G1", "G5", "G7"],
+                           methods=["M02", "M04", "M05", "M08", "M19"])
+        yield out, doc, p
+
+
+def test_results_validate_and_are_in_units(bench):
+    out, doc, _ = bench
+    assert cs.errors("benchmark-results", doc) == []
+    assert units.check_benchmark(doc) == []
+    assert json.loads((out / "benchmark" / "results.json").read_text(encoding="utf-8")) == doc
+    assert doc["protocol"]["seeds"] == 2 and doc["protocol"]["budgets"]["iterations"] == [2, 4, 8]
+
+
+def test_every_budget_kind_is_reported_per_group(bench):
+    _, doc, _ = bench
+    rows = [r for r in doc["rows"] if (r["method"], r["geometry"], r["device"], r["params"]) == ("M04", "G1", "ideal", "default")]
+    kinds = sorted((r["budget_kind"], r["budget"]) for r in rows)
+    assert kinds == sorted([("iterations", 2), ("iterations", 4), ("iterations", 8), ("time", 0.05), ("time", 0.2), ("time", 1.0),
+                            ("converged", 12.0)])
+    assert all(r["n_seeds"] == 2 for r in rows)
+    its = {r["budget"]: r["iterations"]["median"] for r in rows if r["budget_kind"] == "iterations"}
+    assert its[2] <= its[4] <= its[8]
+
+
+def test_cells_that_cannot_run_are_listed_with_a_reason_and_absent_from_rows(bench):
+    _, doc, _ = bench
+    skipped = {(s["method"], s["geometry"]): s["reason"]["en"] for s in doc["skipped"]}
+    assert "not registered" in skipped[("M19", "G1")] and "not registered" in skipped[("M19", "G7")]
+    assert "does not accept a field target" not in skipped.get(("M08", "G7"), "")
+    assert ("M04", "G7") in skipped and ("M02", "G7") in skipped and ("M08", "G1") in skipped
+    assert "Device cell" in skipped[("M04", "G5")]
+    rows = {(r["method"], r["geometry"], r["device"]) for r in doc["rows"]}
+    assert ("M04", "G5", "device") not in rows and ("M04", "G5", "ideal") in rows
+    assert not any(m == "M19" for m, _, _ in rows)
+    assert all(s["reason"]["es"] for s in doc["skipped"])
+
+
+def test_adversarial_tuned_and_default_rows_never_mix_parameters(bench):
+    """Must refute: one method's tuned parameters shown as another's defaults, or tuned rows without the field saying so."""
+    _, doc, _ = bench
+    tuned = {r["method"] for r in doc["rows"] if r["params"] == "tuned"}
+    assert tuned == {"M05"}                      # only the method with a tuning grid has tuned rows
+    d = next(r for r in doc["rows"] if (r["method"], r["geometry"], r["device"], r["budget_kind"], r["budget"], r["params"]) ==
+             ("M05", "G1", "ideal", "converged", 12.0, "default"))
+    t = next(r for r in doc["rows"] if (r["method"], r["geometry"], r["device"], r["budget_kind"], r["budget"], r["params"]) ==
+             ("M05", "G1", "ideal", "converged", 12.0, "tuned"))
+    assert t["rel_std_pct"]["median"] < d["rel_std_pct"]["median"]       # gamma 1.0 beats the default 0.5 in the planted method
+
+
+def test_tuning_uses_the_same_number_of_runs_for_every_method(bench):
+    _, _, _ = bench
+    assert protocol.TUNING_CANDIDATES * protocol.TUNING_SEEDS == 12
+    assert protocol.tuning_grid("M04") is None and len(protocol.tuning_grid("M05")) == protocol.TUNING_CANDIDATES
+    best = protocol.tune("M05", "G1", False, True)
+    assert best["gamma"] > 0.5
+
+
+def test_resume_skips_finished_groups(bench):
+    out, doc, p = bench
+    before = (out / "benchmark" / "results.json").read_bytes()
+    again = protocol.run(out, seeds=2, workers=1, reduced=True, geometries=["G1", "G5", "G7"],
+                         methods=["M02", "M04", "M05", "M08", "M19"], resume=True)
+    assert len(again["rows"]) == len(doc["rows"])
+    assert (out / "benchmark" / "results.json").read_bytes() == before or again["rows"] == doc["rows"]
+
+
+def test_pool_workers_give_the_same_rows(bench, tmp_path):
+    _, doc, p = bench
+    out = tmp_path / "pool"
+    pooled = protocol.run(out, seeds=2, workers=2, reduced=True, geometries=["G1"], methods=["M02", "M04"],
+                          base_package=p.base, sys_path=[p.path])
+    keep = [r for r in doc["rows"] if r["geometry"] == "G1" and r["method"] in ("M02", "M04")]
+
+    def strip(rows):
+        return [{k: v for k, v in r.items() if k != "time_s"} for r in rows]
+
+    assert strip(pooled["rows"]) == strip(keep)
+
+
+def test_geometries_are_valid_records_and_in_units():
+    from pipeline.io.contract import validate_records
+
+    for g in G.GEOMETRIES:
+        for reduced in (True, False):
+            rec = G.record(g, device=False, seed=0, reduced=reduced)
+            rep = validate_records([{**rec, "case_id": "C99_bm"}])
+            assert rep.ok, (g, reduced, rep.rejected)
+    assert G.n_traps("G1", False) == 100 and G.n_traps("G6", False) == 1024 and G.n_traps("G4", False) == 119
+    assert G.n_traps("G5", False) == 75 and G.n_traps("G2", False) == 36 and G.n_traps("G3", False) == 100
+    assert {G.record("G7", device=False, seed=s)["target"]["shape"] for s in range(4)} == {"ring", "disc", "line", "lg_ring"}
+    assert G.unit_um(256) == pytest.approx(G.unit_um(512)) and G.unit_um(256) == pytest.approx(0.996, abs=1e-3)
+

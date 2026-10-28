@@ -1,7 +1,5 @@
-"""The final-size oracle (data-pipeline/pipeline/oracles.py): the solver of z = 1 - exp(-R0 z) that the notebooks import.
-
-It is an oracle by design, so it shares no code with the engine's integrator (pipeline/model/): the tests pin it to the
-relation itself, solved here by bisection, and read its source for any import of the engine."""
+"""The physics oracles (data-pipeline/pipeline/oracles.py): closed relations the engine is checked against, shared by tests and
+notebooks. The oracle shares no code with the engine; the tests pin it to the relations themselves and then hold the engine to it."""
 from __future__ import annotations
 
 import ast
@@ -9,48 +7,63 @@ import math
 import sys
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 
 from pipeline import oracles  # noqa: E402
+from pipeline.model.holo.core import dynamics, trapphys  # noqa: E402
+from pipeline.model.holo.core.rng import Rng  # noqa: E402
 
 
-def bisect(f, lo: float, hi: float) -> float:
-    for _ in range(200):
-        mid = (lo + hi) / 2
-        lo, hi = (mid, hi) if f(lo) * f(mid) > 0 else (lo, mid)
-    return (lo + hi) / 2
+def test_corner_frequency_and_drag_known_values() -> None:
+    gamma = oracles.stokes_drag_ns_per_m(0.00089, 0.5e-6)
+    assert gamma == pytest.approx(8.39e-9, rel=1e-2)
+    assert oracles.corner_frequency_hz(1e-5, gamma) == pytest.approx(1e-5 / (2 * math.pi * gamma))
+    with pytest.raises(ValueError):
+        oracles.corner_frequency_hz(0.0, gamma)
 
 
-@pytest.mark.parametrize("r0", [1.2, 2.0, 2.75, 6.0])
-def test_the_solution_satisfies_the_final_size_relation(r0: float) -> None:
-    z = oracles.final_size(r0)
-    assert abs(z - (1.0 - math.exp(-r0 * z))) < 1e-10
-    assert abs(z - bisect(lambda x: x - (1.0 - math.exp(-r0 * x)), 1e-9, 1.0)) < 1e-9
+def test_equipartition_variance() -> None:
+    assert oracles.equipartition_variance_m2(1e-5, 295.0) == pytest.approx(4.073e-16, rel=1e-3)
 
 
-def test_the_known_values() -> None:
-    assert round(oracles.final_size(2.75), 6) == 0.920437
-    assert round(oracles.final_size(6.0), 6) == 0.997484
+def test_random_mask_and_vortex_relations() -> None:
+    assert oracles.random_mask_efficiency(100) == 0.01
+    assert oracles.vortex_winding_rad(8) == pytest.approx(16 * math.pi)
+    with pytest.raises(ValueError):
+        oracles.random_mask_efficiency(0)
 
 
-@pytest.mark.parametrize("r0", [0.0, 0.5, 0.72])
-def test_no_epidemic_below_the_threshold(r0: float) -> None:
-    assert oracles.final_size(r0) < 1e-6
+def test_parseval_oracle_on_a_unitary_transform() -> None:
+    x = np.random.default_rng(3).normal(size=64) + 1j * np.random.default_rng(4).normal(size=64)
+    assert oracles.parseval_power(np.fft.fft(x, norm="ortho")) == pytest.approx(oracles.parseval_power(x), rel=1e-12)
 
 
-@pytest.mark.parametrize("r0,i0", [(2.75, 1e-3), (6.0, 5e-4), (1.2, 1e-3)])
-def test_the_relation_with_an_initial_infection(r0: float, i0: float) -> None:
-    z = oracles.final_size(r0, i0, tolerance=1e-13)
-    assert abs((1.0 - z) - (1.0 - i0) * math.exp(-r0 * z)) < 1e-10
+def test_published_calibration_rows_are_the_quoted_ones() -> None:
+    assert oracles.DI_LEONARDO_2007["M04"] == (0.94, 0.60) and oracles.DI_LEONARDO_2007["M06"] == (0.93, 0.99)
 
 
-def test_the_trace_records_every_iteration() -> None:
-    trace: list[float] = []
-    z = oracles.final_size(2.75, trace=trace)
-    assert len(trace) == 18 and trace[-1] == z and trace[0] == pytest.approx(1.0 - math.exp(-2.75))
+def test_the_engine_bead_meets_the_corner_frequency_oracle() -> None:
+    kappa = 1e-5
+    gamma = oracles.stokes_drag_ns_per_m(0.00089, 0.5e-6)
+    n = 41
+    ax = (np.arange(n) - n // 2) * 1e-7
+    xx, yy = np.meshgrid(ax, ax)
+    sigma = 5e-7
+    imap = np.exp(-(xx**2 + yy**2) / (2 * sigma**2))
+    depth = kappa * sigma**2
+    fc = oracles.corner_frequency_hz(kappa, gamma)
+    dt = 1.0 / (2 * math.pi * fc) / 40
+    traj = dynamics.bead_trajectory(imap, (ax, ax), dynamics.BeadParams(depth, gamma, 295.0), 2**17, dt, Rng(5))
+    f, p = dynamics.psd(traj[:, 0], dt, 64)
+    keep = f <= 5 * fc
+    fit, _ = dynamics.fit_lorentzian(f[keep], p[keep])
+    assert fit == pytest.approx(fc, rel=0.12)
+    assert np.var(traj[:, 0]) == pytest.approx(oracles.equipartition_variance_m2(kappa, 295.0), rel=0.15)
+    assert trapphys.KB_J_PER_K == oracles.KB_J_PER_K
 
 
 def test_the_oracle_shares_no_code_with_the_engine() -> None:

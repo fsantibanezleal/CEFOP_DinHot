@@ -12,7 +12,7 @@ from .routers import content
 
 def create_app() -> FastAPI:
     s = Settings()
-    app = FastAPI(title="product (dormant API)", version=VERSION)
+    app = FastAPI(title="DinHot (dormant API)", version=VERSION)
     app.add_middleware(GZipMiddleware, minimum_size=1024)
     app.add_middleware(
         CORSMiddleware,
