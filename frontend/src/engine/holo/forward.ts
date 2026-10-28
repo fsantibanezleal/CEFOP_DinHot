@@ -59,34 +59,138 @@ function denseDelay(setup: Setup, traps: TrapSet, m: number): Float64Array {
   return out;
 }
 
-/** `V_m = (1 / N_pix) sum_j f_j exp(-i Delta_j^m)` for an arbitrary complex SLM field (a vector of `2 M` interleaved). */
-export function pointTrapProjection(field: Cx, setup: Setup, traps: TrapSet): Cx {
-  checkInField(setup, traps);
-  const n = setup.nPix;
-  if (field.length !== 2 * n * n) throw new Error('field must be a finite complex array of shape (n_pix, n_pix)');
-  const c = slmAxis(setup);
-  const out = new Float64Array(2 * traps.length);
-  const gxr = new Float64Array(n), gxi = new Float64Array(n), gyr = new Float64Array(n), gyi = new Float64Array(n);
-  const n2 = n * n;
+/**
+ * The plain traps (no vortex) grouped by their x factor: traps with the same `(x, z)` share the 1D factor along x, so a lattice
+ * of `L` columns costs `L` passes over the SLM instead of one per trap (the factorisation is the separable form of the Python
+ * `_separable_factors`, only reassociated: `V_m = sum_iy gy_m[iy] (sum_ix f[iy, ix] gx_l(m)[ix])`).
+ */
+interface XGroups {
+  /** group index of each plain trap (-1 for a vortex trap). */
+  of: Int32Array;
+  count: number;
+  xM: number[];
+  zM: number[];
+}
+
+function groupByX(traps: TrapSet): XGroups {
+  const of = new Int32Array(traps.length).fill(-1);
+  const keys = new Map<string, number>();
+  const xM: number[] = [], zM: number[] = [];
   for (let m = 0; m < traps.length; m++) {
-    if (traps.charge[m] === 0) {
-      axisFactor(setup, c, traps.zM[m], traps.xM[m], -1, gxr, gxi);
-      axisFactor(setup, c, traps.zM[m], traps.yM[m], -1, gyr, gyi);
-      let vr = 0, vi = 0;
-      for (let iy = 0; iy < n; iy++) {
-        let tr = 0, ti = 0;
-        const row = 2 * iy * n;
-        for (let ix = 0; ix < n; ix++) {
-          const fr = field[row + 2 * ix], fi = field[row + 2 * ix + 1];
-          tr += fr * gxr[ix] - fi * gxi[ix];
-          ti += fr * gxi[ix] + fi * gxr[ix];
-        }
-        vr += gyr[iy] * tr - gyi[iy] * ti;
-        vi += gyr[iy] * ti + gyi[iy] * tr;
+    if (traps.charge[m] !== 0) continue;
+    const key = `${traps.xM[m]}|${traps.zM[m]}`;
+    let g = keys.get(key);
+    if (g === undefined) {
+      g = xM.length;
+      keys.set(key, g);
+      xM.push(traps.xM[m]);
+      zM.push(traps.zM[m]);
+    }
+    of[m] = g;
+  }
+  return { of, count: xM.length, xM, zM };
+}
+
+/** The x factors `exp(sign i (c_z x^2 + k x x_l))` of every group, `L x n` (real and imaginary parts). */
+function xTable(setup: Setup, c: Float64Array, g: XGroups, sign: number): { re: Float64Array; im: Float64Array } {
+  const n = c.length, re = new Float64Array(g.count * n), im = new Float64Array(g.count * n);
+  const r = new Float64Array(n), i = new Float64Array(n);
+  for (let l = 0; l < g.count; l++) {
+    axisFactor(setup, c, g.zM[l], g.xM[l], sign, r, i);
+    re.set(r, l * n);
+    im.set(i, l * n);
+  }
+  return { re, im };
+}
+
+/**
+ * A trap set prepared for repeated projection and back-projection (an iterative method calls both every iteration with the
+ * same traps): the x factors of the column groups and the y factors of every trap are computed once. The y factors are cached
+ * when `M n <= 2e6` values, else recomputed per call. `V_m = (1 / N_pix) sum_j f_j exp(-i Delta_j^m)` and its adjoint
+ * `F_j = sum_m c_m exp(+i Delta_j^m)`; a vortex trap uses the dense form.
+ */
+export class PointPlan {
+  private readonly c: Float64Array;
+  private readonly g: XGroups;
+  private readonly gx: { re: Float64Array; im: Float64Array };
+  /** the same factors laid out `[ix][l]` interleaved (re, im), conjugated (sign +1): contiguous in the group index */
+  private readonly gxT: Float64Array;
+  private readonly gy: { re: Float64Array; im: Float64Array } | null;
+
+  constructor(readonly setup: Setup, readonly traps: TrapSet) {
+    checkInField(setup, traps);
+    this.c = slmAxis(setup);
+    this.g = groupByX(traps);
+    this.gx = xTable(setup, this.c, this.g, -1);
+    const n = setup.nPix, L = this.g.count;
+    this.gxT = new Float64Array(2 * n * L);
+    for (let l = 0; l < L; l++) {
+      for (let ix = 0; ix < n; ix++) {
+        this.gxT[2 * (ix * L + l)] = this.gx.re[l * n + ix];
+        this.gxT[2 * (ix * L + l) + 1] = -this.gx.im[l * n + ix];
       }
-      out[2 * m] = vr / n2;
-      out[2 * m + 1] = vi / n2;
-    } else {
+    }
+    if (traps.length * n <= 2e6) {
+      const re = new Float64Array(traps.length * n), im = new Float64Array(traps.length * n);
+      const r = new Float64Array(n), i = new Float64Array(n);
+      for (let m = 0; m < traps.length; m++) {
+        if (this.g.of[m] < 0) continue;
+        axisFactor(setup, this.c, traps.zM[m], traps.yM[m], -1, r, i);
+        re.set(r, m * n);
+        im.set(i, m * n);
+      }
+      this.gy = { re, im };
+    } else this.gy = null;
+  }
+
+  /** The y factor (sign -1) of trap `m` as `re`, `im` views. */
+  private yFactor(m: number, r: Float64Array, i: Float64Array): [Float64Array, Float64Array] {
+    const n = this.setup.nPix;
+    if (this.gy) return [this.gy.re.subarray(m * n, (m + 1) * n), this.gy.im.subarray(m * n, (m + 1) * n)];
+    axisFactor(this.setup, this.c, this.traps.zM[m], this.traps.yM[m], -1, r, i);
+    return [r, i];
+  }
+
+  /** `V_m` of an arbitrary complex SLM field (a vector of `2 M` interleaved). */
+  project(field: Cx): Cx {
+    const { setup, traps, g } = this;
+    const n = setup.nPix, n2 = n * n;
+    if (field.length !== 2 * n2) throw new Error('field must be a finite complex array of shape (n_pix, n_pix)');
+    const out = new Float64Array(2 * traps.length);
+    if (g.count) {
+      const gre = this.gx.re, gim = this.gx.im, L = g.count;
+      const T = new Float64Array(2 * n * L); // T[iy, l] = sum_ix f[iy, ix] gx_l[ix]
+      for (let iy = 0; iy < n; iy++) {
+        const row = 2 * iy * n;
+        for (let l = 0; l < L; l++) {
+          const o = l * n;
+          let tr = 0, ti = 0;
+          for (let ix = 0; ix < n; ix++) {
+            const fr = field[row + 2 * ix], fi = field[row + 2 * ix + 1], gr = gre[o + ix], gi = gim[o + ix];
+            tr += fr * gr - fi * gi;
+            ti += fr * gi + fi * gr;
+          }
+          T[2 * (iy * L + l)] = tr;
+          T[2 * (iy * L + l) + 1] = ti;
+        }
+      }
+      const sr = new Float64Array(n), si = new Float64Array(n);
+      for (let m = 0; m < traps.length; m++) {
+        if (g.of[m] < 0) continue;
+        const [gyr, gyi] = this.yFactor(m, sr, si);
+        const l = g.of[m];
+        let vr = 0, vi = 0;
+        for (let iy = 0; iy < n; iy++) {
+          const tr = T[2 * (iy * L + l)], ti = T[2 * (iy * L + l) + 1];
+          vr += gyr[iy] * tr - gyi[iy] * ti;
+          vi += gyr[iy] * ti + gyi[iy] * tr;
+        }
+        out[2 * m] = vr / n2;
+        out[2 * m + 1] = vi / n2;
+      }
+    }
+    for (let m = 0; m < traps.length; m++) {
+      if (traps.charge[m] === 0) continue;
       const d = denseDelay(setup, traps, m);
       let vr = 0, vi = 0;
       for (let i = 0; i < n2; i++) {
@@ -97,8 +201,62 @@ export function pointTrapProjection(field: Cx, setup: Setup, traps: TrapSet): Cx
       out[2 * m] = vr / n2;
       out[2 * m + 1] = vi / n2;
     }
+    return out;
   }
-  return out;
+
+  /** The SLM field `F_j = sum_m c_m exp(+i Delta_j^m)` (no `1 / N_pix`). */
+  backproject(coeffs: Cx): Cx {
+    const { setup, traps, g } = this;
+    if (coeffs.length !== 2 * traps.length) throw new Error(`coeffs must be a finite vector of length ${traps.length}`);
+    for (let i = 0; i < coeffs.length; i++) if (!Number.isFinite(coeffs[i])) throw new Error(`coeffs must be a finite vector of length ${traps.length}`);
+    const n = setup.nPix;
+    const out = new Float64Array(2 * n * n);
+    if (g.count) {
+      const L = g.count; // the factors for sign +1 are the conjugates of the stored ones (gxT)
+      const H = new Float64Array(2 * n * L); // H[iy, l] = sum_{m in column l} c_m conj(gy_m)[iy]
+      const sr = new Float64Array(n), si = new Float64Array(n);
+      for (let m = 0; m < traps.length; m++) {
+        if (g.of[m] < 0) continue;
+        const [gyr, gyi] = this.yFactor(m, sr, si);
+        const cr = coeffs[2 * m], ci = coeffs[2 * m + 1], l = g.of[m];
+        for (let iy = 0; iy < n; iy++) {
+          H[2 * (iy * L + l)] += cr * gyr[iy] + ci * gyi[iy];
+          H[2 * (iy * L + l) + 1] += ci * gyr[iy] - cr * gyi[iy];
+        }
+      }
+      const gT = this.gxT;
+      for (let iy = 0; iy < n; iy++) {
+        const row = 2 * iy * n, hrow = 2 * iy * L;
+        for (let ix = 0; ix < n; ix++) {
+          let ar = 0, ai = 0;
+          const o = 2 * ix * L;
+          for (let l = 0; l < L; l++) {
+            const hr = H[hrow + 2 * l], hi = H[hrow + 2 * l + 1], gr = gT[o + 2 * l], gi = gT[o + 2 * l + 1];
+            ar += hr * gr - hi * gi;
+            ai += hr * gi + hi * gr;
+          }
+          out[row + 2 * ix] = ar;
+          out[row + 2 * ix + 1] = ai;
+        }
+      }
+    }
+    for (let m = 0; m < traps.length; m++) {
+      if (traps.charge[m] === 0) continue;
+      const cr = coeffs[2 * m], ci = coeffs[2 * m + 1];
+      const d = denseDelay(setup, traps, m);
+      for (let i = 0; i < n * n; i++) {
+        const cs = Math.cos(d[i]), sn = Math.sin(d[i]);
+        out[2 * i] += cr * cs - ci * sn;
+        out[2 * i + 1] += cr * sn + ci * cs;
+      }
+    }
+    return out;
+  }
+}
+
+/** `V_m = (1 / N_pix) sum_j f_j exp(-i Delta_j^m)` for an arbitrary complex SLM field (a vector of `2 M` interleaved). */
+export function pointTrapProjection(field: Cx, setup: Setup, traps: TrapSet): Cx {
+  return new PointPlan(setup, traps).project(field);
 }
 
 /** `V_m` of the hologram `phi` (point-trap form). */
@@ -108,37 +266,7 @@ export function pointTrapFields(phi: ArrayLike<number>, setup: Setup, traps: Tra
 
 /** The SLM field `F_j = sum_m c_m exp(+i Delta_j^m)` (no `1 / N_pix`): the adjoint direction of the projection. */
 export function pointTrapBackproject(coeffs: Cx, setup: Setup, traps: TrapSet): Cx {
-  checkInField(setup, traps);
-  if (coeffs.length !== 2 * traps.length) throw new Error(`coeffs must be a finite vector of length ${traps.length}`);
-  for (let i = 0; i < coeffs.length; i++) if (!Number.isFinite(coeffs[i])) throw new Error(`coeffs must be a finite vector of length ${traps.length}`);
-  const n = setup.nPix;
-  const c = slmAxis(setup);
-  const out = new Float64Array(2 * n * n);
-  const gxr = new Float64Array(n), gxi = new Float64Array(n), gyr = new Float64Array(n), gyi = new Float64Array(n);
-  for (let m = 0; m < traps.length; m++) {
-    const cr = coeffs[2 * m], ci = coeffs[2 * m + 1];
-    if (traps.charge[m] === 0) {
-      axisFactor(setup, c, traps.zM[m], traps.xM[m], 1, gxr, gxi);
-      axisFactor(setup, c, traps.zM[m], traps.yM[m], 1, gyr, gyi);
-      for (let iy = 0; iy < n; iy++) {
-        const tr = cr * gyr[iy] - ci * gyi[iy];
-        const ti = cr * gyi[iy] + ci * gyr[iy];
-        const row = 2 * iy * n;
-        for (let ix = 0; ix < n; ix++) {
-          out[row + 2 * ix] += tr * gxr[ix] - ti * gxi[ix];
-          out[row + 2 * ix + 1] += tr * gxi[ix] + ti * gxr[ix];
-        }
-      }
-    } else {
-      const d = denseDelay(setup, traps, m);
-      for (let i = 0; i < n * n; i++) {
-        const cs = Math.cos(d[i]), sn = Math.sin(d[i]);
-        out[2 * i] += cr * cs - ci * sn;
-        out[2 * i + 1] += cr * sn + ci * cs;
-      }
-    }
-  }
-  return out;
+  return new PointPlan(setup, traps).backproject(coeffs);
 }
 
 /** Phase ramp `exp(+2 pi i c k / nFft)` along one focal axis (k = -nFft/2 .. nFft/2 - 1), as `re`, `im`. */

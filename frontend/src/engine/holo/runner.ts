@@ -26,6 +26,8 @@ export interface RunResultMsg extends CaseResult {
   backend: 'cpu' | 'gpu';
   fallbackReason: string | null;
   timeMs: number;
+  /** Where the time went, in ms: the method iterations (including the yields between them) and the scoring from the final phase. */
+  timing: { methodMs: number; scoreMs: number; yieldMs: number };
 }
 
 export type InMsg =
@@ -80,6 +82,7 @@ interface Token {
 
 export class EngineRunner {
   private current: Token | null = null;
+  private yieldMs = 0;
 
   constructor(
     private readonly post: (msg: OutMsg, transfer?: Transferable[]) => void,
@@ -144,6 +147,7 @@ export class EngineRunner {
   private async run(msg: Extract<InMsg, { op: 'run' }>): Promise<void> {
     const token: Token = { id: msg.id, cancelled: false };
     this.current = token;
+    this.yieldMs = 0;
     const o = msg.options ?? {};
     const t0 = this.sched.now();
     try {
@@ -162,8 +166,10 @@ export class EngineRunner {
       }
       if (!result) result = await this.runCpu(msg, warm, token, t0);
       if (token.cancelled) throw new AbortError();
+      const t1 = this.sched.now();
       const done = finishRun(msg.case, msg.method, result, o);
-      const out: RunResultMsg = { ...done, backend, fallbackReason: want === 'cpu' ? null : reason, timeMs: this.sched.now() - t0 };
+      const t2 = this.sched.now();
+      const out: RunResultMsg = { ...done, backend, fallbackReason: want === 'cpu' ? null : reason, timeMs: t2 - t0, timing: { methodMs: t1 - t0, scoreMs: t2 - t1, yieldMs: this.yieldMs } };
       const transfer: Transferable[] = [];
       collectBuffers(out, transfer);
       if (this.current === token) this.current = null;
@@ -197,7 +203,9 @@ export class EngineRunner {
       const r = gen.next();
       if (r.done) return r.value;
       this.progress(token, r.value, state);
+      const y0 = this.sched.now();
       await this.sched.yield(); // after every iteration, so a cancel message is seen within one iteration
+      this.yieldMs += this.sched.now() - y0;
     }
   }
 
@@ -223,6 +231,8 @@ export class EngineRunner {
     } catch (e) {
       if (e instanceof AbortError) throw e;
       return { reason: `WebGPU run failed: ${e instanceof Error ? e.message : String(e)}` };
+    } finally {
+      await started.gen.return(undefined as never); // releases the GPU buffers when the run ends early
     }
   }
 }

@@ -7,7 +7,7 @@
  */
 import type { Cx } from '../fft';
 import { fftFocalField, fftInverse, pointTrapBackproject, trapBins, trapFieldsFromFft } from '../forward';
-import { type Setup, nFft } from '../geometry';
+import { type Setup, focalBinM, nFft } from '../geometry';
 import { efficiency, relStd, trapIntensities, uniformity } from '../metrics';
 import type { Rng } from '../rng';
 import type { TrapSet } from '../traps';
@@ -78,10 +78,25 @@ export function mean(a: ArrayLike<number>): number {
   return s / a.length;
 }
 
-/** `arg sum_m sqrt(w_m) exp(i (Delta^m + theta_m))` with `theta_m` uniform: the SR hologram. */
+/** True when every trap sits on an FFT bin with z = 0 and no vortex (the point-trap and FFT forms are then the same map). */
+export function onBins(setup: Setup, traps: TrapSet): boolean {
+  const b = focalBinM(setup);
+  for (let i = 0; i < traps.length; i++) {
+    const fx = traps.xM[i] / b, fy = traps.yM[i] / b;
+    if (Math.abs(fx - Math.round(fx)) + Math.abs(fy - Math.round(fy)) > 1e-6 || traps.zM[i] !== 0 || traps.charge[i] !== 0) return false;
+  }
+  return true;
+}
+
+/**
+ * `arg sum_m sqrt(w_m) exp(i (Delta^m + theta_m))` with `theta_m` uniform: the SR hologram. For traps on bins the sum is one
+ * inverse FFT of the focal deltas instead of `M` passes over the SLM (the same field to rounding; the angle only matters), which
+ * is what keeps a 1024-trap start inside the live budget; the draw order from `rng` is the same.
+ */
 export function srStart(setup: Setup, traps: TrapSet, rng: Rng): Float64Array {
   const theta = rng.phases(traps.length);
-  return angle(pointTrapBackproject(polar(ampTargets(traps), theta), setup, traps));
+  const c = polar(ampTargets(traps), theta);
+  return angle(onBins(setup, traps) ? fftBackproject(c, setup, traps) : pointTrapBackproject(c, setup, traps));
 }
 
 /** `init` (validated shape) when given, else the SR start. */

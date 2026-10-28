@@ -9,6 +9,7 @@ code on the twelve cases."""
 from __future__ import annotations
 
 import base64
+import contextlib
 import copy
 import json
 from pathlib import Path
@@ -250,11 +251,23 @@ def test_engine_reference_arrays_have_their_sizes():
             assert size == n, (f.name, a["shape"], a["complex"])
 
 
-def test_engine_reference_covers_every_live_method_and_the_core():
+@contextlib.contextmanager
+def _default_registry():
+    """The real method registry, whatever a planted registry of another test left behind (restored afterwards)."""
     from pipeline.model.holo import methods as registry
 
+    previous = registry._base
+    registry.reload()
+    try:
+        yield registry
+    finally:
+        registry.reload(None if previous == registry.__name__ else previous)
+
+
+def test_engine_reference_covers_every_live_method_and_the_core():
     have = {cs.load_json(f)["function"] for f in _engine_files()}
-    live = {s.id for s in registry.all_specs() if s.lane in ("live", "both")}
+    with _default_registry() as registry:
+        live = {s.id for s in registry.all_specs() if s.lane in ("live", "both")}
     assert {f"methods.{m}" for m in live} <= have, sorted({f"methods.{m}" for m in live} - have)
     core = {"rng.stream", "geometry.setup_functions", "traps.generators", "forward.point_trap_fields", "forward.fft_focal_field",
             "forward.fft_inverse", "forward.angular_spectrum", "forward.axial_cut", "metrics.trap_metrics", "metrics.power_budget",
@@ -267,7 +280,8 @@ def test_engine_reference_is_reproducible(tmp_path):
     """The documents are a pure function of the engine code: regenerating writes the committed bytes (engine_version aside)."""
     from pipeline.stages import engine_reference as er
 
-    written = er.write(tmp_path / "again", live=True)
+    with _default_registry():
+        written = er.write(tmp_path / "again", live=True)
     assert {p.name for p in written} == {f.name for f in _engine_files()}, "the committed set differs from the generated set"
     for p in written:
         fresh, old = cs.load_json(p), cs.load_json(ENGINE_DIR / p.name)

@@ -10,11 +10,12 @@ import { EmulatedCamera } from './camera';
 import { type Device, deviceFocalField, displayedPhase, makeDevice } from './device';
 import { atomParams, atomTrajectory, beadParams, beadTrajectory, boltzmannCheck, fitLorentzian, psd } from './dynamics';
 import type { Cx } from './fft';
-import { axialCut, fftFocalField, pointTrapBackproject, pointTrapFields, slmField } from './forward';
-import { ampTargets, angle, polar } from './methods/common';
+import { axialCut, fftFocalField, pointTrapBackproject, pointTrapFields, slmField, trapFieldsFromFft } from './forward';
+
 import { type Setup, focalBinM, halfFieldM, makeSetup, nFft, slmAxis, wrapPhase } from './geometry';
 import { getMethod } from './methods';
 import { checkOnBins } from './methods/gs';
+import { ampTargets, angle, onBins, polar } from './methods/common';
 import { efficiency, powerBudget, relStd, trapIntensities, uniformity, zeroOrderFraction } from './metrics';
 import { Rng } from './rng';
 import { type Trap, TrapSet, checkInField } from './traps';
@@ -164,6 +165,8 @@ export function scoreOf(p: ParamsLike, phi: Float64Array, o: { traps?: readonly 
         v[2 * t] = e[o2] * (s.pad / s.nPix);
         v[2 * t + 1] = e[o2 + 1] * (s.pad / s.nPix);
       }
+    } else if (onBins(s, traps)) {
+      v = trapFieldsFromFft(e, s, traps); // on a bin with z = 0 and no vortex the FFT value is the point-trap value (to rounding)
     } else {
       v = pointTrapFields(ab ? phi.map((x, i) => x + ab[i]) : phi, s, traps);
     }
