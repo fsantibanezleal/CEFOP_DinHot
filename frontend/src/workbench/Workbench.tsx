@@ -319,7 +319,7 @@ export function Workbench() {
           )}
           {engine?.available && (live.running ? (
             // While a run is out the line gives way to the button that stops it, so the rail keeps its height.
-            <button type="button" className="btn" onClick={live.cancel} data-cancel-run="">
+            <button type="button" className="btn" onClick={live.cancel} data-cancel-run="" data-state="loading">
               {lang === 'es' ? 'Cancelar la corrida' : 'Cancel the run'}
             </button>
           ) : (
