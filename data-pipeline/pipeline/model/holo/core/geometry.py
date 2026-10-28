@@ -100,3 +100,10 @@ def bin_to_um(setup: Setup, k: float) -> float:
     if not math.isfinite(k):
         raise ValueError(f"bin must be finite, got {k!r}")
     return k * focal_bin_m(setup) * 1e6
+
+
+def wrap_phase(phi: np.ndarray) -> np.ndarray:
+    """Wrap to ``[0, 2 pi)`` as float64 (the convention of every displayed phase)."""
+    out = np.mod(np.asarray(phi, dtype=np.float64), 2.0 * math.pi)
+    # np.mod can return exactly 2 pi for tiny negative inputs
+    return np.where(out >= 2.0 * math.pi, 0.0, out)
