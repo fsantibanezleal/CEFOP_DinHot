@@ -53,18 +53,25 @@ def wrapped_diff(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.abs(np.arctan2(np.sin(d), np.cos(d)))
 
 
-def parity(net: torch.nn.Module, path: Path, inputs: list[tuple[np.ndarray, ...]]) -> float:
-    """Largest wrapped absolute difference between torch (CPU) and onnxruntime outputs over ``inputs``."""
+def parity_stats(net: torch.nn.Module, path: Path, inputs: list[tuple[np.ndarray, ...]]) -> dict:
+    """Wrapped absolute difference between torch (CPU) and onnxruntime outputs over ``inputs``: the maximum, the 99.9th
+    percentile and the share of entries above 1e-5."""
     net = net.eval().cpu()
     sess = session(path)
     names = [i.name for i in sess.get_inputs()]
-    worst = 0.0
+    diffs = []
     for arrs in inputs:
         with torch.no_grad():
             ref = net(*[torch.as_tensor(a) for a in arrs]).numpy()
         got = sess.run(None, dict(zip(names, arrs)))[0]
-        worst = max(worst, float(wrapped_diff(ref, got).max()))
-    return worst
+        diffs.append(wrapped_diff(ref, got).ravel())
+    d = np.concatenate(diffs)
+    return {"max": float(d.max()), "p999": float(np.percentile(d, 99.9)), "share_above_1e-5": float(np.mean(d > 1e-5))}
+
+
+def parity(net: torch.nn.Module, path: Path, inputs: list[tuple[np.ndarray, ...]]) -> float:
+    """Largest wrapped absolute difference between torch (CPU) and onnxruntime outputs over ``inputs``."""
+    return parity_stats(net, path, inputs)["max"]
 
 
 def io_spec(path: Path) -> tuple[list[dict], list[dict]]:
