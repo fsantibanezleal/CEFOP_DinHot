@@ -99,11 +99,12 @@ def cleanup():
         del sys.modules[k]
 
 
-def test_default_registry_is_empty_without_method_modules():
+def test_default_registry_lists_unique_specs_and_refuses_unknown_ids():
     methods.reload()
-    assert methods.all_specs() == []
+    ids = [s.id for s in methods.all_specs()]
+    assert len(ids) == len(set(ids))
     with pytest.raises(KeyError):
-        methods.get("m01")
+        methods.get("not-a-method")
 
 
 def test_discovers_recursively_and_tolerates_missing_subpackages(tmp_path, monkeypatch, cleanup):
@@ -166,4 +167,4 @@ def test_get_and_all_specs_use_the_default_package(tmp_path, monkeypatch, cleanu
         assert methods.get("zz1").spec.id == "zz1"
     finally:
         methods.reload()
-    assert methods.all_specs() == []
+    assert "zz1" not in {s.id for s in methods.all_specs()}
