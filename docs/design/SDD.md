@@ -200,12 +200,12 @@ criteria are measured on DinHot's own grids; the anchors are the published resul
 | M14 | Zernike correction and sensorless modal recovery | recovers an injected set of Noll modes 4 to 11 within 5 percent of their amplitude | `tests/methods/control/test_m14_zernike.py` |
 | M15 | Laguerre-Gaussian vortex traps | the ring phase winds by 2 pi l with an error under 0.1 rad | `tests/methods/control/test_m15_vortex.py` |
 | M16 | Hungarian assignment and linear phase interpolation | no crossing moves for alpha 1.5 on a 7x7 to 3x3 sort; a moving trap above 70 percent of its mean intensity | `tests/methods/control/test_m16_rearrangement.py` |
-| M17 | Unsupervised CNN hologram | on held-out targets, accuracy above GS at the same wall-clock budget | `tests/methods/test_m17_cgh_net.py` |
+| M17 | Unsupervised CNN hologram refined by GS (DeepCGH-style start) | on held-out targets, the network start followed by GS refinement inside the same wall-clock budget reaches a higher accuracy than GS alone (measured alone, the network matches GS at equal time: median ratio 0.998) | `tests/learned/test_m17_cgh_net.py` |
 | M18 | Optimal-transport initialized MRAF | lower error than MRAF from a random start on the shaped targets | `tests/methods/optim/test_m18_ot_mraf.py` |
 | M19 | Multi-plane GS | on a three-plane target, every plane mean within 25 percent of the overall mean (volumetric 3D GS of Whyte and Courtial) | `tests/methods/baseline/test_m19_multiplane.py` |
 | B1 | Device-aware weighted GS | on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower | `tests/methods/beyond/test_b1_device_wgs.py` |
 | B2 | Flicker-bounded phase-continuous sequence | minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI | `tests/methods/beyond/test_b2_flicker_bounded.py` |
-| B3 | Learned warm start for phase-fixed WGS | median iterations to 1 percent at least two times below a random start, held-out geometries, model at most 1 MB | `tests/methods/test_b3_warm_start.py` |
+| B3 | Learned warm start for phase-fixed WGS (refuted) | measured negative: on held-out geometries the network start needs a median 8 iterations to 1 percent against 14 from a random start (1.75 times, below the 2 times claimed), and a control with the same early phase fix and no network gains as much; the model is not released and the claim BS-3 is reported as refuted | `tests/learned/test_b3_warm_start.py` |
 | B4 | Aberration-robust hologram | over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower; robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.02 times) | `tests/methods/beyond/test_b4_robust.py` |
 | B5 | Efficiency-uniformity Pareto front | hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task | `tests/methods/beyond/test_b5_pareto.py` |
 
@@ -248,8 +248,10 @@ and covered by a level 4 notebook in each language.
   al. 2023, https://doi.org/10.1038/s41598-023-30296-6).
 - BS-2 (B2) flicker-bounded phase-continuous sequences: each intermediate hologram optimized with the trap phases locked to a
   smooth trajectory. Gap: linear phase interpolation does not optimize its intermediate frames (https://arxiv.org/abs/2501.01391).
-- BS-3 (B3) learned warm start: a permutation-invariant network over trap coordinates predicts the initial trap phases of
-  phase-fixed WGS. Gap: no source initializes WGS with a network (algorithms dossier D5.1).
+- BS-3 (B3) learned warm start, tested and refuted: a permutation-invariant network over trap coordinates predicting the initial
+  trap phases of phase-fixed WGS gives no gain over an early phase fix without a network (measured on held-out geometries); the gap
+  it addressed (no source initializes WGS with a network, algorithms dossier D5.1) is answered by the measurement, and the model is
+  not released.
 - BS-4 (B4) robust hologram: the expected cost over residual aberrations. Gap: corrections are global or per site, never robust
   (https://arxiv.org/abs/2512.15967). Measured: robustness to pointing errors does not follow (1.02 times), because the spot width
   bounds it; the benchmark reports that negative result.
