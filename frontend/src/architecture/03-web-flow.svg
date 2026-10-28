@@ -1,91 +1,115 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="The web flow, from the index to a measured view">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="The web flow: readiness, index, manifest, trace, worker and ONNX slots to the views">
   <!-- Hand-authored; shell tokens only; both languages in one file (ADR-0058). -->
   <style>
     .arch-svg text { font-family: var(--font-sans); }
     .arch-svg .mono { font-family: var(--font-mono); }
+    .arch-svg .pn { fill: var(--color-surface); stroke: var(--color-border); stroke-width: 1.2; }
     .arch-svg .bx { fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1; }
-    .arch-svg .gt { fill: var(--color-surface); stroke: var(--color-warn); stroke-width: 1.4; }
+    .arch-svg .on { fill: var(--color-accent-soft); stroke: var(--color-accent); stroke-width: 1.2; }
+    .arch-svg .ok { fill: var(--color-surface-2); stroke: var(--color-good); stroke-width: 1.2; }
+    .arch-svg .wn { fill: var(--color-surface-2); stroke: var(--color-warn); stroke-width: 1.2; }
+    .arch-svg .mg { fill: var(--color-surface-2); stroke: var(--color-magenta); stroke-width: 1.2; }
+    .arch-svg .ln-off { fill: none; stroke: var(--color-magenta); stroke-width: 1.4; }
+    .arch-svg .ln-rep { fill: none; stroke: var(--color-good); stroke-width: 1.4; }
+    .arch-svg .ln-live { fill: none; stroke: var(--color-accent); stroke-width: 1.4; }
     .arch-svg .ttl { fill: var(--color-fg); font-size: 15px; font-weight: 700; }
-    .arch-svg .n { fill: var(--color-accent); font-size: 12px; font-weight: 700; }
-    .arch-svg .it { fill: var(--color-fg); font-size: 11px; font-weight: 600; }
+    .arch-svg .h { fill: var(--color-fg); font-size: 12px; font-weight: 700; }
+    .arch-svg .it { fill: var(--color-fg); font-size: 11px; }
+    .arch-svg .itb { fill: var(--color-fg); font-size: 11px; font-weight: 600; }
     .arch-svg .sub { fill: var(--color-fg-subtle); font-size: 10.5px; }
     .arch-svg .cd { fill: var(--color-fg-subtle); font-size: 10px; }
-    .arch-svg .wt { fill: var(--color-warn); font-size: 12px; font-weight: 700; }
+    .arch-svg .acc { fill: var(--color-accent); font-size: 11px; font-weight: 600; }
+    .arch-svg .t-off { fill: var(--color-magenta); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .t-rep { fill: var(--color-good); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .t-live { fill: var(--color-accent); font-size: 12.5px; font-weight: 700; }
     .arch-svg .flow { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.4; }
+    .arch-svg .dash { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.4; stroke-dasharray: 5 4; }
   </style>
   <defs>
-    <marker id="wf3-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <marker id="dh3-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L8,4 L0,8 z" fill="var(--color-fg-faint)"/>
     </marker>
   </defs>
-
-  <text class="ttl l-en" x="20" y="30">From the index to a view a reader can trust</text>
-  <text class="ttl l-es" x="20" y="30">Del índice a una vista en la que el lector puede confiar</text>
-
-  <rect class="bx" x="20" y="60" width="200" height="110" rx="8"/>
-  <text class="n" x="34" y="84">1</text>
-  <text class="it l-en" x="52" y="84">Load the index</text>
-  <text class="it l-es" x="52" y="84">Cargar el índice</text>
-  <text class="cd mono" x="34" y="104">manifests/index.json</text>
-  <text class="sub l-en" x="34" y="124">cases, titles, categories,</text>
-  <text class="sub l-es" x="34" y="124">casos, títulos, categorías,</text>
-  <text class="sub l-en" x="34" y="140">the default case</text>
-  <text class="sub l-es" x="34" y="140">el caso por defecto</text>
-
-  <rect class="bx" x="245" y="60" width="200" height="110" rx="8"/>
-  <text class="n" x="259" y="84">2</text>
-  <text class="it l-en" x="277" y="84">Pick a case</text>
-  <text class="it l-es" x="277" y="84">Elegir un caso</text>
-  <text class="cd mono" x="259" y="104">?case=EX02_epidemic</text>
-  <text class="sub l-en" x="259" y="124">the picker or a deep link;</text>
-  <text class="sub l-es" x="259" y="124">el selector o un enlace directo;</text>
-  <text class="sub l-en" x="259" y="140">the workbench shows that case</text>
-  <text class="sub l-es" x="259" y="140">el banco muestra ese caso</text>
-
-  <rect class="bx" x="470" y="60" width="200" height="110" rx="8"/>
-  <text class="n" x="484" y="84">3</text>
-  <text class="it l-en" x="502" y="84">Load its artifacts</text>
-  <text class="it l-es" x="502" y="84">Cargar sus artefactos</text>
-  <text class="cd mono" x="484" y="104">data-state="loading"</text>
-  <text class="sub l-en" x="484" y="124">manifest and trace, as JSON,</text>
-  <text class="sub l-es" x="484" y="124">manifiesto y traza, como JSON,</text>
-  <text class="sub l-en" x="484" y="140">with ?v= the release version</text>
-  <text class="sub l-es" x="484" y="140">con ?v= la versión publicada</text>
-
-  <rect class="bx" x="695" y="60" width="185" height="110" rx="8"/>
-  <text class="n" x="709" y="84">4</text>
-  <text class="it l-en" x="727" y="84">Run it live</text>
-  <text class="it l-es" x="727" y="84">Correrlo en vivo</text>
-  <text class="cd mono" x="709" y="104">simulate(params)</text>
-  <text class="sub l-en" x="709" y="124">with the rail values and</text>
-  <text class="sub l-es" x="709" y="124">con los valores del panel y</text>
-  <text class="sub l-en" x="709" y="140">the chosen immunisation</text>
-  <text class="sub l-es" x="709" y="140">la inmunización elegida</text>
-
-  <rect class="bx" x="245" y="200" width="425" height="100" rx="8"/>
-  <text class="n" x="259" y="224">5</text>
-  <text class="it l-en" x="277" y="224">Show the views, keyed by the selection</text>
-  <text class="it l-es" x="277" y="224">Mostrar las vistas, con la clave de la selección</text>
-  <text class="sub l-en" x="259" y="246">case, variant and controls form one key; each view carries the key of the</text>
-  <text class="sub l-es" x="259" y="246">caso, variante y controles forman una clave; cada vista lleva la clave de los</text>
-  <text class="sub l-en" x="259" y="262">data it draws, and a view still on an earlier key is shown as recomputing</text>
-  <text class="sub l-es" x="259" y="262">datos que dibuja, y una vista con una clave anterior se muestra recalculando</text>
-  <text class="cd mono" x="259" y="284">data-state-key · data-stale · data-drawn</text>
-
-  <rect class="gt" x="20" y="330" width="860" height="110" rx="8"/>
-  <text class="wt l-en" x="34" y="356">Before a deploy: the gate measures all of it</text>
-  <text class="wt l-es" x="34" y="356">Antes de desplegar: la compuerta lo mide todo</text>
-  <text class="cd mono" x="34" y="376">npm run gate  (caos-shell-gate --serve dist)</text>
-  <text class="sub l-en" x="34" y="398">every route, tab and case; five sizes; both themes and languages; waits for the declared state above,</text>
-  <text class="sub l-es" x="34" y="398">cada ruta, pestaña y caso; cinco tamaños; ambos temas e idiomas; espera el estado declarado arriba,</text>
-  <text class="sub l-en" x="34" y="414">never for the network, and fails on errors, unreachable controls, blank drawings, loops at rest,</text>
-  <text class="sub l-es" x="34" y="414">nunca la red, y falla ante errores, controles inalcanzables, dibujos en blanco, ciclos en reposo</text>
-  <text class="sub l-en" x="34" y="430">and controls that change nothing.</text>
-  <text class="sub l-es" x="34" y="430">y controles que no cambian nada.</text>
-
-  <path class="flow" d="M220,115 H243" marker-end="url(#wf3-arrow)"/>
-  <path class="flow" d="M445,115 H468" marker-end="url(#wf3-arrow)"/>
-  <path class="flow" d="M670,115 H693" marker-end="url(#wf3-arrow)"/>
-  <path class="flow" d="M787,170 V250 H672" marker-end="url(#wf3-arrow)"/>
-  <path class="flow" d="M457,300 V328" marker-end="url(#wf3-arrow)"/>
+  <text class="ttl l-en" x="20" y="30">The web flow: from the readiness document to a view</text>
+  <text class="ttl l-es" x="20" y="30">El flujo web: del documento de disponibilidad a una vista</text>
+  <rect class="ok" x="20" y="48" width="185" height="100" rx="8"/>
+  <text class="acc" x="32" y="70">1</text>
+  <text class="itb l-en" x="50" y="70">Readiness</text>
+  <text class="itb l-es" x="50" y="70">Disponibilidad</text>
+  <text class="cd mono" x="32" y="90">readiness.json</text>
+  <text class="sub l-en" x="32" y="110">decides first what is real;</text>
+  <text class="sub l-es" x="32" y="110">decide primero qué es real;</text>
+  <text class="sub l-en" x="32" y="126">a missing file is never fetched</text>
+  <text class="sub l-es" x="32" y="126">un archivo ausente no se pide</text>
+  <path class="flow" d="M205,98 H239" marker-end="url(#dh3-arrow)"/>
+  <rect class="bx" x="241" y="48" width="185" height="100" rx="8"/>
+  <text class="acc" x="253" y="70">2</text>
+  <text class="itb l-en" x="271" y="70">Case index</text>
+  <text class="itb l-es" x="271" y="70">Índice de casos</text>
+  <text class="cd mono" x="253" y="90">manifests/index.json</text>
+  <text class="sub l-en" x="253" y="110">the cases and the default case;</text>
+  <text class="sub l-es" x="253" y="110">los casos y el caso por defecto;</text>
+  <text class="sub l-en" x="253" y="126">a refused case has its reason</text>
+  <text class="sub l-es" x="253" y="126">un caso rechazado trae su razón</text>
+  <path class="flow" d="M426,98 H460" marker-end="url(#dh3-arrow)"/>
+  <rect class="bx" x="462" y="48" width="185" height="100" rx="8"/>
+  <text class="acc" x="474" y="70">3</text>
+  <text class="itb l-en" x="492" y="70">Case manifest</text>
+  <text class="itb l-es" x="492" y="70">Manifiesto del caso</text>
+  <text class="cd mono" x="474" y="90">manifests/&lt;case&gt;.json</text>
+  <text class="sub l-en" x="474" y="110">params, seed, lane verdict,</text>
+  <text class="sub l-es" x="474" y="110">parámetros, semilla, carril,</text>
+  <text class="sub l-en" x="474" y="126">models behind the metrics</text>
+  <text class="sub l-es" x="474" y="126">modelos tras las métricas</text>
+  <path class="flow" d="M647,98 H681" marker-end="url(#dh3-arrow)"/>
+  <rect class="bx" x="683" y="48" width="185" height="100" rx="8"/>
+  <text class="acc" x="695" y="70">4</text>
+  <text class="itb l-en" x="713" y="70">Trace</text>
+  <text class="itb l-es" x="713" y="70">Traza</text>
+  <text class="cd mono" x="695" y="90">&lt;case&gt;/trace.json</text>
+  <text class="sub l-en" x="695" y="110">metrics, phase mask, focal map;</text>
+  <text class="sub l-es" x="695" y="110">métricas, máscara, mapa focal;</text>
+  <text class="sub l-en" x="695" y="126">at most 256 KiB</text>
+  <text class="sub l-es" x="695" y="126">a lo más 256 KiB</text>
+  <rect class="on" x="20" y="196" width="185" height="92" rx="8"/>
+  <text class="acc" x="32" y="218">5</text>
+  <text class="itb l-en" x="50" y="218">ONNX slots</text>
+  <text class="itb l-es" x="50" y="218">Espacios ONNX</text>
+  <text class="cd mono" x="32" y="238">lib/ort.ts</text>
+  <text class="sub l-en" x="32" y="258">cgh-net, warmstart-model; the</text>
+  <text class="sub l-es" x="32" y="258">cgh-net, warmstart-model; la</text>
+  <text class="sub l-en" x="32" y="274">baseline answers with no model</text>
+  <text class="sub l-es" x="32" y="274">línea base responde sin modelo</text>
+  <rect class="on" x="462" y="196" width="185" height="92" rx="8"/>
+  <text class="acc" x="474" y="218">6</text>
+  <text class="itb l-en" x="492" y="218">Engine worker</text>
+  <text class="itb l-es" x="492" y="218">Worker del motor</text>
+  <text class="cd mono" x="474" y="238">engine/holo/client.ts</text>
+  <text class="sub l-en" x="474" y="258">starts 200 ms after a change;</text>
+  <text class="sub l-es" x="474" y="258">inicia 200 ms tras un cambio;</text>
+  <text class="sub l-en" x="474" y="274">a new run cancels the old one</text>
+  <text class="sub l-es" x="474" y="274">una nueva cancela la anterior</text>
+  <rect class="ok" x="20" y="322" width="848" height="72" rx="8"/>
+  <text class="acc" x="32" y="342">7</text>
+  <text class="itb l-en" x="50" y="342">The views of the workbench</text>
+  <text class="itb l-es" x="50" y="342">Las vistas de la mesa de trabajo</text>
+  <text class="sub l-en" x="32" y="360">Replay views draw the trace; a live result replaces the maps only when its run finishes.</text>
+  <text class="sub l-es" x="32" y="360">Las vistas de reproducción dibujan la traza; un resultado en vivo reemplaza los mapas sólo al terminar su corrida.</text>
+  <text class="sub l-en" x="32" y="375">Where the engine cannot run a method, the replay answers and the card says so.</text>
+  <text class="sub l-es" x="32" y="375">Donde el motor no puede correr un método, responde la reproducción y la ficha lo dice.</text>
+  <text class="sub l-en" x="32" y="390">Every view carries the key of the selection it draws, so an old view says it is old.</text>
+  <text class="sub l-es" x="32" y="390">Cada vista lleva la clave de la selección que dibuja, así que una vista antigua avisa que lo es.</text>
+  <path class="flow" d="M112,148 V194" marker-end="url(#dh3-arrow)"/>
+  <path class="flow" d="M554,148 V194" marker-end="url(#dh3-arrow)"/>
+  <path class="flow" d="M775,148 V320" marker-end="url(#dh3-arrow)"/>
+  <path class="dash" d="M205,242 H460" marker-end="url(#dh3-arrow)"/>
+  <text class="sub l-en" x="333" y="234" text-anchor="middle">trap phases start M07</text>
+  <text class="sub l-es" x="333" y="234" text-anchor="middle">fases inician M07</text>
+  <path class="flow" d="M112,288 V320" marker-end="url(#dh3-arrow)"/>
+  <path class="flow" d="M554,288 V320" marker-end="url(#dh3-arrow)"/>
+  <rect class="wn" x="20" y="408" width="848" height="46" rx="8"/>
+  <text class="itb l-en" x="34" y="428">Before any deploy: npm run gate serves the built site as GitHub Pages does and walks every route, tab and case</text>
+  <text class="itb l-es" x="34" y="428">Antes de cualquier despliegue: npm run gate sirve el sitio compilado como GitHub Pages y recorre cada ruta, pestaña y caso</text>
+  <text class="sub l-en" x="34" y="445">at five sizes, in both themes and both languages; a person then reads the captures, because the gate measures and does not judge content</text>
+  <text class="sub l-es" x="34" y="445">en cinco tamaños, con ambos temas y ambos idiomas; luego una persona lee las capturas, porque la compuerta mide y no juzga el contenido</text>
 </svg>
