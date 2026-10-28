@@ -1,0 +1,95 @@
+/* The product's own widgets only (the stack that puts a note above a drawing, the area a map or a chart fills, the map's readout and
+   its reset control). Every colour and size is a token of the shell; no shell class is restyled (scripts/check_web_baseline.py). */
+.dh-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.dh-stack > .dh-lane {
+  flex: none;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.dh-fill {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 9rem;
+  min-width: 0;
+}
+
+.dh-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dh-readout {
+  position: absolute;
+  left: var(--space-2);
+  bottom: var(--space-2);
+  margin: 0;
+  max-width: calc(100% - 2 * var(--space-2));
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-fg);
+  font-size: var(--text-xs);
+  pointer-events: none;
+  overflow-wrap: anywhere;
+}
+
+.dh-reset {
+  position: absolute;
+  right: var(--space-2);
+  top: var(--space-2);
+}
+
+.dh-alert {
+  flex: none;
+  margin: 0;
+  border-left: 3px solid var(--color-bad);
+  background: var(--color-surface-2);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.dh-scrub {
+  flex: none;
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+}
+
+.dh-scrub input[type='range'] {
+  flex: 1 1 auto;
+  min-width: 4rem;
+}
+
+.dh-tablewrap {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.dh-controls {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .dh-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

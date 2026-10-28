@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArtifactUnavailable, loadCase, loadIndex } from '../api/artifacts';
 import { conform, READINESS, type ContractState, type Readiness, type ReadinessEntry } from '../lib/contract.types';
 import { NoteLine } from './ReadinessNote';
-import { behavior, entryFor, isUnavailable, loadReadiness, resetReadiness, viewState, SEVERITY } from './readiness';
+import { behavior, entryFor, isUnavailable, loadReadiness, modelAnswers, resetReadiness, viewState, SEVERITY } from './readiness';
 
 vi.stubGlobal('__APP_VERSION__', 'test-version');
 
@@ -22,9 +22,9 @@ const committed = read('data/derived/readiness.json');
 const fixture = read('docs/contracts/fixtures/data/derived/readiness.json');
 
 const VIEWS: Record<string, string[]> = {
-  workbench: ['case-index', 'case-manifest', 'trace'],
+  workbench: ['case-index', 'case-manifest', 'trace', 'cgh-net', 'warmstart-model'],
   experiments: ['case-index', 'case-manifest', 'trace'],
-  benchmark: ['case-index', 'case-manifest', 'trace', 'surrogate-model'],
+  benchmark: ['case-index', 'case-manifest', 'trace', 'benchmark-results', 'model-metrics', 'cgh-net', 'warmstart-model'],
   implementation: committed.contracts.map((c) => c.id),
 };
 
@@ -166,5 +166,23 @@ describe('a case the document lists as absent', () => {
     const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     await expect(loadCase('C1')).resolves.toMatchObject({ trace: { case_id: 'C1' } });
     err.mockRestore();
+  });
+});
+
+describe('which model answers a learned slot', () => {
+  it('available and stale answer by the released model; training by the model when real and by the baseline when baseline', () => {
+    expect(modelAnswers(doc(entry('cgh-net', 'available')), 'cgh-net')).toBe('model');
+    expect(modelAnswers(doc(entry('cgh-net', 'stale')), 'cgh-net')).toBe('model');
+    expect(modelAnswers(doc(entry('cgh-net', 'training', { provenance: 'real' })), 'cgh-net')).toBe('model');
+    expect(modelAnswers(doc(entry('cgh-net', 'training', { provenance: 'baseline' })), 'cgh-net')).toBe('baseline');
+  });
+  it('adversarial: provider, missing, an absent row and an unreadable document all leave the baseline answering', () => {
+    expect(modelAnswers(doc(entry('warmstart-model', 'provider', { provenance: 'baseline' })), 'warmstart-model')).toBe('baseline');
+    expect(modelAnswers(doc(entry('warmstart-model', 'missing')), 'warmstart-model')).toBe('baseline');
+    expect(modelAnswers(doc(entry('cgh-net', 'available')), 'warmstart-model')).toBe('baseline');
+    expect(modelAnswers(null, 'cgh-net')).toBe('baseline');
+  });
+  it('the committed documents say baseline for both slots while no model is released', () => {
+    for (const d of [committed, fixture]) for (const slot of ['cgh-net', 'warmstart-model'] as const) expect(modelAnswers(d, slot)).toBe('baseline');
   });
 });
