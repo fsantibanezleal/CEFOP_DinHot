@@ -1,4 +1,5 @@
 {
+  "variant": "2D single plane (128 x 128 target amplitude), superseded by the three-plane cgh-net by decision of the main session; kept as the measurement of the 2D run",
   "slot": "cgh-net",
   "status": "not released: the acceptance criterion is not met, the GS baseline (M04, 30 iterations) answers",
   "criterion": "on held-out targets, accuracy of the hybrid (network phase, then GS refinement in the same wall-clock) above GS alone at the same wall-clock (median per-target ratio above 1)",
