@@ -21,7 +21,7 @@ from . import bake as bake_mod
 from .core import expect as expectations
 from .io.formats import write_json
 from .pipeline import MAX_WORKERS, REPO, PipelinePaths, bake_jobs
-from .stages import preprocess
+from .stages import infer, preprocess
 
 REL = 0.10
 SEEDS = 3
@@ -29,6 +29,7 @@ SCHEMA = "dinhot.measured-ranges/v1"
 FRACTIONS = ("efficiency", "uniformity", "zero_order", "ghost", "signal_efficiency")
 METHOD_KEYS = ("efficiency", "uniformity", "rel_std_pct")
 SHAPED_KEYS = ("efficiency", "signal_rms_error_pct", "signal_efficiency")
+SORTING_KEYS = ("efficiency",)   # a sorting method (M16) lights the target sites only: its spread over all sites is not a result
 
 
 def capture_job(job: dict) -> dict:
@@ -85,7 +86,7 @@ def measure(output: Path, *, seeds: int = SEEDS, workers: int = MAX_WORKERS, onl
         failures.setdefault(cid, []).extend(f"seed {r['seed']}: {f}" for f in r["failures"] if "outside" not in f)
         shaped_keys = [m for m, row in c.get("methods", {}).items() if "signal_rms_error_pct" in row]
         for m, row in c.get("methods", {}).items():
-            for k in (SHAPED_KEYS if m in shaped_keys else METHOD_KEYS):
+            for k in (SHAPED_KEYS if m in shaped_keys else SORTING_KEYS if m in infer.ATOM_METHODS else METHOD_KEYS):
                 rows.setdefault(f"{m}.{k}", []).append(float(row[k]))
         for k, v in c.get("case", {}).items():
             rows.setdefault(k, []).append(float(v))
