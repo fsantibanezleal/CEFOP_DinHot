@@ -111,7 +111,10 @@ class CghNet(nn.Module):
 
     def focal_field(self, target):
         x = torch.cat([target * 16.0, self.coords.expand(target.shape[0], -1, -1, -1)], 1)   # unit energy: amplitudes ~ 1/16
-        e1 = self.e1(x); e2 = self.e2(e1); e3 = self.e3(e2); e4 = self.e4(e3)
+        e1 = self.e1(x)
+        e2 = self.e2(e1)
+        e3 = self.e3(e2)
+        e4 = self.e4(e3)
         m = self.mid(e4)
         d = self.d4(torch.cat([self.u4(m), e4], 1))
         d = self.d3(torch.cat([self.u3(d), e3], 1))

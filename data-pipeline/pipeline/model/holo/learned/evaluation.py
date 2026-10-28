@@ -124,9 +124,11 @@ def first_below(history, pct: float = 1.0, cap: int | None = None) -> int:
     return (len(history) if cap is None else cap) + 1
 
 
-def evaluate_warm(models_dir: Path, heldout_path: Path, seeds=(301, 302, 303), budget: int = 60) -> tuple[dict, dict]:
+def evaluate_warm(models_dir: Path, heldout_path: Path, seeds=(301, 302, 303), budget: int = 60, every: int = 1) -> tuple[dict, dict]:
+    """``every`` > 1 evaluates every n-th geometry (the tests); the stage uses all of them."""
     gen, bench = heldout.load_warm(heldout_path)
     sets = [(f"gen/{i:02d}", a, 256) for i, a in enumerate(gen)] + [(f"bench/{n}", a, p) for n, a, p in bench]
+    sets = [x for i, x in enumerate(sets) if i % every == 0 and (every == 1 or x[2] == 256)]
     rows = []
     for name, arr, n_pix in sets:
         setup = SETUP256 if n_pix == 256 else heldout._bench_setup(n_pix)
