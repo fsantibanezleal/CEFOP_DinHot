@@ -1,0 +1,416 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{orcidlink}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+
+\graphicspath{{../figures/}}
+\input{../data/studio_numbers.tex}
+
+% Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
+% publishing tool when the version DOI is reserved.
+\newcommand{\doctype}{Technical report}
+\newcommand{\docversion}{v0.02.000}
+\newcommand{\docdate}{28 October 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.NNNNNNNN}
+\newcommand{\conceptdoi}{10.5281/zenodo.NNNNNNNN}
+\newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
+\newcommand{\headerblock}{%
+\begin{center}
+\fbox{\parbox{0.94\textwidth}{\small\raggedright
+\textbf{\doctype} \quad$\cdot$\quad \docversion, \docdate \quad$\cdot$\quad Licence CC BY 4.0\\[2pt]
+CAOS open-research programme \quad$\cdot$\quad CEFOP\_DinHot, holographic optical trap studio\\[2pt]
+Version DOI \href{https://doi.org/\versiondoi}{\texttt{\versiondoi}} \quad$\cdot$\quad
+concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptdoi}}\\[2pt]
+Not peer reviewed. Source code, data and computational records: \href{https://\docrepo}{\texttt{\docrepo}}
+}}
+\end{center}
+\vspace{4pt}}
+
+\begin{document}
+
+\title{DinHot: A Holographic Optical Trap Studio Comparing Classical, State-of-the-Art\\ and Beyond-State-of-the-Art Hologram Methods on a Device Model}
+\author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
+\small CAOS open-research programme, Santiago, Chile\\
+\small \texttt{fsantibanez@gmail.com}}
+\date{}
+\maketitle
+\vspace{-1.2em}
+\headerblock
+
+\begin{abstract}
+A phase-only spatial light modulator in the pupil of a microscope objective can form hundreds to thousands of optical
+traps at once, but only if the phase pattern it displays is computed well: the pattern fixes how much light reaches the
+traps, how equal the traps are, where stray light goes, how the pattern survives a real device, and how fast it can be
+recomputed when traps move. DinHot is an open studio that runs \nLadder{} ladder methods (\nClassical{} classical,
+\nSota{} state of the art, \nBeyond{} beyond it) on the same task, with the same seeds, metrics and device model, in
+Python as the reference and in a TypeScript port that runs live in a browser. We describe the optical and device model,
+the methods with the measured acceptance of each, \nCases{} cases from a $3\times3$ array to a disordered
+\nDisordered-trap array and shaped potentials, the benchmark protocol, two learned models, and the \nBeyond{} proposals past the
+published state of the art, three of which meet their criteria (a device-aware weighted Gerchberg--Saxton update, a
+flicker-bounded phase-continuous sequence and an efficiency--uniformity front), one of which meets a narrowed criterion
+(an aberration-robust hologram) and one of which is refuted by measurement (a learned warm start for phase-fixed
+weighted GS). A network trained on three-plane volumes beats its baseline at equal wall-clock on all \cghN{} held-out
+volumes (median accuracy ratio \cghMed), whereas its two-dimensional counterpart ties with Gerchberg--Saxton (ratio
+\cghTwoDMed). The model is a scalar Fourier model of a simulated device, not a calibrated instrument.
+\end{abstract}
+
+\noindent\textbf{Keywords:} holographic optical tweezers, spatial light modulator, weighted Gerchberg--Saxton, pixel
+crosstalk, neutral-atom arrays, hologram benchmarking, learned holography.
+
+\section{Introduction and problem}
+
+Holographic optical tweezers shape one laser beam into many traps with a phase-only spatial light modulator (SLM). The
+largest published neutral-atom tweezer array holds \execAtoms{} atoms in about 12,000 tweezers, with a trap-depth spread of
+\execSpread{} percent across its sites~\cite{manetsch}. The spread matters: sites with unequal depth differ in loading and in
+gate fidelity, and the light that forms them is hard to keep uniform as the array grows. The same computation serves optical
+micromanipulation of beads and cells, neuron stimulation and laser machining, with different limits on power, speed and
+the number of traps.
+
+The hologram methods that solve this problem span half a century: the superposition of prisms and lenses, random
+superposition and random masks, the Gerchberg--Saxton (GS) iteration and its adaptive and weighted forms~\cite{dileonardo},
+direct search~\cite{polin}, conjugate-gradient minimization~\cite{harte}, phase-fixed weighted GS for large
+arrays~\cite{kim2019}, mixed-region amplitude freedom for shaped potentials~\cite{pasienski}, gradient descent through
+differentiable forward models~\cite{chakra}, optimal-transport initialization~\cite{swan,torchylo}, and learned holography~\cite{eybposh}.
+Camera feedback closes the loop on a real set-up~\cite{nogrette}. A search of the literature found no controlled published
+comparison of weighted GS, phase-fixed weighted GS, conjugate gradient, MRAF and a learned method on the same point-trap
+array, and no public tool that runs them side by side with a device model and the physics of what is trapped.
+
+DinHot provides that comparison. It began at CEFOP, Universidad de Concepci\'on, as DinHotSys, a C++ desktop tool for dynamic
+holographic optical tweezers dated 2010; it was rewritten in Python and FastAPI and is rebuilt here as a static
+browser application whose numbers are computed by the engine or baked offline and replayed. This report describes the
+problem, the optical model and the device, the three tiers of methods, the cases and the protocols, the results, the learned
+models, the proposals beyond the published state of the art, the live engine and the limits. Every number in the tables and
+the text is generated from the committed artifacts of the repository or is quoted from a named unit measurement.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\textwidth]{fig-pipeline.pdf}
+\caption{The chain every case runs: a case (optical setup, device, target and seed) is given to a method, which returns a
+phase; the device model turns the phase into the field the instrument forms; the metrics score the traps, and the
+feedback and particle simulations act on the scored field.}
+\label{fig:pipeline}
+\end{figure}
+
+\section{The optical model and the device}\label{sec:model}
+
+\subsection{Forward models}
+
+A phase-only SLM of $n_{\mathrm{pix}}\times n_{\mathrm{pix}}$ pixels with pitch $p$ sits in the pupil plane of a lens of
+focal length $f$ and wavelength $\lambda$. For a trap $m$ at $(x_m,y_m,z_m)$ with vortex charge $l_m$ the phase delay at
+pixel $j$ is
+\begin{equation}
+\Delta_j^m=\frac{\pi z_m}{\lambda f^2}(x_j^2+y_j^2)+\frac{2\pi}{\lambda f}(x_jx_m+y_jy_m)+l_m\operatorname{atan2}(y_j,x_j),
+\end{equation}
+and the trap field and intensity are
+\begin{equation}
+V_m=\frac1{N_{\mathrm{pix}}}\sum_jA_je^{\,i(\phi_j-\Delta_j^m)},\qquad I_m=|V_m|^2,
+\end{equation}
+with $A_j$ the input beam amplitude normalised so that $\sum_jA_j^2=N_{\mathrm{pix}}=n_{\mathrm{pix}}^2$, following Di Leonardo
+et al.~\cite{dileonardo}. $I_m$ is the fraction of the input power in the peak of trap $m$. The second form is the centred,
+zero-padded, orthonormal fast Fourier transform (FFT) of the SLM field; at a trap on an FFT bin with $z=0$ and no vortex the two
+forms agree exactly, which the test suite checks to $10^{-9}$ rad. One bin of the padded transform spans
+$\lambda f/(\mathrm{pad}\,n_{\mathrm{pix}}\,p)$ and the unaliased half-window is $\lambda f/(2p)$; a trap outside it is refused
+with the bound (case C11). Depth is handled by the angular spectrum with the band limit of evanescent components removed; the
+model is scalar and paraxial, so a high numerical aperture is flagged as outside its validity (case C07).
+
+\subsection{Metrics}
+
+With $I_m$ the trap intensities divided by their target weights, DinHot reports
+\begin{equation}
+e=\sum_mI_m,\qquad u=1-\frac{\max I-\min I}{\max I+\min I},\qquad \sigma=100\,\frac{\operatorname{std}(I)}{\operatorname{mean}(I)}\ \%,
+\end{equation}
+the efficiency, the uniformity ($u=1$ is perfect) and the relative standard deviation. Polin et al.~\cite{polin} use the same ratio
+without the leading $1-$, a non-uniformity; the two are not mixed. A power budget separates the traps, the zero order, the ghost
+traps (everything else on the grid, including folded replicas) and the remainder.
+
+\subsection{The device}
+
+A real SLM quantizes the phase, couples neighbouring pixels, covers only part of each pixel and fluctuates. The device model
+applies, in order, wrapping, quantization to $2^b$ levels, a nonlinear response, Gaussian flicker of stated rms and wrapping, and
+blurs the upsampled phase with the crosstalk kernel
+\begin{equation}
+K=\mathcal F^{-1}\Big\{\exp\Big[-\frac{|k_x|^q+|k_y|^q}{\sigma^q}\Big]\Big\},\qquad \sigma=1.24,\ q=1.80,
+\end{equation}
+the fitted parameters of Schroff et al.~\cite{schroff} on $3\times3$ sub-pixels (error below 2 percent in that work). A square
+pixel of fill factor $\mathrm{fill}$ multiplies the focal field by a product of cardinal sines, so the intensity falls to about
+$0.4$ at the edge of the unaliased window; this envelope is derived in the engine and tested against a brute-force transform.
+The adjoint of the crosstalk operator is closed form (convolution with the reversed kernel and a block sum), which lets
+gradient methods differentiate through the device without automatic differentiation. Zernike aberrations follow the Noll
+indexing~\cite{noll}. Table~\ref{tab:setups} lists the three optical setups of the cases.
+
+\begin{table}[t]
+\centering\small
+\caption{The optical setups of the cases, read from the committed manifests and traces. The device row of C08 is the device the
+benchmark also uses for its device cells.}
+\label{tab:setups}
+\begin{tabular}{@{}l r r r r r r r r@{}}
+\toprule
+Setup & $\lambda$ (nm) & $f$ (mm) & NA & SLM pixels & pitch ($\mu$m) & pad & bin ($\mu$m) & half field ($\mu$m)\\
+\midrule
+Atom (C01--C04, C09--C13) & \atomLambda & \atomFocal & \atomNa & $\atomNpix^2$ & \atomPitch & \atomPad & \atomBin & \atomHalf\\
+Bead (C05--C07, in water, index \beadNimm) & \beadLambda & \beadFocal & \beadNa & $\beadNpix^2$ & \beadPitch & \beadPad & \beadBin & \beadHalf\\
+C08 & \devcLambda & \devcFocal & \devcNa & $\devcNpix^2$ & \devcPitch & \devcPad & \devcBin & \devcHalf\\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\footnotesize C08 device: \devcBits-bit phase, crosstalk $\sigma=1.24$, $q=1.80$ on $3\times3$ sub-pixels, fill factor \devcFill, flicker \devcFlicker{} rad.
+\end{table}
+
+\section{The three tiers of methods}\label{sec:tiers}
+
+The design document fixes, before any code, a ladder of \nLadder{} rows: \nClassical{} classical methods (the established
+methods of the problem), \nSota{} state-of-the-art methods (current solutions, replicated or implemented, never only cited) and
+\nBeyond{} proposals beyond the state of the art. Each row has one measurable acceptance criterion and one test. Table~\ref{tab:ladder}
+lists them; Table~\ref{tab:acceptance} gives what each test measured on DinHot's own grids, with the seeds stated.
+
+\subsection{Classical tier}
+
+\textbf{Analytic baselines (M01 to M03).} The superposition of prisms and lenses, random superposition (each trap's phase
+drawn at random) and the random mask (each pixel assigned to one trap) are the references for the other methods. On the
+calibration task of Di Leonardo et al.~\cite{dileonardo} they show the published order: superposition is efficient only by
+accident and nearly non-uniform, random superposition gains efficiency at a spread, and the random mask has an efficiency of
+about the inverse of the number of traps. \textbf{Gerchberg--Saxton family (M04 to M06).} GS iterates between the SLM and the
+trap fields; the generalized adaptive additive form (GAA) adapts the update; weighted GS (GSW)
+rescales the target weights by the ratio of the mean to the achieved trap amplitude, $w_m\leftarrow w_m\langle r\rangle/r_m$,
+and reaches uniformity close to one~\cite{dileonardo}. \textbf{Direct search (M09)} minimizes the cost
+$C=-\langle I\rangle+f\sigma$ pixel by pixel over eight phase levels~\cite{polin}. \textbf{Zernike correction (M14)} recovers
+injected aberrations by a sensorless modal search~\cite{noll}. \textbf{Laguerre--Gaussian vortex traps (M15)} wind the
+ring phase by $2\pi l$. \textbf{Multi-plane GS (M19)} propagates plane by plane with an amplitude constraint per plane~\cite{whyte}.
+
+\subsection{State-of-the-art tier}
+
+\textbf{Phase-fixed weighted GS (M07)} freezes the focal-plane phase after $N$ iterations so that later iterations adjust only
+amplitudes~\cite{kim2019}; the source reports 1500 foci at 91.2 percent modulation efficiency and camera correction to
+1.59 percent in three steps against 6.47 percent for conventional weighted GS. DinHot finds that the source default of
+$N=12$ stalls on a crowded $50\times30$ array and uses $N=60$ there (Table~\ref{tab:acceptance}). \textbf{MRAF (M08)} frees
+a region outside the signal and trades efficiency for accuracy on shaped potentials~\cite{pasienski}. \textbf{Conjugate-gradient
+minimization (M10)} uses powered intensity costs and an analytic gradient obtained from two FFTs~\cite{harte}.
+\textbf{Wirtinger gradient descent with Adam (M11)} differentiates any forward model through the complex gradient~\cite{chakra}.
+\textbf{Closed-loop weighted GS (M12)} corrects trap amplitudes from a camera; DinHot runs it on an emulated camera whose
+errors are stated parameters, after Nogrette et al.~\cite{nogrette}; the emulator reproduces the published feedback curves in the browser within the factor set in the design document (Table~\ref{tab:acceptance}) and serves as a validation tool, not as a proposal. \textbf{Device-aware conjugate gradient (M13)} places the
+crosstalk kernel in the loop~\cite{schroff}. \textbf{Hungarian assignment and linear phase interpolation (M16)} sorts atoms with a
+cost $\sum d^\alpha$, $\alpha>1$, which avoids crossings, and moves them along interpolated holograms~\cite{lee2017,lpi}.
+\textbf{An unsupervised convolutional network refined by GS (M17)} follows DeepCGH~\cite{eybposh}. \textbf{Optimal-transport
+initialization of MRAF (M18)} seeds the phase from a transport map~\cite{swan,torchylo}.
+
+Of the \benchNProtocol{} engine methods, \nMethodsBaked{} ran in the bake of the cases; \notBakedList{} are the learned slots, whose
+baselines answer when no model is released (Section~\ref{sec:learned}).
+
+\input{../data/table_ladder.tex}
+\input{../data/table_acceptance.tex}
+
+\section{The cases}\label{sec:cases}
+
+A case is an optical setup, a device, a target (a list of traps or a shaped potential), an aberration, a method set, a seed and,
+for dynamic cases, a particle and a rearrangement. There are \nCases{} cases in four categories (Table~\ref{tab:cases}):
+arrays (a $3\times3$ grid, a $10\times10$ grid with camera feedback, a $32\times32$ array of \maxTraps{} traps, the calibration
+task and a disordered array of \nDisordered{} traps on integer FFT bins at least five bins apart), shaped and three-dimensional
+targets (a disc potential with the crosstalk model, a three-plane array with vortices, a vortex ring with a line), device and
+optics (high numerical aperture, a device-limited array, an aberrated array with and without correction) and dynamics and
+controls (an atom-rearrangement sequence and a trap outside the field, which is refused and never computed). Every case states
+numeric expected ranges for its metrics, measured on three seeds, and the bake fails outside them. All cases are synthetic:
+the parameters are stated and no measured sample is used. The baked cases span \minTraps{} to \maxTraps{} traps.
+
+\input{../data/table_cases.tex}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{fig-cases.pdf}
+\caption{Relative standard deviation of the trap intensities, every method on every point-trap case of the bake (the
+shaped-potential case C04 is scored on its signal region and is omitted). Each cell is one method run at the case budget.
+Plain Gerchberg--Saxton (M04) leaves the largest spreads; the weighted and phase-fixed forms (M06, M07), the direct
+search (M09), the Pareto front (B5) and the device-aware methods remove most of it where they apply.}
+\label{fig:cases}
+\end{figure}
+
+\section{Protocols and results}\label{sec:results}
+
+\subsection{Baked cases}
+
+Each case is computed offline with every method valid for it (the seed is stated in each manifest), checked against its expected
+ranges, and committed as a manifest and a trace of at most \liveTraceKiB{} KiB. Table~\ref{tab:calibration} compares the
+calibration case with the published rows of Di Leonardo et al.: the ordering of the six baselines and the weighted-GS
+uniformity are reproduced; the efficiencies of the GS family are lower than published because the engine's Gaussian input beam
+caps the efficiency, whereas the source uses a flat beam (the flat-beam test of M04 gives 0.939 efficiency and 0.604
+uniformity; Table~\ref{tab:acceptance}). The DinHot uniformity of random superposition and of the random mask differ from the
+published values on the engine's smaller grid, as the acceptance test of those methods states: the order, not the value, transfers.
+
+\input{../data/table_calibration.tex}
+\input{../data/table_results.tex}
+
+Table~\ref{tab:results} summarizes the baked cases. Where both ran, phase-fixed weighted GS (M07) leaves a median relative
+standard deviation of \medSigmaMseven{} percent against \medSigmaMfour{} percent for plain GS (M04) over \nBothFourSeven{} cases,
+at efficiencies between \minEffMseven{} and \maxEffMseven. On the device-limited case C08 phase-fixed weighted GS (M07), which ignores the
+device, keeps a spread of \bakeCeightMsevenSigma{} percent, and the device-aware weighted GS (B1) lowers it to \bakeCeightBOneSigma{} percent, a factor of
+\bakeCeightRatio{}, on that small grid (the larger task of Section~\ref{sec:beyond} gives a larger factor; both are reported in the companion
+manuscript). On the aberrated case C09, correction of the Zernike modes (M14) restores efficiency and uniformity that
+the uncorrected methods lose.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-maps.pdf}
+\caption{(a) Phase mask of the reference method on C02. (b) Its focal intensity, in dB relative to the mean trap, on the ideal device:
+a regular lattice. (c) The focal intensity of the device-aware weighted GS on C08, scored on the device with 4-bit
+phase, crosstalk and a fill factor of \devcFill: the traps are visible and not equal.}
+\label{fig:maps}
+\end{figure}
+
+\subsection{Feedback and particles}
+
+The emulated camera loop reduces the spread as in the published curves. In the baked traces the relative standard deviation
+falls from \fbCOneStart{} to \fbCOneEnd{} percent in \fbCOneSteps{} steps on C01, from \fbCTwoStart{} to \fbCTwoEnd{} percent in \fbCTwoSteps{}
+steps on the $10\times10$ grid C02, from \fbCThreeStart{} to \fbCThreeEnd{} percent in \fbCThreeSteps{} steps on the large array C03, and from
+\fbCThirteenStart{} to \fbCThirteenEnd{} percent in \fbCThirteenSteps{} steps on the disordered array C13 (Fig.~\ref{fig:feedback}). The published
+closed-loop result of Nogrette et al.~\cite{nogrette} is a trap-depth spread of 19 percent rms reduced to 1.4 percent in 20
+iterations; the unit test of M12 reproduces it within the factor set in the design document (Table~\ref{tab:acceptance}).
+The particle simulations act on the computed traps: C01 carries a bead in the central trap (stiffness \beadKappa{} pN/$\mu$m and a
+corner frequency of \beadFc{} Hz in the trace) and C03 an atom (a corner frequency of \atomFc{} Hz and a radial trap frequency of
+\atomOmega{} Hz in the trace); the trap depth follows the intensity~\cite{grimm}, and the bead's spectrum is a Lorentzian
+whose corner frequency is the stiffness over $2\pi\gamma$~\cite{tolic}, which the particle oracle checks.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{fig-feedback.pdf}
+\caption{Emulated camera feedback: relative standard deviation of the trap intensities against the feedback step, on four cases (baked traces).}
+\label{fig:feedback}
+\end{figure}
+
+\subsection{The benchmark protocol}
+
+The benchmark compares the tiers on one protocol. Its geometries are (\benchGeometries{}) a $10\times10$ square, a ring of 36 traps, 100 random
+traps, a quasi-periodic set of 119, a $5\times5\times3$ lattice, a large array ($32\times32$ and the disordered 819 set) and shaped fields;
+the grids are \benchGrids{} pixels, the iteration budgets are \benchIters{} and the time budgets are \benchTimes{} s (the last is
+the converged row). Every cell runs on \benchSeeds{} seeds and reports the median and the inter-quartile range of efficiency,
+uniformity, relative standard deviation, time and iterations, on the ideal device and on the C08 device (every hologram scored
+against its device). The Pareto fronts are stored with the cells.
+
+The committed results file holds \benchRows{} rows, covering \benchNMeasured{} of the \benchNProtocol{} engine methods (\benchMethodsMeasured);
+\benchSkipped{} method--geometry cells are recorded as skipped with a reason (a method that does not accept the target, such as a
+two-dimensional method on a three-dimensional lattice, or a method not registered in that build). The remaining cells are not yet
+measured, so this report makes no comparative statement from the benchmark and states the per-case baked scores and the unit measurements
+instead. Table~\ref{tab:benchmark} lists the cells present.
+
+\input{../data/table_benchmark.tex}
+
+\section{The learned models}\label{sec:learned}
+
+Two networks were trained offline with PyTorch, exported to ONNX with a list of operators the browser runtime supports, and
+evaluated on held-out sets written before the final training with other seeds. A model is released only if it meets its
+criterion; otherwise the baseline answers.
+
+\textbf{cgh-net (M17).} A U-Net maps three plane amplitudes, at $-8$, $0$ and $+8$ SLM-limited Rayleigh ranges, to one phase for the
+$128\times128$ SLM, in the setting of DeepCGH~\cite{eybposh}. It is trained without labels through the differentiable FFT model,
+with the loss $1-\mathrm{AC}$ over the planes, $\mathrm{AC}=2\sum TI/(\sum T^2+\sum I^2)$ on unit-sum plane intensities, for \cghSteps{}
+steps. The exported graph is \cghBytes{} MB. The baseline is volumetric three-dimensional GS (M19) on the same traps with a wall-clock budget
+of \cghBudgetS{} s, the median time of M19 at 30 iterations. On \cghN{} held-out volumes the network answers in about \cghNetMs{} ms
+with a median accuracy ratio of \cghMed{} (quartiles \cghQOne{} and \cghQThree), above the baseline on \cghShareAbove{} percent of the
+volumes; the median accuracy is \cghAcHybrid{} against \cghAcMnine{}. By kind the ratio is \cghLatticeRatio{} (lattices), \cghRandomRatio{} (random),
+\cghMixedRatio{} (mixed), \cghRingRatio{} (rings), \cghGfiveRatio{} (the $5\times5\times3$ benchmark lattice) and \cghPlaneRatio{} (the three-plane layout).
+The ONNX graph agrees with PyTorch on the reconstructed plane intensities to $\cghParity$ (relative to the maximum). The accuracy measure scores full plane
+images, ghosts and blur included, which is what the network optimises; M19 optimises trap uniformity, so the ratio is a statement about this measure.
+The two-dimensional counterpart, a single-plane network followed by GS refinement, ties: on \cghTwoDN{} held-out targets the ratio at equal
+wall-clock is \cghTwoDMed{}, below the criterion, and that model is not released.
+
+\textbf{warmstart-model (BS-3).} A permutation-equivariant set network predicts initial trap phases for phase-fixed WGS. On \wsN{} held-out
+geometries it needs a median of \wsModelIt{} iterations to reach 1 percent against \wsRandomIt{} from a random start (a factor of \wsRatio, below the
+factor of two set as the criterion), but only with the early phase freeze (after \wsNfixModel{} iterations, against \wsNfixRandom{} for the random arm). A control with
+no network, a random start and the same early freeze, needs a median of \wsControlIt{} iterations on the control subset, and \wsControlNever{} percent of its
+geometries never reach 1 percent (\wsModelNever{} percent with the network); the final efficiency differs by \wsEffDiff{} percent between the arms. The gain comes from the
+freeze, not from the network, so the proposal is refuted and the model is not released (Fig.~\ref{fig:learned}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-learned.pdf}
+\caption{(a) The cgh-net accuracy ratio over its baseline at equal wall-clock, by target kind on the held-out volumes (G5: the $5\times5\times3$ lattice;
+3-plane: the $5\times5$ three-plane layout), for the volume network (blue, green) and the two-dimensional single-plane network (red); the dashed line is the baseline.
+(b) The warm-start control: median iterations to 1 percent for a random start with the original and the early freeze and for the network start with the early freeze.}
+\label{fig:learned}
+\end{figure}
+
+\section{Proposals beyond the published state of the art}\label{sec:beyond}
+
+Each proposal is DinHot's own, grounded in a stated gap, measured against the strongest baseline and reported whether or not it
+succeeds.
+
+\textbf{BS-1, device-aware weighted GS.} The weights of weighted GS are kept and the phase update is replaced by conjugate-gradient steps through
+the crosstalk kernel and the quantizer. The gap is that the crosstalk model has only been used with conjugate gradient on shaped potentials~\cite{schroff},
+or inside a weighted GS that replaces amplitudes only~\cite{persson}. On the crosstalk device, the relative standard deviation is lower than
+that of phase-fixed WGS by the factor reported in the companion manuscript; on the small C08 grid the baked factor is \bakeCeightRatio{} at an
+efficiency ratio of \bakeCeightEffRatio. \textbf{BS-2, flicker-bounded phase-continuous sequences.} Each intermediate hologram of a moving-trap
+sequence is optimized with the trap phases locked to a smooth trajectory; the gap is that linear phase interpolation does not
+optimize its intermediate frames~\cite{lpi}. The moving traps keep a higher minimum intensity than under linear phase
+interpolation, as quantified in the companion manuscript. \textbf{BS-3, learned warm start:} refuted (Section~\ref{sec:learned}).
+\textbf{BS-4, aberration-robust hologram:} the expected cost over residual aberrations is minimized; over a 200-sample ensemble of residual Noll modes 4 to 11
+the 95th percentile of the relative standard deviation is 1.55 times below that of M07 with an efficiency 1.9 percent lower (Table~\ref{tab:acceptance});
+robustness to pointing errors does not follow (1.02 times), because the spot width bounds it, and is reported as a negative result. The gap is that corrections are
+global or per site, never robust~\cite{machu}. \textbf{BS-5, efficiency--uniformity Pareto front} by continuation of a weighted cost: the front's hypervolume exceeds that of
+the points of the GS family and one front point dominates M04 and M05 (Table~\ref{tab:acceptance}), where published methods report single trade-off points~\cite{dileonardo}.
+
+\section{The live engine and the product}\label{sec:live}
+
+The site is static; every computation runs in the browser or was baked offline and is replayed. The live engine is a TypeScript port of the forward
+models, the device model and the live methods, running in a Web Worker so the interface does not block, with the FFT in Float64 (fft.js). An optional WebGPU backend
+runs the FFT-form iterations on the GPU and falls back to the CPU path when the browser offers none; an agreement check inside every GPU run compares the trap fields
+with the CPU result. At the live grid ($256^2$ padded to $512^2$) a weighted GS iteration measured about \liveIterMs{} ms, so a 30-iteration run fits the lane budget of
+\liveBudgetMs{} ms. The Python engine writes \liveFixtures{} reference documents and \liveTests{} unit tests compare the TypeScript engine with them; the worst observed difference of
+any quantity is $\liveWorst$ (the Parseval sum), and every phase agrees to $10^{-11}$ rad or better. On \liveAdapter{}, 30 iterations of M07 took \liveGpuS{} s with the GPU
+backend against \liveCpuS{} s on the CPU path in the same browser. The methods that are baked and replayed are labelled as such in the interface. Of the \nContracts{} data
+contracts of the build, \nContractsAvailable{} are fully available; the others are partial (the case outside the field is refused, so one of the \nCases{} case records is rejected by the input contract, and benchmark cells are not yet measured), answered by a baseline (the two model slots) or missing (the dormant API, which serves GET requests and answers 503 with the declared state).
+
+\section{Limits}\label{sec:limits}
+
+DinHot computes and evaluates holograms in simulation: it does not drive an SLM or a camera, and its camera-in-the-loop method runs on an emulated
+camera whose errors are stated parameters. Device and set-up parameters come from published experiments, so absolute numbers belong to the stated model and not to a measured instrument.
+The engine is scalar (Fraunhofer and angular spectrum); the high-numerical-aperture case carries a validity flag and the vectorial lane is not built. The fill-factor, 4-bit and flicker effects of the
+device have no published source in this build and are computed only. The crosstalk kernel's frequency unit is carried over from the engine and is not verified against the source. The transient-intensity model of BS-2 is
+the engine's own (Section~\ref{sec:beyond} and the companion manuscript) and the linear-phase-interpolation baseline is DinHot's implementation of a published description, not the authors' code. The
+unit measurements of Table~\ref{tab:acceptance} use between one and six seeds; the benchmark that repeats them on \benchSeeds{} seeds is incomplete in the committed file. The cgh-net advantage is on a plane-image accuracy measure over generated volumes and
+the benchmark's volumetric layouts, not on a hardware experiment. The learned warm start is refuted and the two-dimensional network ties with GS. The executive figures of the introduction are taken from the cited publications and not re-measured.
+
+\section*{Data and code availability}
+
+The source code, the baked artifacts (manifests, traces, benchmark results, model cards, the ONNX graph and its held-out metrics) and the scripts that regenerate every table and figure of this report from them are in the repository
+\url{https://github.com/fsantibanezleal/CEFOP_DinHot} (Apache-2.0), under \texttt{manuscripts/holographic-trap-studio/}; the studio runs at \url{https://dinhot.fasl-work.com}.
+Unit measurements quoted in Table~\ref{tab:acceptance} are produced by the tests named in Table~\ref{tab:ladder}.
+
+\begin{thebibliography}{99}\small
+\bibitem{manetsch} Manetsch \emph{et al.}, ``A tweezer array with 6100 highly coherent atomic qubits,'' \emph{Nature} 647, 60--67, 2025. arXiv:2403.12021.
+\bibitem{dileonardo} Di Leonardo, Ianni and Ruocco, ``Computer generation of optimal holograms for optical trap arrays,'' \emph{Opt. Express} 15, 1913, 2007. doi:10.1364/OE.15.001913.
+\bibitem{kim2019} Kim, Kim, Lee and Ahn, ``Large-scale uniform optical focus array generation with a phase spatial light modulator,'' \emph{Opt. Lett.} 44, 3178, 2019. doi:10.1364/OL.44.003178.
+\bibitem{pasienski} Pasienski and DeMarco, ``A high-accuracy algorithm for designing arbitrary holographic atom traps,'' \emph{Opt. Express} 16, 2176, 2008. doi:10.1364/OE.16.002176.
+\bibitem{polin} Polin \emph{et al.}, ``Optimized holographic optical traps,'' \emph{Opt. Express} 13, 5831, 2005. doi:10.1364/OPEX.13.005831.
+\bibitem{harte} Harte \emph{et al.}, ``A conjugate gradient minimisation approach to generating holographic traps for ultracold atoms,'' \emph{Opt. Express} 22, 26548, 2014. doi:10.1364/OE.22.026548.
+\bibitem{chakra} Chakravarthula \emph{et al.}, ``Wirtinger holography for near-eye displays,'' \emph{ACM Trans. Graph.} (SIGGRAPH Asia), 2019. doi:10.1145/3355089.3356539.
+\bibitem{nogrette} Nogrette \emph{et al.}, ``Single-atom trapping in holographic 2D arrays of microtraps with arbitrary geometries,'' arXiv:1402.5329, 2014.
+\bibitem{schroff} Schroff, La Rooij, Haller and Kuhr, ``Accurate holographic light potentials using pixel crosstalk modelling,'' \emph{Sci. Rep.}, 2023. doi:10.1038/s41598-023-30296-6.
+\bibitem{noll} Noll, ``Zernike polynomials and atmospheric turbulence,'' \emph{J. Opt. Soc. Am.} 66, 207, 1976. doi:10.1364/JOSA.66.000207.
+\bibitem{whyte} Whyte and Courtial, ``Experimental demonstration of holographic three-dimensional light shaping using a Gerchberg--Saxton algorithm,'' \emph{New J. Phys.} 7, 117, 2005. doi:10.1088/1367-2630/7/1/117.
+\bibitem{lee2017} Lee, Kim and Ahn, ``Defect-free atomic array formation using the Hungarian matching algorithm,'' \emph{Phys. Rev. A} 95, 053424, 2017. doi:10.1103/PhysRevA.95.053424.
+\bibitem{lpi} ``Parallel assembly of neutral atom arrays with an SLM using linear phase interpolation,'' arXiv:2501.01391.
+\bibitem{eybposh} Eybposh \emph{et al.}, ``DeepCGH: 3D computer-generated holography using deep learning,'' \emph{Opt. Express} 28, 26636, 2020. doi:10.1364/OE.399624.
+\bibitem{swan} Swan \emph{et al.}, ``High-fidelity holographic beam shaping with optimal transport and phase diversity,'' arXiv:2408.17025.
+\bibitem{torchylo} Torchylo \emph{et al.}, ``A fast, large-scale optimal transport algorithm for holographic beam shaping,'' arXiv:2512.19072.
+\bibitem{persson} Persson, Engstr\"om and Goks\"or, ``Reducing the effect of pixel crosstalk in phase only spatial light modulators,'' \emph{Opt. Express} 20, 22334, 2012.
+\bibitem{machu} Machu \emph{et al.}, ``Full-field-of-view aberration correction for large arrays of focused beams,'' arXiv:2512.15967.
+\bibitem{grimm} Grimm, Weidem\"uller and Ovchinnikov, optical dipole traps for neutral atoms, arXiv:physics/9902072, 2000.
+\bibitem{tolic} Tol\'i\'c-N{\o}rrelykke \emph{et al.}, stiffness calibration of optical traps from the power spectrum, arXiv:physics/0603037, 2006.
+\end{thebibliography}
+
+\end{document}
