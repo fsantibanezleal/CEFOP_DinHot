@@ -1,113 +1,115 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-label="Four roles each hold part of the picture and the tools they use look back or only days ahead">
-<title>Four roles each hold part of the picture and the tools they use look back or only days ahead</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-label="Four roles share one bench: calibration and timing hand-offs are where the light field falls short">
+<title>Four roles share one bench: calibration and timing hand-offs are where the light field falls short</title>
 <rect x="1" y="1" width="798" height="478" rx="12" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
-<rect x="10" y="10" width="330" height="166" rx="10" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
-<rect x="28" y="118" width="112" height="9" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 38 127 L 38 152 M 130 127 L 130 152" fill="none" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="460" y="10" width="330" height="166" rx="10" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
-<rect x="478" y="118" width="112" height="9" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 488 127 L 488 152 M 580 127 L 580 152" fill="none" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="10" y="314" width="330" height="166" rx="10" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
-<rect x="28" y="422" width="112" height="9" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 38 431 L 38 456 M 130 431 L 130 456" fill="none" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="460" y="314" width="330" height="166" rx="10" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
-<rect x="478" y="422" width="112" height="9" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 488 431 L 488 456 M 580 431 L 580 456" fill="none" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="344" y="232" width="112" height="12" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.5"/>
-<rect x="352" y="244" width="96" height="58" rx="4" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
-<rect x="358" y="252" width="24" height="20" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1.2"/>
-<circle cx="370" cy="262" r="4.5" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="388" y="252" width="24" height="20" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1.2"/>
-<circle cx="400" cy="262" r="4.5" fill="var(--color-bad)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="418" y="252" width="24" height="20" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1.2"/>
-<circle cx="430" cy="262" r="4.5" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="388" y="280" width="24" height="22" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 340 100 L 372 236" fill="none" stroke="var(--color-fg-faint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
-<path d="M 460 100 L 428 236" fill="none" stroke="var(--color-fg-faint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
-<path d="M 340 392 L 372 300" fill="none" stroke="var(--color-fg-faint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
-<path d="M 460 392 L 428 300" fill="none" stroke="var(--color-fg-faint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
-<circle cx="358" cy="168" r="11" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
-<path d="M 353 163 L 363 173 M 363 163 L 353 173" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="442" cy="168" r="11" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
-<path d="M 437 163 L 447 173 M 447 163 L 437 173" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="358" cy="346" r="11" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
-<path d="M 353 341 L 363 351 M 363 341 L 353 351" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="442" cy="346" r="11" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
-<path d="M 437 341 L 447 351 M 447 341 L 437 351" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 354 98 Q 340 98 340 82 Q 340 66 360 66 Q 362 48 386 50 Q 406 42 418 62 Q 444 60 446 82 Q 448 98 430 98 Z" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 356 112 L 364 112 M 360 108 L 360 116" fill="none" stroke="var(--color-accent-2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 390 120 L 398 120 M 394 116 L 394 124" fill="none" stroke="var(--color-accent-2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 424 110 L 432 110 M 428 106 L 428 114" fill="none" stroke="var(--color-accent-2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 57.9 118.0 L 59.2 88.3 Q 70.0 78.8 80.8 88.3 L 82.2 118.0 Z" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="70" cy="70.8" r="9.5" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 59.2 89.7 L 52.5 107.2 M 80.8 89.7 L 87.5 107.2" fill="none" stroke="var(--color-fg-subtle)" stroke-width="4.050000000000001" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="236" y="58" width="40" height="70" rx="6" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
-<circle cx="256" cy="74" r="8" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1.2"/>
-<circle cx="256" cy="93" r="8" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1.2"/>
-<circle cx="256" cy="112" r="8" fill="var(--color-bad)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 158 84 L 218 84 M 158 98 L 210 98 M 158 112 L 200 112" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 507.9 118.0 L 509.2 88.3 Q 520.0 78.8 530.8 88.3 L 532.1 118.0 Z" fill="var(--color-accent-2)" stroke="var(--color-border)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="520" cy="70.8" r="9.5" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 509.2 89.7 L 502.4 107.2 M 530.8 89.7 L 537.5 107.2" fill="none" stroke="var(--color-accent-2)" stroke-width="4.050000000000001" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="600" y="56" width="64" height="72" rx="4" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
-<path d="M 610 72 L 654 72 M 610 84 L 654 84 M 610 96 L 644 96 M 610 108 L 650 108" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="716" cy="92" r="22" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2.4"/>
-<path d="M 716 92 L 716 78 M 716 92 L 704 98" fill="none" stroke="var(--color-fg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 690 62 Q 682 54 672 56 M 672 56 L 678 48 M 672 56 L 680 62" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 57.9 422.0 L 59.2 392.3 Q 70.0 382.9 80.8 392.3 L 82.2 422.0 Z" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="70" cy="374.8" r="9.5" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 80.8 393.6 L 99.7 389.6 M 59.2 393.6 L 52.5 411.2" fill="none" stroke="var(--color-accent)" stroke-width="4.050000000000001" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="150" y="360" width="150" height="54" rx="5" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
-<circle cx="174" cy="384" r="10" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 174 368 L 174 364 M 174 400 L 174 404 M 158 384 L 154 384 M 190 384 L 194 384" fill="none" stroke="var(--color-warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 200 376 L 288 376 M 200 388 L 280 388 M 200 400 L 262 400" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 507.9 422.0 L 509.2 392.3 Q 520.0 382.9 530.8 392.3 L 532.1 422.0 Z" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="520" cy="374.8" r="9.5" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
-<path d="M 509.2 393.6 L 502.4 411.2 M 530.8 393.6 L 537.5 411.2" fill="none" stroke="var(--color-accent)" stroke-width="4.050000000000001" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="596" y="356" width="166" height="58" rx="5" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
-<rect x="604" y="364" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="629" y="364" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="654" y="364" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="679" y="364" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="704" y="364" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="729" y="364" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="604" y="380" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="629" y="380" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="654" y="380" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="679" y="380" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="704" y="380" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="729" y="380" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="604" y="396" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="629" y="396" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="654" y="396" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="679" y="396" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="704" y="396" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="729" y="396" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
-<rect x="27" y="21" width="166" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
-<text data-lang="en" x="110" y="46" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Executives</text>
-<text data-lang="es" x="110" y="46" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Dirección</text>
-<rect x="466" y="21" width="207" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
-<text data-lang="en" x="570" y="46" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Public health</text>
-<text data-lang="es" x="570" y="46" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Salud pública</text>
-<rect x="12" y="325" width="248" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
-<text data-lang="en" x="136" y="350" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Bed managers</text>
-<text data-lang="es" x="136" y="350" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Gestión de camas</text>
-<rect x="478" y="325" width="288" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
-<text data-lang="en" x="622" y="350" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Nursing leaders</text>
-<text data-lang="es" x="622" y="350" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Jefes de enfermería</text>
-<rect x="31" y="135" width="288" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
-<text data-lang="en" x="175" y="160" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Limit: warns late</text>
-<text data-lang="es" x="175" y="160" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Límite: avisa tarde</text>
-<rect x="474" y="135" width="302" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
-<text data-lang="en" x="625" y="160" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Reports look back</text>
-<text data-lang="es" x="625" y="160" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Informes miran atrás</text>
-<rect x="40" y="439" width="261" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
-<text data-lang="en" x="170" y="464" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Whiteboard: today</text>
-<text data-lang="es" x="170" y="464" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Pizarra: solo hoy</text>
-<rect x="474" y="439" width="302" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
-<text data-lang="en" x="625" y="464" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Rosters set early</text>
-<text data-lang="es" x="625" y="464" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Turnos fijados antes</text>
-<rect x="256" y="189" width="288" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-warn)" stroke-width="2"/>
-<text data-lang="en" x="400" y="214" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Regional forecast</text>
-<text data-lang="es" x="400" y="214" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Pronóstico regional</text>
+<rect x="2" y="338" width="796" height="12" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="2" y="350" width="796" height="128" rx="0" fill="var(--color-surface-2)" stroke="none" stroke-width="0" opacity="0.5"/>
+<path d="M 100 230 L 150 230" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 175 230 L 450 230" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="20" y="204" width="80" height="52" rx="6" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="86" cy="230" r="7" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.5"/>
+<path d="M 36 218 L 62 218 M 36 230 L 62 230 M 36 242 L 62 242" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 60 256 L 60 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="150" y="186" width="26" height="88" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 156 196 L 156 264 M 163 196 L 163 264 M 170 196 L 170 264" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 163 274 L 163 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="255" cy="230" rx="11" ry="40" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 255 270 L 255 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="335" cy="230" rx="11" ry="40" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 335 270 L 335 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 392 198 L 446 214 L 446 246 L 392 262 Z" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M 410 262 L 410 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="452" y="158" width="188" height="144" rx="14" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2.5"/>
+<rect x="468" y="172" width="156" height="116" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<path d="M 546 302 L 546 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle class="b1" cx="498" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="dim" cx="523" cy="196" r="7" fill="var(--color-fg-faint)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="548" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b2" cx="573" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="598" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b2" cx="498" cy="230" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="523" cy="230" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="573" cy="230" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="dim" cx="598" cy="230" r="7" fill="var(--color-fg-faint)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="miss" cx="498" cy="264" r="7" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-dasharray="3 3"/>
+<circle class="b2" cx="523" cy="264" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="548" cy="264" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="dim" cx="573" cy="264" r="7" fill="var(--color-fg-faint)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="598" cy="264" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="690" y="196" width="86" height="68" rx="8" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="690" cy="230" r="20" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="690" cy="230" r="8" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 733 264 L 733 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 640 230 L 670 230" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 6"/>
+<rect x="13" y="34" width="94" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="60" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Laser</text>
+<text data-lang="es" x="60" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Láser</text>
+<rect x="170" y="34" width="239" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="290" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Relay optics</text>
+<text data-lang="es" x="290" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Óptica de relevo</text>
+<rect x="412" y="34" width="266" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="545" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Trap array</text>
+<text data-lang="es" x="545" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Arreglo de trampas</text>
+<rect x="681" y="34" width="107" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="735" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Camera</text>
+<text data-lang="es" x="735" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Cámara</text>
+<rect x="30" y="80" width="239" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="150" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Light modulator</text>
+<text data-lang="es" x="150" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Modulador de luz</text>
+<rect x="322" y="80" width="147" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="395" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Objective</text>
+<text data-lang="es" x="395" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Objetivo</text>
+<rect x="467" y="80" width="226" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="580" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Vacuum chamber</text>
+<text data-lang="es" x="580" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Cámara de vacío</text>
+<path d="M 60 68 L 60 204" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 290 68 L 290 80 M 290 114 L 262 196" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 545 68 L 545 80 M 545 114 L 545 190" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 735 68 L 735 196" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 150 114 L 160 186" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 395 114 L 410 198" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<rect x="36" y="362" width="136" height="64" rx="6" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="64" cy="394" r="5" fill="var(--color-fg-faint)"/><circle cx="84" cy="394" r="5" fill="var(--color-accent)"/><circle cx="104" cy="394" r="5" fill="var(--color-fg-faint)"/><circle cx="124" cy="394" r="5" fill="var(--color-accent)"/><circle cx="144" cy="394" r="5" fill="var(--color-fg-faint)"/>
+<path d="M 104 426 L 104 436 M 78 438 L 130 438" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<g><circle cx="215" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="197" y="386" width="36" height="46" rx="12" fill="var(--color-accent-2)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<g><circle cx="335" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="317" y="386" width="36" height="46" rx="12" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<g><circle cx="545" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="527" y="386" width="36" height="46" rx="12" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<g><circle cx="700" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="682" y="386" width="36" height="46" rx="12" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<path d="M 335 368 L 335 358 M 335 358 L 163 358 L 163 276" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>
+<path d="M 545 368 L 545 304" fill="none" stroke="var(--color-good)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>
+<path d="M 245 396 L 265 396" fill="none" stroke="var(--color-accent-2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 700 368 L 700 266" fill="none" stroke="var(--color-warn)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>
+<path d="M 372 400 L 500 400" fill="none" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 488 392 L 500 400 L 488 408" fill="none" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 590 400 L 650 400" fill="none" stroke="var(--color-warn)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 640 392 L 652 400 L 640 408" fill="none" stroke="var(--color-warn)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 300 400 L 255 400" fill="none" stroke="var(--color-accent-2)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 265 392 L 253 400 L 265 408" fill="none" stroke="var(--color-accent-2)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="155" y="440" width="120" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="215" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Control</text>
+<text data-lang="es" x="215" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Control</text>
+<rect x="291" y="440" width="107" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="345" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Optics</text>
+<text data-lang="es" x="345" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Óptica</text>
+<rect x="472" y="440" width="147" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="545" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Physicist</text>
+<text data-lang="es" x="545" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Físico</text>
+<rect x="640" y="440" width="120" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="700" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Manager</text>
+<text data-lang="es" x="700" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Jefe</text>
+<rect x="161" y="296" width="107" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="215" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Drift</text>
+<text data-lang="es" x="215" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Deriva</text>
+<path d="M 190 296 L 170 276" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="284" y="296" width="292" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="430" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Hand-off gap</text>
+<text data-lang="es" x="430" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Brecha en la entrega</text>
+<path d="M 440 330 L 440 392" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 4"/>
+<rect x="610" y="296" width="160" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="690" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Slow loop</text>
+<text data-lang="es" x="690" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Lazo lento</text>
+<path d="M 690 330 L 690 368" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 4"/>
 </svg>
