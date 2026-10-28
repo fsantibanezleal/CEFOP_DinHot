@@ -18,7 +18,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { loadCase, loadIndex, useArtifact, type CaseData } from '../api/artifacts';
 import type { Text, Trap } from '../lib/contract.types';
-import { baselineName } from '../lib/ort';
+import { baselineName, cghApplies } from '../lib/ort';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { caseAbsent } from '../readiness/readiness';
 import { useReadiness } from '../readiness/useReadiness';
@@ -480,12 +480,15 @@ export function Workbench() {
     });
   }
 
+  const cghFit = data && slots.cgh?.answered === 'model' ? cghApplies(data.manifest.params.setup, traps, slots.cgh.card) : null;
   const variantOf = (id: string) => {
     const lane1 = laneOf(id, liveMethods);
     const slotNote =
       id === 'M17'
         ? slots.cgh?.answered === 'model'
-          ? { en: 'The released cgh-net answers in your browser.', es: 'El cgh-net publicado responde en su navegador.' }
+          ? cghFit && !cghFit.ok
+            ? { en: `${cghFit.reason.en} The baseline answers.`, es: `${cghFit.reason.es} Responde la línea base.` }
+            : { en: 'The released cgh-net answers in your browser.', es: 'El cgh-net publicado responde en su navegador.' }
           : { en: `No released cgh-net: ${baselineName('cgh-net').en} answers.`, es: `No hay cgh-net publicado: responde ${baselineName('cgh-net').es}.` }
         : id === 'B3'
           ? slots.warm?.answered === 'model'
