@@ -7,9 +7,12 @@ https://doi.org/10.1364/OE.399624; the network predicts a focal-plane field that
 the output is its phase). ``AC = 2 \sum T I / (\sum T^2 + \sum I^2)`` with unit-sum intensities, ``core/../learned/torch_forward``;
 DeepCGH's own accuracy formula was not read (UNVERIFIED), this definition is used for the loss, GS and the evaluation alike.
 
+Hybrid (SDD decision of the main session): the network's phase is the START of GS (M04), which refines it in what is left of
+``budget.time_s`` after the network pass (at most ``budget.iterations`` iterations, at least one); ``refine=False`` returns the network's
+phase alone (``meta['refine_iterations']`` is 0). The acceptance criterion compares this hybrid with GS alone at the same wall-clock.
+
 Missing data: with no released model the baseline answers (Gerchberg-Saxton, M04, 30 iterations; ``meta['provenance']`` is
-``'baseline'``), exactly as the catalog row ``cgh-net`` states. ``budget`` is ignored by the network (one pass); it caps the
-baseline's iterations only. ``init`` is not used. A setup other than 128 x 128, pad 1, or a trap target is a ``ValueError``.
+``'baseline'``), exactly as the catalog row ``cgh-net`` states. The baseline ignores ``budget`` (30 iterations). ``init`` is not used. A setup other than 128 x 128, pad 1, or a trap target is a ``ValueError``.
 """
 from __future__ import annotations
 
@@ -46,7 +49,7 @@ def predict(session, target: Target) -> np.ndarray:
     return session.run(None, {"target": network_input(target)})[0][0, 0].astype(np.float64)
 
 
-def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=None, models_dir=None) -> Result:
+def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=None, models_dir=None, refine: bool = True) -> Result:
     if target.kind != "field":
         raise ValueError(f"{SPEC.id} supports the target kinds ['field'], got {target.kind!r}")
     check_geometry(setup)
@@ -61,11 +64,21 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
     t0 = time.perf_counter()
     phi = predict(session, target)
     dt = time.perf_counter() - t0
+    if refine:
+        remaining = None if budget.time_s is None else budget.time_s - dt
+        if remaining is None or remaining > 0:
+            # GS (M04, field form) from the network's phase, in what is left of the wall-clock budget (at least one iteration)
+            res = m04_gs.run(setup, target, budget=Budget(budget.iterations, remaining), rng=rng, init=phi)
+            res.meta.update({"method": SPEC.id, "provenance": "real", "network_s": dt, "refine_iterations": res.meta["iterations"]})
+            for h in res.history:
+                h["time_s"] += dt
+            return res
     e = fft_focal_field(phi, setup)
     region = _gs.measure_region(setup, target)
     t = target.amplitude * np.sqrt(setup.n_pix**2 / np.sum(np.where(target.mask, target.amplitude, 0.0) ** 2))
     ratio = np.abs(e[region]) ** 2 / (t[region] ** 2)
-    entry = {"iteration": 1, "efficiency": float(np.sum(np.abs(e[target.mask]) ** 2) / setup.n_pix**2),
+    entry = {"iteration": 0, "efficiency": float(np.sum(np.abs(e[target.mask]) ** 2) / setup.n_pix**2),
              "uniformity": float(1.0 - (ratio.max() - ratio.min()) / (ratio.max() + ratio.min())),
              "rel_std": float(100.0 * ratio.std() / ratio.mean()), "time_s": dt, "error": _gs.field_error(e, target, region)}
-    return Result(phi=phi, history=[entry], fields=e, meta={"method": SPEC.id, "provenance": "real", "iterations": 1})
+    return Result(phi=phi, history=[entry], fields=e,
+                  meta={"method": SPEC.id, "provenance": "real", "network_s": dt, "refine_iterations": 0, "iterations": 0})
