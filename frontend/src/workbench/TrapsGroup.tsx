@@ -97,6 +97,7 @@ export function IntensityView({ sel }: { sel: Selection }) {
             <BarChart
               height="fill"
               orientation={items.length > 12 ? 'vertical' : 'horizontal'}
+              values={items.length <= 12}
               title={{ en: 'Intensity of each trap over the mean', es: 'Intensidad de cada trampa sobre la media' }}
               axis={{ label: { en: 'Intensity over the mean', es: 'Intensidad sobre la media' }, unit: { en: 'ratio', es: 'razón' }, format: { decimals: 3 } }}
               onSelect={(id) => act.selectTrap(Number(id))}
@@ -181,6 +182,7 @@ export function DepthView({ sel }: { sel: Selection }) {
           <BarChart
             height="fill"
             orientation={items.length > 12 ? 'vertical' : 'horizontal'}
+            values={items.length <= 12}
             title={{ en: 'Depth of each trap', es: 'Profundidad de cada trampa' }}
             axis={{ label: { en: 'Depth', es: 'Profundidad' }, unit, format: { decimals: 3 } }}
             onSelect={(id) => act.selectTrap(Number(id))}

@@ -230,7 +230,7 @@ export function AberrationView({ sel }: { sel: Selection }) {
         }}
       />
       <ViewsRow shares={[3, 2]}>
-        <PlotCard fill title={{ en: 'Zernike coefficients', es: 'Coeficientes de Zernike' }} {...c} dataKey={stateKey} note={{ en: 'Click a bar to select its mode, then edit it with the rail knob. Waves, Noll order.', es: 'Pulse una barra para elegir su modo y edítelo con la perilla del panel. Ondas, orden de Noll.' }}>
+        <PlotCard fill title={{ en: 'Zernike coefficients', es: 'Coeficientes de Zernike' }} {...c} dataKey={stateKey} note={{ en: 'Choose the mode and its coefficient with the two knobs above the charts. Waves, Noll order.', es: 'Elija el modo y su coeficiente con las dos perillas sobre los gráficos. Ondas, orden de Noll.' }}>
           <Fill>
             <BarChart
               height="fill"
@@ -238,7 +238,6 @@ export function AberrationView({ sel }: { sel: Selection }) {
               values={false}
               title={{ en: 'Zernike coefficient by Noll index', es: 'Coeficiente de Zernike por índice de Noll' }}
               axis={{ label: { en: 'Coefficient', es: 'Coeficiente' }, unit: { en: 'waves', es: 'ondas' }, format: { decimals: 3 } }}
-              onSelect={(id) => act.selectMode(Number(id))}
               data={modes.map((j) => ({
                 id: String(j),
                 label: { en: `${j}`, es: `${j}` },
