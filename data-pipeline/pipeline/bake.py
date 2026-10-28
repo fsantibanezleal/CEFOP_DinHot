@@ -140,6 +140,11 @@ def bake_case(rec: dict, *, derived_dir: Path, manifests_dir: Path, models_dir: 
         seconds[m] = infer.time_again(eff, m, ctx, repeats=3 if m == reference else 1) if spec_live else outcomes[m].seconds
     lanes = {m: infer.lane_of(outcomes[m].spec_lane, seconds[m]) for m in ran}
 
+    forms = {m: outcomes[m].meta["form"] for m in ran if outcomes[m].meta.get("form") in ("fft", "point")}
+    if forms:
+        flags.append({"case_id": cid, "flag": "forward form chosen per method (auto: fft when every trap is on a bin with z = 0 "
+                      "and charge 0, else point): " + ", ".join(f"{m}={forms[m]}" for m in sorted(forms))})
+
     methods_manifest = {m: {"lane": lanes[m], **{k: round(float(outcomes[m].score[k]), 6) for k in SCORE_KEYS},
                             "iterations": int(outcomes[m].iterations), "converged": bool(outcomes[m].converged)}
                         for m in ran}

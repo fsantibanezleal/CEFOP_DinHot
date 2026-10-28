@@ -330,3 +330,13 @@ def test_a_measured_provisional_case_replaces_its_bands_and_an_anchor_case_keeps
     assert cases["C01_square_grid"].record["expect"] == {"M06.efficiency": [0.5, 0.9]}
     c12 = cases["C12_calibration"].record["expect"]
     assert c12["M06.efficiency"] == [0.8, 1.0] and c12["M02.rel_std_pct"] == [1.0, 2.0]
+
+
+def test_the_manifest_flags_the_form_each_method_chose(real_registry, tmp_path):
+    on = rec64(bin_grid(3, 6), ("M06", "M07"))
+    off = rec64(library._grid(3, 3, 3.1), ("M06", "M07"), case_id="C98_off")
+    for rec, want in ((on, "M06=fft, M07=fft"), (off, "M06=point, M07=point")):
+        rec["expect"] = {"M06.efficiency": [0.0, 1.0]}
+        m, fails = bake_case(rec, derived_dir=tmp_path, manifests_dir=tmp_path / "m", models_dir=tmp_path / "models")
+        assert not fails
+        assert any("forward form chosen" in f["flag"] and want in f["flag"] for f in m["flags"]), m["flags"]
