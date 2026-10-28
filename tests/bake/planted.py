@@ -102,11 +102,11 @@ def run(setup, target, *, device=None, budget, rng, init=None):
     for it in range(budget.iterations):
         e = fft_focal_field(phi, setup)
         inside = np.abs(e[target.mask]) ** 2 * setup.pad**2 / setup.n_pix**2
-        hist.append({"iteration": it, "efficiency": float(inside.sum() / setup.pad**2), "uniformity": 0.5, "rel_std": 10.0,
+        hist.append({"iteration": it, "efficiency": float(inside.sum() / setup.pad**2), "uniformity": 0.5, "rel_std": 10.0, "error": 0.1,
                      "time_s": time.perf_counter() - t0})
         phi = np.angle(fft_inverse(amp * np.exp(1j * np.angle(e)), setup))
     e = fft_focal_field(phi, setup)
-    hist.append({"iteration": len(hist), "efficiency": 0.5, "uniformity": 0.5, "rel_std": 10.0, "time_s": time.perf_counter() - t0})
+    hist.append({"iteration": len(hist), "efficiency": 0.5, "uniformity": 0.5, "rel_std": 10.0, "error": 0.1, "time_s": time.perf_counter() - t0})
     return Result(phi, hist, e)
 '''
 

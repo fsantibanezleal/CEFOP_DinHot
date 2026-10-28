@@ -51,7 +51,7 @@ TUNING_ITERATIONS = 30
 MAX_WORKERS = 12
 # the dossier's tuned parameters (D4.3 item 5); applied only when the method's run accepts the name
 FALLBACK_TUNING: dict[str, list[dict]] = {
-    "M05": [{"gamma": g} for g in (0.25, 0.5, 0.75, 1.0)],
+    "M05": [{"alpha": a} for a in (0.25, 0.5, 0.75, 1.0)],
     "M08": [{"mixing": p} for p in (0.3, 0.4, 0.55, 0.7)],
     "M10": [{"t": t} for t in (1.5, 2.0, 3.0, 4.0)],
     "M11": [{"lr": r} for r in (3e-4, 1e-3, 3e-3, 1e-2)],

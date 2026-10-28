@@ -30,6 +30,7 @@ MODEL_SLOTS = ("cgh-net", "warmstart-model")
 FEEDBACK_PREFERENCE = ("M07", "M06", "M04")
 AXIAL_NZ = 48
 SCORE_KEYS = ("efficiency", "uniformity", "rel_std_pct", "zero_order", "ghost")
+SIGNAL_KEYS = ("signal_rms_error_pct", "signal_efficiency")   # the metrics of a shaped target (core/score.py)
 
 
 class BakeFailed(RuntimeError):
@@ -66,6 +67,25 @@ def _axial(rec: dict, outcome: Any, ctx: dict) -> dict | None:
     phi = outcome.phi if ab is None else outcome.phi + ab
     cut, z, _lat = axial_cut(phi, setup, y_m=centre["y_um"] * 1e-6, z_range_m=(-half_z, half_z), nz=AXIAL_NZ)
     return {"trap_id": centre["id"], "z_um": [z[0] * 1e6, z[-1] * 1e6], "xz": cut}
+
+
+def _signal_history(history: list[dict]) -> list[dict]:
+    """The trace history of a shaped target: the trap metrics do not apply, so the two required slots carry the signal-region
+    error of each iteration (``rel_std`` = 100 x error, clipped to the units domain; ``uniformity`` = 1 - error)."""
+    out = []
+    for h in history:
+        err = float(h["error"])
+        out.append({"iteration": h["iteration"], "efficiency": h["efficiency"], "uniformity": max(0.0, 1.0 - err),
+                    "rel_std": min(100.0 * err, scoring.REL_STD_CAP)})
+    return out
+
+
+def _signal_flag(cid: str, outcomes: dict, ran: list[str]) -> dict:
+    """The manifest flag that states, per method, the signal-region metrics the two required slots stand for."""
+    rows = "; ".join(f"{m}: signal_rms_error_pct={outcomes[m].score['signal_rms_error_pct']:.4g}, "
+                     f"signal_efficiency={outcomes[m].score['signal_efficiency']:.4g}" for m in ran)
+    return {"case_id": cid, "flag": "shaped target: uniformity and rel_std_pct are not trap metrics here; rel_std_pct is "
+            "signal_rms_error_pct (percent, clipped at 1000) and uniformity is max(0, 1 - signal_rms_error_pct / 100). " + rows}
 
 
 def _effective(rec: dict, ran: list[str], reference: str) -> dict:
@@ -120,6 +140,11 @@ def bake_case(rec: dict, *, derived_dir: Path, manifests_dir: Path, models_dir: 
         seconds[m] = infer.time_again(eff, m, ctx, repeats=3 if m == reference else 1) if spec_live else outcomes[m].seconds
     lanes = {m: infer.lane_of(outcomes[m].spec_lane, seconds[m]) for m in ran}
 
+    forms = {m: outcomes[m].meta["form"] for m in ran if outcomes[m].meta.get("form") in ("fft", "point")}
+    if forms:
+        flags.append({"case_id": cid, "flag": "forward form chosen per method (auto: fft when every trap is on a bin with z = 0 "
+                      "and charge 0, else point): " + ", ".join(f"{m}={forms[m]}" for m in sorted(forms))})
+
     methods_manifest = {m: {"lane": lanes[m], **{k: round(float(outcomes[m].score[k]), 6) for k in SCORE_KEYS},
                             "iterations": int(outcomes[m].iterations), "converged": bool(outcomes[m].converged)}
                         for m in ran}
@@ -152,8 +177,11 @@ def bake_case(rec: dict, *, derived_dir: Path, manifests_dir: Path, models_dir: 
             case_metrics.update(m)
 
     # expected ranges
-    method_metrics = {m: {**{k: float(outcomes[m].score[k]) for k in SCORE_KEYS}, "iterations": float(outcomes[m].iterations)}
-                      for m in ran}
+    shaped = eff["target"]["kind"] == "shaped"
+    method_metrics = {m: {**{k: float(outcomes[m].score[k]) for k in SCORE_KEYS + (SIGNAL_KEYS if shaped else ())},
+                          "iterations": float(outcomes[m].iterations)} for m in ran}
+    if shaped:
+        flags.append(_signal_flag(cid, outcomes, ran))
     ranges: dict[str, list[float]] = dict(eff["expect"])
     try:
         ranges = expectations.check(cid, eff["expect"], method_metrics, reference, case_metrics)
@@ -164,21 +192,20 @@ def bake_case(rec: dict, *, derived_dir: Path, manifests_dir: Path, models_dir: 
 
     # trace
     setup = ctx["setup"]
-    shaped = eff["target"]["kind"] == "shaped"
     parts = {
         "case_id": cid,
         "grid": {"n_pix": setup.n_pix, "pad": setup.pad, "bin_um": focal_bin_m(setup) * 1e6,
                  "half_field_um": half_field_m(setup) * 1e6},
         "traps": eff["target"]["traps"] if not shaped else [],
         "shape": {"kind": eff["target"]["shape"], "mask": build.shape_mask(eff)} if shaped else None,
-        "methods": {m: {"history": outcomes[m].history,
+        "methods": {m: {"history": _signal_history(outcomes[m].history) if shaped else outcomes[m].history,
                         "final": {k: outcomes[m].score[k] for k in SCORE_KEYS},
                         "trap_intensity": outcomes[m].score["trap_intensity"]} for m in ran},
         "reference": {"method": reference, "phi": ref.phi, "intensity": scoring.intensity_map(ref.score["field"], setup),
                       "ref_level": _ref_level(eff, ref), "extent_bins": max(_extent_bins(eff), 4.0),
                       "axial": _axial(eff, ref, ctx)},
         "feedback": fb_trace, "dynamics": dyn_trace, "rearrangement": rea_trace,
-        "summary": export.summary(methods_manifest),
+        "summary": export.summary(methods_manifest, shaped=shaped),
     }
     try:
         trace, trace_bytes, squeeze = tracing.fit(parts)

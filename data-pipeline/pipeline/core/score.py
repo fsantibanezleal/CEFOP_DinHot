@@ -11,9 +11,13 @@ device and aberration, so methods are compared on one footing and a method canno
   ``I_m / w_m``, ``zero_order`` the peak fraction at bin (0, 0), ``ghost`` the power outside the trap and zero-order
   discs (``power_budget``); in a 3D case ghost is ``max(0, 1 - efficiency - zero_order)`` because the other planes' light
   is not a ghost of the focal plane.
-- Shaped target: ``efficiency`` is the power inside the shape, ``uniformity`` and ``rel_std_pct`` are taken over the
-  shape's interior (its 4-neighbour core, the edge bins carry partial values), ``zero_order`` as above and ``ghost`` the
-  power outside the signal region (shape plus margin).
+- Shaped target: ``efficiency`` is the power inside the shape, ``zero_order`` as above and ``ghost`` the power outside the
+  signal region (shape plus margin). The trap metrics (uniformity and relative standard deviation of trap intensities) do
+  not apply to a shape. The shape is judged by ``signal_rms_error_pct`` (the RMS fractional error over the measure region
+  after the scale fit, Pasienski and DeMarco 2008, Eq. 2, algorithms dossier D1.0) and ``signal_efficiency`` (power in the
+  signal region over the total). The two required slots of the contracts carry them: ``rel_std_pct`` is
+  ``signal_rms_error_pct`` (clipped to the units domain, 1000) and ``uniformity`` is ``max(0, 1 - signal_rms_error_pct /
+  100)``; the schema change that gives them names of their own is proposed in ``changes/i1.md``.
 - The aberration of the record multiplies the SLM field (added to the phase) in an ideal-device case.
 """
 from __future__ import annotations
@@ -27,6 +31,8 @@ from ..model.holo.core.forward import fft_focal_field, point_trap_fields, trap_f
 from ..model.holo.core.geometry import Setup
 from ..model.holo.core.rng import Rng
 from ..model.holo.core.traps import TrapSet
+from ..model.holo.core.types import Target
+from ..model.holo.methods.baseline import _gs
 
 FLICKER_STREAM = 0x0F11C
 
@@ -72,16 +78,22 @@ def score_traps(phi: np.ndarray, setup: Setup, device: Device | None, ab: np.nda
             [0.0] * len(raw), "field": e}
 
 
+REL_STD_CAP = 1000.0   # the units domain of rel_std_pct (core/units.py)
+
+
+def signal_error_pct(e: np.ndarray, target: Target, setup: Setup) -> float:
+    """``signal_rms_error_pct``: 100 x the RMS fractional error over the measure region (``_gs.field_error``)."""
+    return 100.0 * _gs.field_error(e, target, _gs.measure_region(setup, target))
+
+
 def score_field(phi: np.ndarray, setup: Setup, device: Device | None, shape: np.ndarray, region: np.ndarray,
-                seed: int) -> dict:
+                seed: int, target: Target) -> dict:
     e = focal_field(phi, setup, device, None, seed)
     power = np.abs(e) ** 2 / setup.n_pix**2
-    inten = intensity_map(e, setup)
-    core = inten[_interior(shape)]
-    mx, mn = float(core.max()), float(core.min())
+    err = signal_error_pct(e, target, setup)
     return {"efficiency": float(power[shape].sum()),
-            "uniformity": 1.0 - (mx - mn) / (mx + mn) if mx + mn > 0 else 0.0,
-            "rel_std_pct": 100.0 * float(core.std() / core.mean()) if core.mean() > 0 else 0.0,
+            "uniformity": max(0.0, 1.0 - err / 100.0), "rel_std_pct": min(err, REL_STD_CAP),
+            "signal_rms_error_pct": err, "signal_efficiency": float(power[region].sum()),
             "zero_order": metrics.zero_order_fraction(e, setup),
             "ghost": max(0.0, 1.0 - float(power[region].sum())), "trap_intensity": [], "field": e}
 
@@ -94,5 +106,6 @@ def score(rec: dict, phi: np.ndarray, *, setup: Setup | None = None, device: Dev
     if rec["target"]["kind"] == "traps":
         return score_traps(phi, setup, device, build.aberration_phase(rec, setup), build.traps_of(rec),
                            build.is_3d(rec), rec["seed"])
-    shape, region = shape_and_region or (build.shape_mask(rec), build.target_of(rec).mask)
-    return score_field(phi, setup, device, shape, region, rec["seed"])
+    target = build.target_of(rec)
+    shape, region = shape_and_region or (build.shape_mask(rec), target.mask)
+    return score_field(phi, setup, device, shape, region, rec["seed"], target)
