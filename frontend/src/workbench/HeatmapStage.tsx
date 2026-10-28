@@ -8,7 +8,7 @@
 // brush-to-select, a Reset zoom control, double-click and the keys 0 and Escape to reset, a described-by summary and a hidden table
 // of the values (thinned to a block grid, as the shell's charts thin to 1000 rows), and a keyboard path for every pointer action.
 // The trap editor is a mode of this component (add, move, delete), so the editor stays a control of the case on the map it edits.
-import { Stage, pick, useShellLang, type BiText } from '@fasl-work/caos-app-shell';
+import { Stage, formatNumber, pick, useShellLang, type BiText } from '@fasl-work/caos-app-shell';
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 
 export type MarkTone = 'good' | 'bad' | 'warn' | 'accent' | 'fg';
@@ -492,7 +492,7 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
             <tr key={i}>
               <th scope="row">{i * table.br}</th>
               {line.map((v, j) => (
-                <td key={j}>{Number.isNaN(v) ? '' : Number(v.toPrecision(4))}</td>
+                <td key={j}>{Number.isNaN(v) ? '' : formatNumber(v, lang, { digits: 4 })}</td>
               ))}
             </tr>
           ))}

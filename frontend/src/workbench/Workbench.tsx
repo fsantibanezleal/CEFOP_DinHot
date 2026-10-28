@@ -32,7 +32,7 @@ import { isShaped, methodLabel, replayMaps, replayResult, trapsOf, UnavailableCo
 import { useEngine, useLiveRun, useSlots } from './run';
 import { addTrap, deleteTrap, moveTrap } from './traps';
 import { TrapsGroup } from './TrapsGroup';
-import { ActionsContext, CASE_ROWS, type Actions, type EditMode } from './ui';
+import { ActionsContext, CASE_ROWS, LOADING, Pending, type Actions, type EditMode } from './ui';
 import { coeffArray, J_MAX } from './zernike';
 import './workbench.css';
 
@@ -230,7 +230,6 @@ export function Workbench() {
   const reset = () => data && (setRail(railOf(data)), setEditError(null));
 
   const metrics = sel?.result?.metrics ?? null;
-  const verdict = data && sel ? data.manifest.methods[sel.methodId] : undefined;
   const lane = sel?.maps?.lane ?? 'replay';
   const prov = data?.manifest.real_or_synthetic ?? 'synthetic';
 
@@ -440,18 +439,6 @@ export function Workbench() {
               { label: { en: 'Ghost light', es: 'Luz fantasma' }, value: metrics?.ghost ?? null, unitless: true, format: { percent: true, decimals: 1 } },
             ]}
           />
-          {verdict && (
-            <Readout
-              title={{ en: 'The bake on this method', es: 'La generación en este método' }}
-              lane="replay"
-              provenance={prov}
-              items={[
-                { label: { en: 'Iterations run', es: 'Iteraciones corridas' }, value: verdict.iterations, unitless: true, format: { decimals: 0 } },
-                { label: { en: 'Converged', es: 'Convergió' }, text: verdict.converged ? { en: 'yes', es: 'sí' } : { en: 'no', es: 'no' }, unitless: true },
-                { label: { en: 'Lane of the method', es: 'Vía del método' }, text: verdict.lane === 'live' ? { en: 'live and baked', es: 'en vivo y precalculado' } : { en: 'baked', es: 'precalculado' }, unitless: true },
-              ]}
-            />
-          )}
         </>
       ),
     });
@@ -557,9 +544,7 @@ function ContextView({ sel }: { sel: Selection | null }) {
     return (
       <>
         <ReadinessNote ids={CASE_ROWS} />
-        <p className="caos-pending" data-state="loading">
-          {t('Loading the case artifacts', 'Cargando los artefactos del caso')}
-        </p>
+        <Pending label={LOADING} />
       </>
     );
   }
