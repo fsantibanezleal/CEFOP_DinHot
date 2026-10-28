@@ -62,10 +62,11 @@ FALLBACK_TUNING: dict[str, list[dict]] = {
 
 @dataclass(frozen=True)
 class Protocol:
-    seeds: int = 20
+    seeds: int = 8
     iterations: tuple = (10, 30, 100)
-    times: tuple = (0.05, 1.0, 60.0)
+    times: tuple = (0.05, 1.0)
     cap: int = 300
+    converged_s: float = 20.0
     reduced: bool = False
 
     def grids(self) -> list[int]:
@@ -73,7 +74,7 @@ class Protocol:
 
 
 def reduced_protocol(seeds: int = 4) -> Protocol:
-    return Protocol(seeds=seeds, iterations=(2, 4, 8), times=(0.05, 0.2, 1.0), cap=12, reduced=True)
+    return Protocol(seeds=seeds, iterations=(2, 4, 8), times=(0.05, 0.2), cap=12, converged_s=1.0, reduced=True)
 
 
 def _text(en: str, es: str) -> dict:
@@ -168,13 +169,12 @@ def run_group(task: dict) -> dict:
         rec = _record(geometry, device, seed, proto.reduced)
         ctx = infer.case_context(rec)
         runs = [("iterations", n, Budget(n)) for n in proto.iterations]
-        runs += [("time", t, Budget(proto.cap, t)) for t in proto.times[:-1]]
-        runs += [("converged", float(proto.cap), Budget(proto.cap, proto.times[-1]))]
+        runs += [("time", t, Budget(proto.cap, t)) for t in proto.times]
+        runs += [("converged", float(proto.cap), Budget(proto.cap, proto.converged_s))]
         for bk, b, budget in runs:
             out = infer.run_method(rec, mid, budget=budget, extra=extra, ctx=ctx)
             per.setdefault((bk, b), []).append(out)
             if bk == "converged":
-                per.setdefault(("time", proto.times[-1]), []).append(out)
                 front = out.meta.get("pareto")
                 if seed == 0 and mid == "B5" and not device and isinstance(front, list) and front:
                     pareto = [{"lambda": float(p["lambda"]), "efficiency": round(float(p["efficiency"]), 6),
@@ -199,13 +199,18 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
                      "budgets": {"iterations": list(proto.iterations), "time_s": list(proto.times)},
                      "device": _text("Ideal, and the C08 device (4-bit phase, crosstalk sigma 1.24 q 1.80 on 3 x 3 sub-pixels, "
                                      "fill factor 0.85, flicker 0.05 rad). Every hologram is scored against its device. The "
-                                     "60 s row is the converged row (the cap is reached first). Times are wall-clock seconds "
-                                     "of the machine that ran the benchmark and differ between runs.",
+                                     "device rows run with the default parameters only (the tuning is done on the ideal "
+                                     "model) and not on the multi-plane geometries (a device model is read at one focal "
+                                     "plane). The converged row runs to 300 iterations or 20 s. Times are wall-clock "
+                                     "seconds of the machine that ran the benchmark, under shared load, and differ "
+                                     "between runs.",
                                      "Ideal, y el dispositivo C08 (fase de 4 bits, diafonía sigma 1,24 q 1,80 en 3 x 3 "
                                      "subpíxeles, factor de llenado 0,85, parpadeo 0,05 rad). Cada holograma se evalúa contra "
-                                     "su dispositivo. La fila de 60 s es la fila convergida (se alcanza antes el tope). Los "
-                                     "tiempos son segundos de reloj de la máquina que ejecutó el benchmark y difieren entre "
-                                     "ejecuciones.")},
+                                     "su dispositivo. Las filas con dispositivo usan solo los parámetros por defecto (el ajuste "
+                                     "se hace sobre el modelo ideal) y no se ejecutan en las geometrías de varios planos (el "
+                                     "modelo del dispositivo se lee en un solo plano focal). La fila convergida corre hasta "
+                                     "300 iteraciones o 20 s. Los tiempos son segundos de reloj de la máquina que ejecutó el "
+                                     "benchmark, con carga compartida, y difieren entre ejecuciones.")},
         "geometries": [{"id": g, "name": G.GEOMETRIES[g][0], "n_traps": G.n_traps(g, proto.reduced), "dims": G.GEOMETRIES[g][2]}
                        for g in G.GEOMETRIES],
         "rows": sorted(rows, key=_order), "pareto": sorted(pareto, key=lambda p: p["geometry"]),
@@ -250,15 +255,14 @@ def run(derived_root: str | Path, *, seeds: int = 20, workers: int = 12, reduced
             if why is not None:
                 skipped.append({"method": mid, "geometry": geo, "reason": why})
                 continue
-            if device_skip_reason(geo):
-                skipped.append({"method": mid, "geometry": geo, "reason": device_skip_reason(geo)})
             for device in (False, True):
                 if device and device_skip_reason(geo):
                     continue
                 dkey = "device" if device else "ideal"
                 if (mid, geo, dkey, "default") not in done:
                     tasks.append({**base, "method": mid, "geometry": geo, "device": device, "params": "default"})
-                if tuning_grid(mid) is not None and (mid, geo, dkey, "tuned") not in done:
+                # tuned parameters are chosen on the ideal model, so they run on the ideal model only (protocol text)
+                if not device and tuning_grid(mid) is not None and (mid, geo, dkey, "tuned") not in done:
                     tasks.append({**base, "method": mid, "geometry": geo, "device": device, "params": "tuned"})
 
     def flush() -> dict:

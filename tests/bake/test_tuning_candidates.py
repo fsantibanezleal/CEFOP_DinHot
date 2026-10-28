@@ -24,6 +24,7 @@ CANDIDATES = [(mid, kw) for mid, grid in sorted(protocol.FALLBACK_TUNING.items()
 def test_every_fallback_tuning_candidate_runs(mid, kw):
     setup = Setup(wavelength_m=1.064e-6, focal_m=0.2, na=0.5, n_imm=1.0, n_pix=64, pitch_m=12.5e-6, pad=2,
                   beam="flat", waist_frac=1.0)
+    methods.reload()  # the real methods: other bake tests reload the registry with a planted package
     method = methods.get(mid)
     if "traps" in method.spec.targets:
         traps = snap_to_bins(setup, square_grid(3, 3, spacing_um=8 * 1.064e-6 * 0.2 / (128 * 12.5e-6) * 1e6))
