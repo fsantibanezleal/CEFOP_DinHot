@@ -32,7 +32,7 @@ import { isShaped, methodLabel, replayMaps, replayResult, trapsOf, UnavailableCo
 import { paramsFor, useEngine, useGpuProbe, useLiveRun, useSlots, type GpuProbe } from './run';
 import { addTrap, deleteTrap, moveTrap } from './traps';
 import { TrapsGroup } from './TrapsGroup';
-import { ActionsContext, CASE_ROWS, LOADING, Pending, type Actions, type EditMode } from './ui';
+import { ActionsContext, CASE_ROWS, LOADING, localizeDecimals, Pending, type Actions, type EditMode } from './ui';
 import { coeffArray, J_MAX } from './zernike';
 import './workbench.css';
 
@@ -268,12 +268,12 @@ export function Workbench() {
 
   const rails: RailSection[] = [];
   if (unavailable && !data) {
-    rails.push({ id: 'unavailable', label: { en: 'Case', es: 'Caso' }, content: <p className="caos-pending" data-state="unavailable">{unavailable[lang]}</p> });
+    rails.push({ id: 'unavailable', label: { en: 'Case', es: 'Caso' }, content: <p className="caos-pending" data-state="unavailable">{localizeDecimals(unavailable[lang], lang)}</p> });
   } else if (r && sel && data && params) {
     const n = traps.length;
     rails.push({
       id: 'run',
-      label: { en: 'Run', es: 'Corrida' },
+      label: { en: 'Run', es: 'Motor' },
       content: (
         <>
           {params.device ? (
@@ -405,7 +405,7 @@ export function Workbench() {
     });
     rails.push({
       id: 'edit',
-      label: { en: 'Edit', es: 'Edición' },
+      label: { en: 'Edit', es: 'Editar' },
       content: (
         <>
           {shaped ? (
@@ -413,33 +413,30 @@ export function Workbench() {
           ) : (
             <ChipGroup
               id="edit-mode"
-              label={{ en: 'Trap editor', es: 'Editor de trampas' }}
+              label={{ en: `Trap editor: ${n} traps${edited ? ' (edited)' : ''}, field ±${formatNumber(halfField, 'en', { decimals: 1 })} um`, es: `Editor: ${n} trampas${edited ? ' (editadas)' : ''}, campo ±${formatNumber(halfField, 'es', { decimals: 1 })} um` }}
               value={r.mode}
               onChange={(v) => (setEditError(null), patch({ mode: v as EditMode }))}
               options={[
                 { id: 'inspect', label: { en: 'Select', es: 'Elegir' }, hint: { en: 'Click a trap to select it; drag a box to select a region.', es: 'Pulse una trampa para elegirla; arrastre un recuadro para elegir una región.' } },
-                { id: 'add', label: { en: 'Add', es: 'Agregar' }, hint: { en: 'Click the focal map to add a trap on the focal plane.', es: 'Pulse el mapa focal para agregar una trampa en el plano focal.' } },
+                { id: 'add', label: { en: 'Add', es: 'Añadir' }, hint: { en: 'Click the focal map to add a trap on the focal plane.', es: 'Pulse el mapa focal para agregar una trampa en el plano focal.' } },
                 { id: 'move', label: { en: 'Move', es: 'Mover' }, hint: { en: 'Drag a trap on the focal map.', es: 'Arrastre una trampa en el mapa focal.' } },
                 { id: 'delete', label: { en: 'Delete', es: 'Borrar' }, hint: { en: 'Click a trap to remove it.', es: 'Pulse una trampa para quitarla.' } },
               ]}
             />
           )}
-          <p className="caos-plot-note" data-trap-count={n}>
-            {lang === 'es' ? `${n} trampas${edited ? ' (editadas)' : ''}; campo de visión de ±${formatNumber(halfField, 'es', { decimals: 1 })} um.` : `${n} traps${edited ? ' (edited)' : ''}; field of view ±${formatNumber(halfField, 'en', { decimals: 1 })} um.`}
-          </p>
           {n > 0 && (
             <Knob
               id="trap"
-              label={{ en: 'Selected trap', es: 'Trampa elegida' }}
+              label={{ en: 'Selected trap', es: 'Trampa' }}
               hint={{ en: 'The trap the profiles, the axial cut and the 3D view follow; clicking a trap on the map sets it too.', es: 'La trampa que siguen los perfiles, el corte axial y la vista 3D; pulsar una trampa en el mapa también la fija.' }}
-              value={Math.max(0, traps.findIndex((t) => t.id === r.trapId))}
-              min={0}
-              max={Math.max(0, n - 1)}
+              value={Math.max(0, traps.findIndex((t) => t.id === r.trapId)) + 1}
+              min={1}
+              max={Math.max(1, n)}
               step={1}
-              unit={{ en: 'position in the list', es: 'posición en la lista' }}
+              unit={{ en: `of ${n}`, es: `de ${n}` }}
               format={{ decimals: 0 }}
               disabled={n < 2}
-              onChange={(v) => patch({ trapId: traps[Math.round(v)]?.id ?? null })}
+              onChange={(v) => patch({ trapId: traps[Math.round(v) - 1]?.id ?? null })}
             />
           )}
           {data.trace.feedback && (
@@ -501,8 +498,8 @@ export function Workbench() {
       label: { en: id, es: id },
       lane: lane1,
       note: {
-        en: `${methodLabel(id).en}. ${slotNote ? slotNote.en : lane1 === 'live' ? 'Computed live in your browser.' : 'Replayed from the bake.'}`,
-        es: `${methodLabel(id).es}. ${slotNote ? slotNote.es : lane1 === 'live' ? 'Calculado en vivo en su navegador.' : 'Reproducido de la generación.'}`,
+        en: slotNote ? `${methodLabel(id).en}. ${slotNote.en}` : methodLabel(id).en,
+        es: slotNote ? `${methodLabel(id).es}. ${slotNote.es}` : methodLabel(id).es,
       },
     };
   };
