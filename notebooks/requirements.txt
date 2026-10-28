@@ -1,11 +1,14 @@
 # The notebook environment (.venv-notebooks, built by scripts/setup.sh --notebooks or scripts/setup.ps1 -Notebooks).
 # Exact pins only (scripts/check_tech_matrix.py reads this file; scripts/check_notebooks.py holds each notebook's
-# `caos.packages` to these lines). A product lists the PyPI packages of its own methods first; the example has none of
-# its own (its method lives in data-pipeline/pipeline/) and consumes numpy at the pipeline's pin.
+# `caos.packages` to these lines). DinHot publishes no package of its own: its methods live in data-pipeline/pipeline/
+# and the notebooks call them by path; numpy is at the pipeline's pin.
 numpy==2.4.6
 matplotlib==3.11.2
-# the pinned reference implementation of the level 3 example notebook (scipy.integrate.solve_ivp, RK45 and DOP853); a product pins its own
 scipy==1.18.1
+# the pinned reference implementation of the level 3 notebooks: slmsuite's weighted Gerchberg-Saxton (MIT)
+slmsuite==0.5.0
+# the runtime of the learned models' notebooks (the same ONNX files the web runs)
+onnxruntime==1.31.1
 # the runtime that executes the notebooks (scripts/run_notebooks.py)
 nbclient==0.11.0
 nbformat==5.11.1
