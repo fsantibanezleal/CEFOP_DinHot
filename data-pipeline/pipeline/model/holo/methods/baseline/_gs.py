@@ -19,7 +19,7 @@ import time
 import numpy as np
 
 from ...core.forward import fft_focal_field, fft_inverse, point_trap_backproject, point_trap_fields
-from ...core.geometry import Setup, focal_bin_m
+from ...core.geometry import Setup, focal_bin_m, slm_grid
 from ...core.rng import Rng
 from ...core.traps import TrapSet
 from ...core.types import Budget, Result, Target
@@ -118,19 +118,40 @@ def run_traps(
 
 # ---- shaped targets (FFT form, mixed-region amplitude freedom) ----
 
-def field_error(e: np.ndarray, target: Target) -> float:
-    r"""Signal-region error $\eta = \sqrt{\langle ((s I - T^2)/T^2)^2\rangle}$ over the measure region ($T > 0$ in the mask).
+def measure_region(setup: Setup, target: Target) -> np.ndarray:
+    """Pixels where the shape is evaluated: ``T > 0`` inside the signal mask, eroded by one resolution cell (``pad`` bins).
 
-    $s = \sum T^2 / \sum I$ rescales the intensity to the target (Pasienski and DeMarco 2008, Eq. (2)).
+    The zero-padded transform resolves a cell of ``pad`` bins (``lambda f / (n_pix p)``); a pixel closer to the shape edge
+    than that cannot reach its target value for any hologram, so it is left out of the error (the dossier does not
+    define the measure region; this is DinHot's choice). ``ValueError`` when the shape is thinner than the erosion.
     """
     region = target.mask & (target.amplitude > 0)
+    r = int(setup.pad)
+    eroded = region.copy()
+    for dy in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            eroded &= np.roll(np.roll(region, dy, 0), dx, 1)
+    if not eroded.any():
+        raise ValueError(f"the shape is thinner than the resolution cell ({r} bins on each side of every pixel)")
+    return eroded
+
+
+def field_error(e: np.ndarray, target: Target, region: np.ndarray) -> float:
+    r"""Signal-region error eta = sqrt(mean(((s I - T^2) / T^2)^2)) over the measure region.
+
+    s = sum T^2 / sum I rescales the intensity to the target (Pasienski and DeMarco 2008, Eq. (2)).
+    """
     t2 = target.amplitude[region] ** 2
     inten = np.abs(e[region]) ** 2
     s = t2.sum() / max(inten.sum(), 1e-300)
     return float(np.sqrt(np.mean(((s * inten - t2) / t2) ** 2)))
 
 
-def run_field(mid: str, setup: Setup, target: Target, budget: Budget, rng: Rng, init, mixing: float) -> Result:
+START_WAVES = 20.0
+
+
+def run_field(mid: str, setup: Setup, target: Target, budget: Budget, rng: Rng, init, mixing: float,
+              start_waves: float | None = START_WAVES) -> Result:
     r"""MRAF iteration (Pasienski and DeMarco 2008, Eq. (1)); ``mixing = 1`` reduces to GS (noise region forced to zero).
 
     $G = \{ m\, T|_{SR} + (1-m)\, |E|\,|_{NR}\}\, e^{i \arg E}$, then $\phi = \arg \mathcal F^{-1} G$ and the SLM amplitude is
@@ -147,12 +168,12 @@ def run_field(mid: str, setup: Setup, target: Target, budget: Budget, rng: Rng, 
         raise ValueError("the target amplitude is zero in the whole signal region")
     t = t * np.sqrt(setup.n_pix**2 / np.sum(t**2))
     n_pix2 = float(setup.n_pix**2)
-    phi = start_phase_field(setup, rng, init)
+    phi = start_phase_field(setup, rng, init, start_waves)
     e = fft_focal_field(phi, setup)
     t0 = time.perf_counter()
     history: list = []
     k = 0
-    region = sig & (target.amplitude > 0)
+    region = measure_region(setup, target)
     t2 = (t[region]) ** 2
     while True:
         k += 1
@@ -166,18 +187,22 @@ def run_field(mid: str, setup: Setup, target: Target, budget: Budget, rng: Rng, 
             "iteration": k, "efficiency": float(np.sum(np.abs(e[sig]) ** 2) / n_pix2),
             "uniformity": float(1.0 - (ratio.max() - ratio.min()) / (ratio.max() + ratio.min())),
             "rel_std": float(100.0 * ratio.std() / mean), "time_s": time.perf_counter() - t0,
-            "error": field_error(e, target),
+            "error": field_error(e, target, region),
         })
         if k >= budget.iterations or (budget.time_s is not None and history[-1]["time_s"] >= budget.time_s):
             break
     return Result(phi=phi, history=history, fields=e, meta={"method": mid, "mixing": mixing, "iterations": k})
 
 
-def start_phase_field(setup: Setup, rng: Rng, init) -> np.ndarray:
-    """``init`` or a uniform random phase through ``rng`` (the start of the shaped-target iterations)."""
-    if init is None:
+def start_phase_field(setup: Setup, rng: Rng, init, start_waves: float | None) -> np.ndarray:
+    """``init`` if given; else a Fresnel-lens phase of ``start_waves`` waves at the aperture edge (a smooth start, no
+    randomness: the focal field starts as a broad spot, not as speckle); ``start_waves=None``: uniform random phase."""
+    if init is not None:
+        phi = np.asarray(init, dtype=np.float64)
+        if phi.shape != (setup.n_pix, setup.n_pix) or not np.all(np.isfinite(phi)):
+            raise ValueError(f"init must be a finite array of shape {(setup.n_pix, setup.n_pix)}")
+        return phi.copy()
+    if start_waves is None:
         return rng.phases(setup.n_pix**2).reshape(setup.n_pix, setup.n_pix)
-    phi = np.asarray(init, dtype=np.float64)
-    if phi.shape != (setup.n_pix, setup.n_pix) or not np.all(np.isfinite(phi)):
-        raise ValueError(f"init must be a finite array of shape {(setup.n_pix, setup.n_pix)}")
-    return phi.copy()
+    x, y = slm_grid(setup)
+    return 2.0 * np.pi * start_waves * (x**2 + y**2) / (setup.n_pix * setup.pitch_m / 2.0) ** 2
