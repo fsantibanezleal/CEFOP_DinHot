@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "params-record.schema.json",
+  "title": "ParamsRecord",
+  "description": "Contract 1 (ingestion), catalog row params-record 1.0.0: one operating point as accepted by data-pipeline/pipeline/io/contract.py validate_rows. The raw source is a table (CSV) with the columns case_id, beta, gamma, N, I0 and an optional days; values arrive as text and are parsed, never coerced: a row that fails a rule below is rejected with a reason, and a row with R0 = beta / gamma above 20 is accepted and flagged. Cross-field rule the schema cannot state: I0 <= N. EXAMPLE domain: an SIR epidemic; a product replaces the fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["case_id", "beta", "gamma", "N", "I0", "days"],
+  "properties": {
+    "case_id": {"type": "string", "minLength": 1, "description": "The case identifier."},
+    "beta": {"type": "number", "minimum": 1e-6, "maximum": 5.0, "description": "Effective contact rate, 1/day."},
+    "gamma": {"type": "number", "minimum": 1e-6, "maximum": 2.0, "description": "Recovery rate, 1/day."},
+    "N": {"type": "number", "minimum": 1.0, "maximum": 1e9, "description": "Population, individuals."},
+    "I0": {"type": "number", "minimum": 0.0, "maximum": 1e9, "description": "Initial infected, individuals; at most N."},
+    "days": {"type": "integer", "minimum": 1, "description": "Horizon in days; 160 when the source leaves it empty."}
+  }
+}

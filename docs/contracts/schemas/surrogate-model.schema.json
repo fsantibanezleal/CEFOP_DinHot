@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "surrogate-model.schema.json",
+  "title": "SurrogateModel",
+  "description": "Model slot, catalog row surrogate-model 1.0.0: the released surrogate bundle models/surrogate.json written by data-pipeline/pipeline/stages/train.py and read by stages/evaluate.py. Slot input: r0 = beta / gamma (dimensionless, > 0). Slot output: the peak infected fraction peak_I / N, in [0, 1] (the predictor clamps). When no valid bundle exists the baseline data-pipeline/pipeline/model/baseline.py answers: 1 - (1 + ln r0) / r0 for r0 > 1, else 0 (the SIR peak with S0 = 1 and I0 near 0). EXAMPLE: a real product's bundle is its exported model (ONNX, say) plus a card like this one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "basis", "coeffs"],
+  "properties": {
+    "kind": {"const": "linear-lstsq"},
+    "basis": {"const": ["1", "r0", "ln(r0)", "1/r0"], "description": "The design-matrix columns, in order."},
+    "coeffs": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}, "description": "One coefficient per basis column."}
+  }
+}

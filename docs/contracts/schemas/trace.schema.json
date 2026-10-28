@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trace.schema.json",
+  "title": "Trace",
+  "description": "Contract 2 (artifact), catalog row trace 1.0.0: the compact replay artifact of one case, written by data-pipeline/pipeline/core/trace.py to data/derived/<case>/trace.json. The trajectory is decimated to at most 200 points; t, S, I and R have the same length (a rule the schema cannot state; the producer test checks it).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "case_id", "t", "S", "I", "R", "summary"],
+  "properties": {
+    "schema": {"const": "example.trace/v1"},
+    "case_id": {"type": "string", "minLength": 1},
+    "t": {"$ref": "#/$defs/series", "description": "Time, days."},
+    "S": {"$ref": "#/$defs/series", "description": "Susceptible, individuals."},
+    "I": {"$ref": "#/$defs/series", "description": "Infected, individuals."},
+    "R": {"$ref": "#/$defs/series", "description": "Recovered, individuals."},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["peak_I", "t_peak", "attack_rate"],
+      "properties": {
+        "peak_I": {"type": "number", "minimum": 0, "description": "Largest infected count, individuals."},
+        "t_peak": {"type": "number", "minimum": 0, "description": "Time of the peak, days."},
+        "attack_rate": {"type": "number", "minimum": 0, "maximum": 1, "description": "Share of the population ever infected."}
+      }
+    }
+  },
+  "$defs": {
+    "series": {"type": "array", "minItems": 1, "maxItems": 200, "items": {"type": "number"}}
+  }
+}

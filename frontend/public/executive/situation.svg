@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-label="Four roles each hold part of the picture and the tools they use look back or only days ahead">
+<title>Four roles each hold part of the picture and the tools they use look back or only days ahead</title>
+<rect x="1" y="1" width="798" height="478" rx="12" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="10" y="10" width="330" height="166" rx="10" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="28" y="118" width="112" height="9" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 38 127 L 38 152 M 130 127 L 130 152" fill="none" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="460" y="10" width="330" height="166" rx="10" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="478" y="118" width="112" height="9" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 488 127 L 488 152 M 580 127 L 580 152" fill="none" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="10" y="314" width="330" height="166" rx="10" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="28" y="422" width="112" height="9" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 38 431 L 38 456 M 130 431 L 130 456" fill="none" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="460" y="314" width="330" height="166" rx="10" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="478" y="422" width="112" height="9" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 488 431 L 488 456 M 580 431 L 580 456" fill="none" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="344" y="232" width="112" height="12" rx="3" fill="var(--color-border)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="352" y="244" width="96" height="58" rx="4" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="358" y="252" width="24" height="20" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1.2"/>
+<circle cx="370" cy="262" r="4.5" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="388" y="252" width="24" height="20" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1.2"/>
+<circle cx="400" cy="262" r="4.5" fill="var(--color-bad)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="418" y="252" width="24" height="20" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1.2"/>
+<circle cx="430" cy="262" r="4.5" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="388" y="280" width="24" height="22" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 340 100 L 372 236" fill="none" stroke="var(--color-fg-faint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
+<path d="M 460 100 L 428 236" fill="none" stroke="var(--color-fg-faint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
+<path d="M 340 392 L 372 300" fill="none" stroke="var(--color-fg-faint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
+<path d="M 460 392 L 428 300" fill="none" stroke="var(--color-fg-faint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
+<circle cx="358" cy="168" r="11" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<path d="M 353 163 L 363 173 M 363 163 L 353 173" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="442" cy="168" r="11" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<path d="M 437 163 L 447 173 M 447 163 L 437 173" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="358" cy="346" r="11" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<path d="M 353 341 L 363 351 M 363 341 L 353 351" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="442" cy="346" r="11" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<path d="M 437 341 L 447 351 M 447 341 L 437 351" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 354 98 Q 340 98 340 82 Q 340 66 360 66 Q 362 48 386 50 Q 406 42 418 62 Q 444 60 446 82 Q 448 98 430 98 Z" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 356 112 L 364 112 M 360 108 L 360 116" fill="none" stroke="var(--color-accent-2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 390 120 L 398 120 M 394 116 L 394 124" fill="none" stroke="var(--color-accent-2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 424 110 L 432 110 M 428 106 L 428 114" fill="none" stroke="var(--color-accent-2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 57.9 118.0 L 59.2 88.3 Q 70.0 78.8 80.8 88.3 L 82.2 118.0 Z" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="70" cy="70.8" r="9.5" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 59.2 89.7 L 52.5 107.2 M 80.8 89.7 L 87.5 107.2" fill="none" stroke="var(--color-fg-subtle)" stroke-width="4.050000000000001" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="236" y="58" width="40" height="70" rx="6" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<circle cx="256" cy="74" r="8" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1.2"/>
+<circle cx="256" cy="93" r="8" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1.2"/>
+<circle cx="256" cy="112" r="8" fill="var(--color-bad)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 158 84 L 218 84 M 158 98 L 210 98 M 158 112 L 200 112" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 507.9 118.0 L 509.2 88.3 Q 520.0 78.8 530.8 88.3 L 532.1 118.0 Z" fill="var(--color-accent-2)" stroke="var(--color-border)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="520" cy="70.8" r="9.5" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 509.2 89.7 L 502.4 107.2 M 530.8 89.7 L 537.5 107.2" fill="none" stroke="var(--color-accent-2)" stroke-width="4.050000000000001" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="600" y="56" width="64" height="72" rx="4" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<path d="M 610 72 L 654 72 M 610 84 L 654 84 M 610 96 L 644 96 M 610 108 L 650 108" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="716" cy="92" r="22" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2.4"/>
+<path d="M 716 92 L 716 78 M 716 92 L 704 98" fill="none" stroke="var(--color-fg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 690 62 Q 682 54 672 56 M 672 56 L 678 48 M 672 56 L 680 62" fill="none" stroke="var(--color-bad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 57.9 422.0 L 59.2 392.3 Q 70.0 382.9 80.8 392.3 L 82.2 422.0 Z" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="70" cy="374.8" r="9.5" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 80.8 393.6 L 99.7 389.6 M 59.2 393.6 L 52.5 411.2" fill="none" stroke="var(--color-accent)" stroke-width="4.050000000000001" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="150" y="360" width="150" height="54" rx="5" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<circle cx="174" cy="384" r="10" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 174 368 L 174 364 M 174 400 L 174 404 M 158 384 L 154 384 M 190 384 L 194 384" fill="none" stroke="var(--color-warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 200 376 L 288 376 M 200 388 L 280 388 M 200 400 L 262 400" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 507.9 422.0 L 509.2 392.3 Q 520.0 382.9 530.8 392.3 L 532.1 422.0 Z" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="520" cy="374.8" r="9.5" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 509.2 393.6 L 502.4 411.2 M 530.8 393.6 L 537.5 411.2" fill="none" stroke="var(--color-accent)" stroke-width="4.050000000000001" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="596" y="356" width="166" height="58" rx="5" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="604" y="364" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="629" y="364" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="654" y="364" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="679" y="364" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="704" y="364" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="729" y="364" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="604" y="380" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="629" y="380" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="654" y="380" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="679" y="380" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="704" y="380" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="729" y="380" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="604" y="396" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="629" y="396" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="654" y="396" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="679" y="396" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="704" y="396" width="21" height="12" rx="2" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="729" y="396" width="21" height="12" rx="2" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="27" y="21" width="166" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="110" y="46" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Executives</text>
+<text data-lang="es" x="110" y="46" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Dirección</text>
+<rect x="466" y="21" width="207" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="570" y="46" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Public health</text>
+<text data-lang="es" x="570" y="46" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Salud pública</text>
+<rect x="12" y="325" width="248" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="136" y="350" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Bed managers</text>
+<text data-lang="es" x="136" y="350" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Gestión de camas</text>
+<rect x="478" y="325" width="288" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="622" y="350" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Nursing leaders</text>
+<text data-lang="es" x="622" y="350" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Jefes de enfermería</text>
+<rect x="31" y="135" width="288" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="175" y="160" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Limit: warns late</text>
+<text data-lang="es" x="175" y="160" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Límite: avisa tarde</text>
+<rect x="474" y="135" width="302" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="625" y="160" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Reports look back</text>
+<text data-lang="es" x="625" y="160" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Informes miran atrás</text>
+<rect x="40" y="439" width="261" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="170" y="464" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Whiteboard: today</text>
+<text data-lang="es" x="170" y="464" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Pizarra: solo hoy</text>
+<rect x="474" y="439" width="302" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="625" y="464" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Rosters set early</text>
+<text data-lang="es" x="625" y="464" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Turnos fijados antes</text>
+<rect x="256" y="189" width="288" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-warn)" stroke-width="2"/>
+<text data-lang="en" x="400" y="214" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Regional forecast</text>
+<text data-lang="es" x="400" y="214" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Pronóstico regional</text>
+</svg>

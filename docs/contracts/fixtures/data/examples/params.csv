@@ -1,0 +1,3 @@
+case_id,beta,gamma,N,I0,days
+FX01_fixture,0.5,0.25,1000,10,6
+FX02_fixture,0.2,0.25,1000,10,

@@ -1,0 +1,119 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "Product dormant API",
+    "version": "1.0.0",
+    "summary": "Catalog row api 1.0.0: the read-only API of app/ (ADR-0057), dormant until the API lane is activated.",
+    "description": "Serves the committed documents of data/derived unchanged, GET only. A document that does not exist yet is a declared state, never an empty body that looks like data: the API answers 503 with the state missing and its reason. The schemas are the catalog's schema files; this document and docs/contracts/schemas/ are the single source the TypeScript types are generated from (frontend/src/lib/contract.gen.ts)."
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "health",
+        "summary": "Liveness.",
+        "responses": {"200": {"description": "The process answers.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Health"}}}}}
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "healthz",
+        "summary": "Liveness (alias of /health).",
+        "responses": {"200": {"description": "The process answers.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Health"}}}}}
+      }
+    },
+    "/api/cases": {
+      "get": {
+        "operationId": "listCases",
+        "summary": "The case index (catalog row case-index).",
+        "responses": {
+          "200": {"description": "The committed index.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaseIndex"}}}},
+          "503": {"$ref": "#/components/responses/Unavailable"}
+        }
+      }
+    },
+    "/api/cases/{case_id}/manifest": {
+      "get": {
+        "operationId": "getManifest",
+        "summary": "One case manifest (catalog row case-manifest).",
+        "parameters": [{"name": "case_id", "in": "path", "required": true, "schema": {"type": "string", "pattern": "^[^/\\\\.][^/\\\\]*$"}}],
+        "responses": {
+          "200": {"description": "The committed manifest.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaseManifest"}}}},
+          "404": {"$ref": "#/components/responses/NotFound"},
+          "503": {"$ref": "#/components/responses/Unavailable"}
+        }
+      }
+    },
+    "/api/artifacts/{rel_path}": {
+      "get": {
+        "operationId": "getArtifact",
+        "summary": "An artifact a manifest names (catalog row trace), by its path under data/derived.",
+        "description": "rel_path may contain slashes (for example EX02_epidemic/trace.json); only a path an indexed manifest names is served; anything else is not found, and an artifact that cannot be read is unavailable.",
+        "parameters": [{"name": "rel_path", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {
+          "200": {"description": "The committed artifact.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Trace"}}}},
+          "404": {"$ref": "#/components/responses/NotFound"},
+          "503": {"$ref": "#/components/responses/Unavailable"}
+        }
+      }
+    },
+    "/api/readiness": {
+      "get": {
+        "operationId": "getReadiness",
+        "summary": "What is real in this build (catalog row readiness).",
+        "description": "The committed readiness document, with the api row set to status real, state available and provenance real, because the API answering is the evidence.",
+        "responses": {
+          "200": {"description": "The readiness document.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Readiness"}}}},
+          "503": {"$ref": "#/components/responses/Unavailable"}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ParamsRecord": {"$ref": "./schemas/params-record.schema.json"},
+      "CaseIndex": {"$ref": "./schemas/case-index.schema.json"},
+      "CaseManifest": {"$ref": "./schemas/case-manifest.schema.json"},
+      "Trace": {"$ref": "./schemas/trace.schema.json"},
+      "SurrogateModel": {"$ref": "./schemas/surrogate-model.schema.json"},
+      "Readiness": {"$ref": "./schemas/readiness.schema.json"},
+      "Health": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status"],
+        "properties": {"status": {"const": "ok"}}
+      },
+      "NotFoundBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["detail"],
+        "properties": {"detail": {"type": "string", "minLength": 1}}
+      },
+      "UnavailableBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["detail"],
+        "properties": {
+          "detail": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["state", "reason"],
+            "properties": {
+              "state": {"const": "missing"},
+              "reason": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["en", "es"],
+                "properties": {"en": {"type": "string", "minLength": 1}, "es": {"type": "string", "minLength": 1}}
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "NotFound": {"description": "No such case or artifact.", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/NotFoundBody"}}}},
+      "Unavailable": {"description": "The document does not exist in this build yet (state missing, with the reason).", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/UnavailableBody"}}}}
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "case-manifest.schema.json",
+  "title": "CaseManifest",
+  "description": "Contract 2 (artifact), catalog row case-manifest 4.0.0: the authoritative record of one baked case, written by data-pipeline/pipeline/core/manifest.py build_case_manifest to data/derived/manifests/<case>.json. A pure function of (params, seed): no wall-clock time. Rules the schema cannot state, checked by scripts/check_artifacts.py: artifact.bytes equals the size of the file at artifact.path, and lane equals gate.lane.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "case_id", "title", "category", "real_or_synthetic", "expected_band", "engine", "params", "seed", "artifact", "lane", "gate", "flags", "metrics", "models", "expect"],
+  "properties": {
+    "schema": {"const": "example.manifest/v4"},
+    "case_id": {"type": "string", "minLength": 1},
+    "title": {"$ref": "#/$defs/text"},
+    "category": {"$ref": "#/$defs/text"},
+    "real_or_synthetic": {"enum": ["real", "synthetic"]},
+    "expected_band": {"$ref": "#/$defs/text"},
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package", "version", "model"],
+      "properties": {
+        "package": {"type": "string"},
+        "version": {"$ref": "#/$defs/version"},
+        "model": {"type": "string"}
+      }
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["beta", "gamma", "N", "I0", "days"],
+      "properties": {
+        "beta": {"type": "number"},
+        "gamma": {"type": "number"},
+        "N": {"type": "number"},
+        "I0": {"type": "number"},
+        "days": {"type": "integer", "minimum": 1}
+      }
+    },
+    "seed": {"type": "integer"},
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "format", "trace_schema", "bytes"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^(?!/)(?!.*\\.\\.)[^\\\\]+\\.json$", "description": "Relative to data/derived; no leading slash, no '..', no backslash."},
+        "format": {"const": "json"},
+        "trace_schema": {"const": "example.trace/v1"},
+        "bytes": {"type": "integer", "minimum": 1}
+      }
+    },
+    "lane": {"enum": ["live", "precompute"]},
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane", "pure_python", "wheels", "trace_bytes", "run_ms_budget", "trace_bytes_budget", "reasons"],
+      "properties": {
+        "lane": {"enum": ["live", "precompute"]},
+        "pure_python": {"type": "boolean"},
+        "wheels": {"type": "array", "items": {"type": "string"}},
+        "trace_bytes": {"type": "integer", "minimum": 1},
+        "run_ms_budget": {"type": "number", "exclusiveMinimum": 0},
+        "trace_bytes_budget": {"type": "integer", "minimum": 1},
+        "reasons": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "flags": {
+      "type": "array",
+      "description": "The rows contract 1 accepted with a flag.",
+      "items": {"type": "object", "additionalProperties": {"type": "string"}}
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Evaluation metrics of this bake (the surrogate model slot's held-out error, among others).",
+      "additionalProperties": {"type": "number"}
+    },
+    "models": {
+      "type": "object",
+      "description": "Per model slot (catalog row id), what produced this bake's metrics: the released bundle (real) or the slot's baseline.",
+      "propertyNames": {"pattern": "^[a-z0-9][a-z0-9-]*$"},
+      "additionalProperties": {"enum": ["real", "baseline"]}
+    },
+    "expect": {
+      "type": "object",
+      "description": "The checked expectation of the case: [low, high] per result metric.",
+      "additionalProperties": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "minItems": 2, "maxItems": 2}
+    }
+  },
+  "$defs": {
+    "text": {
+      "type": "object",
+      "description": "Every reader-facing string is bilingual at the source.",
+      "additionalProperties": false,
+      "required": ["en", "es"],
+      "properties": {"en": {"type": "string", "minLength": 1}, "es": {"type": "string", "minLength": 1}}
+    },
+    "version": {"type": "string", "pattern": "^\\d+\\.\\d{2}\\.\\d{3}$", "description": "The product version format X.XX.XXX."}
+  }
+}

@@ -1,0 +1,5 @@
+case_id,beta,gamma,N,I0,days
+EX02_epidemic,0.55,0.20,100000,50,160
+EX01_subcritical,0.18,0.25,100000,50,160
+bad_negbeta,-0.5,0.20,100000,50,160
+bad_i0_gt_N,0.50,0.20,100,500,160

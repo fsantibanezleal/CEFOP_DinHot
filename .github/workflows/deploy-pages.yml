@@ -1,0 +1,84 @@
+name: Deploy Pages
+
+# T9: the deploy runs only after CI succeeded on the same commit of main, builds exactly that commit, publishes the
+# committed artifacts (never retrains or rebakes, ADR-0069 and ADR-0074), and then checks the live site: every route
+# answers with the app, a missing file answers 404, and build.json names the commit that was pushed.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash -eo pipefail {0}
+
+jobs:
+  build:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GITHUB_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: The committed artifacts are consistent, and Pages is this product's one deploy place
+        run: |
+          python scripts/check_artifacts.py
+          python scripts/check_deploy_place.py
+          test "$(tr -d '[:space:]' < deploy/TARGET)" = pages
+      - name: Base path (a custom domain serves from /, a project page from /<repository>/)
+        run: |
+          if [ -f frontend/public/CNAME ]; then echo "VITE_BASE=/" >> "$GITHUB_ENV"
+          else echo "VITE_BASE=/${{ github.event.repository.name }}/" >> "$GITHUB_ENV"; fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build the site from the committed artifacts
+        run: cd frontend && npm ci && npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  live:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: The live site is this build
+        run: python scripts/check_live.py --url "${{ needs.deploy.outputs.page_url }}" --sha "${{ github.event.workflow_run.head_sha }}"
