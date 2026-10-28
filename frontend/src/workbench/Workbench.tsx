@@ -317,16 +317,61 @@ export function Workbench() {
           ) : (
             <p className="caos-plot-note">{lang === 'es' ? 'Motor en vivo: no está en esta versión; las vistas se reproducen de la generación.' : 'Live engine: not on this build; the views replay the bake.'}</p>
           )}
-          {engine?.available && (
-            <p className="caos-plot-note" data-backend={sel.maps?.backend ?? 'none'} title={backendReason(sel.maps?.fallbackReason ?? (gpu && !gpu.ok ? gpu.reason : null))}>
-              {backendLine(lang, sel.maps?.lane === 'live' ? sel.maps.backend : null, gpu, sel.maps?.fallbackReason ?? null)}
-            </p>
-          )}
-          {live.running && (
+          {engine?.available && (live.running ? (
+            // While a run is out the line gives way to the button that stops it, so the rail keeps its height.
             <button type="button" className="btn" onClick={live.cancel} data-cancel-run="">
               {lang === 'es' ? 'Cancelar la corrida' : 'Cancel the run'}
             </button>
+          ) : (
+            <p className="caos-plot-note" data-backend={sel.maps?.backend ?? 'none'} title={backendReason(sel.maps?.fallbackReason ?? (gpu && !gpu.ok ? gpu.reason : null))}>
+              {backendLine(lang, sel.maps?.lane === 'live' ? sel.maps.backend : null, gpu, sel.maps?.fallbackReason ?? null)}
+            </p>
+          ))}
+        </>
+      ),
+    });
+    rails.push({
+      id: 'view',
+      label: { en: 'View', es: 'Vista' },
+      content: (
+        <>
+          {params.device && (
+            <ChipGroup
+              id="stage"
+              label={{ en: 'Mask stage', es: 'Etapa de la máscara' }}
+              value={r.stage}
+              onChange={(v) => patch({ stage: v as DeviceStage })}
+              options={[
+                { id: 'ideal', label: { en: 'Ideal', es: 'Ideal' } },
+                { id: 'quantized', label: { en: 'Quantized', es: 'Cuantizada' }, disabled: !params.device },
+                { id: 'crosstalk', label: { en: 'Crosstalk', es: 'Diafonía' }, disabled: !params.device?.crosstalk },
+              ]}
+            />
           )}
+          <Knob
+            id="db-floor"
+            label={{ en: 'Colour floor', es: 'Piso del color' }}
+            hint={{ en: 'The lowest intensity the focal map shows, in dB against the mean trap. The bake stores down to its own floor.', es: 'La menor intensidad que muestra el mapa focal, en dB respecto de la trampa media. La generación guarda hasta su propio piso.' }}
+            value={r.dbFloor}
+            min={-60}
+            max={-10}
+            step={1}
+            unit="dB"
+            format={{ decimals: 0 }}
+            onChange={(v) => patch({ dbFloor: v })}
+          />
+          <Knob
+            id="band"
+            label={{ en: 'Uniformity band', es: 'Banda de uniformidad' }}
+            hint={{ en: 'A trap within this share of the mean intensity counts as uniform.', es: 'Una trampa dentro de esta fracción de la intensidad media cuenta como uniforme.' }}
+            value={r.bandPct}
+            min={1}
+            max={25}
+            step={1}
+            unit="%"
+            format={{ decimals: 0 }}
+            onChange={(v) => patch({ bandPct: v })}
+          />
           {params.dynamics && (
             <>
               <Knob
@@ -355,51 +400,6 @@ export function Workbench() {
               />
             </>
           )}
-        </>
-      ),
-    });
-    rails.push({
-      id: 'view',
-      label: { en: 'View', es: 'Vista' },
-      content: (
-        <>
-          {params.device && (
-            <ChipGroup
-              id="stage"
-              label={{ en: 'Mask stage', es: 'Etapa de la máscara' }}
-              value={r.stage}
-              onChange={(v) => patch({ stage: v as DeviceStage })}
-              options={[
-                { id: 'ideal', label: { en: 'Ideal', es: 'Ideal' } },
-                { id: 'quantized', label: { en: 'Quantized', es: 'Cuantizada' }, disabled: r.device !== 'case' || !params.device },
-                { id: 'crosstalk', label: { en: 'Crosstalk', es: 'Diafonía' }, disabled: r.device !== 'case' || !params.device?.crosstalk },
-              ]}
-            />
-          )}
-          <Knob
-            id="db-floor"
-            label={{ en: 'Colour floor', es: 'Piso del color' }}
-            hint={{ en: 'The lowest intensity the focal map shows, in dB against the mean trap. The bake stores down to its own floor.', es: 'La menor intensidad que muestra el mapa focal, en dB respecto de la trampa media. La generación guarda hasta su propio piso.' }}
-            value={r.dbFloor}
-            min={-60}
-            max={-10}
-            step={1}
-            unit="dB"
-            format={{ decimals: 0 }}
-            onChange={(v) => patch({ dbFloor: v })}
-          />
-          <Knob
-            id="band"
-            label={{ en: 'Uniformity band', es: 'Banda de uniformidad' }}
-            hint={{ en: 'A trap within this share of the mean intensity counts as uniform.', es: 'Una trampa dentro de esta fracción de la intensidad media cuenta como uniforme.' }}
-            value={r.bandPct}
-            min={1}
-            max={25}
-            step={1}
-            unit="%"
-            format={{ decimals: 0 }}
-            onChange={(v) => patch({ bandPct: v })}
-          />
         </>
       ),
     });
@@ -461,7 +461,7 @@ export function Workbench() {
     });
     rails.push({
       id: 'values',
-      label: { en: 'Values', es: 'Valores' },
+      label: { en: 'Stats', es: 'Cifras' },
       content: (
         <>
           {index.state === 'error' && <p role="alert">{index.error}</p>}
