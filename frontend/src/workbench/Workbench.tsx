@@ -113,7 +113,6 @@ export function Workbench() {
   const readiness = useReadiness();
   const engine = useEngine();
   const gpu = useGpuProbe(engine);
-  const slots = useSlots();
   const index = useArtifact((s) => loadIndex(s), []);
   const [caseId, setCaseId] = useState<string | null>(null);
   const selected = caseId ?? (index.state === 'ready' ? index.data.default_case : null);
@@ -132,6 +131,7 @@ export function Workbench() {
       setEditError(null);
     }
   }, [data]);
+  const slots = useSlots(!!data && cghApplies(data.manifest.params.setup, trapsOf(data.manifest, data.trace), null).ok);
   const r = rail && data && rail.caseId === data.manifest.case_id ? rail : null;
   const method = data && methodId && data.manifest.params.methods.includes(methodId) ? methodId : (data?.manifest.params.reference_method ?? '');
   const patch = useCallback((p: Partial<Rail>) => setRail((cur) => (cur ? { ...cur, ...p } : cur)), []);
@@ -560,7 +560,8 @@ export function Workbench() {
                 : {}
             }
             variants={{
-              variants: (params?.methods ?? []).map(variantOf),
+              // M17 is offered only where the three-plane cgh-net applies (128 x 128 SLM, padding 1, traps on its planes)
+              variants: (params?.methods ?? []).filter((id) => id !== 'M17' || !data || cghApplies(data.manifest.params.setup, traps, slots.cgh?.card ?? null).ok).map(variantOf),
               activeId: method,
               onSelect: setMethodId,
               title: { en: 'Method', es: 'Método' },

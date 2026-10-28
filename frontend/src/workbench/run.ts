@@ -44,16 +44,19 @@ async function answerOf(slot: SlotId): Promise<SlotAnswer> {
   return loadSlot(slot);
 }
 
-/** Which model answers each learned slot; null while the cards are being looked for. */
-export function useSlots(): Slots {
+/**
+ * Which model answers each learned slot; null while the cards are being looked for. The cgh-net card and its 4.6 MB graph are fetched only
+ * when the case in view is one the graph can take (`wantCgh`): a page that cannot use the model does not download it.
+ */
+export function useSlots(wantCgh: boolean): Slots {
   const [slots, setSlots] = useState<Slots>({ cgh: null, warm: null });
   useEffect(() => {
     let live = true;
-    void Promise.all([answerOf('cgh-net'), answerOf('warmstart-model')]).then(([cgh, warm]) => live && setSlots({ cgh, warm }));
+    void Promise.all([wantCgh ? answerOf('cgh-net') : Promise.resolve(null), answerOf('warmstart-model')]).then(([cgh, warm]) => live && setSlots((cur) => ({ cgh: cgh ?? cur.cgh, warm })));
     return () => {
       live = false;
     };
-  }, []);
+  }, [wantCgh]);
   return slots;
 }
 
