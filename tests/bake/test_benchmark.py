@@ -41,7 +41,7 @@ def test_every_budget_kind_is_reported_per_group(bench):
     _, doc, _ = bench
     rows = [r for r in doc["rows"] if (r["method"], r["geometry"], r["device"], r["params"]) == ("M04", "G1", "ideal", "default")]
     kinds = sorted((r["budget_kind"], r["budget"]) for r in rows)
-    assert kinds == sorted([("iterations", 2), ("iterations", 4), ("iterations", 8), ("time", 0.05), ("time", 0.2), ("time", 1.0),
+    assert kinds == sorted([("iterations", 2), ("iterations", 4), ("iterations", 8), ("time", 0.05), ("time", 0.2),
                             ("converged", 12.0)])
     assert all(r["n_seeds"] == 2 for r in rows)
     its = {r["budget"]: r["iterations"]["median"] for r in rows if r["budget_kind"] == "iterations"}
@@ -54,7 +54,9 @@ def test_cells_that_cannot_run_are_listed_with_a_reason_and_absent_from_rows(ben
     assert "not registered" in skipped[("M19", "G1")] and "not registered" in skipped[("M19", "G7")]
     assert "does not accept a field target" not in skipped.get(("M08", "G7"), "")
     assert ("M04", "G7") in skipped and ("M02", "G7") in skipped and ("M08", "G1") in skipped
-    assert "Device cell" in skipped[("M04", "G5")]
+    # a multi-plane geometry has no device rows (the protocol text says why) and is not a skipped cell
+    assert ("M04", "G5") not in skipped
+    assert not [r for r in doc["rows"] if r["geometry"] == "G5" and r["device"] == "device"]
     rows = {(r["method"], r["geometry"], r["device"]) for r in doc["rows"]}
     assert ("M04", "G5", "device") not in rows and ("M04", "G5", "ideal") in rows
     assert not any(m == "M19" for m, _, _ in rows)
@@ -98,7 +100,9 @@ def test_pool_workers_give_the_same_rows(bench, tmp_path):
     keep = [r for r in doc["rows"] if r["geometry"] == "G1" and r["method"] in ("M02", "M04")]
 
     def strip(rows):
-        return [{k: v for k, v in r.items() if k != "time_s"} for r in rows]
+        # a wall-clock-capped row performs as many iterations as the machine's load allows, so only the deterministic rows
+        # (fixed iteration counts and the converged cap) are compared
+        return [{k: v for k, v in r.items() if k != "time_s"} for r in rows if r["budget_kind"] != "time"]
 
     assert strip(pooled["rows"]) == strip(keep)
 
