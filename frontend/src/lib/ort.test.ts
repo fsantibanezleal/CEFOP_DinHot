@@ -45,6 +45,18 @@ describe('cgh-net input', () => {
   });
 });
 
+describe('cgh-net input against the released card', () => {
+  it('has the length of the card input shape, and the planes of the card are the encoder planes', () => {
+    const card = JSON.parse(readFileSync(new URL('../../../models/cgh-net.json', import.meta.url), 'utf8')) as ModelCard;
+    const shape = card.inputs[0].shape;
+    expect(shape).toEqual([1, 3, 128, 128]);
+    const setup = { wavelength_nm: 850, focal_mm: 250, n_pix: 128, pitch_um: 12.5, pad: 1 };
+    const { input } = encodeCghPlanes([T(0, 0, 0)], setup, card.grid ?? 128);
+    expect(input.length).toBe(shape.reduce((a, v) => a * v, 1));
+    expect(card.trained_on.en).toMatch(/planes at -8, 0, \+8/);
+  });
+});
+
 describe('warmstart input', () => {
   const setup = { wavelength_nm: 1064, na: 1.2, n_imm: 1.33 };
   it('is [1024, 4] and [1024], padded with zeros, x and y over the half field, z in Rayleigh ranges', () => {

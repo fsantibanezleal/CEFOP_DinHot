@@ -115,17 +115,19 @@ export function IntensityView({ sel }: { sel: Selection }) {
         {...c}
         lane={sel.result?.lane ?? c.lane}
         dataKey={stateKey}
-        actions={
-          <button type="button" className="btn" aria-pressed={sortBy === 'deviation'} onClick={() => setSortBy(sortBy === 'id' ? 'deviation' : 'id')}>
-            {sortBy === 'id' ? t('Sort by deviation', 'Ordenar por desviación') : t('Sort by id', 'Ordenar por id')}
-          </button>
-        }
         note={{
           en: `${within} of ${trapI.length} traps are within plus or minus ${fmt(sel.bandPct, { decimals: 0 })} % of the mean. Weakest ${fmt(stats.min, { decimals: 3 })}, strongest ${fmt(stats.max, { decimals: 3 })}, spread ${fmt(stats.rmsPct, { decimals: 2 })} % rms.`,
           es: `${within} de ${trapI.length} trampas están dentro de más o menos ${fmt(sel.bandPct, { decimals: 0 })} % de la media. Más débil ${fmt(stats.min, { decimals: 3 })}, más fuerte ${fmt(stats.max, { decimals: 3 })}, dispersión ${fmt(stats.rmsPct, { decimals: 2 })} % rms.`,
         }}
       >
         <Fill>
+          <div className="dh-stack">
+          <div className="dh-scrub">
+            <button type="button" className="btn" aria-pressed={sortBy === 'deviation'} onClick={() => setSortBy(sortBy === 'id' ? 'deviation' : 'id')}>
+            {sortBy === 'id' ? t('Sort by deviation', 'Por desviación') : t('Sort by id', 'Por id')}
+          </button>
+          </div>
+          <div className="dh-fill">
           {many ? (
             <UPlotChart
               height="fill"
@@ -159,6 +161,8 @@ export function IntensityView({ sel }: { sel: Selection }) {
               }))}
             />
           )}
+          </div>
+          </div>
         </Fill>
       </PlotCard>
       <PlotCard fill title={{ en: 'Histogram of trap intensities', es: 'Histograma de intensidades de las trampas' }} {...c} lane={sel.result?.lane ?? c.lane} dataKey={stateKey}>
