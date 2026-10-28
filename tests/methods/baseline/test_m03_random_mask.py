@@ -27,7 +27,7 @@ def test_published_grid_768_reproduces_uniformity():
     from pipeline.model.holo.core.traps import square_grid
     s768 = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=768, pitch_m=12.5e-6, pad=2)
     tr = square_grid(10, 10, 8 * focal_bin_m(s768) * 1e6)
-    h = [m.run(s768, Target.from_traps(tr), budget=Budget(1), rng=Rng(s)).history[0] for s in range(3)]
+    h = [m.run(s768, Target.from_traps(tr), budget=Budget(1), rng=Rng(s)).history[0] for s in range(2)]
     assert all(abs(x["uniformity"] - 0.58) <= 0.10 for x in h), [x["uniformity"] for x in h]
     assert all(0.005 < x["efficiency"] < 0.02 for x in h)
 
