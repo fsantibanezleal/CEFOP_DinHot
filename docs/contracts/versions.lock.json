@@ -2,27 +2,47 @@
   "params-record": {
     "version": "1.0.0",
     "schema": "docs/contracts/schemas/params-record.schema.json",
-    "sha256": "9bb67b0438a99919879390e60ed4c4fa5622d954b671b4fe65d0c84fa58c08d7"
+    "sha256": "f55595ef2f7233d4717a8839f635da061a22e491488e1de599e40fe4ff170086"
   },
   "case-index": {
-    "version": "2.0.0",
+    "version": "1.0.0",
     "schema": "docs/contracts/schemas/case-index.schema.json",
-    "sha256": "251a03c8b3443fbca43d836f6c3a317612bc0024cae17bd2eb0115ad8474e1b4"
+    "sha256": "6e06c0ed4a7b0a8681de87213202f0dc3e32ab6c9b4051febd4d55800ffca97e"
   },
   "case-manifest": {
-    "version": "4.0.0",
+    "version": "1.0.0",
     "schema": "docs/contracts/schemas/case-manifest.schema.json",
-    "sha256": "ee989d8e0168baadeea2ee8b4636217456cd295a8c9934319cccc7de6698d257"
+    "sha256": "135a704e07e6cd58bf283691c5cdb4b1304628455867ced2c4a7aa66cb25d1e3"
   },
   "trace": {
     "version": "1.0.0",
     "schema": "docs/contracts/schemas/trace.schema.json",
-    "sha256": "289a6a33872155448b1c8b41d39d26606e828f90f7d7b8447d8614d49b26202d"
+    "sha256": "4cbf13625708994211c5fc5b3701351cad3fc3cc1013975220c144fd64c69701"
   },
-  "surrogate-model": {
+  "benchmark-results": {
     "version": "1.0.0",
-    "schema": "docs/contracts/schemas/surrogate-model.schema.json",
-    "sha256": "8c4389be72823246f840283ceb2a2d1ee0527d30b089559a11dc052ed75eb814"
+    "schema": "docs/contracts/schemas/benchmark-results.schema.json",
+    "sha256": "1aad5fa721fb25a6c04c4d0ea2c84fa79eb569b53f9526d4687ed12362659c5e"
+  },
+  "cgh-net": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/model-card.schema.json",
+    "sha256": "c27a2a52034ecb77c1526ae4b863dd923c58f0aa5295e07a1eda47bbc273f471"
+  },
+  "warmstart-model": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/model-card.schema.json",
+    "sha256": "c27a2a52034ecb77c1526ae4b863dd923c58f0aa5295e07a1eda47bbc273f471"
+  },
+  "model-metrics": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/model-metrics.schema.json",
+    "sha256": "c3aff7cd0889572f11ff0e439e5f6a542fac1004b1d412e19ca1dfbfca620092"
+  },
+  "engine-reference": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/engine-reference.schema.json",
+    "sha256": "c02fc6503ecda3da702d76c4168d0f219fd31c5e172430b7c126ea297fe37b6f"
   },
   "readiness": {
     "version": "1.0.0",
@@ -32,6 +52,6 @@
   "api": {
     "version": "1.0.0",
     "schema": "docs/contracts/api.openapi.json",
-    "sha256": "46a68a0faf5256d3e39e51316f645ce1593c6f2da77c76b2188d05cdb21b14e5"
+    "sha256": "6b15af5a61833cf759c5129f7af64354c407f847bb327c6db72bbd94f63f8a47"
   }
 }

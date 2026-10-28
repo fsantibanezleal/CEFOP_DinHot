@@ -41,7 +41,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The case index (catalog row case-index). */
+        /** The case index (catalog row case-index), baked and refused cases. */
         get: operations["listCases"];
         put?: never;
         post?: never;
@@ -77,9 +77,43 @@ export interface paths {
         };
         /**
          * An artifact a manifest names (catalog row trace), by its path under data/derived.
-         * @description rel_path may contain slashes (for example EX02_epidemic/trace.json); only a path an indexed manifest names is served; anything else is not found, and an artifact that cannot be read is unavailable.
+         * @description rel_path may contain slashes (for example FX01_fixture/trace.json); only a path an indexed manifest names is served; anything else is not found, and an artifact that cannot be read is unavailable.
          */
         get: operations["getArtifact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/benchmark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The benchmark results (catalog row benchmark-results). */
+        get: operations["getBenchmark"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/models/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The held-out metrics of the model slots (catalog row model-metrics). */
+        get: operations["getModelMetrics"];
         put?: never;
         post?: never;
         delete?: never;
@@ -114,47 +148,52 @@ export interface components {
     schemas: {
         /**
          * ParamsRecord
-         * @description Contract 1 (ingestion), catalog row params-record 1.0.0: one operating point as accepted by data-pipeline/pipeline/io/contract.py validate_rows. The raw source is a table (CSV) with the columns case_id, beta, gamma, N, I0 and an optional days; values arrive as text and are parsed, never coerced: a row that fails a rule below is rejected with a reason, and a row with R0 = beta / gamma above 20 is accepted and flagged. Cross-field rule the schema cannot state: I0 <= N. EXAMPLE domain: an SIR epidemic; a product replaces the fields.
+         * @description Contract 1 (ingestion), catalog row params-record 1.0.0: one case as accepted by data-pipeline/pipeline/io/contract.py. The source document data/examples/cases.json is an array of records; every value arrives typed and is never coerced. Rules the schema cannot state, checked by the producer and consumer tests: trap ids are unique within a target, reference_method is one of methods, a trap lies inside the unaliased field of view (abs(x_um) and abs(y_um) at most lambda f / (2 p), in micrometres), and a missing, non-numeric, NaN or out-of-range value is rejected with its reason. A rejected record is dropped, the bake goes on with the accepted ones and readiness lists the rejected case ids (partial). Case C11 is rejected by design: the index records it as refused with the reason. Lengths carry _um, _nm or _mm, angles _rad, times _s, frequencies _hz.
          */
         ParamsRecord: {
-            /** @description The case identifier. */
+            /** @description The case id (C01 to C12). */
             case_id: string;
-            /** @description Effective contact rate, 1/day. */
-            beta: number;
-            /** @description Recovery rate, 1/day. */
-            gamma: number;
-            /** @description Population, individuals. */
-            N: number;
-            /** @description Initial infected, individuals; at most N. */
-            I0: number;
-            /** @description Horizon in days; 160 when the source leaves it empty. */
-            days: number;
+            setup: components["schemas"]["setup"];
+            device: components["schemas"]["device"] | null;
+            target: components["schemas"]["target"];
+            aberration: components["schemas"]["aberration"] | null;
+            methods: components["schemas"]["method_id"][];
+            reference_method: components["schemas"]["method_id"];
+            budget: components["schemas"]["budget"];
+            seed: number;
+            feedback: components["schemas"]["feedback"] | null;
+            dynamics: components["schemas"]["dynamics"] | null;
+            rearrangement: components["schemas"]["rearrangement"] | null;
+            expect: components["schemas"]["expect"];
         };
         /**
          * CaseIndex
-         * @description Contract 2 (artifact), catalog row case-index 2.0.0: the flat inventory of every baked case, written by data-pipeline/pipeline/core/manifest.py build_index to data/derived/manifests/index.json. Rules the schema cannot state, checked by the producer and consumer tests: n_cases equals the number of entries, default_case is one of their case_id values, and the entries are sorted by case_id.
+         * @description Contract 2 (artifact), catalog row case-index 1.0.0: the flat inventory of every case, written by data-pipeline/pipeline/core/manifest.py build_index to data/derived/manifests/index.json. A refused case (C11) has no manifest: its path is null and its reason is shown by the workbench. Rules the schema cannot state, checked by the producer and consumer tests: default_case is the case_id of a baked case, and the entries are sorted by case_id.
          */
         CaseIndex: {
             /** @constant */
-            schema: "example.index/v2";
+            schema: "dinhot.index/v1";
             /** @description The product version that baked the index; older than VERSION means the bake is stale. */
             engine_version: components["schemas"]["version"];
-            n_cases: number;
             default_case: string;
-            cases: {
+            cases: ({
                 case_id: string;
                 title: components["schemas"]["text"];
                 category: components["schemas"]["text"];
-                manifest_path: string;
-            }[];
+                /** @description The manifest, relative to data/derived; null for a refused case. */
+                path: string | null;
+                /** @enum {unknown} */
+                status: "baked" | "refused";
+                reason: components["schemas"]["text"] | null;
+            } & unknown)[];
         };
         /**
          * CaseManifest
-         * @description Contract 2 (artifact), catalog row case-manifest 4.0.0: the authoritative record of one baked case, written by data-pipeline/pipeline/core/manifest.py build_case_manifest to data/derived/manifests/<case>.json. A pure function of (params, seed): no wall-clock time. Rules the schema cannot state, checked by scripts/check_artifacts.py: artifact.bytes equals the size of the file at artifact.path, and lane equals gate.lane.
+         * @description Contract 2 (artifact), catalog row case-manifest 1.0.0: the authoritative record of one baked case, written by data-pipeline/pipeline/core/manifest.py build_case_manifest to data/derived/manifests/<case>.json. A pure function of (params, seed): no wall-clock time. Rules the schema cannot state, checked by scripts/check_artifacts.py and the tests: artifact.bytes equals the size of the file at artifact.path, lane equals gate.lane, the keys of methods are the params' methods, and params.reference_method is one of them.
          */
         CaseManifest: {
             /** @constant */
-            schema: "example.manifest/v4";
+            schema: "dinhot.manifest/v1";
             case_id: string;
             title: components["schemas"]["text"];
             category: components["schemas"]["text"];
@@ -162,16 +201,26 @@ export interface components {
             real_or_synthetic: "real" | "synthetic";
             expected_band: components["schemas"]["text"];
             engine: {
-                package: string;
+                /** @constant */
+                package: "dinhot-holo";
                 version: components["schemas"]["version"];
-                model: string;
+                /** @constant */
+                model: "scalar-fourier";
             };
+            /** @description The params record exactly as the producer used it, without case_id; trap coordinates are rounded once before the run, never after. */
             params: {
-                beta: number;
-                gamma: number;
-                N: number;
-                I0: number;
-                days: number;
+                setup: components["schemas"]["setup"];
+                device: components["schemas"]["device"] | null;
+                target: components["schemas"]["target"];
+                aberration: components["schemas"]["aberration"] | null;
+                methods: components["schemas"]["method_id"][];
+                reference_method: components["schemas"]["method_id"];
+                budget: components["schemas"]["budget"];
+                seed: number;
+                feedback: components["schemas"]["feedback"] | null;
+                dynamics: components["schemas"]["dynamics"] | null;
+                rearrangement: components["schemas"]["rearrangement"] | null;
+                expect: components["schemas"]["expect"];
             };
             seed: number;
             artifact: {
@@ -180,7 +229,7 @@ export interface components {
                 /** @constant */
                 format: "json";
                 /** @constant */
-                trace_schema: "example.trace/v1";
+                trace_schema: "dinhot.trace/v1";
                 bytes: number;
             };
             /** @enum {unknown} */
@@ -195,70 +244,278 @@ export interface components {
                 trace_bytes_budget: number;
                 reasons: string[];
             };
-            /** @description The rows contract 1 accepted with a flag. */
+            /** @description The records contract 1 accepted with a flag. */
             flags: {
                 [key: string]: string;
             }[];
-            /** @description Evaluation metrics of this bake (the surrogate model slot's held-out error, among others). */
-            metrics: {
-                [key: string]: number;
+            /** @description Per method id, the verdict of this bake. */
+            methods: {
+                [key: string]: {
+                    /** @enum {unknown} */
+                    lane: "live" | "baked";
+                    efficiency: number;
+                    uniformity: number;
+                    rel_std_pct: number;
+                    zero_order: number;
+                    ghost: number;
+                    iterations: number;
+                    converged: boolean;
+                };
             };
-            /** @description Per model slot (catalog row id), what produced this bake's metrics: the released bundle (real) or the slot's baseline. */
+            /** @description Per model slot (catalog row id), what produced this bake's metrics: the released model (real) or the slot's baseline. */
             models: {
                 [key: string]: "real" | "baseline";
             };
-            /** @description The checked expectation of the case: [low, high] per result metric. */
-            expect: {
-                [key: string]: [
-                    number,
-                    number
-                ];
+            expect: components["schemas"]["expect"];
+            /** @description The published result the case is set against. */
+            anchor: {
+                source: components["schemas"]["text"];
+                url: string | null;
             };
         };
         /**
          * Trace
-         * @description Contract 2 (artifact), catalog row trace 1.0.0: the compact replay artifact of one case, written by data-pipeline/pipeline/core/trace.py to data/derived/<case>/trace.json. The trajectory is decimated to at most 200 points; t, S, I and R have the same length (a rule the schema cannot state; the producer test checks it).
+         * @description Contract 2 (artifact), catalog row trace 1.0.0: the replay artifact of one case, written by data-pipeline/pipeline/core/trace.py to data/derived/<case>/trace.json, at most 256 KiB. Arrays marked with a maximum are decimated by the producer. Rules the schema cannot state, checked by the producer test: every base64 field decodes to the stated number of bytes (phase_u8 n_pix x n_pix, intensity_db_u8 size x size, xz_u8 nz x nx), reference.method is a key of methods, and the file stays within 256 KiB.
          */
         Trace: {
             /** @constant */
-            schema: "example.trace/v1";
+            schema: "dinhot.trace/v1";
             case_id: string;
-            /** @description Time, days. */
-            t: components["schemas"]["series"];
-            /** @description Susceptible, individuals. */
-            S: components["schemas"]["series"];
-            /** @description Infected, individuals. */
-            I: components["schemas"]["series"];
-            /** @description Recovered, individuals. */
-            R: components["schemas"]["series"];
+            grid: {
+                n_pix: number;
+                pad: number;
+                bin_um: number;
+                half_field_um: number;
+            };
+            /** @description The target; an empty list for a shaped target, whose shape is filled. */
+            traps: components["schemas"]["trap"][];
+            shape: {
+                /** @enum {unknown} */
+                kind: "ring" | "disc" | "line" | "top_hat" | "lg_ring";
+                mask_rle: number[];
+            } | null;
+            /** @description Per method id: history at most 200 points (decimated uniformly, first and last kept), final metrics, and I_m / mean per trap in trap id order. */
+            methods: {
+                [key: string]: {
+                    history: {
+                        iteration: number;
+                        efficiency: number;
+                        uniformity: number;
+                        rel_std_pct: number;
+                    }[];
+                    final: {
+                        efficiency: number;
+                        uniformity: number;
+                        rel_std_pct: number;
+                        zero_order: number;
+                        ghost: number;
+                    };
+                    trap_intensity: number[];
+                };
+            };
+            /** @description The maps of the case's reference method. */
+            reference: {
+                method: components["schemas"]["method_id"];
+                /** @description Base64 of n_pix x n_pix bytes: the phase quantized to 256 levels over [0, 2 pi). */
+                phase_u8: components["schemas"]["base64"];
+                focal: {
+                    size: number;
+                    bin_um: number;
+                    db_floor: number;
+                    /** @description Base64 of size x size bytes: dB relative to the mean trap, db_floor..0 mapped to 0..255. */
+                    intensity_db_u8: components["schemas"]["base64"];
+                };
+                axial: {
+                    trap_id: number;
+                    z_um: number[];
+                    nz: number;
+                    nx: number;
+                    xz_u8: components["schemas"]["base64"];
+                } | null;
+            };
+            feedback: {
+                steps: {
+                    step: number;
+                    rel_std_pct: number;
+                    efficiency: number;
+                }[];
+            } | null;
+            dynamics: ({
+                /** @enum {unknown} */
+                particle: "bead" | "atom";
+                dt_s: number;
+                t_decimation: number;
+                x_um: number[];
+                y_um: number[];
+                psd: {
+                    f_hz: number[];
+                    p: number[];
+                };
+                fc_hz: number;
+                kappa_pn_per_um?: number;
+                omega_r_hz?: number;
+                depth: {
+                    value: number;
+                    unit: string;
+                };
+            } & (unknown & unknown)) | null;
+            rearrangement: {
+                frames: {
+                    t_s: number;
+                    occupied: number[];
+                    moving: {
+                        from: number;
+                        to: number;
+                        x_um: number;
+                        y_um: number;
+                    }[];
+                }[];
+                filling: number[];
+                min_transient: number;
+            } | null;
             summary: {
-                /** @description Largest infected count, individuals. */
-                peak_I: number;
-                /** @description Time of the peak, days. */
-                t_peak: number;
-                /** @description Share of the population ever infected. */
-                attack_rate: number;
+                /** @description Lowest rel_std_pct among the methods whose efficiency is at least 0.5 of the best. */
+                best_method: components["schemas"]["method_id"];
+                notes: components["schemas"]["text"];
             };
         };
         /**
-         * SurrogateModel
-         * @description Model slot, catalog row surrogate-model 1.0.0: the released surrogate bundle models/surrogate.json written by data-pipeline/pipeline/stages/train.py and read by stages/evaluate.py. Slot input: r0 = beta / gamma (dimensionless, > 0). Slot output: the peak infected fraction peak_I / N, in [0, 1] (the predictor clamps). When no valid bundle exists the baseline data-pipeline/pipeline/model/baseline.py answers: 1 - (1 + ln r0) / r0 for r0 > 1, else 0 (the SIR peak with S0 = 1 and I0 near 0). EXAMPLE: a real product's bundle is its exported model (ONNX, say) plus a card like this one.
+         * BenchmarkResults
+         * @description Contract 2 (artifact), catalog row benchmark-results 1.0.0: the protocol's table, method by geometry by budget, written by data-pipeline/pipeline/stages/benchmark.py to data/derived/benchmark/results.json. Missing data: a cell that was not run is absent from rows and listed in skipped.
          */
-        SurrogateModel: {
+        BenchmarkResults: {
             /** @constant */
-            kind: "linear-lstsq";
+            schema: "dinhot.benchmark/v1";
+            engine_version: components["schemas"]["version"];
+            protocol: {
+                grids: number[];
+                seeds: number;
+                budgets: {
+                    iterations: number[];
+                    time_s: number[];
+                };
+                device: components["schemas"]["text"];
+            };
+            geometries: {
+                id: string;
+                name: components["schemas"]["text"];
+                n_traps: number;
+                /** @enum {unknown} */
+                dims: 2 | 3;
+            }[];
+            rows: {
+                method: components["schemas"]["method_id"];
+                geometry: string;
+                /** @enum {unknown} */
+                device: "ideal" | "device";
+                /** @enum {unknown} */
+                budget_kind: "iterations" | "time" | "converged";
+                budget: number;
+                /** @enum {unknown} */
+                params: "default" | "tuned";
+                n_seeds: number;
+                efficiency: components["schemas"]["stat"];
+                uniformity: components["schemas"]["stat"];
+                rel_std_pct: components["schemas"]["stat"];
+                time_s: components["schemas"]["stat"];
+                iterations: components["schemas"]["stat"];
+            }[];
+            pareto: {
+                geometry: string;
+                /** @constant */
+                method: "B5";
+                points: {
+                    lambda: number;
+                    efficiency: number;
+                    uniformity: number;
+                }[];
+            }[];
+            /** @description The cells that were not run; absent from rows. */
+            skipped?: {
+                method: components["schemas"]["method_id"];
+                geometry: string;
+                reason: components["schemas"]["text"];
+            }[];
+        };
+        /**
+         * ModelMetrics
+         * @description Contract 2 (artifact), catalog row model-metrics 1.0.0: the held-out metrics of the model slots, written by data-pipeline/pipeline/stages/evaluate.py to data/derived/models/metrics.json. A slot with no released model has no entry.
+         */
+        ModelMetrics: {
+            /** @constant */
+            schema: "dinhot.model-metrics/v1";
+            engine_version: components["schemas"]["version"];
+            slots: {
+                "cgh-net"?: {
+                    held_out_n: number;
+                    accuracy_vs_gs: components["schemas"]["stat"];
+                    time_ms: components["schemas"]["stat"];
+                    /** @constant */
+                    baseline: "M04";
+                };
+                "warmstart-model"?: {
+                    held_out_n: number;
+                    iterations_to_1pct: {
+                        model: components["schemas"]["stat"];
+                        random: components["schemas"]["stat"];
+                    };
+                    final_rel_std_pct: {
+                        model: components["schemas"]["stat"];
+                        random: components["schemas"]["stat"];
+                    };
+                };
+            };
+        };
+        /**
+         * ModelCard
+         * @description Model slots, catalog rows cgh-net 1.0.0 and warmstart-model 1.0.0 (they share this card): models/<slot>.json beside models/<slot>.onnx, written by the model unit's export and read by the pipeline and the web. cgh-net: in target float32 [1, 1, 128, 128] (target amplitude on the focal crop, normalised to unit energy), out phase float32 [1, 1, 128, 128] in radians; baseline GS (M04) at 30 iterations. warmstart-model: in traps float32 [1, 1024, 4] (x and y in focal bins over the half field, z in Rayleigh ranges, weight; padded) and mask float32 [1, 1024], out trap_phase float32 [1, 1024] in radians; baseline random trap phases from the portable RNG (the M02 start). With no valid released model the baseline answers and readiness says training. Rules the schema cannot state, checked by the model tests: sha256 and bytes are those of the file at onnx, and inputs and outputs are the graph's.
+         */
+        ModelCard: {
+            /** @constant */
+            schema: "dinhot.model-card/v1";
+            /** @enum {unknown} */
+            slot: "cgh-net" | "warmstart-model";
+            /** @description Path of the ONNX graph. */
+            onnx: string;
+            sha256: string;
+            bytes: number;
+            opset: number;
+            inputs: {
+                name: string;
+                shape: number[];
+                dtype: string;
+            }[];
+            outputs: {
+                name: string;
+                shape: number[];
+                dtype: string;
+            }[];
             /**
-             * @description The design-matrix columns, in order.
+             * @description The focal-crop side of cgh-net; warmstart-model has none.
              * @constant
              */
-            basis: [
-                "1",
-                "r0",
-                "ln(r0)",
-                "1/r0"
-            ];
-            /** @description One coefficient per basis column. */
-            coeffs: number[];
+            grid?: 128;
+            trained_on: components["schemas"]["text"];
+            held_out: components["schemas"]["text"];
+            metrics_path: string;
+        } & unknown;
+        /**
+         * EngineReference
+         * @description Contract 2 (artifact), catalog row engine-reference 1.0.0: reference values of one engine function, written by data-pipeline/pipeline/stages/engine_reference.py from the Python engine to tests/fixtures/engine/*.json and read by the TypeScript parity tests. Arrays of complex numbers are interleaved [re, im] number arrays; large arrays are base64 of little-endian float64.
+         */
+        EngineReference: {
+            /** @constant */
+            schema: "dinhot.engine-ref/v1";
+            engine_version: components["schemas"]["version"];
+            function: string;
+            tolerance: {
+                abs: number;
+                rel: number;
+            };
+            cases: {
+                inputs: Record<string, never>;
+                outputs: Record<string, never>;
+            }[];
         };
         /**
          * Readiness
@@ -289,6 +546,119 @@ export interface components {
                 };
             };
         };
+        /** @description System aberration in waves. */
+        aberration: {
+            /** @description Noll index 2 to 21 to coefficient in waves. */
+            noll: {
+                [key: string]: number;
+            };
+        };
+        /** @description The input beam; waist_frac belongs to the gaussian beam only. */
+        beam: {
+            /** @constant */
+            kind: "gaussian";
+            waist_frac: number;
+        } | {
+            /** @constant */
+            kind: "flat";
+        };
+        budget: {
+            iterations: number;
+            time_s: number | null;
+        };
+        camera: {
+            gain_rms: number;
+            noise_rms: number;
+            blur_bins: number;
+        };
+        crosstalk: {
+            sigma_per_px: number;
+            q: number;
+        };
+        /** @description The SLM device model; the whole object null means the ideal device. */
+        device: {
+            bit_depth: number | null;
+            crosstalk: components["schemas"]["crosstalk"] | null;
+            upsample: number;
+            fill_factor: number;
+            flicker_rad: number;
+            lut_gamma: number;
+        };
+        /** @description The trapped-particle simulation; the bead fields belong to a bead, the atom fields to an atom. */
+        dynamics: {
+            /** @enum {unknown} */
+            particle: "bead" | "atom";
+            trap_id: number;
+            power_mw: number;
+            bead_radius_um?: number;
+            n_particle?: number;
+            viscosity_pa_s?: number;
+            temperature_k: number;
+            mass_amu?: number;
+            detuning_thz?: number;
+            n_steps: number;
+            dt_s: number;
+        } & (unknown & unknown);
+        /** @description The checked expectation of the case: [low, high] per result metric. */
+        expect: {
+            [key: string]: [
+                number,
+                number
+            ];
+        };
+        /** @description The camera loop (M12, B6). */
+        feedback: {
+            gain: number;
+            steps: number;
+            camera: components["schemas"]["camera"];
+        };
+        /** @description A method id: M01 to M99 or B0 to B9. */
+        method_id: string;
+        /** @description The rearrangement case (M16, B2). */
+        rearrangement: {
+            loading_p: number;
+            target_ids: number[];
+            alpha: number;
+            steps_per_move: number;
+        };
+        setup: {
+            wavelength_nm: number;
+            focal_mm: number;
+            na: number;
+            n_imm: number;
+            /**
+             * @description SLM side in pixels (square).
+             * @enum {integer}
+             */
+            n_pix: 64 | 128 | 256 | 512 | 1024;
+            pitch_um: number;
+            pad: number;
+            beam: components["schemas"]["beam"];
+        };
+        /** @description What to make: a trap list or a shaped potential. */
+        target: {
+            /** @constant */
+            kind: "traps";
+            traps: components["schemas"]["trap"][];
+        } | {
+            /** @constant */
+            kind: "shaped";
+            /** @enum {unknown} */
+            shape: "ring" | "disc" | "line" | "top_hat" | "lg_ring";
+            radius_um?: number;
+            width_um?: number;
+            length_um?: number;
+            signal_margin_bins: number;
+        };
+        /** @description One trap; ids are unique within a target (a rule the schema cannot state). */
+        trap: {
+            id: number;
+            x_um: number;
+            y_um: number;
+            z_um: number;
+            weight: number;
+            charge: number;
+        };
         /** @description Every reader-facing string is bilingual at the source. */
         text: {
             en: string;
@@ -296,7 +666,14 @@ export interface components {
         };
         /** @description The product version format X.XX.XXX. */
         version: string;
-        series: number[];
+        /** @description Standard base64. */
+        base64: string;
+        /** @description Median and inter-quartile range over the seeds or the held-out set. */
+        stat: {
+            median: number;
+            q1: number;
+            q3: number;
+        };
         entry: {
             /** @description The catalog row id. */
             id: string;
@@ -457,6 +834,48 @@ export interface operations {
                 };
             };
             404: components["responses"]["NotFound"];
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getBenchmark: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The committed document. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenchmarkResults"];
+                };
+            };
+            503: components["responses"]["Unavailable"];
+        };
+    };
+    getModelMetrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The committed document. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelMetrics"];
+                };
+            };
             503: components["responses"]["Unavailable"];
         };
     };

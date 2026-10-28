@@ -2,29 +2,112 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "case-index.schema.json",
   "title": "CaseIndex",
-  "description": "Contract 2 (artifact), catalog row case-index 2.0.0: the flat inventory of every baked case, written by data-pipeline/pipeline/core/manifest.py build_index to data/derived/manifests/index.json. Rules the schema cannot state, checked by the producer and consumer tests: n_cases equals the number of entries, default_case is one of their case_id values, and the entries are sorted by case_id.",
+  "description": "Contract 2 (artifact), catalog row case-index 1.0.0: the flat inventory of every case, written by data-pipeline/pipeline/core/manifest.py build_index to data/derived/manifests/index.json. A refused case (C11) has no manifest: its path is null and its reason is shown by the workbench. Rules the schema cannot state, checked by the producer and consumer tests: default_case is the case_id of a baked case, and the entries are sorted by case_id.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "engine_version", "n_cases", "default_case", "cases"],
+  "required": [
+    "schema",
+    "engine_version",
+    "default_case",
+    "cases"
+  ],
   "properties": {
-    "schema": {"const": "example.index/v2"},
-    "engine_version": {"$ref": "#/$defs/version", "description": "The product version that baked the index; older than VERSION means the bake is stale."},
-    "n_cases": {"type": "integer", "minimum": 1},
-    "default_case": {"type": "string", "minLength": 1},
+    "schema": {
+      "const": "dinhot.index/v1"
+    },
+    "engine_version": {
+      "$ref": "#/$defs/version",
+      "description": "The product version that baked the index; older than VERSION means the bake is stale."
+    },
+    "default_case": {
+      "type": "string",
+      "minLength": 1
+    },
     "cases": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["case_id", "title", "category", "manifest_path"],
+        "required": [
+          "case_id",
+          "title",
+          "category",
+          "path",
+          "status",
+          "reason"
+        ],
         "properties": {
-          "case_id": {"type": "string", "minLength": 1},
-          "title": {"$ref": "#/$defs/text"},
-          "category": {"$ref": "#/$defs/text"},
-          "manifest_path": {"type": "string", "pattern": "^manifests/[^/\\\\]+\\.json$"}
-        }
-      }
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "$ref": "#/$defs/text"
+          },
+          "category": {
+            "$ref": "#/$defs/text"
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^manifests/[^/\\\\]+\\.json$",
+            "description": "The manifest, relative to data/derived; null for a refused case."
+          },
+          "status": {
+            "enum": [
+              "baked",
+              "refused"
+            ]
+          },
+          "reason": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/text"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "baked"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "null"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "path": {
+                  "type": "null"
+                },
+                "reason": {
+                  "$ref": "#/$defs/text"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 1
     }
   },
   "$defs": {
@@ -32,9 +115,25 @@
       "type": "object",
       "description": "Every reader-facing string is bilingual at the source.",
       "additionalProperties": false,
-      "required": ["en", "es"],
-      "properties": {"en": {"type": "string", "minLength": 1}, "es": {"type": "string", "minLength": 1}}
+      "required": [
+        "en",
+        "es"
+      ],
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
-    "version": {"type": "string", "pattern": "^\\d+\\.\\d{2}\\.\\d{3}$", "description": "The product version format X.XX.XXX."}
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d{2}\\.\\d{3}$",
+      "description": "The product version format X.XX.XXX."
+    }
   }
 }

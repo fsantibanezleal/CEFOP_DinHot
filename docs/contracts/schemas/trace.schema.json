@@ -2,29 +2,604 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "trace.schema.json",
   "title": "Trace",
-  "description": "Contract 2 (artifact), catalog row trace 1.0.0: the compact replay artifact of one case, written by data-pipeline/pipeline/core/trace.py to data/derived/<case>/trace.json. The trajectory is decimated to at most 200 points; t, S, I and R have the same length (a rule the schema cannot state; the producer test checks it).",
+  "description": "Contract 2 (artifact), catalog row trace 1.0.0: the replay artifact of one case, written by data-pipeline/pipeline/core/trace.py to data/derived/<case>/trace.json, at most 256 KiB. Arrays marked with a maximum are decimated by the producer. Rules the schema cannot state, checked by the producer test: every base64 field decodes to the stated number of bytes (phase_u8 n_pix x n_pix, intensity_db_u8 size x size, xz_u8 nz x nx), reference.method is a key of methods, and the file stays within 256 KiB.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "case_id", "t", "S", "I", "R", "summary"],
+  "required": [
+    "schema",
+    "case_id",
+    "grid",
+    "traps",
+    "shape",
+    "methods",
+    "reference",
+    "feedback",
+    "dynamics",
+    "rearrangement",
+    "summary"
+  ],
   "properties": {
-    "schema": {"const": "example.trace/v1"},
-    "case_id": {"type": "string", "minLength": 1},
-    "t": {"$ref": "#/$defs/series", "description": "Time, days."},
-    "S": {"$ref": "#/$defs/series", "description": "Susceptible, individuals."},
-    "I": {"$ref": "#/$defs/series", "description": "Infected, individuals."},
-    "R": {"$ref": "#/$defs/series", "description": "Recovered, individuals."},
+    "schema": {
+      "const": "dinhot.trace/v1"
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "grid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n_pix",
+        "pad",
+        "bin_um",
+        "half_field_um"
+      ],
+      "properties": {
+        "n_pix": {
+          "type": "integer"
+        },
+        "pad": {
+          "type": "integer"
+        },
+        "bin_um": {
+          "type": "number"
+        },
+        "half_field_um": {
+          "type": "number"
+        }
+      }
+    },
+    "traps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/trap"
+      },
+      "maxItems": 4096,
+      "description": "The target; an empty list for a shaped target, whose shape is filled."
+    },
+    "shape": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "mask_rle"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "ring",
+                "disc",
+                "line",
+                "top_hat",
+                "lg_ring"
+              ]
+            },
+            "mask_rle": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "methods": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^(M[0-9]{2}|B[0-9])$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "history",
+          "final",
+          "trap_intensity"
+        ],
+        "properties": {
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "iteration",
+                "efficiency",
+                "uniformity",
+                "rel_std_pct"
+              ],
+              "properties": {
+                "iteration": {
+                  "type": "integer"
+                },
+                "efficiency": {
+                  "type": "number"
+                },
+                "uniformity": {
+                  "type": "number"
+                },
+                "rel_std_pct": {
+                  "type": "number"
+                }
+              }
+            },
+            "maxItems": 200
+          },
+          "final": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "efficiency",
+              "uniformity",
+              "rel_std_pct",
+              "zero_order",
+              "ghost"
+            ],
+            "properties": {
+              "efficiency": {
+                "type": "number"
+              },
+              "uniformity": {
+                "type": "number"
+              },
+              "rel_std_pct": {
+                "type": "number"
+              },
+              "zero_order": {
+                "type": "number"
+              },
+              "ghost": {
+                "type": "number"
+              }
+            }
+          },
+          "trap_intensity": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "description": "Per method id: history at most 200 points (decimated uniformly, first and last kept), final metrics, and I_m / mean per trap in trap id order."
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "phase_u8",
+        "focal",
+        "axial"
+      ],
+      "properties": {
+        "method": {
+          "$ref": "#/$defs/method_id"
+        },
+        "phase_u8": {
+          "$ref": "#/$defs/base64",
+          "description": "Base64 of n_pix x n_pix bytes: the phase quantized to 256 levels over [0, 2 pi)."
+        },
+        "focal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "size",
+            "bin_um",
+            "db_floor",
+            "intensity_db_u8"
+          ],
+          "properties": {
+            "size": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 192
+            },
+            "bin_um": {
+              "type": "number"
+            },
+            "db_floor": {
+              "type": "number"
+            },
+            "intensity_db_u8": {
+              "$ref": "#/$defs/base64",
+              "description": "Base64 of size x size bytes: dB relative to the mean trap, db_floor..0 mapped to 0..255."
+            }
+          }
+        },
+        "axial": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "trap_id",
+                "z_um",
+                "nz",
+                "nx",
+                "xz_u8"
+              ],
+              "properties": {
+                "trap_id": {
+                  "type": "integer"
+                },
+                "z_um": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "nz": {
+                  "type": "integer"
+                },
+                "nx": {
+                  "type": "integer"
+                },
+                "xz_u8": {
+                  "$ref": "#/$defs/base64"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "The maps of the case's reference method."
+    },
+    "feedback": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "steps"
+          ],
+          "properties": {
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "step",
+                  "rel_std_pct",
+                  "efficiency"
+                ],
+                "properties": {
+                  "step": {
+                    "type": "integer"
+                  },
+                  "rel_std_pct": {
+                    "type": "number"
+                  },
+                  "efficiency": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "dynamics": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "particle",
+            "dt_s",
+            "t_decimation",
+            "x_um",
+            "y_um",
+            "psd",
+            "fc_hz",
+            "depth"
+          ],
+          "properties": {
+            "particle": {
+              "enum": [
+                "bead",
+                "atom"
+              ]
+            },
+            "dt_s": {
+              "type": "number"
+            },
+            "t_decimation": {
+              "type": "integer"
+            },
+            "x_um": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 4000
+            },
+            "y_um": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 4000
+            },
+            "psd": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "f_hz",
+                "p"
+              ],
+              "properties": {
+                "f_hz": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "maxItems": 200
+                },
+                "p": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "maxItems": 200
+                }
+              }
+            },
+            "fc_hz": {
+              "type": "number"
+            },
+            "kappa_pn_per_um": {
+              "type": "number"
+            },
+            "omega_r_hz": {
+              "type": "number"
+            },
+            "depth": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "value",
+                "unit"
+              ],
+              "properties": {
+                "value": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "particle": {
+                    "const": "bead"
+                  }
+                },
+                "required": [
+                  "particle"
+                ]
+              },
+              "then": {
+                "required": [
+                  "kappa_pn_per_um"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "particle": {
+                    "const": "atom"
+                  }
+                },
+                "required": [
+                  "particle"
+                ]
+              },
+              "then": {
+                "required": [
+                  "omega_r_hz"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rearrangement": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "frames",
+            "filling",
+            "min_transient"
+          ],
+          "properties": {
+            "frames": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "t_s",
+                  "occupied",
+                  "moving"
+                ],
+                "properties": {
+                  "t_s": {
+                    "type": "number"
+                  },
+                  "occupied": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "moving": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "from",
+                        "to",
+                        "x_um",
+                        "y_um"
+                      ],
+                      "properties": {
+                        "from": {
+                          "type": "integer"
+                        },
+                        "to": {
+                          "type": "integer"
+                        },
+                        "x_um": {
+                          "type": "number"
+                        },
+                        "y_um": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "maxItems": 120
+            },
+            "filling": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "min_transient": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "summary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["peak_I", "t_peak", "attack_rate"],
+      "required": [
+        "best_method",
+        "notes"
+      ],
       "properties": {
-        "peak_I": {"type": "number", "minimum": 0, "description": "Largest infected count, individuals."},
-        "t_peak": {"type": "number", "minimum": 0, "description": "Time of the peak, days."},
-        "attack_rate": {"type": "number", "minimum": 0, "maximum": 1, "description": "Share of the population ever infected."}
+        "best_method": {
+          "$ref": "#/$defs/method_id",
+          "description": "Lowest rel_std_pct among the methods whose efficiency is at least 0.5 of the best."
+        },
+        "notes": {
+          "$ref": "#/$defs/text"
+        }
       }
     }
   },
   "$defs": {
-    "series": {"type": "array", "minItems": 1, "maxItems": 200, "items": {"type": "number"}}
+    "base64": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9+/]*={0,2}$",
+      "description": "Standard base64."
+    },
+    "method_id": {
+      "type": "string",
+      "pattern": "^(M[0-9]{2}|B[0-9])$",
+      "description": "A method id: M01 to M99 or B0 to B9."
+    },
+    "text": {
+      "type": "object",
+      "description": "Every reader-facing string is bilingual at the source.",
+      "additionalProperties": false,
+      "required": [
+        "en",
+        "es"
+      ],
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "trap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "x_um",
+        "y_um",
+        "z_um",
+        "weight",
+        "charge"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4095
+        },
+        "x_um": {
+          "type": "number",
+          "minimum": -100000.0,
+          "maximum": 100000.0
+        },
+        "y_um": {
+          "type": "number",
+          "minimum": -100000.0,
+          "maximum": 100000.0
+        },
+        "z_um": {
+          "type": "number",
+          "minimum": -100000.0,
+          "maximum": 100000.0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 100
+        },
+        "charge": {
+          "type": "integer",
+          "minimum": -20,
+          "maximum": 20
+        }
+      },
+      "description": "One trap; ids are unique within a target (a rule the schema cannot state)."
+    }
   }
 }
