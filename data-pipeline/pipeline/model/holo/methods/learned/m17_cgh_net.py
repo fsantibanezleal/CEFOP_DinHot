@@ -14,7 +14,8 @@ used for the loss, the baseline and the evaluation alike.
 Targets are point voxels (equal weights, integer lateral bins, equal counts per plane), the form M19 takes: ``Target.from_traps`` with
 traps on the three plane depths. The hybrid runs M19 (volumetric 3D GS, Whyte and Courtial 2005) from the network's phase in what is
 left of ``budget.time_s`` after the network pass (at most ``budget.iterations`` iterations, at least one); ``refine=False`` returns the
-network's phase alone. The acceptance criterion compares the hybrid with M19 alone at the same wall-clock.
+network's phase alone. The refinement is kept only if it raises the volume accuracy of the network's mask (``meta['refine_kept']``): M19
+is a point-voxel method and its refinement can lower the accuracy of the full plane images. The acceptance criterion compares the hybrid with M19 alone at the same wall-clock.
 
 Missing data: with no released model the baseline answers, M19 at 30 iterations (``meta['provenance']`` is ``'baseline'``), as the catalog
 row ``cgh-net`` states. A setup other than 128 x 128 pad 1, a vortex trap, a depth that is not one of the three planes, or a lateral
@@ -34,6 +35,7 @@ from ...core.types import Budget, MethodSpec, Result, Target
 from ...learned import convert, generators
 from ..baseline import m19_multiplane
 from . import _slot
+from ._planes import plane_accuracy
 
 SPEC = MethodSpec(id="M17", name="Multi-plane CNN hologram", family="learned", lane="live", targets=("traps",), dims=(3,))
 GRID = 128
@@ -92,19 +94,28 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
     t0 = time.perf_counter()
     phi = predict(session, amps)
     dt = time.perf_counter() - t0
+    def net_only(refine_iterations: int, kept: bool) -> Result:
+        v = point_trap_fields(phi, setup, target.traps)
+        i_w = trap_intensities(v, target.traps.weight)
+        entry = {"iteration": 0, "efficiency": efficiency(trap_intensities(v)), "uniformity": uniformity(i_w), "rel_std": rel_std(i_w),
+                 "time_s": dt}
+        return Result(phi=phi, history=[entry], fields=v,
+                      meta={"method": SPEC.id, "provenance": "real", "network_s": dt, "refine_iterations": refine_iterations,
+                            "refine_kept": kept, "iterations": 0})
+
     if refine:
         remaining = None if budget.time_s is None else budget.time_s - dt
         if remaining is None or remaining > 0:
             res = m19_multiplane.run(setup, target, budget=Budget(budget.iterations, remaining), rng=rng, init=phi, dz_m=dz)
-            res.meta.update({"method": SPEC.id, "provenance": "real", "network_s": dt, "refine_iterations": res.meta["iterations"]})
-            for h in res.history:
-                h["time_s"] += dt
-            return res
-    v = point_trap_fields(phi, setup, target.traps)
-    i_w = trap_intensities(v, target.traps.weight)
-    entry = {"iteration": 0, "efficiency": efficiency(trap_intensities(v)), "uniformity": uniformity(i_w), "rel_std": rel_std(i_w), "time_s": dt}
-    return Result(phi=phi, history=[entry], fields=v,
-                  meta={"method": SPEC.id, "provenance": "real", "network_s": dt, "refine_iterations": 0, "iterations": 0})
+            # the refinement is kept only if it raises the volume accuracy of the network's mask (the target is known, AC is computable)
+            if plane_accuracy(amps[0], res.phi, setup) > plane_accuracy(amps[0], phi, setup):
+                res.meta.update({"method": SPEC.id, "provenance": "real", "network_s": dt, "refine_iterations": res.meta["iterations"],
+                                 "refine_kept": True})
+                for h in res.history:
+                    h["time_s"] += dt
+                return res
+            return net_only(res.meta["iterations"], False)
+    return net_only(0, False)
 
 
 __all__ = ["SPEC", "run", "planes_from_traps", "predict"]

@@ -40,7 +40,7 @@ def run(slots=SLOTS, models_dir: Path | None = None, heldout_root: Path | None =
             detail.pop(slot, None)
             continue
         if slot == "cgh-net":
-            entry, det = evaluation.evaluate_cgh(models, root / "cgh-heldout.npz")
+            entry, det = evaluation.evaluate_cgh(models, root / "cgh-vol-heldout.npz")
         else:
             entry, det = evaluation.evaluate_warm(models, root / "warmstart-heldout.npz", seeds, budget)
         doc["slots"][slot], detail[slot] = entry, det

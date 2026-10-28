@@ -18,12 +18,12 @@ from pathlib import Path
 
 import numpy as np
 
-from ..core.forward import fft_focal_field
 from ..core.geometry import Setup, focal_bin_m
 from ..core.rng import Rng
 from ..core.traps import Trap, TrapSet
 from ..core.types import Budget, Target
 from ..methods.baseline import m19_multiplane
+from ..methods.learned._planes import plane_accuracy as _plane_accuracy
 from ..methods.baseline import m07_phase_fixed_wgs as m07
 from ..methods.learned import b3_warm_start, m17_cgh_net
 from . import convert, heldout
@@ -41,20 +41,7 @@ def stat(x) -> dict:
 
 # ----------------------------------------------------------------------------------------------------- cgh-net
 
-def plane_accuracy(amps: np.ndarray, phi: np.ndarray, setup: Setup = SETUP128, z_planes=(-8.0, 0.0, 8.0)) -> float:
-    """Volume accuracy of the mask ``phi``: the mean over the planes of ``2 sum(TI) / (sum T^2 + sum I^2)`` with unit-sum plane
-    intensities, the plane field being the engine's focal field of the mask minus the plane's lens phase (same definition as the loss)."""
-    n = setup.n_pix
-    c = np.arange(n) - (n - 1) / 2.0
-    q = (c[None, :] ** 2 + c[:, None] ** 2) / (n / 2.0) ** 2
-    ac = []
-    for a, z in zip(amps, z_planes):
-        i = np.abs(fft_focal_field(phi - z * q, setup)) ** 2
-        i = i / i.sum()
-        t = np.asarray(a, dtype=np.float64) ** 2
-        t = t / t.sum()
-        ac.append(2.0 * np.sum(t * i) / (np.sum(t**2) + np.sum(i**2)))
-    return float(np.mean(ac))
+plane_accuracy = _plane_accuracy
 
 
 def _timed(fn):
