@@ -156,3 +156,49 @@ def load_warm(path: Path):
     gen = [z["gen"][i, : z["gen_count"][i]] for i in range(len(z["gen_count"]))]
     bench = [(str(z["bench_name"][i]), z["bench"][i, : z["bench_count"][i]], int(z["bench_n_pix"][i])) for i in range(len(z["bench_count"]))]
     return gen, bench
+
+
+# ---------------------------------------------------------------------------------- cgh-net, three planes (volumes)
+CGHVOL_SEED = 20269004
+CGHVOL_GEN_PER_KIND = 40
+MAX_VOLUME_TRAPS = 128
+
+
+def _lattice_volume(k: int, spacing: float, shifts) -> tuple[np.ndarray, np.ndarray]:
+    g = (np.arange(k) - (k - 1) / 2) * spacing
+    base = np.stack(np.meshgrid(g, g), -1).reshape(-1, 2)
+    planes = [np.rint(base + np.array(s)).astype(int) for s in shifts]
+    amps = np.stack([np.sqrt(generators.render_spots(p.astype(np.float64), np.ones(len(p)))) for p in planes]).astype(np.float32)
+    traps = np.concatenate([np.column_stack([p, np.full(len(p), generators.PLANE_INDEX[i]), np.ones(len(p))]) for i, p in enumerate(planes)])
+    return amps, traps
+
+
+def bench_volumes() -> dict[str, tuple[np.ndarray, np.ndarray]]:
+    """The benchmark's 3D lattice G5 (5 x 5 x 3 at 8 units, planes without lateral shift) and the 5 x 5 three-plane layout of the
+    M19 acceptance test (spacing 6 voxels, planes shifted laterally by (0, 0), (3, 3), (-3, 3))."""
+    return {"G5_lattice": _lattice_volume(5, 8.0, [(0, 0)] * 3), "M19_three_plane": _lattice_volume(5, 6.0, [(0, 0), (3, 3), (-3, 3)])}
+
+
+def build_cgh_vol(path: Path) -> str:
+    rng = np.random.default_rng(CGHVOL_SEED)
+    amps, traps, kinds = [], [], []
+    for kind in generators.VOLUME_KINDS:
+        for _ in range(CGHVOL_GEN_PER_KIND):
+            a, t = generators.sample_volume(rng, kind)
+            amps.append(a), traps.append(t), kinds.append(kind)
+    bench = bench_volumes()
+    for name, (a, t) in bench.items():
+        amps.append(a), traps.append(t), kinds.append("bench/" + name)
+    tr = np.zeros((len(traps), MAX_VOLUME_TRAPS, 4))
+    cnt = np.zeros(len(traps), dtype=np.int64)
+    for i, t in enumerate(traps):
+        tr[i, : len(t)], cnt[i] = t, len(t)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(path, amps=np.stack(amps), traps=tr, count=cnt, kind=np.array(kinds), seed=np.array(CGHVOL_SEED))
+    return sha256_file(path)
+
+
+def load_cgh_vol(path: Path):
+    """``(amps (n, 3, 128, 128), traps list of (m, 4) arrays, kinds list)``."""
+    z = np.load(path)
+    return z["amps"], [z["traps"][i, : z["count"][i]] for i in range(len(z["count"]))], [str(k) for k in z["kind"]]

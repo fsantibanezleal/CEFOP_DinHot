@@ -23,14 +23,16 @@ SLOTS = ("cgh-net", "warmstart-model")
 def card_texts(slot: str, ck: dict, held_hash: str, held_n: int) -> tuple[dict, dict]:
     c, step = ck["cfg"], ck["step"]
     if slot == "cgh-net":
-        en = (f"{step} steps of batch {c['batch']} on targets drawn on the fly from a seeded generator (data seed {c['data_seed']}, "
-              f"initialisation seed {c['init_seed']}): Gaussian spot sets, rings, discs, lines, Laguerre-Gaussian rings, blobs and strokes on "
-              f"the 128 x 128 focal crop (SLM 128 x 128, padding 1). Unsupervised: the loss is 1 - AC through the differentiable FFT model.")
-        es = (f"{step} pasos de lote {c['batch']} con objetivos generados al vuelo por un generador con semilla (semilla de datos "
-              f"{c['data_seed']}, semilla de inicializacion {c['init_seed']}): conjuntos de puntos gaussianos, anillos, discos, lineas, anillos "
-              f"Laguerre-Gauss, manchas y trazos en el recorte focal de 128 x 128 (SLM de 128 x 128, relleno 1). Sin supervision: la perdida es "
-              f"1 - AC a traves del modelo FFT diferenciable.")
-        what_en, what_es = "targets", "objetivos reservados"
+        en = (f"{step} steps of batch {c['batch']} on three-plane targets drawn on the fly from a seeded generator (data seed {c['data_seed']}, "
+              f"initialisation seed {c['init_seed']}): point voxels at integer bins, equal counts per plane, random sets, shifted lattices, rings, "
+              f"mixed; planes at -8, 0, +8 SLM-limited Rayleigh ranges on the 128 x 128 focal crop (SLM 128 x 128, padding 1). Unsupervised: the "
+              f"loss is 1 - AC, the mean over the planes, through the differentiable FFT model with the plane lens phases.")
+        es = (f"{step} pasos de lote {c['batch']} con objetivos de tres planos generados al vuelo por un generador con semilla (semilla de datos "
+              f"{c['data_seed']}, semilla de inicializacion {c['init_seed']}): voxeles puntuales en bins enteros, igual numero por plano, conjuntos "
+              f"aleatorios, redes desplazadas, anillos, mezclas; planos en -8, 0, +8 rangos de Rayleigh limitados por el SLM en el recorte focal de "
+              f"128 x 128 (SLM de 128 x 128, relleno 1). Sin supervision: la perdida es 1 - AC, promedio sobre los planos, a traves del modelo FFT "
+              f"diferenciable con las fases de lente de cada plano.")
+        what_en, what_es = "volumes", "volumenes reservados"
     else:
         en = (f"{step} steps of batch {c['batch']} on trap sets drawn on the fly from a seeded generator (data seed {c['data_seed']}, "
               f"initialisation seed {c['init_seed']}): square and hexagonal lattices, rings, random sets with a minimum spacing, 3D stacks, up "
@@ -60,13 +62,12 @@ def release(slot: str, run_dir: Path, repo_root: Path = REPO_ROOT) -> dict:
     out.parent.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(5)
     if slot == "cgh-net":
-        net = nets.CghNet(c["channels"])
+        net = nets.CghVolNet(c["channels"])
         net.load_state_dict(ck["net"])
         export.export_cgh(net, out)
-        probes = [(generators.sample_target(rng)[None, None],) for _ in range(8)]
-        held = heldout.learned_root() / "cgh-heldout.npz"
-        gen, _k, bench, _n = heldout.load_cgh(held)
-        n = len(gen) + len(bench)
+        probes = [(generators.sample_volume(rng)[0][None],) for _ in range(8)]
+        held = heldout.learned_root() / "cgh-vol-heldout.npz"
+        n = len(heldout.load_cgh_vol(held)[1])
     else:
         net = nets.SetNet(c["d"], c["heads"], c["layers"], c["ff"])
         net.load_state_dict(ck["net"])
@@ -82,9 +83,9 @@ def release(slot: str, run_dir: Path, repo_root: Path = REPO_ROOT) -> dict:
     inten = export.intensity_parity(net, out, probes) if slot == "cgh-net" else None
     trained_on, held_out = card_texts(slot, ck, heldout.sha256_file(held), n)
     if inten is not None:
-        trained_on = {"en": trained_on["en"] + f" ONNX parity with torch is stated on the reconstructed focal intensity (max |dI| / max I = {inten:.2e}), "
+        trained_on = {"en": trained_on["en"] + f" ONNX parity with torch is stated on the reconstructed plane intensities (max |dI| / max I over the planes = {inten:.2e}), "
                       f"not on the phase, which is ill-conditioned where the SLM field is near zero.",
-                      "es": trained_on["es"] + f" La paridad ONNX con torch se declara sobre la intensidad focal reconstruida (max |dI| / max I = {inten:.2e}), "
+                      "es": trained_on["es"] + f" La paridad ONNX con torch se declara sobre las intensidades de plano reconstruidas (max |dI| / max I = {inten:.2e}), "
                       f"no sobre la fase, mal condicionada donde el campo del SLM es casi nulo."}
     card = export.write_card(slot, out, repo_root, trained_on, held_out)
     rec = {"slot": slot, "config": c, "steps": ck["step"], "onnx_bytes": card["bytes"], "opset": card["opset"],
@@ -107,7 +108,7 @@ def main(argv=None) -> int:
     if not a.export_only:
         from ..model.holo.learned import training
         if a.slot == "cgh-net":
-            training.train_cgh(training.CghConfig(**({"steps": a.steps} if a.steps else {})), run_dir)
+            training.train_cgh_vol(training.CghVolConfig(**({"steps": a.steps} if a.steps else {})), run_dir)
         else:
             kw = {k: v for k, v in (("steps", a.steps), ("unroll", a.unroll)) if v}
             training.train_warmstart(training.WarmConfig(**kw), run_dir)

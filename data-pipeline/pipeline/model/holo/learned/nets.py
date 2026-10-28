@@ -139,3 +139,61 @@ class CghNet(nn.Module):
 
 def param_count(m: nn.Module) -> int:
     return sum(p.numel() for p in m.parameters())
+
+
+class CghVolNet(nn.Module):
+    """cgh-net, multi-plane (DeepCGH's setting): input ``target`` (B, P, 128, 128), the unit-energy amplitudes of the P planes at the
+    depths ``z_planes``; output ``phase`` (B, 1, 128, 128), one SLM phase. The U-Net predicts one complex focal field per plane, each
+    goes to the SLM by the constant inverse DFT and the plane's lens phase ``exp(+i Z q)``, the fields are summed and the output is the
+    phase of the sum (the SLM amplitude is the illumination)."""
+
+    def __init__(self, c: int = 12, z_planes=(-8.0, 0.0, 8.0)):
+        super().__init__()
+        p = len(z_planes)
+        self.p = p
+        self.e1, self.e2, self.e3, self.e4 = _conv(p + 2, c), _conv(c, 2 * c, 2), _conv(2 * c, 4 * c, 2), _conv(4 * c, 8 * c, 2)
+        self.mid = _conv(8 * c, 8 * c, 2)
+        self.u4 = nn.ConvTranspose2d(8 * c, 8 * c, 2, 2)
+        self.d4 = _conv(16 * c, 8 * c)
+        self.u3 = nn.ConvTranspose2d(8 * c, 4 * c, 2, 2)
+        self.d3 = _conv(8 * c, 4 * c)
+        self.u2 = nn.ConvTranspose2d(4 * c, 2 * c, 2, 2)
+        self.d2 = _conv(4 * c, 2 * c)
+        self.u1 = nn.ConvTranspose2d(2 * c, c, 2, 2)
+        self.d1 = _conv(2 * c, c)
+        self.head = nn.Conv2d(c, 2 * p, 1)
+        lin = torch.linspace(-1.0, 1.0, 128)
+        self.register_buffer("coords", torch.stack(torch.meshgrid(lin, lin, indexing="ij")[::-1])[None])
+        cm, sm = dft_matrices(128)
+        self.register_buffer("cm", cm)
+        self.register_buffer("sm", sm)
+        idx = torch.arange(128)
+        self.register_buffer("checker", (1.0 - 2.0 * ((idx[:, None] + idx[None, :]) % 2).float())[None, None])
+        q = (lin[None, :] ** 2 + lin[:, None] ** 2)
+        th = torch.stack([z * q for z in z_planes])[None]
+        self.register_buffer("lc", torch.cos(th))
+        self.register_buffer("ls", torch.sin(th))
+
+    def focal_fields(self, target):
+        x = torch.cat([target * 16.0, self.coords.expand(target.shape[0], -1, -1, -1)], 1)
+        e1 = self.e1(x)
+        e2 = self.e2(e1)
+        e3 = self.e3(e2)
+        e4 = self.e4(e3)
+        m = self.mid(e4)
+        d = self.d4(torch.cat([self.u4(m), e4], 1))
+        d = self.d3(torch.cat([self.u3(d), e3], 1))
+        d = self.d2(torch.cat([self.u2(d), e2], 1))
+        d = self.d1(torch.cat([self.u1(d), e1], 1))
+        return self.head(d)
+
+    def forward(self, target: torch.Tensor) -> torch.Tensor:
+        f = self.focal_fields(target)
+        fr, fi = f[:, : self.p], f[:, self.p:]
+        ar = torch.matmul(self.cm, fr) - torch.matmul(self.sm, fi)
+        ai = torch.matmul(self.cm, fi) + torch.matmul(self.sm, fr)
+        sr = (torch.matmul(ar, self.cm) - torch.matmul(ai, self.sm)) * self.checker
+        si = (torch.matmul(ai, self.cm) + torch.matmul(ar, self.sm)) * self.checker
+        tr = sr * self.lc - si * self.ls
+        ti = sr * self.ls + si * self.lc
+        return torch.atan2(torch.sum(ti, dim=1, keepdim=True), torch.sum(tr, dim=1, keepdim=True))

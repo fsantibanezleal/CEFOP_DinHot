@@ -30,9 +30,9 @@ def check_ops(path: Path) -> set[str]:
     return onnx_ops(path) - WEB_SAFE_OPS
 
 
-def export_cgh(net: nets.CghNet, path: Path) -> None:
+def export_cgh(net: torch.nn.Module, path: Path) -> None:
     net = net.eval().cpu()
-    torch.onnx.export(net, (torch.zeros(1, 1, 128, 128),), str(path), input_names=["target"], output_names=["phase"],
+    torch.onnx.export(net, (torch.zeros(1, getattr(net, "p", 1), 128, 128),), str(path), input_names=["target"], output_names=["phase"],
                       opset_version=OPSET, dynamo=False)
 
 
@@ -75,9 +75,9 @@ def parity(net: torch.nn.Module, path: Path, inputs: list[tuple[np.ndarray, ...]
 
 
 def intensity_parity(net: torch.nn.Module, path: Path, inputs: list[tuple[np.ndarray, ...]]) -> float:
-    """cgh-net parity on the reconstructed focal intensity: the largest ``max|I_torch - I_onnx| / max(I_torch)`` over ``inputs``,
-    with ``I`` the unit-sum focal intensity of the phase mask. The phase itself is ill-conditioned where the SLM field is near zero
-    (atan2), the intensity the mask makes is not."""
+    """cgh-net parity on the reconstructed plane intensities: the largest ``max|I_torch - I_onnx| / max(I_torch)`` over ``inputs``
+    and planes, ``I`` the unit-sum intensity of the mask in each plane. The phase itself is ill-conditioned where the SLM field is near
+    zero (atan2), the intensities the mask makes are not."""
     from . import torch_forward as tf
     net = net.eval().cpu()
     sess = session(path)
@@ -87,7 +87,7 @@ def intensity_parity(net: torch.nn.Module, path: Path, inputs: list[tuple[np.nda
         with torch.no_grad():
             p_t = net(torch.as_tensor(a))
         p_o = torch.as_tensor(sess.run(None, {"target": a})[0])
-        i_t, i_o = tf.focal_intensity(p_t[:, 0], amp), tf.focal_intensity(p_o[:, 0], amp)
+        i_t, i_o = tf.plane_intensities(p_t[:, 0], amp), tf.plane_intensities(p_o[:, 0], amp)
         worst = max(worst, float((i_t - i_o).abs().max() / i_t.max()))
     return worst
 

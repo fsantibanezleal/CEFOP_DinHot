@@ -132,3 +132,29 @@ def accuracy(target_amp: torch.Tensor, inten: torch.Tensor) -> torch.Tensor:
     num = 2.0 * (t * inten).sum(dim=(-2, -1))
     den = (t**2).sum(dim=(-2, -1)) + (inten**2).sum(dim=(-2, -1))
     return num / den
+
+
+# ---------------------------------------------------------------------------------------------- multi-plane (cgh-net)
+Z_PLANES = (-8.0, 0.0, 8.0)   # plane depths in SLM-limited Rayleigh ranges (edge defocus of 8 rad), the three planes of cgh-net
+
+
+def lens_phase(n_pix: int, z: float, device=None) -> torch.Tensor:
+    """``Z (cx^2 + cy^2) / (N/2)^2`` (N, N): the quadratic delay of a plane at depth ``z`` (paraxial lens term of the point-trap model)."""
+    c = pixel_axis(n_pix, device, torch.float32)
+    return z * (c[None, :] ** 2 + c[:, None] ** 2) / (n_pix / 2.0) ** 2
+
+
+def plane_intensities(phi: torch.Tensor, amp_in: torch.Tensor, z_planes=Z_PLANES) -> torch.Tensor:
+    """Unit-sum focal intensity of the mask ``phi`` (B, N, N) in each plane: ``(B, P, N, N)``. The field of plane ``z`` is the
+    centred orthonormal FFT of ``A exp(i (phi - lens_phase(z)))``, which is ``point_trap_fields``' delay ``exp(-i Delta)`` for a trap
+    at depth ``z`` (checked in the tests); with pad 1 each plane carries the whole input power."""
+    n = phi.shape[-1]
+    out = []
+    for z in z_planes:
+        out.append(focal_intensity(phi - lens_phase(n, z, phi.device), amp_in))
+    return torch.stack(out, 1)
+
+
+def volume_accuracy(target_amp: torch.Tensor, inten: torch.Tensor) -> torch.Tensor:
+    """Mean over the planes of the per-plane AC (``accuracy``); ``(B, P, N, N)`` inputs, ``(B,)`` output."""
+    return accuracy(target_amp, inten).mean(1)
