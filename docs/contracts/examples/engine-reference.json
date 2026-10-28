@@ -1,0 +1,1 @@
+{"schema":"dinhot.engine-ref/v1","engine_version":"0.00.000","function":"fft2_centered","tolerance":{"abs":1e-09,"rel":1e-09},"cases":[{"inputs":{"shape":[2,2],"data":[1,0,0,0,0,0,0,0]},"outputs":{"data":[0.5,0,0.5,0,0.5,0,0.5,0]}}]}

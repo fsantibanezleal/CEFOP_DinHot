@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "model-metrics.schema.json",
+  "title": "ModelMetrics",
+  "description": "Contract 2 (artifact), catalog row model-metrics 1.0.0: the held-out metrics of the model slots, written by data-pipeline/pipeline/stages/evaluate.py to data/derived/models/metrics.json. A slot with no released model has no entry.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "engine_version",
+    "slots"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dinhot.model-metrics/v1"
+    },
+    "engine_version": {
+      "$ref": "#/$defs/version"
+    },
+    "slots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "cgh-net": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "held_out_n",
+            "accuracy_vs_gs",
+            "time_ms",
+            "baseline"
+          ],
+          "properties": {
+            "held_out_n": {
+              "type": "integer"
+            },
+            "accuracy_vs_gs": {
+              "$ref": "#/$defs/stat"
+            },
+            "time_ms": {
+              "$ref": "#/$defs/stat"
+            },
+            "baseline": {
+              "const": "M04"
+            }
+          }
+        },
+        "warmstart-model": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "held_out_n",
+            "iterations_to_1pct",
+            "final_rel_std_pct"
+          ],
+          "properties": {
+            "held_out_n": {
+              "type": "integer"
+            },
+            "iterations_to_1pct": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "model",
+                "random"
+              ],
+              "properties": {
+                "model": {
+                  "$ref": "#/$defs/stat"
+                },
+                "random": {
+                  "$ref": "#/$defs/stat"
+                }
+              }
+            },
+            "final_rel_std_pct": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "model",
+                "random"
+              ],
+              "properties": {
+                "model": {
+                  "$ref": "#/$defs/stat"
+                },
+                "random": {
+                  "$ref": "#/$defs/stat"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "stat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "median",
+        "q1",
+        "q3"
+      ],
+      "properties": {
+        "median": {
+          "type": "number"
+        },
+        "q1": {
+          "type": "number"
+        },
+        "q3": {
+          "type": "number"
+        }
+      },
+      "description": "Median and inter-quartile range over the seeds or the held-out set."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d{2}\\.\\d{3}$",
+      "description": "The product version format X.XX.XXX."
+    }
+  }
+}
