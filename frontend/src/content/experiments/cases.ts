@@ -8,6 +8,7 @@ import type { Text } from '../../lib/contract.types';
 import {
   DILEONARDO,
   DILEONARDO_TABLE,
+  KIM_DISORDERED,
   KIM_FEEDBACK,
   NOGRETTE_ABERRATION,
   NOGRETTE_FEEDBACK,
@@ -273,6 +274,56 @@ export const CASES: Record<string, CaseText> = {
       return [
         { label: f.lang === 'es' ? 'Dispersión antes de los pasos (porcentaje)' : 'Spread before the steps (percent)', published: `${f.n(KIM_FEEDBACK.initialPct, { digits: 3 })} (${cond})`, range: null, here: nfmt(f, L.first, { digits: 3 }), reading: ratioText(f, L.first, KIM_FEEDBACK.initialPct) },
         { label: f.lang === 'es' ? 'Dispersión tras los pasos (porcentaje)' : 'Spread after the steps (percent)', published: `${f.n(KIM_FEEDBACK.finalPct, { digits: 3 })} (${cond})`, range: null, here: nfmt(f, L.last, { digits: 3 }), reading: ratioText(f, L.last, KIM_FEEDBACK.finalPct) },
+      ];
+    },
+  },
+
+  C13_disordered_array: {
+    question: {
+      en: 'Does the feedback-corrected uniformity of a lattice hold when the same kind of array sits at random positions with unequal neighbour distances, and which methods keep it?',
+      es: '¿Se sostiene la uniformidad corregida por realimentación de una red cuando una matriz del mismo tipo está en posiciones al azar con distancias desiguales entre vecinas, y qué métodos la conservan?',
+    },
+    setup: {
+      en: 'The case places {n} equal traps at random on integer bins of the Fourier plane, no two closer than {minSep} um and none farther than {half} um from the axis along either direction, with the optics of the atom setup ({wl} nm, {focal} mm, numerical aperture {na}, an SLM of {npix} by {npix} pixels) and a Gaussian input beam. The coordinates of the source are not published, so the draw is the product\'s own, made with a fixed seed, and the case is set against that paper as context and not as a reproduction. Every trap sits on a bin, so the same {nm} methods as the large lattice run on it, with the seed {seed} and a budget of {iters} iterations; the reference method is {ref}. The emulated camera has a gain error of {gainRms} rms and a readout noise of {noise}, and the loop has a gain of {fbGain} and {steps} steps.',
+      es: 'El caso coloca {n} trampas iguales al azar sobre bins enteros del plano de Fourier, sin que dos estén más cerca que {minSep} um ni ninguna más lejos que {half} um del eje en cada dirección, con la óptica del montaje de átomos ({wl} nm, {focal} mm, apertura numérica {na}, un SLM de {npix} por {npix} píxeles) y un haz de entrada gaussiano. Las coordenadas de la fuente no están publicadas, así que el sorteo es propio del producto, hecho con una semilla fija, y el caso se contrasta con ese artículo como contexto y no como reproducción. Toda trampa cae sobre un bin, así que corren sobre él los mismos {nm} métodos que en la red grande, con la semilla {seed} y un presupuesto de {iters} iteraciones; el método de referencia es {ref}. La cámara emulada tiene un error de ganancia de {gainRms} rms y un ruido de lectura de {noise}, y el lazo tiene una ganancia de {fbGain} y {steps} pasos.',
+    },
+    result: {
+      en: 'The reference method {ref} reaches an efficiency of {refEff} and a relative standard deviation of {refSd} percent in the ideal model, while weighted GS gives {sd06} percent and Gerchberg-Saxton {sd04} percent. The camera loop takes the measured spread from {fb0} percent to {fbN} percent in {steps} steps. Kim et al. 2019 report {pubFinal} percent after {pubSteps} adaptive steps on {pubFoci} disordered foci; the spread here is {below} that value, a ratio of {fbRatio}, and the two are not comparable: the emulated camera has a readout noise of {noise}, the beam here is Gaussian where the source used a flat one on a device of {pubPix} pixels, and the traps are the product\'s own draw. The published figure is context and no range of the case is built on it. {okAll} of {ofAll} methods with checked ranges sit inside all of them.',
+      es: 'El método de referencia {ref} alcanza una eficiencia de {refEff} y una desviación estándar relativa de {refSd} por ciento en el modelo ideal, mientras que el GS ponderado da {sd06} por ciento y Gerchberg-Saxton {sd04} por ciento. El lazo de cámara baja la dispersión medida de {fb0} por ciento a {fbN} por ciento en {steps} pasos. Kim et al. 2019 informan {pubFinal} por ciento tras {pubSteps} pasos adaptativos sobre {pubFoci} focos desordenados; la dispersión aquí queda {below} ese valor, una razón de {fbRatio}, y los dos no son comparables: la cámara emulada tiene un ruido de lectura de {noise}, el haz aquí es gaussiano donde la fuente usó uno plano sobre un dispositivo de {pubPix} píxeles, y las trampas son un sorteo propio del producto. La cifra publicada es contexto y ningún rango del caso se apoya en ella. {okAll} de {ofAll} métodos con rangos verificados caen dentro de todos ellos.',
+    },
+    vals: (v, f) => {
+      const p = v.manifest.params;
+      const L = loop(v);
+      const t = 'traps' in p.target ? p.target.traps : [];
+      let minSq = Infinity;
+      for (let i = 0; i < t.length; i += 1)
+        for (let j = i + 1; j < t.length; j += 1) minSq = Math.min(minSq, (t[i].x_um - t[j].x_um) ** 2 + (t[i].y_um - t[j].y_um) ** 2);
+      const half = t.reduce((m, x) => Math.max(m, Math.abs(x.x_um), Math.abs(x.y_um)), 0);
+      return {
+        ...common(v, f),
+        minSep: f.n(Number.isFinite(minSq) ? Math.sqrt(minSq) : undefined, { digits: 3 }),
+        half: f.n(t.length ? half : undefined, { digits: 3 }),
+        gainRms: f.n(p.feedback?.camera.gain_rms, { digits: 2 }),
+        noise: f.n(p.feedback?.camera.noise_rms, { digits: 2 }),
+        fbGain: f.n(p.feedback?.gain, { digits: 2 }),
+        steps: f.n(L.steps, { decimals: 0 }),
+        fb0: f.n(L.first, { digits: 3 }),
+        fbN: f.n(L.last, { digits: 3 }),
+        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
+        sd04: nfmt(f, metricOf(v, 'M04', 'rel_std_pct'), { digits: 3 }),
+        pubFinal: f.n(KIM_DISORDERED.finalPct, { digits: 3 }),
+        pubSteps: f.n(KIM_DISORDERED.steps, { decimals: 0 }),
+        pubFoci: f.n(KIM_DISORDERED.foci, { decimals: 0 }),
+        pubPix: f.n(KIM_DISORDERED.pixels, { decimals: 0 }),
+        fbRatio: f.n(L.last !== undefined ? L.last / KIM_DISORDERED.finalPct : undefined, { digits: 3 }),
+        below: L.last !== undefined && L.last <= KIM_DISORDERED.finalPct ? (f.lang === 'es' ? 'por debajo de' : 'below') : f.lang === 'es' ? 'por encima de' : 'above',
+      };
+    },
+    extra: (v, f) => {
+      const L = loop(v);
+      const cond = pick(KIM_DISORDERED.conditions, f.lang);
+      return [
+        { label: f.lang === 'es' ? 'Dispersión tras los pasos (porcentaje)' : 'Spread after the steps (percent)', published: `${f.n(KIM_DISORDERED.finalPct, { digits: 3 })} (${cond})`, range: null, here: nfmt(f, L.last, { digits: 3 }), reading: ratioText(f, L.last, KIM_DISORDERED.finalPct) },
       ];
     },
   },
