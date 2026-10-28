@@ -1,1 +1,1 @@
-{"schema":"dinhot.model-metrics/v1","slots":{},"engine_version":"0.02.000"}
+{"schema":"dinhot.model-metrics/v1","slots":{"cgh-net":{"held_out_n":162,"accuracy_vs_gs":{"median":1.140030806202326,"q1":1.1021964864718425,"q3":1.1603704751445811},"time_ms":{"median":7485.530449979706,"q1":7445.30659999873,"q3":7554.6963000088},"baseline":"M04"}},"engine_version":"0.02.000"}
