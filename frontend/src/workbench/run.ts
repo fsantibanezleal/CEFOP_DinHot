@@ -5,7 +5,7 @@
 // replay lane stays on screen.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CaseData } from '../api/artifacts';
-import { cghApplies, encodeCghTarget, loadSlot, predictCghPhase, predictWarmstart, type SlotAnswer, type SlotId } from '../lib/ort';
+import { cghApplies, encodeCghPlanes, loadSlot, predictCghPhase, predictWarmstart, type SlotAnswer, type SlotId } from '../lib/ort';
 import type { ParamsRecord, Trap } from '../lib/contract.types';
 import { entryFor, loadReadiness, modelAnswers } from '../readiness/readiness';
 import { getEngine, NotLive, type Engine, type Progress } from './engine';
@@ -117,10 +117,12 @@ export function useLiveRun(inp: LiveInputs): LiveState & { cancel: () => void } 
   const [state, setState] = useState<LiveState>(IDLE);
   const { data, methodId, device, iterations, backend, traps, edited, aberration, aberrationEdited, engine, slots } = inp;
   const liveOk = !!engine?.available && engine.client.liveMethods().includes(methodId);
-  const cghByModel = methodId === 'M17' && slots.cgh?.answered === 'model' && !!data && cghApplies(data.manifest.params.setup, slots.cgh.card);
+  const cghFit = methodId === 'M17' && slots.cgh?.answered === 'model' && !!data ? cghApplies(data.manifest.params.setup, traps, slots.cgh.card) : null;
+  const cghByModel = !!cghFit?.ok;
+  const cghWhy = cghFit && !cghFit.ok ? cghFit.reason : null;
   // The slot a method uses, for the label: cgh-net serves M17, the warm start serves M07.
   const slot = methodId === 'M17' ? slots.cgh : methodId === 'M07' ? slots.warm : null;
-  const slotLabel = slot ? { slot: slot.slot, answered: slot.answered } : null;
+  const slotLabel = slot ? { slot: slot.slot, answered: cghWhy ? ('baseline' as const) : slot.answered } : null;
 
   const sched = useRef<LiveScheduler | null>(null);
   useEffect(() => {
@@ -133,8 +135,8 @@ export function useLiveRun(inp: LiveInputs): LiveState & { cancel: () => void } 
   }, [engine]);
 
   const key = useMemo(
-    () => JSON.stringify([data?.manifest.case_id, methodId, device, iterations, backend, traps, aberration, liveOk, cghByModel, slot?.answered ?? null]),
-    [data, methodId, device, iterations, backend, traps, aberration, liveOk, cghByModel, slot],
+    () => JSON.stringify([data?.manifest.case_id, methodId, device, iterations, backend, traps, aberration, liveOk, cghByModel, slotLabel?.answered ?? null]),
+    [data, methodId, device, iterations, backend, traps, aberration, liveOk, cghByModel, slotLabel?.answered],
   );
 
   useEffect(() => {
@@ -153,7 +155,7 @@ export function useLiveRun(inp: LiveInputs): LiveState & { cancel: () => void } 
         const base = paramsFor(data, { device, iterations, traps, edited, aberration, aberrationEdited });
         if (cghByModel && slots.cgh?.card) {
           const trace = data.trace;
-          const { input } = encodeCghTarget(traps, trace.grid.bin_um, slots.cgh.card.grid ?? 128);
+          const { input } = encodeCghPlanes(traps, m.params.setup, slots.cgh.card.grid ?? 128);
           const phase = await predictCghPhase(input, slots.cgh.card.grid ?? 128);
           if (!isCurrent()) return;
           const wrapped = Float32Array.from(phase, (p) => ((p % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI));
@@ -169,8 +171,8 @@ export function useLiveRun(inp: LiveInputs): LiveState & { cancel: () => void } 
           return;
         }
         if (!engine) return;
-        // M17's baseline is GS (M04) at 30 iterations; the warm start feeds M07 its trap phases when the released model answers.
-        const method = methodId === 'M17' ? 'M04' : methodId;
+        // M17's baseline is M19 (multi-plane GS) at 30 iterations, as the Python slot answers; the warm start feeds M07 its trap phases when the released model answers.
+        const method = methodId === 'M17' ? 'M19' : methodId;
         const run = methodId === 'M17' ? 30 : iterations;
         let trapPhases: Float64Array | undefined;
         if (methodId === 'M07' && slots.warm?.answered === 'model') {
