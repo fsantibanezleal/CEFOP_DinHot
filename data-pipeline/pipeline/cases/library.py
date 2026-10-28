@@ -1,4 +1,4 @@
-"""DinHot's twelve cases C01 to C12 (SDD, section Cases), four categories.
+"""DinHot's thirteen cases C01 to C13 (SDD, section Cases), four categories.
 
 Each case is a params record (``docs/contracts/schemas/params-record.schema.json``) plus the reader-facing metadata the
 manifest carries: bilingual title, category and expected band, the real or synthetic flag and the published anchor. The
@@ -115,7 +115,7 @@ def disordered_set(n: int, half_bins: int, min_bins: int, seed: int, s: dict) ->
     return [_trap(i, x * b, y * b) for i, (x, y) in enumerate(pts)]
 
 
-DISORDERED_819 = dict(n=819, half_bins=100, min_bins=5, seed=SEED + 819)   # C03's second target and benchmark G6's odd seeds
+DISORDERED_819 = dict(n=819, half_bins=100, min_bins=5, seed=SEED + 819)   # case C13's target and benchmark G6's odd seeds
 
 
 def _record(case_id: str, setup: dict, target: dict, methods: list[str], reference: str, expect: dict, *,
@@ -219,13 +219,13 @@ def _build() -> list[Case]:
                "3.5 s in the browser engine); the 3D, vortex, high-NA and rearrangement cases keep off-bin traps. Phase-fixed weighted GS plus three adaptive camera steps "
                "bring a 22 percent measured spread to the percent level. A rubidium atom in one trap oscillates at the "
                "radial frequency the computed intensity curvature predicts. The disordered 819-trap array of Kim et al. 2019 is "
-               "drawn by the library and benchmarked as the odd seeds of G6.",
+               "case C13 and the odd seeds of benchmark G6.",
          "es": "Mil veinticuatro trampas iguales, a 10 bins focales (4,98 um) una de otra y todas sobre un bin de la FFT, de modo que "
                "aplica la forma FFT y la vía en vivo cumple su presupuesto de 1500 ms (la forma de trampa puntual con 1024 trampas fuera de "
                "bin midió 1,0 a 3,5 s en el motor del navegador); los casos 3D, de vórtice, NA alta y reordenamiento conservan trampas fuera de bin. GS ponderado con fase fija más tres pasos adaptativos de cámara "
                "llevan una dispersión medida de 22 por ciento al nivel de un por ciento. Un átomo de rubidio en una "
                "trampa oscila a la frecuencia radial que predice la curvatura de la intensidad calculada. La matriz desordenada de 819 "
-               "trampas de Kim et al. 2019 la genera la biblioteca y se mide como las semillas impares de G6."},
+               "trampas de Kim et al. 2019 es el caso C13 y las semillas impares del benchmark G6."},
         "synthetic",
         {"source": {"en": "Kim et al. 2019, Opt. Lett. 44, 3178 (22 percent to 1.4 percent in three steps); Ebadi et al. "
                           "2021 for the array size",
@@ -251,6 +251,32 @@ def _build() -> list[Case]:
         {"source": {"en": "Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, Table 1",
                     "es": "Di Leonardo, Ianni y Ruocco 2007, Opt. Express 15, 1913, Tabla 1"},
          "url": "https://doi.org/10.1364/OE.15.001913"}, "anchor")
+
+    add("C13_disordered_array", {"en": "Disordered array, 819 traps", "es": "Matriz desordenada, 819 trampas"}, CAT_ARRAYS,
+        _record("C13_disordered_array", ATOM, {"kind": "traps", "traps": disordered_set(s=ATOM, **DISORDERED_819)},
+                ["M01", "M02", "M04", "M06", "M07", "M12", "B3"], "M07",
+                {"efficiency": [0.3, hi], "rel_std_pct": [lo, 20.0], "feedback_initial_rel_std_pct": [10.0, 35.0],
+                 "feedback_final_rel_std_pct": [lo, 5.0]},
+                feedback={"gain": 0.9, "steps": 5, "camera": {"gain_rms": 0.22, "noise_rms": 0.0, "blur_bins": 0.0}}),
+        {"en": "Eight hundred and nineteen equal traps drawn at random on integer FFT bins, at least 5 bins (2.49 um) apart, in a "
+               "square of 100 bins (49.8 um) half-width: the geometry of the disordered array of Kim et al. 2019, whose "
+               "coordinates are not published, so the draw is DinHot's own (seeded, portable). Every trap sits on a bin, so "
+               "the FFT form applies. Phase-fixed weighted GS plus five adaptive camera steps are measured against the "
+               "1.2 percent non-uniformity that source reached after five steps. Unlike a lattice, the disorder puts "
+               "neighbours at unequal distances, so the crosstalk between traps differs trap by trap.",
+         "es": "Ochocientas diecinueve trampas iguales sorteadas al azar sobre bins enteros de la FFT, separadas al menos 5 bins "
+               "(2,49 um), en un cuadrado de 100 bins (49,8 um) de semilado: la geometría de la matriz desordenada de Kim et "
+               "al. 2019, cuyas coordenadas no están publicadas, así que el sorteo es propio de DinHot (con semilla, "
+               "portable). Toda trampa cae sobre un bin, de modo que aplica la forma FFT. El GS ponderado con fase fija más "
+               "cinco pasos adaptativos de cámara se miden contra la no uniformidad de 1,2 por ciento que esa fuente alcanzó "
+               "tras cinco pasos. A diferencia de una red, el desorden pone vecinas a distancias desiguales, así que la "
+               "diafonía entre trampas cambia de trampa en trampa."},
+        "synthetic",
+        {"source": {"en": "Kim et al. 2019, Opt. Lett. 44, 3178 (819 disordered foci, non-uniformity 1.2 +- 0.11 percent after "
+                          "five adaptive steps; a flat beam and a 768-pixel device, not this build's)",
+                    "es": "Kim et al. 2019, Opt. Lett. 44, 3178 (819 focos desordenados, no uniformidad de 1,2 +- 0,11 por "
+                          "ciento tras cinco pasos adaptativos; haz plano y dispositivo de 768 píxeles, no los de esta versión)"},
+         "url": "https://doi.org/10.1364/OL.44.003178"}, "provisional")
 
     # --- Shaped and 3D ------------------------------------------------------------------------------------------
     add("C04_disc_crosstalk", {"en": "Disc potential with the crosstalk model", "es": "Potencial de disco con el modelo de diafonía"},
