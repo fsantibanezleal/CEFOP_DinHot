@@ -1,4 +1,4 @@
-// The hand-drawn figures of the Methodology page, one or more per topic. Theme tokens only (`dg-*` classes and `var(--color-*)`),
+// The hand-drawn figures of the Methodology page, one or more per topic. Theme tokens only (the `dg-*` classes and the shell colour tokens),
 // labels in both languages through the translator `t`, sized to the container by the viewBox. Schematics carry no measured
 // DinHot number: every value written in a figure is a symbol or a published quantity named in the topic's text.
 import { Arrow, ArrowDefs, Box, Label, PathArrow, Svg, type Tr } from './svg';

@@ -29,7 +29,7 @@ import { laneOf } from './engine';
 import { FocalGroup } from './FocalGroup';
 import { HologramGroup } from './HologramGroup';
 import { isShaped, methodLabel, replayMaps, replayResult, trapsOf, UnavailableContext, ViewContext, type DeviceChoice, type Region, type Selection } from './model';
-import { useEngine, useLiveRun, useSlots } from './run';
+import { paramsFor, useEngine, useGpuProbe, useLiveRun, useSlots, type GpuProbe } from './run';
 import { addTrap, deleteTrap, moveTrap } from './traps';
 import { TrapsGroup } from './TrapsGroup';
 import { ActionsContext, CASE_ROWS, LOADING, Pending, type Actions, type EditMode } from './ui';
@@ -51,6 +51,8 @@ interface Rail {
   fbStep: number;
   zmode: number;
   corrected: boolean;
+  plane: 'xz' | 'yz';
+  volThreshold: number;
   overrides: Record<number, number>;
   traps: Trap[] | null;
   region: Region | null;
@@ -74,6 +76,8 @@ function railOf(data: CaseData): Rail {
     fbStep: data.trace.feedback?.steps[0]?.step ?? 0,
     zmode: 4,
     corrected: false,
+    plane: 'xz',
+    volThreshold: 0.2,
     overrides: {},
     traps: null,
     region: null,
@@ -83,10 +87,32 @@ function railOf(data: CaseData): Rail {
 
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
+
+/** The first clause of an engine message, for a rail line a few words wide; the full text stays in the title and the backend hint. */
+function shortReason(reason: string): string {
+  const head = reason.split(/[:(]/)[0].trim();
+  return head.length > 48 ? `${head.slice(0, 45).trim()}...` : head;
+}
+const backendReason = (reason: string | null): string | undefined => reason ?? undefined;
+
+/** One line in the rail: which backend computed the picture on screen, or what the browser offers when nothing has run yet. */
+function backendLine(lang: 'en' | 'es', used: 'cpu' | 'gpu' | null, gpu: GpuProbe | null, fallback: string | null): string {
+  const es = lang === 'es';
+  const name = used === 'gpu' ? 'WebGPU' : 'CPU';
+  if (used) {
+    if (fallback) return es ? `Calculado con ${name}. WebGPU no disponible: ${shortReason(fallback)}.` : `Computed on ${name}. WebGPU unavailable: ${shortReason(fallback)}.`;
+    return es ? `Calculado con ${name}.` : `Computed on ${name}.`;
+  }
+  if (!gpu) return es ? 'Consultando WebGPU.' : 'Asking the browser for WebGPU.';
+  if (gpu.ok) return es ? 'WebGPU disponible; el cálculo corre en CPU salvo que lo elija.' : 'WebGPU is available; the run uses it when it can.';
+  return es ? `WebGPU no disponible: ${shortReason(gpu.reason)}. Se usa CPU.` : `WebGPU unavailable: ${shortReason(gpu.reason)}. CPU is used.`;
+}
+
 export function Workbench() {
   const lang = useShellLang();
   const readiness = useReadiness();
   const engine = useEngine();
+  const gpu = useGpuProbe(engine);
   const slots = useSlots();
   const index = useArtifact((s) => loadIndex(s), []);
   const [caseId, setCaseId] = useState<string | null>(null);
@@ -173,14 +199,19 @@ export function Workbench() {
       fbStep: r.fbStep,
       zmode: r.zmode,
       corrected: r.corrected,
+      coeffKey: coeffs.join(','),
+      plane: r.plane,
+      volThreshold: r.volThreshold,
       slot: live.slot,
       running: live.running,
       progress: live.progress,
       liveError: live.error,
+      cancelled: live.cancelled,
+      runParams: paramsFor(data, { device: r.device, iterations: r.iterations, traps, edited, aberration: aberrationEdited ? noll : null, aberrationEdited }),
       engineAvailable: !!engine?.available,
       liveMethods,
     };
-  }, [data, r, params, replay, replayRes, live, method, traps, edited, coeffs, aberrationEdited, engine, liveMethods]);
+  }, [data, r, params, replay, replayRes, live, method, traps, edited, coeffs, aberrationEdited, noll, engine, liveMethods]);
 
   const actions: Actions = useMemo(
     () => ({
@@ -208,6 +239,8 @@ export function Workbench() {
       zmode: r?.zmode ?? 4,
       setCorrected: (on) => patch({ corrected: on, overrides: {} }),
       setCoeff: (j, v) => patch({ overrides: { ...(r?.overrides ?? {}), [j]: v } }),
+      setPlane: (plane) => patch({ plane }),
+      setVolThreshold: (volThreshold) => patch({ volThreshold }),
     }),
     [r?.mode, r?.zmode, r?.trapId, r?.overrides, traps, halfField, editError, patch],
   );
@@ -276,19 +309,23 @@ export function Workbench() {
               value={r.backend}
               onChange={(v) => patch({ backend: v as Rail['backend'] })}
               options={[
-                { id: 'auto', label: { en: 'Auto', es: 'Auto' } },
+                { id: 'auto', label: { en: 'Auto', es: 'Auto' }, hint: { en: 'WebGPU when the browser offers it, else CPU.', es: 'WebGPU cuando el navegador lo ofrece, si no CPU.' } },
                 { id: 'cpu', label: { en: 'CPU', es: 'CPU' } },
-                { id: 'gpu', label: { en: 'WebGPU', es: 'WebGPU' } },
+                { id: 'gpu', label: { en: 'WebGPU', es: 'WebGPU' }, hint: gpu ? (gpu.ok ? { en: `Adapter: ${gpu.adapter || 'unnamed'}.`, es: `Adaptador: ${gpu.adapter || 'sin nombre'}.` } : { en: `Not available here: ${gpu.reason}.`, es: `No disponible aquí: ${gpu.reason}.` }) : undefined },
               ]}
             />
           ) : (
             <p className="caos-plot-note">{lang === 'es' ? 'Motor en vivo: no está en esta versión; las vistas se reproducen de la generación.' : 'Live engine: not on this build; the views replay the bake.'}</p>
           )}
-          {sel.maps?.backend && (
-            <p className="caos-plot-note" data-backend={sel.maps.backend}>
-              {lang === 'es' ? 'Calculado con' : 'Computed on'} {sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}
-              {sel.maps.fallbackReason ? (lang === 'es' ? ` (alternativa: ${sel.maps.fallbackReason})` : ` (fallback: ${sel.maps.fallbackReason})`) : ''}.
+          {engine?.available && (
+            <p className="caos-plot-note" data-backend={sel.maps?.backend ?? 'none'} title={backendReason(sel.maps?.fallbackReason ?? (gpu && !gpu.ok ? gpu.reason : null))}>
+              {backendLine(lang, sel.maps?.lane === 'live' ? sel.maps.backend : null, gpu, sel.maps?.fallbackReason ?? null)}
             </p>
+          )}
+          {live.running && (
+            <button type="button" className="btn" onClick={live.cancel} data-cancel-run="">
+              {lang === 'es' ? 'Cancelar la corrida' : 'Cancel the run'}
+            </button>
           )}
           {params.dynamics && (
             <>
@@ -326,17 +363,19 @@ export function Workbench() {
       label: { en: 'View', es: 'Vista' },
       content: (
         <>
-          <ChipGroup
-            id="stage"
-            label={{ en: 'Mask stage', es: 'Etapa de la máscara' }}
-            value={r.stage}
-            onChange={(v) => patch({ stage: v as DeviceStage })}
-            options={[
-              { id: 'ideal', label: { en: 'Ideal', es: 'Ideal' } },
-              { id: 'quantized', label: { en: 'Quantized', es: 'Cuantizada' }, disabled: r.device !== 'case' || !params.device },
-              { id: 'crosstalk', label: { en: 'Crosstalk', es: 'Diafonía' }, disabled: r.device !== 'case' || !params.device?.crosstalk },
-            ]}
-          />
+          {params.device && (
+            <ChipGroup
+              id="stage"
+              label={{ en: 'Mask stage', es: 'Etapa de la máscara' }}
+              value={r.stage}
+              onChange={(v) => patch({ stage: v as DeviceStage })}
+              options={[
+                { id: 'ideal', label: { en: 'Ideal', es: 'Ideal' } },
+                { id: 'quantized', label: { en: 'Quantized', es: 'Cuantizada' }, disabled: r.device !== 'case' || !params.device },
+                { id: 'crosstalk', label: { en: 'Crosstalk', es: 'Diafonía' }, disabled: r.device !== 'case' || !params.device?.crosstalk },
+              ]}
+            />
+          )}
           <Knob
             id="db-floor"
             label={{ en: 'Colour floor', es: 'Piso del color' }}
@@ -458,9 +497,13 @@ export function Workbench() {
           : null;
     return {
       id,
-      label: methodLabel(id),
+      // The chip carries the id so twelve methods fit in a few rows (ADR-0071 rule 6); the note under the group names the active one in full.
+      label: { en: id, es: id },
       lane: lane1,
-      note: slotNote ?? (lane1 === 'live' ? { en: 'Computed live in your browser.', es: 'Calculado en vivo en su navegador.' } : { en: 'Replayed from the bake.', es: 'Reproducido de la generación.' }),
+      note: {
+        en: `${methodLabel(id).en}. ${slotNote ? slotNote.en : lane1 === 'live' ? 'Computed live in your browser.' : 'Replayed from the bake.'}`,
+        es: `${methodLabel(id).es}. ${slotNote ? slotNote.es : lane1 === 'live' ? 'Calculado en vivo en su navegador.' : 'Reproducido de la generación.'}`,
+      },
     };
   };
 
@@ -508,6 +551,8 @@ export function Workbench() {
                     fbStep: r.fbStep,
                     zmode: r.zmode,
                     corrected: r.corrected,
+                    plane: r.plane,
+                    volThreshold: r.volThreshold,
                     coeffs: coeffs.join(','),
                     mode: r.mode,
                     traps: sameJson(traps, baseTraps) ? 'case' : traps.map((t) => `${t.id}:${t.x_um}:${t.y_um}`).join(','),

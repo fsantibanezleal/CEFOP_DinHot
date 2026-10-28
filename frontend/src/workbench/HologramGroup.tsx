@@ -103,6 +103,13 @@ export function PhaseMaskView({ sel }: { sel: Selection }) {
   );
 }
 
+/** The three effects of the closed form at an ideal SLM: nothing is lost, every factor is 1. */
+const IDEAL_FACTORS = [
+  { id: 'quant', label: { en: 'Quantization (none)', es: 'Cuantización (ninguna)' }, value: 1 },
+  { id: 'fill', label: { en: 'Fill factor 1', es: 'Factor de llenado 1' }, value: 1 },
+  { id: 'edge', label: { en: 'Pixel aperture at the window edge', es: 'Apertura del píxel en el borde de la ventana' }, value: 1 },
+];
+
 export function DeviceEffectsView({ sel }: { sel: Selection }) {
   const { t } = useT();
   const fmt = useFmt();
@@ -149,16 +156,12 @@ export function DeviceEffectsView({ sel }: { sel: Selection }) {
       </PlotCard>
       <PlotCard fill title={{ en: 'What each effect costs, in closed form', es: 'Lo que cuesta cada efecto, en forma cerrada' }} {...c} dataKey={stateKey}>
         <Fill quiet>
-          {dev ? (
-            <BarChart
-              height="fill"
-              title={{ en: 'Efficiency factor of each device effect', es: 'Factor de eficiencia de cada efecto del dispositivo' }}
-              axis={{ label: { en: 'Fraction of the ideal light', es: 'Fracción de la luz ideal' }, format: { decimals: 3 }, range: [0, 1] }}
-              data={factors.map((f) => ({ id: f.id, label: f.label, value: f.value, tone: f.value > 0.9 ? ('good' as const) : f.value > 0.7 ? ('warn' as const) : ('bad' as const) }))}
-            />
-          ) : (
-            <Verdict title={{ en: 'Ideal SLM', es: 'SLM ideal' }} tone="good" verdict={{ en: 'No device model: every factor is 1.', es: 'Sin modelo del dispositivo: todos los factores valen 1.' }} />
-          )}
+          <BarChart
+            height="fill"
+            title={{ en: 'Efficiency factor of each device effect', es: 'Factor de eficiencia de cada efecto del dispositivo' }}
+            axis={{ label: { en: 'Fraction of the ideal light', es: 'Fracción de la luz ideal' }, format: { decimals: 3 }, range: [0, 1] }}
+            data={(dev ? factors : IDEAL_FACTORS).map((f) => ({ id: f.id, label: f.label, value: f.value, tone: f.value > 0.9 ? ('good' as const) : f.value > 0.7 ? ('warn' as const) : ('bad' as const) }))}
+          />
         </Fill>
       </PlotCard>
     </ViewsRow>

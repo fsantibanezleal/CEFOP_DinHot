@@ -1,81 +1,19 @@
-// The door of the live lane. The engine is the TypeScript port of the Python holography core, built by unit T1 at
-// frontend/src/engine/holo/client.ts with the fixed client API below. This adapter loads that module when it is on the branch
-// (a glob import: it matches nothing now and the module after the merge, with no code change) and otherwise answers with
-// `NotLive`, so every view runs on the replay lane (the committed trace) and says so. The types are the contract of T1's
-// client, copied here so the workbench compiles before and after the merge.
-import type { ParamsRecord } from '../lib/contract.types';
+// The door of the live lane. The engine is the TypeScript port of the Python holography core (unit T1,
+// frontend/src/engine/holo/client.ts). The client module is loaded lazily, by a glob import, the first time a view asks for it, so the
+// main bundle does not carry the engine; where it cannot be loaded the adapter answers `NotLive` and every view runs on the replay
+// lane (the committed trace) and says so. The types are the client's own, imported as types only.
+import type { EngineClient, Progress, RunRequest, RunResult, ParticleRequest, ParticleResult } from '../engine/holo/client';
+import { AbortError, NotLive } from '../engine/holo/types';
 
-export interface RunRequest {
-  params: ParamsRecord;
-  method: string;
-  options?: {
-    iterations?: number;
-    device?: 'ideal' | 'case';
-    backend?: 'auto' | 'cpu' | 'gpu';
-    trapPhases?: Float64Array;
-    traps?: { id: number; x_um: number; y_um: number; z_um: number; weight: number; charge: number }[];
-  };
-}
-export interface Progress {
-  iteration: number;
-  efficiency: number;
-  uniformity: number;
-  relStdPct: number;
-}
-export interface RunResult {
-  method: string;
-  backend: 'cpu' | 'gpu';
-  fallbackReason: string | null;
-  nPix: number;
-  pad: number;
-  binUm: number;
-  halfFieldUm: number;
-  phase: Float64Array;
-  displayedPhase: Float64Array | null;
-  focal: Float32Array;
-  focalSize: number;
-  trapIntensity: Float64Array;
-  history: Progress[];
-  metrics: { efficiency: number; uniformity: number; relStdPct: number; zeroOrder: number; ghost: number };
-  timeMs: number;
-}
-export interface ParticleRequest {
-  focal: Float32Array;
-  focalSize: number;
-  binUm: number;
-  dynamics: NonNullable<ParamsRecord['dynamics']>;
-  seed: number;
-}
-export interface ParticleResult {
-  xUm: Float64Array;
-  yUm: Float64Array;
-  dtS: number;
-  psd: { fHz: Float64Array; p: Float64Array };
-  fcHz: number;
-  stiffness: { value: number; unit: string };
-}
-export interface EngineClient {
-  liveMethods(): string[];
-  run(req: RunRequest, onProgress?: (p: Progress) => void): Promise<RunResult>;
-  particle(req: ParticleRequest): Promise<ParticleResult>;
-  axialCut(req: { phase: Float64Array; params: ParamsRecord; trapId: number; nz: number }): Promise<{ xz: Float32Array; nx: number; nz: number; zUm: [number, number] }>;
-  cancel(): void;
-  dispose(): void;
-}
-
-/** Thrown by a client that cannot compute the request live: the replay lane answers instead. */
-export class NotLive extends Error {
-  constructor(message = 'the live engine is not available in this build') {
-    super(message);
-    this.name = 'NotLive';
-  }
-}
+export type { EngineClient, Progress, RunRequest, RunResult, ParticleRequest, ParticleResult };
+export { AbortError, NotLive };
 
 const notLive: EngineClient = {
   liveMethods: () => [],
-  run: () => Promise.reject(new NotLive()),
-  particle: () => Promise.reject(new NotLive()),
-  axialCut: () => Promise.reject(new NotLive()),
+  run: (req) => Promise.reject(new NotLive(req.method)),
+  particle: () => Promise.reject(new NotLive('particle')),
+  axialCut: () => Promise.reject(new NotLive('axial cut')),
+  gpu: () => Promise.resolve({ ok: false, reason: 'the live engine is not on this build' }),
   cancel: () => undefined,
   dispose: () => undefined,
 };
