@@ -16,8 +16,9 @@ for learned losses; ``PAPER_LR`` records that value. The loss here is the quadra
 
 Optimizer: Adam (``beta1 = 0.9``, ``beta2 = 0.999``, ``eps = 1e-8``) with the learning rate ``DEFAULT_LR``, tuned for
 this loss: the paper's 0.001 moves a pixel at most 0.03 rad in 30 iterations. The tuning record (10x10 task, 256 x 256
-pixels, 30 iterations, relative std of ``I_m / w_m`` in percent) is in the E3 report
-(``wip/dinhot/e3-methods-advanced-2026-10-28.md``, D1). Start: uniform random phases from ``rng`` (``init``
+pixels, 30 iterations, relative std of ``I_m / w_m`` in percent): tuning seeds 1 to 3, lr 0.01: 90 to 108; 0.03: 68 to 75;
+0.1: 10 to 15; 0.3: 3.9 to 4.8; 1.0: 2.3 to 2.5; separate seeds 11 to 13, median: lr 0.5: 2.92; 1.0: 2.42; 2.0: 2.40;
+4.0: 14.0 (2.0 ties within 1 percent; the smaller step is kept). Start: uniform random phases from ``rng`` (``init``
 overrides). The model is the ideal device unless ``device`` is given (traps then on FFT bins with z = 0).
 """
 from __future__ import annotations

@@ -17,12 +17,16 @@ margin at the first bake of the real methods). The report of the unit that last 
 """
 from __future__ import annotations
 
+import json
 import math
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 
 from ..model.holo.core.rng import Rng
+
+MEASURED_PATH = Path(__file__).with_name("measured_ranges.json")   # written by `run.py ranges` (pipeline/ranges.py)
 
 Text = dict  # {"en": str, "es": str}: every reader-facing string is bilingual at the source (ADR-0011)
 
@@ -75,6 +79,45 @@ def _fourier_unit_um(s: dict) -> float:
     return s["wavelength_nm"] * 1e-9 * s["focal_mm"] * 1e-3 / (s["n_pix"] * s["pitch_um"] * 1e-6) * 1e6
 
 
+def _bin_um(s: dict) -> float:
+    """One focal bin ``lambda f / (n_pix p pad)`` in micrometres (the FFT grid of the zero-padded transform)."""
+    return _fourier_unit_um(s) / s["pad"]
+
+
+def _bin_grid(nx: int, ny: int, spacing_bins: int, s: dict) -> list[dict]:
+    """A square lattice whose traps sit on FFT bins (integer spacing in bins), so the FFT form applies (F8)."""
+    return _grid(nx, ny, spacing_bins * _bin_um(s))
+
+
+def disordered_set(n: int, half_bins: int, min_bins: int, seed: int, s: dict) -> list[dict]:
+    """``n`` traps on integer FFT bins in the square ``|x|, |y| <= half_bins``, at least ``min_bins`` bins apart: random
+    sequential addition with the portable RNG (the disordered array of Kim et al. 2019, whose coordinates are not
+    published). ``ValueError`` when the square cannot hold ``n`` such traps within the attempt cap."""
+    rng = Rng(seed)
+    side = 2 * half_bins + 1
+    cell = max(1, min_bins)
+    hashed: dict[tuple[int, int], list[tuple[int, int]]] = {}
+    pts: list[tuple[int, int]] = []
+    for _ in range(400 * n):
+        if len(pts) == n:
+            break
+        x = int(rng.uniform() * side) - half_bins
+        y = int(rng.uniform() * side) - half_bins
+        cx, cy = x // cell, y // cell
+        if any((x - px) ** 2 + (y - py) ** 2 < min_bins**2
+               for i in (cx - 1, cx, cx + 1) for j in (cy - 1, cy, cy + 1) for px, py in hashed.get((i, j), ())):
+            continue
+        hashed.setdefault((cx, cy), []).append((x, y))
+        pts.append((x, y))
+    if len(pts) < n:
+        raise ValueError(f"only {len(pts)} of {n} traps fit {side} x {side} bins at a spacing of {min_bins} bins")
+    b = _bin_um(s)
+    return [_trap(i, x * b, y * b) for i, (x, y) in enumerate(pts)]
+
+
+DISORDERED_819 = dict(n=819, half_bins=100, min_bins=5, seed=SEED + 819)   # C03's second target and benchmark G6's odd seeds
+
+
 def _record(case_id: str, setup: dict, target: dict, methods: list[str], reference: str, expect: dict, *,
             device: dict | None = None, aberration: dict | None = None, feedback: dict | None = None,
             dynamics: dict | None = None, rearrangement: dict | None = None, beam: dict = GAUSS,
@@ -122,7 +165,7 @@ def _build() -> list[Case]:
     lo, hi = 0.0, 1.0
     # --- Arrays -------------------------------------------------------------------------------------------------
     add("C01_square_grid", {"en": "Small square grid, 3 x 3", "es": "Matriz cuadrada pequeña, 3 x 3"}, CAT_ARRAYS,
-        _record("C01_square_grid", ATOM, {"kind": "traps", "traps": _grid(3, 3, 4.0)},
+        _record("C01_square_grid", ATOM, {"kind": "traps", "traps": _bin_grid(3, 3, 8, ATOM)},
                 POINT_2D + ["M12"], "M06",
                 {"efficiency": [0.6, hi], "uniformity": [0.85, hi], "rel_std_pct": [lo, 8.0],
                  "feedback_final_rel_std_pct": [lo, 5.0], "fc_ratio": [0.8, 1.2], "boltzmann_tv": [lo, 0.15]},
@@ -144,7 +187,7 @@ def _build() -> list[Case]:
 
     add(DEFAULT_CASE, {"en": "Grid with camera feedback, 10 x 10", "es": "Matriz con retroalimentación de cámara, 10 x 10"},
         CAT_ARRAYS,
-        _record(DEFAULT_CASE, ATOM, {"kind": "traps", "traps": _grid(10, 10, 4.0)},
+        _record(DEFAULT_CASE, ATOM, {"kind": "traps", "traps": _bin_grid(10, 10, 8, ATOM)},
                 POINT_2D + ["M12"], "M07",
                 {"efficiency": [0.6, hi], "uniformity": [0.8, hi], "rel_std_pct": [lo, 10.0],
                  "feedback_initial_rel_std_pct": [10.0, 30.0], "feedback_final_rel_std_pct": [lo, 3.0]},
@@ -164,19 +207,25 @@ def _build() -> list[Case]:
 
     add("C03_large_array", {"en": "Large array, 32 x 32 = 1024 traps", "es": "Matriz grande, 32 x 32 = 1024 trampas"},
         CAT_ARRAYS,
-        _record("C03_large_array", ATOM, {"kind": "traps", "traps": _grid(32, 32, 5.0)},
+        _record("C03_large_array", ATOM, {"kind": "traps", "traps": _bin_grid(32, 32, 10, ATOM)},
                 ["M01", "M02", "M04", "M06", "M07", "M12", "B3"], "M07",
                 {"efficiency": [0.4, hi], "rel_std_pct": [lo, 15.0], "feedback_initial_rel_std_pct": [10.0, 35.0],
                  "feedback_final_rel_std_pct": [lo, 4.0], "fc_ratio": [0.8, 1.2]},
                 feedback={"gain": 0.9, "steps": 3, "camera": {"gain_rms": 0.22, "noise_rms": 0.0, "blur_bins": 0.0}},
                 dynamics={"particle": "atom", "trap_id": 528, "power_mw": 3000.0, "mass_amu": 87.0,
                           "detuning_thz": -31.5, "temperature_k": 5e-05, "n_steps": 50000, "dt_s": 1e-7}),
-        {"en": "A thousand and twenty-four equal traps at 5 um. Phase-fixed weighted GS plus three adaptive camera steps "
+        {"en": "A thousand and twenty-four equal traps, 10 focal bins (4.98 um) apart and every one on an FFT bin, so the FFT "
+               "form applies and the live lane meets its 1500 ms budget (the point-trap form on 1024 off-bin traps measured 1.0 to "
+               "3.5 s in the browser engine); the 3D, vortex, high-NA and rearrangement cases keep off-bin traps. Phase-fixed weighted GS plus three adaptive camera steps "
                "bring a 22 percent measured spread to the percent level. A rubidium atom in one trap oscillates at the "
-               "radial frequency the computed intensity curvature predicts.",
-         "es": "Mil veinticuatro trampas iguales a 5 um. GS ponderado con fase fija más tres pasos adaptativos de cámara "
+               "radial frequency the computed intensity curvature predicts. The disordered 819-trap array of Kim et al. 2019 is "
+               "drawn by the library and benchmarked as the odd seeds of G6.",
+         "es": "Mil veinticuatro trampas iguales, a 10 bins focales (4,98 um) una de otra y todas sobre un bin de la FFT, de modo que "
+               "aplica la forma FFT y la vía en vivo cumple su presupuesto de 1500 ms (la forma de trampa puntual con 1024 trampas fuera de "
+               "bin midió 1,0 a 3,5 s en el motor del navegador); los casos 3D, de vórtice, NA alta y reordenamiento conservan trampas fuera de bin. GS ponderado con fase fija más tres pasos adaptativos de cámara "
                "llevan una dispersión medida de 22 por ciento al nivel de un por ciento. Un átomo de rubidio en una "
-               "trampa oscila a la frecuencia radial que predice la curvatura de la intensidad calculada."},
+               "trampa oscila a la frecuencia radial que predice la curvatura de la intensidad calculada. La matriz desordenada de 819 "
+               "trampas de Kim et al. 2019 la genera la biblioteca y se mide como las semillas impares de G6."},
         "synthetic",
         {"source": {"en": "Kim et al. 2019, Opt. Lett. 44, 3178 (22 percent to 1.4 percent in three steps); Ebadi et al. "
                           "2021 for the array size",
@@ -340,7 +389,30 @@ def _build() -> list[Case]:
     return cases
 
 
-CASES: list[Case] = _build()
+def _measured_ranges() -> dict:
+    """The committed measured ranges ``{case_id: {key: [lo, hi]}}`` (``pipeline/ranges.py``); empty before the first one."""
+    if not MEASURED_PATH.is_file():
+        return {}
+    return json.loads(MEASURED_PATH.read_text(encoding="utf-8"))["ranges"]
+
+
+def _with_measured(cases: list[Case]) -> list[Case]:
+    """Set each case's ``expect`` from the measured ranges: a case whose basis is ``provisional`` takes the measured set in
+    place of its declared bands; a case whose basis is ``anchor`` keeps its declared (published) bands and adds the measured
+    keys it does not declare. Every method key is ``<method>.<metric>``, so a range is never applied to another method."""
+    measured = _measured_ranges()
+    out = []
+    for c in cases:
+        m = measured.get(c.id)
+        if m:
+            rec = dict(c.record)
+            rec["expect"] = {**m, **c.record["expect"]} if c.expect_basis == "anchor" else dict(m)
+            c = Case(c.id, c.title, c.category, rec, c.expected_band, c.real_or_synthetic, c.anchor, c.expect_basis)
+        out.append(c)
+    return out
+
+
+CASES: list[Case] = _with_measured(_build())
 EXPECT_BASIS = {c.id: c.expect_basis for c in CASES}
 
 

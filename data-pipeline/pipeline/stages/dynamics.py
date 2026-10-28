@@ -38,7 +38,23 @@ RB_LAMBDA0_M = 780.241e-9
 RB_GAMMA_HZ = 6.065e6
 AMU_KG = 1.66053906660e-27
 FIT_BAND = 5.0
+MAX_OMEGA_DT = 0.2       # atom: omega * dt per integrator step (velocity Verlet is stable below 2 and 0.2 keeps omega to 0.2 percent)
+BEAD_DT_FRACTION = 20.0  # bead: dt at most tau / 20 with tau = gamma / kappa (the dossier's design choice, core/dynamics.py)
+MAX_SUBSTEPS = 64
 SEGMENT_SAMPLES = 2048   # samples per spectrum segment: the setting of the oracle test of the engine (tests/engine)
+
+
+def substeps(dt_record: float, dt_stable: float) -> int:
+    """Integrator steps per recorded step so that the step is at most ``dt_stable`` (1 when the record's step already is).
+
+    The record's ``dt_s`` is the sampling step of the trace; a deeper trap than the record was written for (a hologram that
+    puts more light on the trap) needs a finer integration step, never a different trace. ``ValueError`` past
+    ``MAX_SUBSTEPS`` (the trap is stiffer than the integrator can follow at that sampling)."""
+    sub = max(1, math.ceil(dt_record / dt_stable))
+    if sub > MAX_SUBSTEPS:
+        raise ValueError(f"the trap is too stiff for the record's step: {sub} sub-steps of {dt_record:g} s are needed "
+                         f"(at most {MAX_SUBSTEPS}); lower the power or the step")
+    return sub
 
 
 def local_map(phi: np.ndarray, setup: Setup, cx_m: float, cy_m: float, z_m: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -83,7 +99,8 @@ def run(rec: dict, phi: np.ndarray, setup: Setup) -> tuple[dict, dict]:
         gamma = 6.0 * math.pi * d["viscosity_pa_s"] * d["bead_radius_um"] * 1e-6
         kappa = depth * curv
         fc_expected = kappa / (2.0 * math.pi * gamma)
-        pos = bead_trajectory(inten, (xs, ys), BeadParams(depth, gamma, d["temperature_k"], start), n, dt, rng)
+        sub = substeps(dt, gamma / kappa / BEAD_DT_FRACTION)
+        pos = bead_trajectory(inten, (xs, ys), BeadParams(depth, gamma, d["temperature_k"], start), n * sub, dt / sub, rng)[::sub]
         f, p = psd(pos[:, 0], dt, max(4, n // SEGMENT_SAMPLES))
         band = f <= FIT_BAND * fc_expected          # the Lorentzian is the model near the corner, not up to Nyquist
         fc_fit, _ = fit_lorentzian(f[band], p[band])
@@ -103,13 +120,20 @@ def run(rec: dict, phi: np.ndarray, setup: Setup) -> tuple[dict, dict]:
         mass = d["mass_amu"] * AMU_KG
         omega = math.sqrt(depth * curv / mass)
         fc_expected = omega / (2.0 * math.pi)
-        pos, _vel = atom_trajectory(inten, (xs, ys), AtomParams(depth, mass, d["temperature_k"], 0.0, start), n, dt, rng)
+        sub = substeps(dt, MAX_OMEGA_DT / omega)
+        pos, _vel = atom_trajectory(inten, (xs, ys), AtomParams(depth, mass, d["temperature_k"], 0.0, start), n * sub, dt / sub,
+                                    rng)
+        pos = pos[::sub]
         f, p = psd(pos[:, 0], dt, 4)
         smooth = np.convolve(p, np.ones(3) / 3.0, mode="same")
         measured = float(f[int(np.argmax(smooth[1:-1])) + 1])
         extra = {"omega_r_hz": float(f"{fc_expected:.6g}")}
         depth_out = {"value": float(f"{depth / tp.KB_J_PER_K * 1e6:.6g}"), "unit": "uK"}
         metrics = {"fc_ratio": measured / fc_expected}
+    reach = float(np.max(np.hypot(pos[:, 0] - start[0], pos[:, 1] - start[1])))
+    if reach >= HALF_BINS * focal_bin_m(setup):
+        raise ValueError(f"the {d['particle']} leaves the computed map ({reach * 1e6:.3g} um from the start, the map reaches "
+                         f"{HALF_BINS * focal_bin_m(setup) * 1e6:.3g} um): the hologram does not trap it at the case's depth")
     rel_x, rel_y = (pos[:, 0] - start[0]) * 1e6, (pos[:, 1] - start[1]) * 1e6
     dec = max(1, math.ceil(len(rel_x) / MAX_TRAJECTORY))
     fo, po = log_psd(f, p * 1e12)

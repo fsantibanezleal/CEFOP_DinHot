@@ -40,7 +40,7 @@ from ...core.geometry import focal_bin_m
 from ...core.rng import Rng
 from ...core.traps import TrapSet
 from ...core.types import Budget, MethodSpec, Result, Target
-from ..baseline import _gs, m07_phase_fixed_wgs
+from ..baseline import m07_phase_fixed_wgs
 from ..baseline._common import Recorder, require_kinds
 
 SPEC = MethodSpec(id="M16", name="Hungarian assignment and linear phase interpolation", family="control", lane="live",
@@ -157,12 +157,7 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
     ts_start, ts_end = make(start_xy), make(end_xy)
 
     def wgs(ts):
-        try:
-            _gs.check_on_bins(setup, ts)
-            form = "fft"
-        except ValueError:
-            form = "point"
-        return m07_phase_fixed_wgs.run(setup, Target.from_traps(ts), budget=budget, rng=rng, n_fix=n_fix, form=form)
+        return m07_phase_fixed_wgs.run(setup, Target.from_traps(ts), budget=budget, rng=rng, n_fix=n_fix, form="auto")
 
     r0, r1 = wgs(ts_start), wgs(ts_end)
     amp0, amp1 = np.abs(r0.fields), np.abs(r1.fields)
