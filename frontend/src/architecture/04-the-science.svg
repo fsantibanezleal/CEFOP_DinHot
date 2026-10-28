@@ -1,78 +1,151 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="The SIR model, its threshold and its final size">
-  <!-- Hand-authored; shell tokens only; both languages in one file (ADR-0058). Replace with the product's science. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="The science: from the phase mask to the trapped particle, and the ladder of methods">
+  <!-- Hand-authored; shell tokens only; both languages in one file (ADR-0058). -->
   <style>
     .arch-svg text { font-family: var(--font-sans); }
     .arch-svg .mono { font-family: var(--font-mono); }
-    .arch-svg .cS { fill: var(--color-surface-2); stroke: var(--color-accent); stroke-width: 2; }
-    .arch-svg .cI { fill: var(--color-surface-2); stroke: var(--color-bad); stroke-width: 2; }
-    .arch-svg .cR { fill: var(--color-surface-2); stroke: var(--color-good); stroke-width: 2; }
-    .arch-svg .bx { fill: var(--color-surface); stroke: var(--color-border); stroke-width: 1; }
+    .arch-svg .pn { fill: var(--color-surface); stroke: var(--color-border); stroke-width: 1.2; }
+    .arch-svg .bx { fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1; }
+    .arch-svg .on { fill: var(--color-accent-soft); stroke: var(--color-accent); stroke-width: 1.2; }
+    .arch-svg .ok { fill: var(--color-surface-2); stroke: var(--color-good); stroke-width: 1.2; }
+    .arch-svg .wn { fill: var(--color-surface-2); stroke: var(--color-warn); stroke-width: 1.2; }
+    .arch-svg .mg { fill: var(--color-surface-2); stroke: var(--color-magenta); stroke-width: 1.2; }
+    .arch-svg .ln-off { fill: none; stroke: var(--color-magenta); stroke-width: 1.4; }
+    .arch-svg .ln-rep { fill: none; stroke: var(--color-good); stroke-width: 1.4; }
+    .arch-svg .ln-live { fill: none; stroke: var(--color-accent); stroke-width: 1.4; }
     .arch-svg .ttl { fill: var(--color-fg); font-size: 15px; font-weight: 700; }
-    .arch-svg .big { fill: var(--color-fg); font-size: 22px; font-weight: 700; }
     .arch-svg .h { fill: var(--color-fg); font-size: 12px; font-weight: 700; }
-    .arch-svg .eq { fill: var(--color-fg); font-size: 13px; }
+    .arch-svg .it { fill: var(--color-fg); font-size: 11px; }
+    .arch-svg .itb { fill: var(--color-fg); font-size: 11px; font-weight: 600; }
     .arch-svg .sub { fill: var(--color-fg-subtle); font-size: 10.5px; }
-    .arch-svg .rate { fill: var(--color-magenta); font-size: 12px; font-weight: 600; }
-    .arch-svg .flow { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.6; }
-    .arch-svg .curve { fill: none; stroke: var(--color-accent); stroke-width: 2; }
-    .arch-svg .ax { stroke: var(--color-fg-faint); stroke-width: 1; }
+    .arch-svg .cd { fill: var(--color-fg-subtle); font-size: 10px; }
+    .arch-svg .acc { fill: var(--color-accent); font-size: 11px; font-weight: 600; }
+    .arch-svg .t-off { fill: var(--color-magenta); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .t-rep { fill: var(--color-good); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .t-live { fill: var(--color-accent); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .flow { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.4; }
+    .arch-svg .dash { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.4; stroke-dasharray: 5 4; }
   </style>
   <defs>
-    <marker id="sc4-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <marker id="dh4-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L8,4 L0,8 z" fill="var(--color-fg-faint)"/>
     </marker>
   </defs>
-
-  <text class="ttl l-en" x="20" y="30">The example science: SIR, its threshold and its final size</text>
-  <text class="ttl l-es" x="20" y="30">La ciencia del ejemplo: SIR, su umbral y su tamaño final</text>
-
-  <rect class="cS" x="60" y="70" width="140" height="80" rx="10"/>
-  <text class="big" x="122" y="118">S</text>
-  <rect class="cI" x="380" y="70" width="140" height="80" rx="10"/>
-  <text class="big" x="444" y="118">I</text>
-  <rect class="cR" x="700" y="70" width="140" height="80" rx="10"/>
-  <text class="big" x="762" y="118">R</text>
-  <path class="flow" d="M200,110 H378" marker-end="url(#sc4-arrow)"/>
-  <path class="flow" d="M520,110 H698" marker-end="url(#sc4-arrow)"/>
-  <text class="rate" x="250" y="100">β S I / N</text>
-  <text class="rate" x="590" y="100">γ I</text>
-  <text class="sub l-en" x="218" y="134">infection by homogeneous contact</text>
-  <text class="sub l-es" x="218" y="134">contagio por contacto homogéneo</text>
-  <text class="sub l-en" x="560" y="134">recovery, mean period 1/γ</text>
-  <text class="sub l-es" x="560" y="134">recuperación, período medio 1/γ</text>
-
-  <rect class="bx" x="20" y="180" width="420" height="120" rx="8"/>
-  <text class="h l-en" x="34" y="204">The threshold</text>
-  <text class="h l-es" x="34" y="204">El umbral</text>
-  <text class="eq mono" x="34" y="230">R0 = β / γ        Rt = R0 · S / N</text>
-  <text class="eq mono" x="34" y="254">p_c = 1 - 1 / R0</text>
-  <text class="sub l-en" x="34" y="278">infections grow while Rt &gt; 1; immunising more than p_c</text>
-  <text class="sub l-es" x="34" y="278">los contagios crecen mientras Rt &gt; 1; inmunizar más que p_c</text>
-  <text class="sub l-en" x="34" y="292">prevents the outbreak</text>
-  <text class="sub l-es" x="34" y="292">impide el brote</text>
-
-  <rect class="bx" x="460" y="180" width="420" height="260" rx="8"/>
-  <text class="h l-en" x="474" y="204">The final size, an independent check</text>
-  <text class="h l-es" x="474" y="204">El tamaño final, una verificación independiente</text>
-  <text class="eq mono" x="474" y="230">z = 1 - exp(-R0 · z)</text>
-  <line class="ax" x1="510" y1="410" x2="860" y2="410"/>
-  <line class="ax" x1="510" y1="250" x2="510" y2="410"/>
-  <path class="curve" d="M510,410 L566,410 C590,380 610,330 650,296 S760,262 860,256"/>
-  <circle cx="690" cy="278" r="5" fill="var(--color-magenta)"/>
-  <circle cx="842" cy="257" r="5" fill="var(--color-magenta)"/>
-  <circle cx="568" cy="372" r="5" fill="var(--color-magenta)"/>
-  <text class="sub" x="555" y="428">1</text>
-  <text class="sub" x="845" y="428">6</text>
-  <text class="sub" x="672" y="428">R0</text>
-  <text class="sub l-en" x="600" y="384">cases as baked, at their horizon</text>
-  <text class="sub l-es" x="600" y="384">casos precalculados, en su horizonte</text>
-
-  <rect class="bx" x="20" y="320" width="420" height="120" rx="8"/>
-  <text class="h l-en" x="34" y="344">How it is integrated</text>
-  <text class="h l-es" x="34" y="344">Cómo se integra</text>
-  <text class="eq mono" x="34" y="370">x(k+1) = max(0, x(k) + f(x(k)) · Δt),  Δt = 0.25 d</text>
-  <text class="sub l-en" x="34" y="394">explicit Euler, first order; the same operations in Python</text>
-  <text class="sub l-es" x="34" y="394">Euler explícito, de primer orden; las mismas operaciones en Python</text>
-  <text class="sub l-en" x="34" y="408">and TypeScript, held together by the parity test</text>
-  <text class="sub l-es" x="34" y="408">y TypeScript, unidas por la prueba de paridad</text>
+  <text class="ttl l-en" x="20" y="30">The science: what a method must get right, and the ladder that produces it</text>
+  <text class="ttl l-es" x="20" y="30">La ciencia: lo que un método debe resolver, y la escalera que lo produce</text>
+  <text class="t-live l-en" x="20" y="56">THE PHYSICS CHAIN</text>
+  <text class="t-live l-es" x="20" y="56">LA CADENA FÍSICA</text>
+  <rect class="on" x="20" y="66" width="132" height="92" rx="8"/>
+  <text class="itb l-en" x="30" y="86">Phase mask</text>
+  <text class="itb l-es" x="30" y="86">Máscara de fase</text>
+  <text class="cd mono" x="30" y="104">phi_j on the SLM</text>
+  <text class="sub l-en" x="30" y="124">returned by a method</text>
+  <text class="sub l-es" x="30" y="124">lo que da un método</text>
+  <text class="sub l-en" x="30" y="140">(in radians)</text>
+  <text class="sub l-es" x="30" y="140">(en radianes)</text>
+  <path class="flow" d="M152,112 H164" marker-end="url(#dh4-arrow)"/>
+  <rect class="bx" x="166" y="66" width="132" height="92" rx="8"/>
+  <text class="itb l-en" x="176" y="86">Device</text>
+  <text class="itb l-es" x="176" y="86">Dispositivo</text>
+  <text class="cd mono" x="176" y="104">quantize, blur</text>
+  <text class="sub l-en" x="176" y="124">bits, crosstalk, fill</text>
+  <text class="sub l-es" x="176" y="124">bits, diafonía, llenado</text>
+  <text class="sub l-en" x="176" y="140">(case device)</text>
+  <text class="sub l-es" x="176" y="140">(del caso)</text>
+  <path class="flow" d="M298,112 H310" marker-end="url(#dh4-arrow)"/>
+  <rect class="bx" x="312" y="66" width="132" height="92" rx="8"/>
+  <text class="itb l-en" x="322" y="86">Lens</text>
+  <text class="itb l-es" x="322" y="86">Lente</text>
+  <text class="cd mono" x="322" y="104">zero-padded FFT</text>
+  <text class="sub l-en" x="322" y="124">f maps the SLM to</text>
+  <text class="sub l-es" x="322" y="124">f lleva el SLM al</text>
+  <text class="sub l-en" x="322" y="140">the focal plane</text>
+  <text class="sub l-es" x="322" y="140">plano focal</text>
+  <path class="flow" d="M444,112 H456" marker-end="url(#dh4-arrow)"/>
+  <rect class="bx" x="458" y="66" width="132" height="92" rx="8"/>
+  <text class="itb l-en" x="468" y="86">Focal field</text>
+  <text class="itb l-es" x="468" y="86">Campo focal</text>
+  <text class="cd mono" x="468" y="104">V = E[bin] pad/n</text>
+  <text class="sub l-en" x="468" y="124">field at every trap</text>
+  <text class="sub l-es" x="468" y="124">campo por trampa</text>
+  <text class="sub l-en" x="468" y="140">(point form = FFT)</text>
+  <text class="sub l-es" x="468" y="140">(puntual = FFT)</text>
+  <path class="flow" d="M590,112 H602" marker-end="url(#dh4-arrow)"/>
+  <rect class="ok" x="604" y="66" width="132" height="92" rx="8"/>
+  <text class="itb l-en" x="614" y="86">Trap metrics</text>
+  <text class="itb l-es" x="614" y="86">Métricas</text>
+  <text class="cd mono" x="614" y="104">e, u, rel. std</text>
+  <text class="sub l-en" x="614" y="124">efficiency, uniformity</text>
+  <text class="sub l-es" x="614" y="124">eficiencia, uniformidad</text>
+  <text class="sub l-en" x="614" y="140">zero order, ghosts</text>
+  <text class="sub l-es" x="614" y="140">orden cero, fantasmas</text>
+  <path class="flow" d="M736,112 H748" marker-end="url(#dh4-arrow)"/>
+  <rect class="ok" x="750" y="66" width="132" height="92" rx="8"/>
+  <text class="itb l-en" x="760" y="86">Particle</text>
+  <text class="itb l-es" x="760" y="86">Partícula</text>
+  <text class="cd mono" x="760" y="104">fc = k/(2 pi g)</text>
+  <text class="sub l-en" x="760" y="124">Lorentzian corner</text>
+  <text class="sub l-es" x="760" y="124">frecuencia de corte</text>
+  <text class="sub l-en" x="760" y="140">Boltzmann law</text>
+  <text class="sub l-es" x="760" y="140">ley de Boltzmann</text>
+  <text class="t-off l-en" x="20" y="196">THE LADDER OF METHODS: 24 methods, from analytic to beyond the state of the art</text>
+  <text class="t-off l-es" x="20" y="196">LA ESCALERA DE MÉTODOS: 24 métodos, de lo analítico a lo que supera el estado del arte</text>
+  <rect class="bx" x="20" y="208" width="134" height="104" rx="8"/>
+  <text class="itb l-en" x="30" y="228">Analytic</text>
+  <text class="itb l-es" x="30" y="228">Analíticos</text>
+  <text class="cd mono" x="30" y="246">M01 to M03</text>
+  <text class="sub l-en" x="30" y="268">superposition,</text>
+  <text class="sub l-es" x="30" y="268">superposición,</text>
+  <text class="sub l-en" x="30" y="284">random mask</text>
+  <text class="sub l-es" x="30" y="284">máscara aleatoria</text>
+  <path class="flow" d="M154,260 H163" marker-end="url(#dh4-arrow)"/>
+  <rect class="bx" x="165" y="208" width="134" height="104" rx="8"/>
+  <text class="itb" x="175" y="228">Gerchberg-Saxton</text>
+  <text class="cd mono" x="175" y="246">M04-M08, M15, M19</text>
+  <text class="sub" x="175" y="268">GS, GAA, GSW,</text>
+  <text class="sub l-en" x="175" y="284">phase-fixed, MRAF</text>
+  <text class="sub l-es" x="175" y="284">fase fija, MRAF</text>
+  <path class="flow" d="M299,260 H308" marker-end="url(#dh4-arrow)"/>
+  <rect class="bx" x="310" y="208" width="134" height="104" rx="8"/>
+  <text class="itb l-en" x="320" y="228">Optimization</text>
+  <text class="itb l-es" x="320" y="228">Optimización</text>
+  <text class="cd mono" x="320" y="246">M09-M11, M13, M18</text>
+  <text class="sub l-en" x="320" y="268">search, CG, Adam,</text>
+  <text class="sub l-es" x="320" y="268">búsqueda, CG, Adam,</text>
+  <text class="sub l-en" x="320" y="284">crosstalk CG, OT</text>
+  <text class="sub l-es" x="320" y="284">CG con diafonía, OT</text>
+  <path class="flow" d="M444,260 H453" marker-end="url(#dh4-arrow)"/>
+  <rect class="bx" x="455" y="208" width="134" height="104" rx="8"/>
+  <text class="itb" x="465" y="228">Control</text>
+  <text class="cd mono" x="465" y="246">M12, M14, M16</text>
+  <text class="sub l-en" x="465" y="268">camera loop,</text>
+  <text class="sub l-es" x="465" y="268">lazo de cámara,</text>
+  <text class="sub l-en" x="465" y="284">Zernike, atoms</text>
+  <text class="sub l-es" x="465" y="284">Zernike, átomos</text>
+  <path class="flow" d="M589,260 H598" marker-end="url(#dh4-arrow)"/>
+  <rect class="on" x="600" y="208" width="134" height="104" rx="8"/>
+  <text class="itb l-en" x="610" y="228">Learned</text>
+  <text class="itb l-es" x="610" y="228">Aprendidos</text>
+  <text class="cd mono" x="610" y="246">M17, B3</text>
+  <text class="sub l-en" x="610" y="268">cgh-net and the</text>
+  <text class="sub l-es" x="610" y="268">cgh-net y el</text>
+  <text class="sub l-en" x="610" y="284">warm start</text>
+  <text class="sub l-es" x="610" y="284">arranque</text>
+  <path class="flow" d="M734,260 H743" marker-end="url(#dh4-arrow)"/>
+  <rect class="wn" x="745" y="208" width="134" height="104" rx="8"/>
+  <text class="itb l-en" x="755" y="228">Beyond</text>
+  <text class="itb l-es" x="755" y="228">Más allá</text>
+  <text class="cd mono" x="755" y="246">B1, B2, B4, B5</text>
+  <text class="sub l-en" x="755" y="268">device WGS, flicker,</text>
+  <text class="sub l-es" x="755" y="268">WGS con dispositivo,</text>
+  <text class="sub l-en" x="755" y="284">robust, Pareto</text>
+  <text class="sub l-es" x="755" y="284">parpadeo, robusto</text>
+  <text class="sub l-en" x="20" y="336">simple to beyond the published state of the art; every method returns a phase mask, scored the same way through the chain above</text>
+  <text class="sub l-es" x="20" y="336">de lo simple a lo que supera el estado del arte publicado; todo método devuelve una máscara de fase, evaluada igual por la cadena de arriba</text>
+  <rect class="ok" x="20" y="354" width="860" height="80" rx="8"/>
+  <text class="itb l-en" x="34" y="376">Oracles: none of them is a model judging a model</text>
+  <text class="itb l-es" x="34" y="376">Oráculos: ninguno es un modelo juzgando a un modelo</text>
+  <text class="sub l-en" x="34" y="396">Parseval and FFT = point form on bins · a random mask reaches about 1/N of the light · a vortex winds its phase by 2 pi l</text>
+  <text class="sub l-es" x="34" y="396">Parseval y FFT = forma puntual en bins · una máscara aleatoria alcanza cerca de 1/N de la luz · un vórtice enrolla su fase 2 pi l</text>
+  <text class="sub l-en" x="34" y="412">the bead spectrum fits a Lorentzian of corner k/(2 pi g) · its positions follow the Boltzmann law · the Python engine is the reference for the live one</text>
+  <text class="sub l-es" x="34" y="412">el espectro de la partícula ajusta una lorentziana de corte k/(2 pi g) · sus posiciones siguen la ley de Boltzmann · el motor Python es la referencia del vivo</text>
 </svg>
