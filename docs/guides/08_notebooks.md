@@ -3,8 +3,8 @@
 The notebooks are the product's didactic layer: they teach a reader, step by step and on the product's own data, how
 its methods work, where each method stands against the state of the art, and what the product adds beyond it. They
 import the product's methods and never re-implement them; logic that exists only in a notebook is incomplete. The
-rule is the CAOS product-notebooks convention (notebooks by topic and level, in English and Spanish, on the product's own methods); this guide is how a product applies it, and it opens with the bar. The template ships an
-example set, which a product replaces (`scripts/check_template_residue.py` lists it); DinHot's notebooks cover the families of its method ladder.
+rule is CAOS_MANAGE `conventions/product-notebooks.md`; this guide is how a product applies it, and it opens with the bar. The template ships an
+example set on the SIR model, which a product replaces (`scripts/check_template_residue.py` lists it).
 
 ## The bar: a notebook is a worked lesson
 
@@ -141,12 +141,15 @@ notebooks/
 - Every topic has levels 1 and 2. The level never decreases with the notebook number.
 - A topic whose method has state-of-the-art research in the product's dossiers has a level 3 notebook. A topic without
   one says why on its row of each language's index, as `No level 3: <reason>` (`Sin nivel 3: <motivo>` in Spanish),
-  four words or more.
+  four words or more, and it may do so only when it has no method of its own: every `sota` method of the SDD's method
+  ladder has a level 3 notebook that names it in `caos.methods` (from 0.13.000, [guide 09](09_method-tiers.md)).
 - Every component the SDD claims beyond the state of the art has a level 4 notebook (next section).
 
 ## 3. Claim and cover a component beyond the state of the art
 
-The SDD's section `## Beyond the state of the art` is either `None claimed.` (the example) or a list of claims, each
+The SDD's section `## Beyond the state of the art` lists the product's proposed methods beyond the state of the art (a
+product must propose at least one; `None claimed.` is valid only in the template's own example,
+[guide 09](09_method-tiers.md)), each
 with an identifier of the form `BS-<n>` (the first is `BS-1`, then `BS-2`, and so on), its evidence and its source. For
 each claim:
 
@@ -217,11 +220,12 @@ The notebook metadata holds `kernelspec`, `language_info` and one `caos` block; 
 }
 ```
 
-`language` is the tree, `topic` the folder, every `packages` entry an exact line of `notebooks/requirements.txt` (`name==version`,
+A level 3 notebook also carries `"methods": ["M-2"]`, the ids of the `sota` rows of the SDD's method ladder it runs (the field is
+absent on the other levels). `language` is the tree, `topic` the folder, every `packages` entry an exact line of `notebooks/requirements.txt` (`name==version`,
 or `name @ git+https://github.com/<owner>/<repo>.git@<tag>` for a package installed from its release tag) shown in the
 notebook's Setup text as its `pip install` line, every `data` path a file of the repository, `sources` a non-empty list of links, and `beyond` the
 SDD's `BS-` identifiers a level 4 notebook demonstrates (empty below level 4). A notebook and its counterpart in the other
-language carry the same level, packages, data, beyond claims and the same sequence of cell kinds.
+language carry the same level, packages, data, beyond claims, methods and the same sequence of cell kinds.
 
 ## 5. Run and check
 

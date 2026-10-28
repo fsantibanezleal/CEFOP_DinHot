@@ -79,4 +79,4 @@ The App has up to six groups (Hologram, Focal plane, Traps, Convergence, Dynamic
 
 ## Notes
 
-The SDD names the 32 by 32 lattice and the disordered 819-trap set of Kim et al.; the case library implements the 32 by 32 lattice only (the disordered set is in neither the case nor the benchmark protocol, whose schema holds one target per geometry). The atom trace of the producer's development run oscillated at 102.4 kHz against 105.1 kHz expected for a depth of 892 uK (planted test methods, not the canonical bake).
+The SDD names the 32 by 32 lattice and the disordered 819-trap set of Kim et al.; the lattice is this case, and the disordered set is its own case, [C13_disordered_array](C13_disordered_array.md) (a params record holds one target), and the odd seeds of benchmark G6. The atom trace of the producer's development run oscillated at 102.4 kHz against 105.1 kHz expected for a depth of 892 uK (planted test methods, not the canonical bake).

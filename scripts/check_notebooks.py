@@ -16,6 +16,10 @@ as a local release gate (ADR-0074). It fails, naming the file and the rule, on
   index does not list;
 - **beyond the state of the art**: a ``BS-`` identifier of the SDD section ``## Beyond the state of the art`` that no level 4
   notebook covers in each language, or a notebook claiming one the SDD does not list;
+- **the method tiers** (template 0.13.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): a method of tier ``sota`` in
+  the SDD's ``## Method ladder`` table (``| id | tier | method | acceptance criterion | gate |``) that no level 3 notebook names in
+  ``caos.methods``, in each language; a level 3 notebook that names none, or a method that is no ``sota`` row; ``caos.methods`` on
+  another level. A tree whose SDD has no readable ladder is left to ``scripts/check_sdd.py``, which owns that table;
 - **anatomy**: the second-level sections of the tree's language, in order, as the level requires; a first cell that is not
   markdown; a code cell not directly preceded by a markdown cell, or without a comment;
 - **metadata**: the ``caos`` block (language, topic, level, title, packages, data, sources, beyond) must agree with the
@@ -87,6 +91,10 @@ NO_LEVEL_3 = {"en": "No level 3:", "es": "Sin nivel 3:"}
 MIN_REASON_WORDS = 4
 NOTEBOOK_KEYS = {"kernelspec", "language_info", "caos"}
 CAOS_KEYS = ("language", "topic", "level", "title", "packages", "data", "sources", "beyond")
+OPTIONAL_KEYS = ("methods",)  # level 3 only: the ids of the SDD's sota methods the notebook runs
+LADDER_SECTION = "Method ladder"
+LADDER_HEAD = ["id", "tier", "method", "acceptance criterion", "gate"]
+RULE = "CAOS_MANAGE conventions/method-tiers-and-manuscripts.md"
 BEYOND_SECTION = "Beyond the state of the art"
 SLUG = re.compile(r"^(\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)$")
 NOTEBOOK = re.compile(r"^(\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)\.ipynb$")
@@ -427,25 +435,55 @@ def without_comments(code: str) -> str:
         return "\n".join(ln for ln in code.splitlines() if not ln.strip().startswith("#"))
 
 
-def sdd_claims(root: Path) -> tuple[set[str] | None, str | None]:
-    """The ``BS-`` identifiers of the SDD section, ``set()`` for 'None claimed.', and the problem reading it, if any."""
+def sdd_section(root: Path, title: str) -> list[str] | None:
+    """The lines of the SDD's level-2 section ``title`` (fences respected), None when the SDD or the section is absent."""
     sdd = root / "docs" / "design" / "SDD.md"
     if not sdd.is_file():
-        return None, "docs/design/SDD.md is missing"
-    lines = sdd.read_text(encoding="utf-8").splitlines()
+        return None
     body: list[str] | None = None
     fenced = False
-    for line in lines:
+    for line in sdd.read_text(encoding="utf-8").splitlines():
         if FENCE.match(line):
             fenced = not fenced
         if not fenced and (m := re.match(r"^##\s+(?:\d+\.\s*)?(.+?)\s*$", line)) and not line.startswith("###"):
             if body is not None:
                 break
-            if m[1].strip().lower() == BEYOND_SECTION.lower():
+            if m[1].strip().lower() == title.lower():
                 body = []
             continue
         if body is not None:
             body.append(line)
+    return body
+
+
+def sdd_ladder(root: Path) -> dict[str, str] | None:
+    """The SDD's method ladder as ``{id: tier}`` (tier in lower case), None when there is no table with the ladder's columns."""
+    body = sdd_section(root, LADDER_SECTION)
+    if body is None:
+        return None
+    ladder: dict[str, str] | None = None
+    for line in body:
+        if FENCE.match(line):
+            continue
+        if not line.strip().startswith("|"):
+            if ladder is not None:
+                break
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if ladder is None:
+            if [c.lower() for c in cells] == LADDER_HEAD:
+                ladder = {}
+        elif len(cells) == len(LADDER_HEAD) and not all(re.fullmatch(r":?-{3,}:?", c) for c in cells):
+            ladder[cells[0]] = cells[1].lower()
+    return ladder
+
+
+def sdd_claims(root: Path) -> tuple[set[str] | None, str | None]:
+    """The ``BS-`` identifiers of the SDD section, ``set()`` for 'None claimed.', and the problem reading it, if any."""
+    sdd = root / "docs" / "design" / "SDD.md"
+    if not sdd.is_file():
+        return None, "docs/design/SDD.md is missing"
+    body = sdd_section(root, BEYOND_SECTION)
     if body is None:
         return None, f"the SDD has no section '## {BEYOND_SECTION}' (list the BS- claims, or say 'None claimed.')"
     text = "\n".join(body)
@@ -502,7 +540,7 @@ def check_numbering(names: list[str], pattern: re.Pattern[str], rel: str, kind: 
 
 
 def check_notebook(root: Path, lang: str, topic: str, name: str, nb: dict, pins: set[str], claims: set[str],
-                   engine: set[str], listed: set[str], findings: list[str]) -> None:
+                   engine: set[str], listed: set[str], findings: list[str], ladder: dict[str, str] | None = None) -> None:
     rel = f"notebooks/{lang}/{topic}/{name}"
     path = root / rel
     size = path.stat().st_size
@@ -526,7 +564,7 @@ def check_notebook(root: Path, lang: str, topic: str, name: str, nb: dict, pins:
         for key in CAOS_KEYS:
             if key not in caos:
                 findings.append(f"{rel}: metadata: caos.{key} is missing")
-        for key in sorted(set(caos) - set(CAOS_KEYS)):
+        for key in sorted(set(caos) - set(CAOS_KEYS) - set(OPTIONAL_KEYS)):
             findings.append(f"{rel}: metadata: caos.{key} is not a field of the block")
         if caos.get("language") != lang:
             findings.append(f"{rel}: metadata: caos.language is {caos.get('language')!r}, the tree is {lang!r}")
@@ -592,6 +630,19 @@ def check_notebook(root: Path, lang: str, topic: str, name: str, nb: dict, pins:
             for b in beyond:
                 if b not in claims:
                     findings.append(f"{rel}: metadata: {b!r} is not a claim of the SDD's '## {BEYOND_SECTION}' section")
+        methods = caos.get("methods", [])
+        if not (isinstance(methods, list) and all(isinstance(m, str) for m in methods)):
+            findings.append(f"{rel}: metadata: caos.methods is not a list of ids of the SDD's Method ladder")
+        else:
+            if methods and level != 3:
+                findings.append(f"{rel}: metadata: caos.methods lists methods but this is a level {level} notebook: "
+                                "only a level 3 notebook names the sota methods it runs")
+            if level == 3 and not methods and any(t == "sota" for t in (ladder or {}).values()):
+                findings.append(f"{rel}: metadata: a level 3 notebook lists the sota methods of the SDD's Method ladder it runs "
+                                f"in caos.methods ({RULE})")
+            for m in methods:
+                if ladder is not None and ladder.get(m) != "sota":
+                    findings.append(f"{rel}: metadata: {m!r} is not a sota method of the SDD's Method ladder (tier sota)")
     # ---- anatomy
     if not cells or cells[0]["cell_type"] != "markdown":
         findings.append(f"{rel}: anatomy: the first cell is not a markdown cell (title, level, prerequisites, reading time)")
@@ -668,7 +719,7 @@ def counterpart_findings(root: Path, en_docs: dict[str, dict], es_docs: dict[str
         ca, cb = a["metadata"].get("caos"), b["metadata"].get("caos")
         rel = f"notebooks/es/{key}"
         if isinstance(ca, dict) and isinstance(cb, dict):
-            for field in ("level", "packages", "data", "beyond"):
+            for field in ("level", "packages", "data", "beyond", "methods"):
                 if ca.get(field) != cb.get(field):
                     findings.append(f"{rel}: mirror: caos.{field} differs from its English counterpart")
         kinds_a = [c["cell_type"] for c in a["cells"]]
@@ -735,6 +786,7 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
     claims, problem = sdd_claims(root)
     if problem:
         findings.append(f"docs/design/SDD.md: beyond: {problem}")
+    ladder = sdd_ladder(root)
     pins = read_pins(root)
     engine = engine_names(root)
     methods, method_findings = method_state(root, infos)
@@ -753,6 +805,7 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
         docs.setdefault(lang, {})
     levels: dict[str, dict[str, dict[str, int]]] = {lang: {} for lang in LANGS}
     covered: dict[str, set[str]] = {lang: set() for lang in LANGS}
+    run3: dict[str, set[str]] = {lang: set() for lang in LANGS}  # the sota methods the level 3 notebooks name
     for lang, tree in trees.items():
         check_numbering(tree.topics, SLUG, f"notebooks/{lang}", "topic", findings)
         for topic in tree.topics:
@@ -767,7 +820,7 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
                 if doc is None:
                     continue
                 docs[lang][f"{topic}/{name}"] = doc
-                check_notebook(root, lang, topic, name, doc, pins, claims or set(), engine, listed, findings)
+                check_notebook(root, lang, topic, name, doc, pins, claims or set(), engine, listed, findings, ladder)
                 findings.extend(method_copy_findings(f"notebooks/{lang}/{topic}/{name}", doc["cells"], methods))
                 caos = doc["metadata"].get("caos")
                 lv = caos.get("level") if isinstance(caos, dict) else None
@@ -776,6 +829,8 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
                     order.append(lv)
                     if lv == 4 and isinstance(caos.get("beyond"), list):
                         covered[lang].update(x for x in caos["beyond"] if isinstance(x, str))
+                    if lv == 3 and isinstance(caos.get("methods"), list):
+                        run3[lang].update(x for x in caos["methods"] if isinstance(x, str))
             if order != sorted(order):
                 findings.append(f"notebooks/{lang}/{topic}: levels: the level decreases inside the topic ({order}); the reading order never goes down")
             have = set(order)
@@ -786,6 +841,9 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
     for lang in LANGS:
         for claim in sorted((claims or set()) - covered[lang]):
             findings.append(f"notebooks/{lang}: beyond: the SDD claim {claim} is covered by no level 4 notebook (caos.beyond)")
+        for method in sorted(m for m, tier in (ladder or {}).items() if tier == "sota" and m not in run3[lang]):
+            findings.append(f"notebooks/{lang}: tiers: the sota method {method} of the SDD's Method ladder is named by no level 3 notebook "
+                            f"(caos.methods): every state-of-the-art method has a level 3 notebook that runs it ({RULE})")
     counterpart_findings(root, docs["en"], docs["es"], findings)
     ci_findings(root, findings)
     return findings

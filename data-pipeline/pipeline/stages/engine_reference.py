@@ -35,7 +35,6 @@ from ..model.holo.core import traps as tr
 from ..model.holo.core import zernike as zk
 from ..model.holo.core.rng import Rng
 from ..model.holo.core.types import Budget, Target
-from ..model.holo.methods.baseline import _gs
 from ..model.holo.methods.control import m15_vortex, m16_rearrangement
 
 ROOT = Path(__file__).resolve().parents[3]
