@@ -2,7 +2,7 @@
 // ?v=VERSION so a new release never reads an old cached file, and must answer JSON: a static host answering a
 // missing file with its HTML page would otherwise parse as an error far from the cause (failure classes 2, 9).
 import { useEffect, useState } from 'react';
-import type { CaseIndex, CaseManifest, Text, Trace } from '../lib/contract.types';
+import type { BenchmarkResults, CaseIndex, CaseManifest, ModelMetrics, Text, Trace } from '../lib/contract.types';
 import { loadReadiness, unavailableRow } from '../readiness/readiness';
 
 export class ArtifactError extends Error {}
@@ -52,6 +52,21 @@ export async function loadManifest(caseId: string, signal?: AbortSignal): Promis
   return getJSON<CaseManifest>(path, signal);
 }
 
+const BENCHMARK_PATH = 'benchmark/results.json';
+const METRICS_PATH = 'models/metrics.json';
+
+/** The benchmark results (catalog row benchmark-results); rejects with ArtifactUnavailable when readiness says it is not there. */
+export async function loadBenchmark(signal?: AbortSignal): Promise<BenchmarkResults> {
+  await requireAvailable(BENCHMARK_PATH);
+  return getJSON<BenchmarkResults>(BENCHMARK_PATH, signal);
+}
+
+/** The metrics of the two learned models (catalog row model-metrics). */
+export async function loadModelMetrics(signal?: AbortSignal): Promise<ModelMetrics> {
+  await requireAvailable(METRICS_PATH);
+  return getJSON<ModelMetrics>(METRICS_PATH, signal);
+}
+
 export interface CaseData {
   manifest: CaseManifest;
   trace: Trace;
@@ -78,7 +93,11 @@ export async function loadAllCases(signal?: AbortSignal): Promise<{ index: CaseI
   const index = await loadIndex(signal);
   const settled = await Promise.all(
     index.cases.map((c) =>
-      loadCase(c.case_id, signal).then(
+      // A refused case has no manifest: the index carries its reason, and it is listed as absent with it.
+      (c.status === 'refused' || c.path === null
+        ? Promise.reject(new ArtifactUnavailable(c.case_id, c.reason ?? { en: 'refused', es: 'rechazado' }))
+        : loadCase(c.case_id, signal)
+      ).then(
         (data) => ({ data }),
         (e: unknown) => {
           if (e instanceof ArtifactUnavailable) return { absent: { caseId: c.case_id, title: c.title, reason: e.reason } };
