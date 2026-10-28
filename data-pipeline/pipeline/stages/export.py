@@ -20,12 +20,15 @@ def best_method(methods: dict[str, dict]) -> str:
     return sorted(eligible, key=lambda k: (eligible[k]["rel_std_pct"], k))[0]
 
 
-def summary(methods: dict[str, dict]) -> dict:
+def summary(methods: dict[str, dict], shaped: bool = False) -> dict:
+    """``shaped``: the ``rel_std_pct`` slot holds the signal-region RMS error (``core/score.py``), and the notes say so."""
     best = best_method(methods)
     m = methods[best]
-    en = (f"{len(methods)} methods ran. Lowest relative standard deviation among those with at least half the best "
+    what_en, what_es = (("signal-region RMS error", "error RMS de la región de señal") if shaped else
+                        ("relative standard deviation", "desviación estándar relativa"))
+    en = (f"{len(methods)} methods ran. Lowest {what_en} among those with at least half the best "
           f"efficiency: {best}, {m['rel_std_pct']:.2f} percent with efficiency {m['efficiency']:.3f}.")
-    es = (f"Se ejecutaron {len(methods)} métodos. Menor desviación estándar relativa entre los de al menos la mitad de la "
+    es = (f"Se ejecutaron {len(methods)} métodos. Menor {what_es} entre los de al menos la mitad de la "
           f"mejor eficiencia: {best}, {m['rel_std_pct']:.2f} por ciento con eficiencia {m['efficiency']:.3f}.")
     return {"best_method": best, "notes": {"en": en, "es": es}}
 

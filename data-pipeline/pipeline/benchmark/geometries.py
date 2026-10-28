@@ -8,8 +8,9 @@ and the focal bin fixed across grids (``f`` scales with ``n_pix``), so a geometr
 - G1 square 10 x 10 at 8 u; G2 ring of 36 traps; G3 random 100 traps with at least 3 u between them; G4 quasi-periodic 119
   (cut-and-project of Z^5 to a five-fold set, scaled 7 u: the quasi-periodic set of Polin et al. is not published as
   coordinates, so this set is DinHot's own); G5 3D lattice 5 x 5 x 3 at 8 u in the plane and 8 um between planes;
-  G6 32 x 32 = 1024 traps at 6 u (the disordered 819 set of Kim et al. is not in the protocol table: the benchmark schema
-  holds one target per geometry id); G7 shaped fields, four targets pooled (seed ``s`` runs shape ``s mod 4``): ring, disc,
+  G6 large arrays, two targets pooled (the benchmark schema holds one geometry id per row, as for G7): seed ``s`` runs the
+  32 x 32 = 1024 lattice at 6 u when ``s`` is even and the disordered 819 set of Kim et al. 2019 (traps on integer bins at
+  least 5 bins apart, ``cases.library.disordered_set``, DinHot's own draw: the coordinates are not published) when odd; G7 shaped fields, four targets pooled (seed ``s`` runs shape ``s mod 4``): ring, disc,
   line, Laguerre-Gaussian ring.
 """
 from __future__ import annotations
@@ -18,6 +19,7 @@ import math
 
 import numpy as np
 
+from ..cases.library import DISORDERED_819, disordered_set
 from ..model.holo.core import traps as T
 from ..model.holo.core.rng import Rng
 
@@ -29,7 +31,7 @@ GEOMETRIES = {
     "G3": ({"en": "Random 100 traps", "es": "100 trampas aleatorias"}, 100, 2),
     "G4": ({"en": "Quasi-periodic 119", "es": "Cuasiperiódica 119"}, 119, 2),
     "G5": ({"en": "3D lattice 5 x 5 x 3", "es": "Red 3D 5 x 5 x 3"}, 75, 3),
-    "G6": ({"en": "Large 32 x 32", "es": "Grande 32 x 32"}, 1024, 2),
+    "G6": ({"en": "Large: 32 x 32 and disordered 819", "es": "Grande: 32 x 32 y desordenada de 819"}, 1024, 2),
     "G7": ({"en": "Shaped fields (ring, disc, line, LG ring)", "es": "Campos con forma (anillo, disco, línea, anillo LG)"}, 0, 2),
 }
 FULL_GRID = {"G1": 256, "G2": 256, "G3": 256, "G4": 256, "G5": 256, "G6": 512, "G7": 128}
@@ -118,7 +120,11 @@ def record(geometry: str, *, device: bool, seed: int, reduced: bool = False, sha
         traps = _records(T.lattice_3d(n, n, 3, sp * u, 8.0))
     elif geometry == "G6":
         n, sp = (6, 3) if small else (32, 6)
-        traps = _records(T.square_grid(n, n, sp * u))
+        if seed % 2 == 1:     # the disordered set (the lattice is the even seeds)
+            kw = dict(n=20, half_bins=12, min_bins=3, seed=GEOMETRY_SEED + 819) if small else dict(DISORDERED_819)
+            traps = disordered_set(s=setup_record(n_pix), **kw)
+        else:
+            traps = _records(T.square_grid(n, n, sp * u))
     elif geometry == "G7":
         target = _shape_target(shape or SHAPES[seed % 4], n_pix)
         traps = None

@@ -10,7 +10,7 @@ Doskolovich was not opened. The printed bracket depends on the absolute scale of
 about 0.1 on the 10x10 task, so $lpha/|V_m|$ dominates and the iteration oscillates: u = 0.04 to 0.4, below GS, measured).
 ``scale='mean'`` (default) expresses $|V_m|$ in units of its mean over the traps, which reproduces the published trend
 (u about 0.68 against 0.60 for GS at the same efficiency); ``scale='absolute'`` is the bracket exactly as printed.
-Same SR start and forms as M04. Defaults: ``alpha=0.5``, ``scale='mean'``, ``form='point'``.
+Same SR start and forms as M04. Defaults: ``alpha=0.5``, ``scale='mean'``, ``form='auto'``.
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ SPEC = MethodSpec(id="M05", name="Generalized adaptive additive GS", family="GS"
 
 
 def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=None, alpha: float = 0.5,
-        form: str = "point", scale: str = "mean") -> Result:
+        form: str = "auto", scale: str = "mean") -> Result:
     require_kinds(target, SPEC.targets, SPEC.id)
     if not 0.0 <= alpha <= 1.0:
         raise ValueError(f"alpha must be in [0, 1], got {alpha!r}")

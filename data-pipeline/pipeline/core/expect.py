@@ -8,7 +8,8 @@ method and the metric, and the manifest carries the ranges so the web can judge 
 A key of ``expect`` (``[low, high]`` as the params-record schema says) is one of:
 
 - ``<metric>``: a method metric of the case's reference method (``efficiency``, ``uniformity``, ``rel_std_pct``,
-  ``zero_order``, ``ghost``, ``iterations``), or a case metric (below);
+  ``zero_order``, ``ghost``, ``iterations``; for a shaped target ``signal_rms_error_pct`` and ``signal_efficiency``,
+  which replace the trap metrics ``uniformity`` and ``rel_std_pct``), or a case metric (below);
 - ``<method>.<metric>``: a method metric of that method (for example ``M04.uniformity``), which must be among the case's
   methods.
 
@@ -23,7 +24,8 @@ from __future__ import annotations
 
 import re
 
-METHOD_METRICS = ("efficiency", "uniformity", "rel_std_pct", "zero_order", "ghost", "iterations")
+METHOD_METRICS = ("efficiency", "uniformity", "rel_std_pct", "zero_order", "ghost", "iterations",
+                  "signal_rms_error_pct", "signal_efficiency")
 CASE_METRICS = ("feedback_initial_rel_std_pct", "feedback_final_rel_std_pct", "fc_ratio", "boltzmann_tv",
                 "min_transient", "final_filling")
 METRICS = METHOD_METRICS + CASE_METRICS

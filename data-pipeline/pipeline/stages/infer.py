@@ -18,12 +18,13 @@ import time
 import numpy as np
 
 from ..cases import build
+from ..cases.library import random_loading
 from ..core import score as scoring
 from ..core.gate import method_lane
 from ..io.schema import MethodFailure, MethodOutcome
 from ..model.holo import methods as registry
 from ..model.holo.core.rng import Rng
-from ..model.holo.core.types import Budget
+from ..model.holo.core.types import Budget, Target
 
 CONVERGE_WINDOW = 5
 CONVERGE_TOL_PCT = 0.1
@@ -58,6 +59,32 @@ def _accepted(run, extra: dict) -> dict:
     return {k: v for k, v in extra.items() if k in params}
 
 
+# The case inputs a method takes beyond the target, by the keyword its ``run`` declares. A keyword is bound to a method by
+# its meaning, never by its name: B4 has an ``aberration`` keyword too, but it is the rms of the residual aberrations it
+# is robust to (waves, a float), not the case's wavefront (Noll coefficients), so it is not given the case's list.
+SYSTEM_WAVEFRONT = {"M14": "injected"}   # M14 senses the system wavefront through the camera: the case's aberration
+ATOM_METHODS = ("M16",)                  # methods that sort atoms: given the loaded sites and the target sites
+
+
+def case_inputs(rec: dict, mid: str, run) -> dict:
+    """The keyword arguments the record supplies to method ``mid`` (empty when it supplies none)."""
+    out: dict = {}
+    if rec["aberration"] is not None and mid in SYSTEM_WAVEFRONT:
+        out.update(_accepted(run, {SYSTEM_WAVEFRONT[mid]: build.aberration_coeffs(rec)}))
+    if mid in ATOM_METHODS:
+        if rec["rearrangement"] is None:
+            raise ValueError(f"method {mid} sorts loaded atoms; the case has no rearrangement block")
+        loaded = set(random_loading(rec))
+        out.update(_accepted(run, {"atoms": build.trapset_of([t for t in rec["target"]["traps"] if t["id"] in loaded])}))
+    return out
+
+
+def rearrangement_target(rec: dict):
+    """The target sites a sorting method fills (the record's ``rearrangement.target_ids``)."""
+    keep = set(rec["rearrangement"]["target_ids"])
+    return Target.from_traps(build.trapset_of([t for t in rec["target"]["traps"] if t["id"] in keep]))
+
+
 def run_method(rec: dict, mid: str, *, budget: Budget | None = None, init: np.ndarray | None = None,
                target=None, extra: dict | None = None, ctx: dict | None = None) -> MethodOutcome:
     """Run one registered method on the record's case and score it. Raises whatever the method raises."""
@@ -68,12 +95,12 @@ def run_method(rec: dict, mid: str, *, budget: Budget | None = None, init: np.nd
         raise ValueError(problem)
     b = budget or Budget(rec["budget"]["iterations"], rec["budget"]["time_s"])
     kwargs = {"device": ctx["device"], "budget": b, "rng": Rng(rec["seed"]), "init": init}
-    if rec["aberration"] is not None:
-        kwargs.update(_accepted(method.run, {"aberration": build.aberration_coeffs(rec)}))
+    kwargs.update(case_inputs(rec, mid, method.run))
     if extra:
         kwargs.update(extra)
     t0 = time.perf_counter()
-    result = method.run(ctx["setup"], target if target is not None else ctx["target"], **kwargs)
+    shown = target if target is not None else (rearrangement_target(rec) if mid in ATOM_METHODS else ctx["target"])
+    result = method.run(ctx["setup"], shown, **kwargs)
     seconds = time.perf_counter() - t0
     if result.phi.shape != (ctx["setup"].n_pix,) * 2:
         raise ValueError(f"method {mid} returned a phase of shape {result.phi.shape}")
