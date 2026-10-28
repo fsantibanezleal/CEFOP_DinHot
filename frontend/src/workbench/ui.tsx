@@ -138,7 +138,7 @@ export function Provenance({ sel, mapsOnly }: { sel: Selection; mapsOnly: boolea
   if (sel.liveError) parts.push(t(`The live run failed: ${sel.liveError}`, `La corrida en vivo falló: ${sel.liveError}`));
   if (!parts.length) return null;
   return (
-    <p className="caos-plot-note dh-lane" role="status" data-lane={lane} data-running={sel.running ? 'true' : 'false'} lang={lang}>
+    <p className="caos-plot-note dh-lane" role="status" data-lane={lane} data-running={sel.running ? 'true' : 'false'} data-state={sel.running ? 'loading' : undefined} lang={lang}>
       {parts.join(' ')}
     </p>
   );
