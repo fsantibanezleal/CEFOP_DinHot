@@ -185,7 +185,7 @@ def sample_target(rng: np.random.Generator, kind: str | None = None) -> np.ndarr
             gx, gy = np.meshgrid((np.arange(k) - (k - 1) / 2) * sp, (np.arange(k) - (k - 1) / 2) * sp)
             xy = np.stack([gx.ravel(), gy.ravel()], 1)
         elif fam == "ring":
-            n = max(3, n)
+            n = max(3, min(n, int(2 * math.pi * lim / 3.0)))
             rad = float(u(max(5.0, n * 3.0 / (2 * math.pi)), lim))
             th = 2 * np.pi * np.arange(n) / n
             xy = np.stack([rad * np.cos(th), rad * np.sin(th)], 1)
