@@ -46,6 +46,19 @@ export function unavailableRow(doc: Readiness | null, path: string): ReadinessEn
 
 export const isUnavailable = (doc: Readiness | null, path: string): boolean => unavailableRow(doc, path) !== null;
 
+/**
+ * Which model answers a learned slot, as the readiness document says (catalog: Missing-data states). `available` and `stale` mean the
+ * released model; `training` means the released model when its provenance is `real` (a newer one trains) and the baseline when it is
+ * `baseline`; `provider`, `missing` and an unreadable document mean the baseline answers.
+ */
+export function modelAnswers(doc: Readiness | null, slot: 'cgh-net' | 'warmstart-model'): 'model' | 'baseline' {
+  const e = entryFor(doc, slot);
+  if (!e) return 'baseline';
+  if (e.state === 'available' || e.state === 'stale') return 'model';
+  if (e.state === 'training') return e.provenance === 'real' ? 'model' : 'baseline';
+  return 'baseline';
+}
+
 let cached: Promise<Readiness | null> | null = null;
 
 /** Forgets the fetched document (a test starts clean; a page load never needs it). */

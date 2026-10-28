@@ -1,6 +1,6 @@
 // The files the site serves from data/derived (T3): the index, the readiness document, every manifest it lists, every artifact each
 // manifest names (one `artifact`, or a list of `artifacts` for variants baked apart), and the further files the
-// index declares in `files` (a product's contract declarations, say). Shared by copy-data.mjs and its test, so the
+// index declares in `files` (a product's contract declarations, say), without the refused cases, which have none. Shared by copy-data.mjs and its test, so the
 // rule the build applies is the rule the test checks.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -36,11 +36,13 @@ export function declaredFiles(derived) {
   const declared = [INDEX_REL, READINESS_REL, ...(Array.isArray(index.files) ? index.files : [])];
   const problems = [];
   for (const entry of index.cases) {
-    declared.push(entry.manifest_path);
-    const at = join(derived, entry.manifest_path);
+    // A refused case (status "refused", path null) has no manifest and no artifact: the index carries its reason (catalog row case-index).
+    if (entry.status === 'refused' || entry.path === null) continue;
+    declared.push(entry.path);
+    const at = join(derived, entry.path);
     if (!existsSync(at)) continue; // reported among the missing files
     const paths = artifactPaths(JSON.parse(readFileSync(at, 'utf8')));
-    if (!paths.length) problems.push(`${entry.manifest_path}: names no artifact (artifact or artifacts)`);
+    if (!paths.length) problems.push(`${entry.path}: names no artifact (artifact or artifacts)`);
     declared.push(...paths);
   }
   const unique = [...new Set(declared)];
