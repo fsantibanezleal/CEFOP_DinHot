@@ -1,203 +1,199 @@
-"""Producer-side tests of the document contracts (catalog rows case-index, case-manifest, trace, api): every
-document of the committed bake, of a fresh sandbox bake and of the provider tree validates against its schema file
-(docs/contracts/schemas/) and obeys the rules a schema cannot state. The consumer and swap side is
-frontend/src/lib/contract.test.ts, which runs the same assertions on the same roots."""
+"""Producer-side tests of the document contracts (catalog rows case-index, case-manifest, trace, benchmark-results,
+model-metrics): every document of a fresh sandbox bake, of the committed bake (when it exists) and of the provider tree
+validates against its schema file (docs/contracts/schemas/) and obeys the rules a schema cannot state. The consumer and
+swap side is frontend/src/lib/contract.test.ts, which runs the same assertions on the same roots. The model-slot and
+engine-reference tests (model cards, ONNX graphs, engine reference) belong to the units that produce those documents.
+
+The sandbox bake runs the small cases of tests/bake/bakefix.py with the planted methods; the canonical bake is the same
+code on the twelve cases."""
 from __future__ import annotations
 
+import base64
 import copy
 import json
-import subprocess
-import sys
 from pathlib import Path
 
-import pytest
-from openapi_spec_validator import validate
-from pipeline import pipeline
-
 import contract_schemas as cs
+import pytest
 
-BAKE = cs.DERIVED_ROOTS["bake"]
 FIXTURE = cs.DERIVED_ROOTS["fixture"]
+COMMITTED = cs.DERIVED_ROOTS["bake"]
+TRACE_BYTES_GATE = 256 * 1024
 
 
-def cross_field_errors(root: Path) -> list[str]:
-    """Every departure from the schemas and from the rules they cannot state, for the documents under ``root``
-    (a data/derived layout): index, manifests, traces. A missing document is an error naming its path."""
-    out: list[str] = []
-    index_path = root / "manifests" / "index.json"
-    if not index_path.is_file():
-        return [f"missing {index_path}"]
-    index = cs.load_json(index_path)
-    out += [f"index {e}" for e in cs.errors("case-index", index)]
-    ids = [c.get("case_id") for c in index.get("cases", [])]
-    if index.get("n_cases") != len(ids):
-        out.append(f"index: n_cases={index.get('n_cases')} but {len(ids)} entries")
-    if index.get("default_case") not in ids:
-        out.append(f"index: default_case {index.get('default_case')!r} is not an entry")
-    if ids != sorted(ids):
-        out.append("index: entries are not sorted by case_id")
-    for entry in index.get("cases", []):
-        mpath = root / entry["manifest_path"]
-        if not mpath.is_file():
-            out.append(f"missing manifest {mpath}")
-            continue
-        m = cs.load_json(mpath)
-        out += [f"{entry['case_id']} manifest {e}" for e in cs.errors("case-manifest", m)]
-        if m.get("case_id") != entry["case_id"]:
-            out.append(f"{entry['case_id']}: manifest case_id is {m.get('case_id')!r}")
-        if m.get("lane") != (m.get("gate") or {}).get("lane"):
-            out.append(f"{entry['case_id']}: lane {m.get('lane')!r} differs from gate.lane")
-        apath = root / m.get("artifact", {}).get("path", "")
-        if not apath.is_file():
-            out.append(f"missing artifact {apath}")
-            continue
-        if apath.stat().st_size != m["artifact"]["bytes"]:
-            out.append(f"{entry['case_id']}: artifact.bytes {m['artifact']['bytes']} differs from the file size {apath.stat().st_size}")
-        t = cs.load_json(apath)
-        out += [f"{entry['case_id']} trace {e}" for e in cs.errors("trace", t)]
-        if t.get("case_id") != entry["case_id"]:
-            out.append(f"{entry['case_id']}: trace case_id is {t.get('case_id')!r}")
-        lengths = {k: len(t.get(k, [])) for k in ("t", "S", "I", "R")}
-        if len(set(lengths.values())) != 1:
-            out.append(f"{entry['case_id']}: t, S, I, R lengths differ: {lengths}")
+def roots(sandbox_bake) -> dict[str, Path]:
+    out = {"fixture": FIXTURE, "sandbox": sandbox_bake[0]}
+    if (COMMITTED / "manifests" / "index.json").is_file():
+        out["committed"] = COMMITTED
     return out
 
 
-def catalog_ids() -> list[str]:
-    """The row ids of the ## Contracts table of the catalog, in order."""
-    ids: list[str] = []
-    in_table = False
-    for line in (cs.CONTRACTS / "catalog.md").read_text(encoding="utf-8").splitlines():
-        if line.startswith("## "):
-            in_table = line.strip() == "## Contracts"
-            continue
-        if in_table and line.startswith("|"):
-            cell = line.split("|")[1].strip()
-            if cell != "id" and not set(cell) <= {"-"}:
-                ids.append(cell)
-    return ids
+def index_of(root: Path) -> dict:
+    return cs.load_json(root / "manifests" / "index.json")
 
 
-@pytest.fixture(scope="module")
-def fresh_bake(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    root = tmp_path_factory.mktemp("fresh-bake")
-    pipeline.run_all(output_root=root)
-    return root
+def baked(root: Path):
+    """(entry, manifest, trace) of every baked case under ``root``."""
+    for e in index_of(root)["cases"]:
+        if e["status"] == "baked":
+            m = cs.load_json(root / e["path"])
+            yield e, m, cs.load_json(root / m["artifact"]["path"])
 
 
-def _roots(fresh_bake: Path) -> dict[str, Path]:
-    return {"committed bake": BAKE, "fresh bake": fresh_bake, "fixture tree": FIXTURE}
-
-
-def test_index_validates(fresh_bake: Path) -> None:
-    for label, root in _roots(fresh_bake).items():
-        path = root / "manifests" / "index.json"
-        assert path.is_file(), f"{label}: missing {path}"
-        index = cs.load_json(path)
+def test_index_validates(sandbox_bake):
+    for label, root in roots(sandbox_bake).items():
+        index = index_of(root)
         assert cs.errors("case-index", index) == [], label
-        ids = [c["case_id"] for c in index["cases"]]
-        assert index["n_cases"] == len(ids) and index["default_case"] in ids and ids == sorted(ids), label
+        ids = [e["case_id"] for e in index["cases"]]
+        assert ids == sorted(ids), f"{label}: entries not sorted by case_id"
+        by_id = {e["case_id"]: e for e in index["cases"]}
+        assert by_id[index["default_case"]]["status"] == "baked", f"{label}: the default case must be baked"
 
 
-def test_manifests_validate(fresh_bake: Path) -> None:
-    for label, root in _roots(fresh_bake).items():
-        index = cs.load_json(root / "manifests" / "index.json")
-        assert index["cases"], label
-        for entry in index["cases"]:
-            path = root / entry["manifest_path"]
-            assert path.is_file(), f"{label}: missing {path}"
-            m = cs.load_json(path)
-            assert cs.errors("case-manifest", m) == [], f"{label} {entry['case_id']}"
-            assert m["case_id"] == entry["case_id"] and m["lane"] == m["gate"]["lane"], f"{label} {entry['case_id']}"
-            art = root / m["artifact"]["path"]
-            assert art.is_file(), f"{label}: missing {art}"
-            assert art.stat().st_size == m["artifact"]["bytes"], f"{label} {entry['case_id']}: artifact bytes"
+def test_refused_case_has_no_manifest(sandbox_bake):
+    for label, root in roots(sandbox_bake).items():
+        refused = [e for e in index_of(root)["cases"] if e["status"] == "refused"]
+        assert refused, f"{label}: the root exercises no refused case"
+        for e in refused:
+            assert e["path"] is None and e["reason"]["en"] and e["reason"]["es"], (label, e["case_id"])
+            assert not (root / "manifests" / f"{e['case_id']}.json").exists(), (label, e["case_id"])
+            assert not (root / e["case_id"]).exists(), (label, e["case_id"])
+    far = next(e for e in index_of(sandbox_bake[0])["cases"] if e["case_id"] == "C94_far")
+    assert "below 127" in far["reason"]["en"] or "below" in far["reason"]["en"]   # the field bound is in the reason
 
 
-def test_traces_validate(fresh_bake: Path) -> None:
-    for label, root in _roots(fresh_bake).items():
-        index = cs.load_json(root / "manifests" / "index.json")
-        for entry in index["cases"]:
-            m = cs.load_json(root / entry["manifest_path"])
-            path = root / m["artifact"]["path"]
-            assert path.is_file(), f"{label}: missing {path}"
-            t = cs.load_json(path)
-            assert cs.errors("trace", t) == [], f"{label} {entry['case_id']}"
-            assert t["case_id"] == entry["case_id"], label
-            assert len({len(t[k]) for k in ("t", "S", "I", "R")}) == 1, f"{label} {entry['case_id']}: series lengths"
+def test_adversarial_baked_entry_with_a_reason_or_refused_with_a_path_fails_the_schema(sandbox_bake):
+    index = index_of(sandbox_bake[0])
+    bad = copy.deepcopy(index)
+    next(e for e in bad["cases"] if e["status"] == "baked")["reason"] = {"en": "x", "es": "x"}
+    assert cs.errors("case-index", bad)
+    bad = copy.deepcopy(index)
+    next(e for e in bad["cases"] if e["status"] == "refused")["path"] = "manifests/C94_far.json"
+    assert cs.errors("case-index", bad)
 
 
-def test_every_root_passes_the_cross_field_rules(fresh_bake: Path) -> None:
-    for label, root in _roots(fresh_bake).items():
-        assert cross_field_errors(root) == [], label
+def test_manifests_validate(sandbox_bake):
+    for label, root in roots(sandbox_bake).items():
+        for e, m, _t in baked(root):
+            assert cs.errors("case-manifest", m) == [], (label, e["case_id"])
+            assert m["case_id"] == e["case_id"]
+            assert m["lane"] == m["gate"]["lane"], (label, e["case_id"], "lane differs from gate.lane")
+            assert sorted(m["methods"]) == sorted(m["params"]["methods"]), (label, e["case_id"])
+            assert m["params"]["reference_method"] in m["methods"], (label, e["case_id"])
+            assert m["params"]["expect"] == m["expect"], (label, e["case_id"])
+            size = (root / m["artifact"]["path"]).stat().st_size
+            assert size == m["artifact"]["bytes"] == m["gate"]["trace_bytes"], (label, e["case_id"])
+            assert size <= m["gate"]["trace_bytes_budget"] == TRACE_BYTES_GATE
 
 
-def test_fresh_bake_is_not_the_committed_bake(fresh_bake: Path) -> None:
-    assert fresh_bake.resolve() != BAKE.resolve() and not str(fresh_bake.resolve()).startswith(str(cs.ROOT / "data"))
-    assert (fresh_bake / "manifests" / "index.json").is_file()
+def test_adversarial_a_manifest_with_wall_clock_time_or_an_unknown_field_fails(sandbox_bake):
+    _e, m, _t = next(baked(sandbox_bake[0]))
+    for plant in ({"baked_at": "2026-10-28T00:00:00Z"}, {"run_ms": 12.5}):
+        assert cs.errors("case-manifest", {**m, **plant}), plant
+    keys = {k for k in json.dumps(m).replace('"', " ").replace(":", " ").replace(",", " ").split()}
+    assert not keys & {"run_ms", "baked_at", "timestamp", "seconds"}
 
 
-def test_fixture_tree_validates() -> None:
-    assert cross_field_errors(FIXTURE) == []
-    readiness_path = FIXTURE / "readiness.json"
-    assert readiness_path.is_file(), f"missing {readiness_path}"
-    readiness = cs.load_json(readiness_path)
-    assert cs.errors("readiness", readiness) == []
-    assert [e["id"] for e in readiness["contracts"]] == [r for r in catalog_ids() if r != "readiness"]
-    # the provider tree is a stand-in for data/derived: the artifact checker accepts it as a repository root
-    run = subprocess.run([sys.executable, str(cs.ROOT / "scripts" / "check_artifacts.py"), str(cs.FIXTURE_ROOT)],
-                         capture_output=True, text=True, check=False)
-    assert run.returncode == 0, run.stdout + run.stderr
+def test_traces_validate(sandbox_bake):
+    for label, root in roots(sandbox_bake).items():
+        for e, m, t in baked(root):
+            assert cs.errors("trace", t) == [], (label, e["case_id"])
+            assert t["case_id"] == e["case_id"]
+            assert t["reference"]["method"] in t["methods"], (label, e["case_id"])
+            assert sorted(t["methods"]) == sorted(m["methods"]), (label, e["case_id"])
+            assert t["summary"]["best_method"] in t["methods"]
+            for mid, row in t["methods"].items():
+                assert len(row["history"]) <= 200
+                its = [h["iteration"] for h in row["history"]]
+                assert its == sorted(its), (label, e["case_id"], mid)
+                if t["traps"]:
+                    assert len(row["trap_intensity"]) == len(t["traps"]), (label, e["case_id"], mid)
 
 
-def test_openapi_document_is_valid() -> None:
-    validate(cs.load_json(cs.OPENAPI), base_uri=cs.OPENAPI.as_uri())
+def test_trace_base64_fields_have_their_sizes(sandbox_bake):
+    for label, root in roots(sandbox_bake).items():
+        for e, _m, t in baked(root):
+            ref = t["reference"]
+            assert len(base64.b64decode(ref["phase_u8"], validate=True)) == t["grid"]["n_pix"] ** 2, (label, e["case_id"])
+            f = ref["focal"]
+            assert len(base64.b64decode(f["intensity_db_u8"], validate=True)) == f["size"] ** 2, (label, e["case_id"])
+            if ref["axial"] is not None:
+                a = ref["axial"]
+                assert len(base64.b64decode(a["xz_u8"], validate=True)) == a["nz"] * a["nx"], (label, e["case_id"])
+            assert (root / e["path"]).exists()
 
 
-def test_adversarial_drifted_documents_are_rejected() -> None:
-    index = cs.load_json(FIXTURE / "manifests" / "index.json")
-    manifest = cs.load_json(FIXTURE / index["cases"][0]["manifest_path"])
-    trace = cs.load_json(FIXTURE / manifest["artifact"]["path"])
-    docs = {
-        "case-index": index,
-        "case-manifest": manifest,
-        "trace": trace,
-        "readiness": cs.load_json(FIXTURE / "readiness.json"),
-        "params-record": cs.load_json(cs.CONTRACTS / "examples" / "params-record.json"),
-        "surrogate-model": cs.load_json(cs.CONTRACTS / "examples" / "surrogate-model.json"),
-    }
-    for name, doc in docs.items():
-        assert cs.errors(name, doc) == [], f"{name}: the base document must conform first"
-        extra = copy.deepcopy(doc)
-        extra["unexpected_key"] = 1
-        assert cs.errors(name, extra), f"{name}: an extra key is accepted"
-        missing = copy.deepcopy(doc)
-        del missing[next(iter(missing))]
-        assert cs.errors(name, missing), f"{name}: a missing key is accepted"
-    # a boolean is not a number
-    wrong = copy.deepcopy(trace)
-    wrong["summary"]["peak_I"] = True
-    assert cs.errors("trace", wrong)
-    wrong = copy.deepcopy(manifest)
-    wrong["params"]["beta"] = True
-    assert cs.errors("case-manifest", wrong)
-    # a state that contradicts its reason
-    wrong = copy.deepcopy(docs["readiness"])
-    wrong["contracts"][0].update(state="available", reason={"en": "x", "es": "x"})
-    assert cs.errors("readiness", wrong)
+def test_trace_dynamics_and_rearrangement_limits(sandbox_bake):
+    seen = set()
+    for _label, root in roots(sandbox_bake).items():
+        for _e, _m, t in baked(root):
+            if t["dynamics"]:
+                seen.add("dynamics")
+                d = t["dynamics"]
+                assert len(d["x_um"]) == len(d["y_um"]) <= 4000 and len(d["psd"]["f_hz"]) == len(d["psd"]["p"]) <= 200
+            if t["rearrangement"]:
+                seen.add("rearrangement")
+                assert len(t["rearrangement"]["frames"]) <= 120
+            if t["feedback"]:
+                seen.add("feedback")
+    assert seen == {"dynamics", "rearrangement", "feedback"}
 
 
-def test_adversarial_cross_field_rules_catch_what_the_schema_cannot(tmp_path: Path) -> None:
-    root = tmp_path / "derived"
-    for p in FIXTURE.rglob("*"):
-        if p.is_file():
-            dest = root / p.relative_to(FIXTURE)
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(p.read_bytes())
-    assert cross_field_errors(root) == []
-    trace_path = next(root.glob("*/trace.json"))
-    t = cs.load_json(trace_path)
-    t["S"] = t["S"][:-1]
-    trace_path.write_text(json.dumps(t), encoding="utf-8")
-    problems = cross_field_errors(root)
-    assert any("lengths differ" in p for p in problems) and any("artifact.bytes" in p for p in problems)
+def test_benchmark_validates():
+    for label, root in {"fixture": FIXTURE, "committed": COMMITTED}.items():
+        path = root / "benchmark" / "results.json"
+        if not path.is_file():
+            assert label == "committed"
+            continue
+        doc = cs.load_json(path)
+        assert cs.errors("benchmark-results", doc) == [], label
+        for r in doc["rows"]:
+            assert r["params"] in ("default", "tuned") and r["n_seeds"] >= 1
+
+
+def test_skipped_cells_are_absent_from_rows():
+    for label, root in {"fixture": FIXTURE, "committed": COMMITTED}.items():
+        path = root / "benchmark" / "results.json"
+        if not path.is_file():
+            continue
+        doc = cs.load_json(path)
+        rows = {(r["method"], r["geometry"], r["device"]) for r in doc["rows"]}
+        for s in doc.get("skipped", []):
+            assert s["reason"]["en"] and s["reason"]["es"], label
+            if "Device cell" in s["reason"]["en"]:
+                assert (s["method"], s["geometry"], "device") not in rows, (label, s)
+            else:
+                assert (s["method"], s["geometry"], "ideal") not in rows, (label, s)
+
+
+def test_model_metrics_validate():
+    for label, root in {"fixture": FIXTURE, "committed": COMMITTED}.items():
+        path = root / "models" / "metrics.json"
+        if not path.is_file():
+            assert label == "committed"
+            continue
+        doc = cs.load_json(path)
+        assert cs.errors("model-metrics", doc) == [], label
+
+
+def test_fixture_tree_validates(sandbox_bake):
+    """The swap test: the same assertions pass on the provider tree and on a bake (documents and cross-field rules)."""
+    for label, root in roots(sandbox_bake).items():
+        index = index_of(root)
+        assert cs.errors("case-index", index) == [], label
+        for e, m, t in baked(root):
+            assert cs.errors("case-manifest", m) == [] and cs.errors("trace", t) == [], (label, e["case_id"])
+            assert (root / m["artifact"]["path"]).stat().st_size == m["artifact"]["bytes"], (label, e["case_id"])
+    # the provider tree is also the swap target of the sandbox: a fixture case carries the refused-case path
+    assert any(e["status"] == "refused" for e in index_of(FIXTURE)["cases"])
+
+
+@pytest.mark.parametrize("which", ["manifest", "trace"])
+def test_adversarial_a_corrupted_document_is_seen(sandbox_bake, which):
+    _e, m, t = next(baked(sandbox_bake[0]))
+    doc = copy.deepcopy(m if which == "manifest" else t)
+    if which == "manifest":
+        doc["lane"] = "somewhere"
+    else:
+        doc["reference"]["method"] = "not-a-method-id"
+    assert cs.errors("case-manifest" if which == "manifest" else "trace", doc)

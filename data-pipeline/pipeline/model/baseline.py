@@ -1,34 +1,35 @@
-"""Baseline of the surrogate model slot (catalog row surrogate-model): the analytic SIR peak fraction, needing no
-trained bundle. From the first integral S + I - (1/R0) ln S = const with S0 = 1 and I0 near 0, the infected fraction
-peaks when S = 1/R0 at ``1 - (1 + ln R0) / R0``; for R0 <= 1 there is no outbreak and the peak fraction is 0.
+"""Baselines of the two model slots (catalog rows cgh-net and warmstart-model): what answers behind the same contract while
+no released model exists, and the other side of the swap tests.
 
-It answers whenever no valid released bundle exists (``stages.train.load_released`` returns None), and it is the
-other side of the swap test: both predictors map r0 = beta / gamma (> 0) to a peak fraction in [0, 1]."""
+- ``cgh_net_baseline``: Gerchberg-Saxton (M04, ladder row M04) for 30 iterations on the same target as the network, through
+  the method registry (it needs the engine's M04 module).
+- ``warmstart_baseline``: the random trap phases of the portable RNG, the start of the random-superposition method (M02) and
+  of every method that draws its own start, so the model's warm start is measured against exactly this.
+
+Neither needs a released model or a library beyond numpy.
+"""
 from __future__ import annotations
 
-import math
-from typing import Any
+import numpy as np
+
+from .holo import methods
+from .holo.core.geometry import Setup
+from .holo.core.rng import Rng
+from .holo.core.types import Budget, Target
+
+GS_ITERATIONS = 30
+GS_METHOD = "M04"
 
 
-def peak_frac(r0: float) -> float:
-    """Peak infected fraction peak_I / N for the basic reproduction number ``r0``; 0.0 for r0 <= 1 and for a
-    non-finite or non-positive r0."""
-    if not math.isfinite(r0) or r0 <= 1.0:
-        return 0.0
-    return max(0.0, 1.0 - (1.0 + math.log(r0)) / r0)
+def cgh_net_baseline(setup: Setup, target: Target, seed: int, device=None) -> np.ndarray:
+    """The GS phase mask (``n_pix x n_pix``, radians) for ``target``; ``LookupError`` if M04 is not registered."""
+    try:
+        method = methods.get(GS_METHOD)
+    except KeyError as exc:
+        raise LookupError(f"the cgh-net baseline needs method {GS_METHOD}, which is not registered") from exc
+    return method.run(setup, target, device=device, budget=Budget(GS_ITERATIONS), rng=Rng(seed), init=None).phi
 
 
-BASIS = ["1", "r0", "ln(r0)", "1/r0"]
-
-
-def is_valid_bundle(obj: Any) -> bool:
-    """The rules of docs/contracts/schemas/surrogate-model.schema.json (stdlib, so the readiness check needs no
-    numpy), plus finite coefficients: kind ``linear-lstsq``, the basis exactly ``BASIS``, four numbers, no other key.
-    stages/train.py re-exports it."""
-    if not isinstance(obj, dict) or set(obj) != {"kind", "basis", "coeffs"}:
-        return False
-    if obj["kind"] != "linear-lstsq" or obj["basis"] != BASIS:
-        return False
-    coeffs = obj["coeffs"]
-    return (isinstance(coeffs, list) and len(coeffs) == len(BASIS)
-            and all(isinstance(c, (int, float)) and not isinstance(c, bool) and math.isfinite(c) for c in coeffs))
+def warmstart_baseline(n_traps: int, seed: int) -> np.ndarray:
+    """Random trap phases in ``[0, 2 pi)`` from the portable RNG (float64, length ``n_traps``)."""
+    return np.asarray(Rng(seed).phases(n_traps), dtype=np.float64)
