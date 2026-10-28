@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d">
+  <title id="t">The lanes of DinHot</title>
+  <desc id="d">The offline lane bakes twelve cases and the benchmark in Python and commits the artifacts; the replay lane copies them into the static site; the live lane re-runs the live methods in a TypeScript engine in a Web Worker; a dormant read-only API serves the same documents.</desc>
+  <style>
+    :root { --bg:#ffffff; --fg:#1b1f24; --mut:#5b6573; --line:#9aa5b1; --a:#e8f0fb; --b:#e9f5ec; --c:#fdf1e1; --d:#f4eaf8; --ar:#5b6573; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0e1116; --fg:#e6e9ed; --mut:#9aa5b1; --line:#4b5563; --a:#1c2b44; --b:#1b3326; --c:#3a2c17; --d:#2d2038; --ar:#9aa5b1; } }
+    .bg { fill: var(--bg); }
+    text { fill: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+    .h { font-weight: 600; font-size: 13px; }
+    .m { fill: var(--mut); font-size: 11px; }
+    .box { stroke: var(--line); stroke-width: 1; }
+    .ar { stroke: var(--ar); stroke-width: 1.5; fill: none; marker-end: url(#lanes-arrow); }
+  </style>
+  <defs><marker id="lanes-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" style="fill:var(--ar)"/></marker></defs>
+  <rect class="bg" width="760" height="300"/>
+
+  <rect class="box" x="20" y="30" width="200" height="130" rx="6" style="fill:var(--a)"/>
+  <text class="h" x="30" y="52">Offline (Python, numpy)</text>
+  <text x="30" y="74">12 cases, 24 methods</text>
+  <text x="30" y="92">benchmark, 20 seeds</text>
+  <text x="30" y="110">lane gate, units gate</text>
+  <text class="m" x="30" y="132">workstation, never CI</text>
+  <text class="m" x="30" y="148">training: local GPU only</text>
+
+  <rect class="box" x="290" y="30" width="200" height="130" rx="6" style="fill:var(--b)"/>
+  <text class="h" x="300" y="52">Replay (committed artifacts)</text>
+  <text x="300" y="74">index, manifests, traces</text>
+  <text x="300" y="92">benchmark results, model cards</text>
+  <text x="300" y="110">copied into the static site</text>
+  <text class="m" x="300" y="132">each trace at most 256 KiB</text>
+  <text class="m" x="300" y="148">version in the address</text>
+
+  <rect class="box" x="560" y="30" width="180" height="130" rx="6" style="fill:var(--c)"/>
+  <text class="h" x="570" y="52">Live (TypeScript, Worker)</text>
+  <text x="570" y="74">live methods, device model</text>
+  <text x="570" y="92">optional WebGPU, CPU fallback</text>
+  <text x="570" y="110">ONNX inference (learned)</text>
+  <text class="m" x="570" y="132">run budget 1500 ms</text>
+  <text class="m" x="570" y="148">held to Python by parity tests</text>
+
+  <path class="ar" d="M222 95 L286 95"/>
+  <path class="ar" d="M492 95 L556 95"/>
+
+  <rect class="box" x="290" y="196" width="200" height="70" rx="6" style="fill:var(--d)"/>
+  <text class="h" x="300" y="218">API (dormant, read-only)</text>
+  <text class="m" x="300" y="238">GET only, 503 with the state</text>
+  <text class="m" x="300" y="254">serves the same documents</text>
+  <path class="ar" d="M390 162 L390 192"/>
+  <text class="m" x="20" y="206">Deploy: GitHub Pages, static, no secret, no server.</text>
+  <text class="m" x="20" y="224">The reader can change a case, a method and a device;</text>
+  <text class="m" x="20" y="240">what the browser cannot compute in budget is replayed</text>
+  <text class="m" x="20" y="256">and labelled as such.</text>
+</svg>
