@@ -4,9 +4,9 @@ Only what the index lists is served: a manifest of an indexed case, an artifact 
 index, the readiness or a manifest as an "artifact"), so no route answers with a body its OpenAPI response does not
 declare. A document that exists but is not JSON raises ``Unreadable``, which the router answers as a declared 503.
 
-Nothing here knows a product's manifest shape beyond contract 2's two forms: one artifact (`artifact: {path}` at the
-manifest's top level) or several (`artifacts: [{path, ...}]`, one per variant). The documents are served unchanged;
-their shapes are checked by scripts/check_artifacts.py and the web's contract test, never re-declared here.
+The index entry of a baked case has a `path` (its manifest); a refused case has `path: null` and no manifest. A manifest names
+its trace as `artifact: {path}` (or, for a product with variants, `artifacts: [{path, ...}]`). The documents are served
+unchanged; their shapes are checked by scripts/check_artifacts.py and the contract tests, never re-declared here.
 """
 from __future__ import annotations
 
@@ -60,17 +60,27 @@ def load_readiness() -> dict | None:
     return doc
 
 
+def load_benchmark() -> dict | None:
+    """The benchmark results, or None when the benchmark has not run for this build."""
+    return _read("benchmark/results.json")
+
+
+def load_metrics() -> dict | None:
+    """The held-out metrics of the model slots, or None when they have not been computed for this build."""
+    return _read("models/metrics.json")
+
+
 def _entries() -> list[dict]:
     index = load_index()
     cases = index.get("cases", []) if isinstance(index, dict) else []
-    return [e for e in cases if isinstance(e, dict) and isinstance(e.get("manifest_path"), str)]
+    return [e for e in cases if isinstance(e, dict) and isinstance(e.get("path"), str)]
 
 
 def load_manifest(case_id: str) -> dict | None:
     """The manifest of an indexed case, or None for any other id (the index itself, a path, a case not baked)."""
     for entry in _entries():
         if entry.get("case_id") == case_id:
-            return _read(entry["manifest_path"])
+            return _read(entry["path"])
     return None
 
 
@@ -87,7 +97,7 @@ def load_artifact(rel: str) -> Any | None:
     nothing here (it is reported on its own route)."""
     for entry in _entries():
         try:
-            manifest = _read(entry["manifest_path"])
+            manifest = _read(entry["path"])
         except Unreadable:
             continue
         if isinstance(manifest, dict) and rel in artifact_paths(manifest):
