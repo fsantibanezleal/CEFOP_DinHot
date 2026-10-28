@@ -38,7 +38,7 @@ export function OpticsFigure({ t }: { t: Tr }) {
       <circle cx={560} cy={225} r={6} fill="none" stroke="var(--color-bad)" strokeWidth={1.6} />
       <Label x={560} y={212} kind="tick">{t('refused', 'rechazada')}</Label>
       <line x1={338} y1={218} x2={338} y2={232} className="dg-axis" />
-      <Label x={346} y={246} anchor="start" kind="tick">{t('bin λf/(pad N p)', 'bin λf/(pad N p)')}</Label>
+      <Label x={380} y={246} anchor="start" kind="tick">{t('bin λf/(pad N p)', 'bin λf/(pad N p)')}</Label>
     </Svg>
   );
 }
@@ -220,9 +220,9 @@ export function DeviceFigure({ t }: { t: Tr }) {
       <Label x={90} y={156} kind="tick">+ l·arg(x + iy)</Label>
       <Label x={90} y={172} kind="tick">+ Σ c_j Z_j + φ_factory</Label>
       <Label x={90} y={188} kind="tick">(mod 2π)</Label>
-      <Label x={540} y={140} kind="note">{t('K = F⁻¹{exp[-(|kx|^q + |ky|^q)/σ^q]}', 'K = F⁻¹{exp[-(|kx|^q + |ky|^q)/σ^q]}')}</Label>
-      <Label x={540} y={158} kind="tick">σ = 1.24, q = 1.80 (Schroff)</Label>
-      <Label x={330} y={266} kind="note">{t('a missing device means the ideal one', 'un dispositivo ausente significa el ideal')}</Label>
+      <Label x={630} y={246} anchor="end" kind="note">{t('K = F⁻¹{exp[-(|kx|^q + |ky|^q)/σ^q]}', 'K = F⁻¹{exp[-(|kx|^q + |ky|^q)/σ^q]}')}</Label>
+      <Label x={630} y={262} anchor="end" kind="tick">{t('σ = 1.24, q = 1.80 (Schroff)', 'σ = 1,24, q = 1,80 (Schroff)')}</Label>
+      <Label x={330} y={282} kind="note">{t('a missing device means the ideal one', 'un dispositivo ausente significa el ideal')}</Label>
     </Svg>
   );
 }
@@ -241,7 +241,7 @@ export function LoopFigure({ t }: { t: Tr }) {
       <Arrow id={id} x1={306} y1={82} x2={338} y2={82} />
       <Arrow id={id} x1={488} y1={82} x2={520} y2={82} />
       <PathArrow id={id} d="M 573 114 L 573 176 L 79 176 L 79 114" label={t("target update: I'_i = Ī / (1 - G (1 - I_i/Ī))", "actualización del objetivo: I'_i = Ī / (1 - G (1 - I_i/Ī))")} lx={326} ly={196} />
-      <Label x={326} y={228} kind="note">{t('repeat for the steps of the case; gain G about 0.7 in the source', 'repetir por los pasos del caso; ganancia G cercana a 0.7 en la fuente')}</Label>
+      <Label x={326} y={228} kind="note">{t('repeat for the steps of the case; gain G about 0.7 in the source', 'repetir por los pasos del caso; ganancia G cercana a 0,7 en la fuente')}</Label>
       <Label x={326} y={26} kind="note">{t('emulation: the errors are stated parameters, not a sensor', 'emulación: los errores son parámetros declarados, no un sensor')}</Label>
     </Svg>
   );
@@ -336,8 +336,8 @@ export function ParetoFigure({ t }: { t: Tr }) {
       <Label x={24} y={100} anchor="middle">u</Label>
       {[0, 0.5, 1].map((v) => (
         <g key={v}>
-          <Label x={sx(v)} y={Y0 + 14} kind="tick">{v}</Label>
-          <Label x={X0 - 8} y={sy(v) + 4} anchor="end" kind="tick">{v}</Label>
+          <Label x={sx(v)} y={Y0 + 14} kind="tick">{t(String(v), String(v).replace('.', ','))}</Label>
+          <Label x={X0 - 8} y={sy(v) + 4} anchor="end" kind="tick">{t(String(v), String(v).replace('.', ','))}</Label>
         </g>
       ))}
       <path d={`M ${sx(0.68)} ${sy(1.0)} C ${sx(0.85)} ${sy(1.0)} ${sx(0.93)} ${sy(0.99)} ${sx(0.96)} ${sy(0.9)}`} className="dg-curve-faint" />
