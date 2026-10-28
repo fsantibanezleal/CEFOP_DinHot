@@ -162,12 +162,20 @@ for (const [label, root, present] of roots) {
       const geometries = new Set(b.geometries.map((g) => g.id));
       for (const r of b.rows) expect(geometries.has(r.geometry), `${r.method}/${r.geometry}`).toBe(true);
       for (const s of b.skipped ?? []) {
-        expect(b.rows.some((r) => r.method === s.method && r.geometry === s.geometry), `${s.method}/${s.geometry} is skipped but has rows`).toBe(false);
+        // A skipped device cell leaves the ideal-SLM row of the same method and geometry in place; any other skip leaves no row at all.
+        const deviceOnly = /^Device cell not run/.test(s.reason.en);
+        const rows = b.rows.filter((r) => r.method === s.method && r.geometry === s.geometry && (!deviceOnly || r.device === 'device'));
+        expect(rows.length, `${s.method}/${s.geometry} is skipped but has ${deviceOnly ? 'device ' : ''}rows`).toBe(0);
       }
       for (const f of b.pareto) expect(geometries.has(f.geometry)).toBe(true);
     });
 
-    it('the model metrics conform and name only the two slots of the catalog', () => {
+    it('the model metrics conform and name only the two slots of the catalog (or are absent while readiness says provider or missing)', () => {
+      if (!existsSync(new URL('models/metrics.json', root))) {
+        const row = (read('readiness.json') as Readiness).contracts.find((e) => e.id === 'model-metrics');
+        expect(['provider', 'missing'], 'models/metrics.json is absent and readiness does not say why').toContain(row?.state);
+        return;
+      }
       const mm = read('models/metrics.json') as ModelMetrics;
       expect(conform(mm, { object: MODEL_METRICS })).toEqual([]);
       expect(mm.schema).toBe(SCHEMAS.modelMetrics);
@@ -189,8 +197,13 @@ describe('CONTRACT 2: the bake root', () => {
   it('is checked completely once it exists; until then the suite is skipped and the provider tree carries the same assertions', () => {
     const present = roots[0][2];
     if (present) {
-      for (const rel of ['manifests/index.json', 'readiness.json', 'benchmark/results.json', 'models/metrics.json']) {
+      for (const rel of ['manifests/index.json', 'readiness.json', 'benchmark/results.json']) {
         expect(existsSync(new URL(rel, bake)), `the bake is incomplete: ${rel} is missing under ${fileURLToPath(bake)}`).toBe(true);
+      }
+      // The model metrics are written by the model unit: until a model is evaluated the readiness row says provider (or missing).
+      if (!existsSync(new URL('models/metrics.json', bake))) {
+        const row = (JSON.parse(readFileSync(new URL('readiness.json', bake), 'utf8')) as Readiness).contracts.find((e) => e.id === 'model-metrics');
+        expect(['provider', 'missing'], 'models/metrics.json is missing and readiness does not say why').toContain(row?.state);
       }
     } else {
       expect(existsSync(new URL('manifests/index.json', provider))).toBe(true);
