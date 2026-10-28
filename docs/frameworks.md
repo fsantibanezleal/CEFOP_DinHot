@@ -1,6 +1,6 @@
 # Frameworks
 
-One card per method of the ladder (24) and one per physics component (7). A card is the binding record of what the code does: the
+One card per method of the ladder (24), one per physics component (7) and one per computational library (3). A card is the binding record of what the code does: the
 equations with their source, the module and entrypoint with its defaults, the acceptance criterion and the test that holds it, the
 values DinHot measured (with seeds, grid and date, labelled as DinHot's own), the limits, and the references with DOIs or URLs.
 Nothing on a card is a published number unless it says "published" and names the source; every DinHot number comes from an acceptance
@@ -28,6 +28,16 @@ on FFT bins, 8 bins apart (`tests/methods/conftest.py`).
 | [P05](frameworks/P05_particle-dynamics.md) | Particle dynamics and the spectral oracle | `core/dynamics.py` |
 | [P06](frameworks/P06_emulated-camera.md) | Emulated camera | `core/camera.py` |
 | [P07](frameworks/P07_portable-rng.md) | Portable random generator | `core/rng.py` |
+
+## Libraries
+
+| Card | Library | Role |
+|---|---|---|
+| [L01](frameworks/L01_numpy.md) | numpy 2.4.6 | the Python engine's only numerical dependency (`numpy.fft`, linear algebra) |
+| [L02](frameworks/L02_fft-js.md) | fft.js 4.0.4 | the FFT of the TypeScript live engine |
+| [L03](frameworks/L03_onnxruntime-web.md) | onnxruntime-web 1.31.1 | in-browser inference of the two learned models |
+
+The other pinned packages (the shell and its UI libraries, the build and test tools, the training stack) are in the technology table of [the SDD](design/SDD.md); the training stack is added with the learned-methods work.
 
 ## Methods
 
@@ -66,7 +76,7 @@ site replays it; "both" means a small size runs live and the full size is baked.
 
 Every card has the same sections, in this order: a header table (family, lane, targets, module and entrypoint with `SPEC` and `run` lines, anchor), Purpose, the equations with their
 source (or The gap and Method for a beyond-the-state-of-the-art method), Implementation (defaults), Acceptance criterion and test, Measured values (with seeds and grid), Limits, References.
-A method that is not yet built also has a Pending section at its end naming what is pending. An unverified reading of a source is written `UNVERIFIED` with what was tried.
+A library card has the base template's sections instead: What and why, Install (exact, verified), Usage, Applying it here, Caveats and licence. A method that is not yet built also has a Pending section at its end naming what is pending. An unverified reading of a source is written `UNVERIFIED` with what was tried.
 
 ## Status of the measured values
 
