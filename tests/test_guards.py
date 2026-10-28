@@ -168,7 +168,11 @@ def test_adversarial_instantiate_removes_the_template_own_tests_and_says_so(tmp_
         (copy / schema.relative_to(ROOT)).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(schema, copy / schema.relative_to(ROOT))
         sdd = subprocess.run([sys.executable, str(copy / "scripts" / "check_sdd.py")], capture_output=True, text=True, cwd=copy)
-        assert sdd.returncode == 0 and "check_sdd: OK" in sdd.stdout, sdd.stdout
+        # from 0.13.000 the one thing a new product owes its SDD at once is the method tiers: the example claims nothing beyond the
+        # state of the art, which holds only for the template (guide 09); every other check is green from the first run
+        findings = [ln for ln in sdd.stdout.splitlines() if ln.startswith("  - ")]
+        assert findings and all("method-tiers-and-manuscripts.md" in ln for ln in findings), sdd.stdout
+        assert any("no beyond method" in ln for ln in findings) and any("None claimed" in ln for ln in findings), sdd.stdout
 
 
 @TEMPLATE_ONLY
