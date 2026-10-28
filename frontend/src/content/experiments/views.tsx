@@ -34,6 +34,7 @@ export const CASE_REFS: Record<string, string[]> = {
   C01_square_grid: ['nogrette2014', 'tolic2006'],
   C02_grid_feedback: ['nogrette2014'],
   C03_large_array: ['kim2019', 'ebadi2021', 'grimm2000'],
+  C13_disordered_array: ['kim2019'],
   C12_calibration: ['dileonardo2007', 'bianchi2010'],
   C04_disc_crosstalk: ['schroff2023', 'pasienski2008'],
   C05_multiplane_vortices: ['polin2005'],

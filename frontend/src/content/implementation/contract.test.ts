@@ -25,8 +25,8 @@ describe('the contract table of the Implementation page', () => {
   it('lists the rows of the catalog, in order, with their version and producer', () => {
     expect(CONTRACT_ROWS.map(({ id, version, owner }) => ({ id, version, owner }))).toEqual(catalogRows());
   });
-  it('has eleven rows, each described in both languages', () => {
-    expect(CONTRACT_ROWS).toHaveLength(11);
+  it('has twelve rows, each described in both languages', () => {
+    expect(CONTRACT_ROWS).toHaveLength(12);
     for (const r of CONTRACT_ROWS) {
       for (const text of [r.what, r.reader]) {
         expect(text.en.trim().length, r.id).toBeGreaterThan(10);
