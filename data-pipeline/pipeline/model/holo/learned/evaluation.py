@@ -30,6 +30,7 @@ from . import convert, heldout
 SETUP128 = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=128, pitch_m=12.5e-6, pad=1)
 SETUP256 = Setup(wavelength_m=0.85e-6, focal_m=0.25, na=0.5, n_imm=1.0, n_pix=256, pitch_m=12.5e-6, pad=2)
 BIG = 10**6
+CURVE_FRACTIONS = (0.33, 0.45, 0.6, 0.8)
 
 
 def stat(x) -> dict:
@@ -71,45 +72,70 @@ def _target(a: np.ndarray) -> Target:
     return Target.from_field(a64, a64 > 1e-2 * a64.max())
 
 
+def _timed(fn):
+    t0 = time.perf_counter()
+    r = fn()
+    return r, time.perf_counter() - t0
+
+
 def evaluate_cgh(models_dir: Path, heldout_path: Path) -> tuple[dict, dict]:
-    """``(metrics entry of the schema, detail document)``."""
+    """``(metrics entry of the schema, detail document)``.
+
+    The wall-clock budget ``T`` is the median time of the catalog baseline (GS, 30 iterations) on this machine. Per target: GS alone
+    for ``T``; the hybrid (network pass, then GS from its phase in what is left of ``T``); the network alone; GS at 30 and 300
+    iterations; a lean numpy GS for ``T``. ``accuracy_vs_gs`` is the per-target ratio hybrid / GS alone; ``time_ms`` the hybrid's
+    wall time per target.
+    """
     gen, kinds, bench, bench_names = heldout.load_cgh(heldout_path)
     targets = list(gen) + list(bench)
     names = [f"gen/{k}" for k in kinds] + [f"bench/{b}" for b in bench_names]
     tg = [_target(a) for a in targets]
-    # warm-up, then the production path of every target
-    for _ in range(3):
+    for _ in range(3):   # warm-up of the session and the caches
         m17_cgh_net.run(SETUP128, tg[0], budget=Budget(1), rng=Rng(1), models_dir=models_dir)
-    ac_net, t_net = [], []
-    for a, t in zip(targets, tg):
-        ts = []
-        for _ in range(3):
-            r = m17_cgh_net.run(SETUP128, t, budget=Budget(1), rng=Rng(1), models_dir=models_dir)
-            ts.append(r.history[0]["time_s"])
-        if r.meta["provenance"] != "real":
-            raise RuntimeError("the cgh-net slot is not released in " + str(models_dir))
-        ac_net.append(accuracy(a, r.phi))
-        t_net.append(float(np.median(ts)))
-    budget_s = float(np.median(t_net))
+    t30 = []
+    for t in tg:
+        _r, dt = _timed(lambda: m04_gs.run(SETUP128, t, budget=Budget(30), rng=Rng(1)))
+        t30.append(dt)
+    budget_s = float(np.median(t30))
     rows = []
     for i, (a, t) in enumerate(zip(targets, tg)):
-        gs_t = m04_gs.run(SETUP128, t, budget=Budget(BIG, budget_s), rng=Rng(1))
+        net, t_net = _timed(lambda: m17_cgh_net.run(SETUP128, t, budget=Budget(BIG), rng=Rng(1), models_dir=models_dir, refine=False))
+        if net.meta["provenance"] != "real":
+            raise RuntimeError("the cgh-net slot is not released in " + str(models_dir))
+        hyb, t_hyb = _timed(lambda: m17_cgh_net.run(SETUP128, t, budget=Budget(BIG, budget_s), rng=Rng(1), models_dir=models_dir))
+        gs_t, t_gs = _timed(lambda: m04_gs.run(SETUP128, t, budget=Budget(BIG, budget_s), rng=Rng(1)))
         gs30 = m04_gs.run(SETUP128, t, budget=Budget(30), rng=Rng(1))
         gs300 = m04_gs.run(SETUP128, t, budget=Budget(300), rng=Rng(1))
         lean = lean_gs(a, SETUP128, budget_s)
-        rows.append({"target": names[i], "ac_net": ac_net[i], "time_net_ms": 1000 * t_net[i],
-                     "ac_gs_matched": accuracy(a, gs_t.phi), "gs_matched_iterations": gs_t.meta["iterations"],
-                     "ac_gs30": accuracy(a, gs30.phi), "ac_gs300": accuracy(a, gs300.phi), "ac_lean_gs_matched": accuracy(a, lean)})
-    ratio = np.array([r["ac_net"] / r["ac_gs_matched"] for r in rows])
-    entry = {"held_out_n": len(rows), "accuracy_vs_gs": stat(ratio), "time_ms": stat([1000 * x for x in t_net]), "baseline": "M04"}
+        rows.append({"target": names[i], "ac_hybrid": accuracy(a, hyb.phi), "time_hybrid_ms": 1000 * t_hyb,
+                     "hybrid_refine_iterations": hyb.meta["refine_iterations"], "network_ms": 1000 * hyb.meta["network_s"],
+                     "ac_net_alone": accuracy(a, net.phi), "ac_gs_matched": accuracy(a, gs_t.phi), "time_gs_matched_ms": 1000 * t_gs,
+                     "gs_matched_iterations": gs_t.meta["iterations"], "ac_gs30": accuracy(a, gs30.phi), "ac_gs300": accuracy(a, gs300.phi),
+                     "ac_lean_gs_matched": accuracy(a, lean)})
+    curve = {}
+    for frac in CURVE_FRACTIONS:   # the same comparison at smaller budgets (fractions of T), same targets
+        tb = frac * budget_s
+        rr = []
+        for a, t in zip(targets, tg):
+            h = m17_cgh_net.run(SETUP128, t, budget=Budget(BIG, tb), rng=Rng(1), models_dir=models_dir)
+            g = m04_gs.run(SETUP128, t, budget=Budget(BIG, tb), rng=Rng(1))
+            rr.append(accuracy(a, h.phi) / accuracy(a, g.phi))
+        curve[f"{1000 * tb:.0f} ms"] = {"fraction_of_T": frac, "ratio_hybrid_over_gs": stat(rr), "share_above_1": float(np.mean(np.array(rr) > 1.0))}
     col = lambda k: np.array([r[k] for r in rows])  # noqa: E731
+    ratio = col("ac_hybrid") / col("ac_gs_matched")
+    entry = {"held_out_n": len(rows), "accuracy_vs_gs": stat(ratio), "time_ms": stat(col("time_hybrid_ms")), "baseline": "M04"}
+    ks = ("ac_gs_matched", "ac_gs30", "ac_gs300", "ac_lean_gs_matched")
     detail = {
-        "slot": "cgh-net", "wall_clock_budget_ms": 1000 * budget_s, "accuracy": "AC, unit-sum intensities, 2 sum(TI) / (sum T^2 + sum I^2)",
-        "ac_median": {k: float(np.median(col(k))) for k in ("ac_net", "ac_gs_matched", "ac_gs30", "ac_gs300", "ac_lean_gs_matched")},
-        "ratio_vs": {k: stat(col("ac_net") / col(k)) for k in ("ac_gs_matched", "ac_gs30", "ac_gs300", "ac_lean_gs_matched")},
-        "share_net_above": {k: float(np.mean(col("ac_net") > col(k))) for k in ("ac_gs_matched", "ac_gs30", "ac_gs300", "ac_lean_gs_matched")},
+        "slot": "cgh-net", "wall_clock_budget_ms": 1000 * budget_s,
+        "budget_definition": "median wall time of GS (M04) at 30 iterations on the held-out targets, this machine",
+        "accuracy": "AC, unit-sum intensities, 2 sum(TI) / (sum T^2 + sum I^2)",
+        "ac_median": {k: float(np.median(col(k))) for k in ("ac_hybrid", "ac_net_alone") + ks},
+        "ratio_hybrid_vs": {k: stat(col("ac_hybrid") / col(k)) for k in ks},
+        "share_hybrid_above": {k: float(np.mean(col("ac_hybrid") > col(k))) for k in ks},
+        "network_ms_median": float(np.median(col("network_ms"))),
+        "hybrid_refine_iterations_median": float(np.median(col("hybrid_refine_iterations"))),
         "gs_matched_iterations_median": float(np.median(col("gs_matched_iterations"))),
-        "gs_lean_iterations_per_second_note": "lean GS runs for the same wall-clock as the network's median inference time",
+        "budget_curve": curve,
         "rows": rows,
     }
     return entry, detail

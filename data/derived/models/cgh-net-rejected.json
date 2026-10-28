@@ -1,7 +1,7 @@
 {
   "slot": "cgh-net",
   "status": "not released: the acceptance criterion is not met, the GS baseline (M04, 30 iterations) answers",
-  "criterion": "on held-out targets, accuracy above GS at the same wall-clock budget (median of the per-target ratio above 1)",
+  "criterion": "on held-out targets, accuracy of the hybrid (network phase, then GS refinement in the same wall-clock) above GS alone at the same wall-clock (median per-target ratio above 1)",
   "candidate": {
     "steps": 38000,
     "onnx_bytes": 4276382,
@@ -26,11 +26,12 @@
       "Sub",
       "Where"
     ],
-    "parity_wrapped_abs_diff": {
+    "parity_wrapped_abs_diff_phase": {
       "max": 0.0008449554443359375,
       "p999": 1.7149209976200647e-05,
       "share_above_1e-5": 0.0030364990234375
     },
+    "parity_intensity_rel_max": 3.3262276701861992e-06,
     "heldout_sha256": "0e1ca831181c22dd5aeb6c244fbb5e364024a3328f9b0c70d443b5d555e5a02a",
     "config": {
       "data_seed": 20261102,
@@ -42,66 +43,107 @@
       "channels": 14
     }
   },
-  "metrics": {
+  "metrics_it_would_have_published": {
     "held_out_n": 219,
     "accuracy_vs_gs": {
-      "median": 0.9983304460175481,
-      "q1": 0.989419863141936,
-      "q3": 1.0055570458402108
+      "median": 0.9993577980653524,
+      "q1": 0.9963574399865562,
+      "q3": 1.0014247044377016
     },
     "time_ms": {
-      "median": 35.788900044281036,
-      "q1": 35.01135000260547,
-      "q3": 36.81084999698214
+      "median": 155.4442999768071,
+      "q1": 154.01374999783002,
+      "q3": 156.89980000024661
     },
     "baseline": "M04"
   },
   "detail": {
     "slot": "cgh-net",
-    "wall_clock_budget_ms": 35.788900044281036,
+    "wall_clock_budget_ms": 144.96319997124374,
+    "budget_definition": "median wall time of GS (M04) at 30 iterations on the held-out targets, this machine",
     "accuracy": "AC, unit-sum intensities, 2 sum(TI) / (sum T^2 + sum I^2)",
     "ac_median": {
-      "ac_net": 0.9745195308195626,
-      "ac_gs_matched": 0.9771311075288441,
+      "ac_hybrid": 0.9865381574750443,
+      "ac_net_alone": 0.9745195308195626,
+      "ac_gs_matched": 0.9881954815133687,
       "ac_gs30": 0.9872552080837074,
       "ac_gs300": 0.9924788523882716,
-      "ac_lean_gs_matched": 0.9832499174601705
+      "ac_lean_gs_matched": 0.9899483379305263
     },
-    "ratio_vs": {
+    "ratio_hybrid_vs": {
       "ac_gs_matched": {
-        "median": 0.9983304460175481,
-        "q1": 0.989419863141936,
-        "q3": 1.0055570458402108
+        "median": 0.9993577980653524,
+        "q1": 0.9963574399865562,
+        "q3": 1.0014247044377016
       },
       "ac_gs30": {
-        "median": 0.9880593096760516,
-        "q1": 0.9816346904694919,
-        "q3": 0.9943810708303715
+        "median": 1.0007182827521097,
+        "q1": 0.9970886609075362,
+        "q3": 1.0031740820183441
       },
       "ac_gs300": {
-        "median": 0.9824755110850348,
-        "q1": 0.9764843906692673,
-        "q3": 0.9892490985380873
+        "median": 0.9949300072853666,
+        "q1": 0.9923719067761365,
+        "q3": 0.9970272252870314
       },
       "ac_lean_gs_matched": {
-        "median": 0.9920159607617106,
-        "q1": 0.9851001117442347,
-        "q3": 0.9990833788276738
+        "median": 0.9977412095005611,
+        "q1": 0.9947084775549255,
+        "q3": 0.9992594864423091
       }
     },
-    "share_net_above": {
-      "ac_gs_matched": 0.45662100456621,
-      "ac_gs30": 0.0867579908675799,
-      "ac_gs300": 0.0319634703196347,
-      "ac_lean_gs_matched": 0.2009132420091324
+    "share_hybrid_above": {
+      "ac_gs_matched": 0.4429223744292237,
+      "ac_gs30": 0.5525114155251142,
+      "ac_gs300": 0.045662100456621,
+      "ac_lean_gs_matched": 0.1735159817351598
     },
-    "gs_matched_iterations_median": 10.0,
-    "gs_lean_iterations_per_second_note": "lean GS runs for the same wall-clock as the network's median inference time"
+    "network_ms_median": 32.798899977933615,
+    "hybrid_refine_iterations_median": 32.0,
+    "gs_matched_iterations_median": 41.0,
+    "budget_curve": {
+      "48 ms": {
+        "fraction_of_T": 0.33,
+        "ratio_hybrid_over_gs": {
+          "median": 0.9992626272938233,
+          "q1": 0.9939227760617693,
+          "q3": 1.0042136962547392
+        },
+        "share_above_1": 0.4748858447488584
+      },
+      "65 ms": {
+        "fraction_of_T": 0.45,
+        "ratio_hybrid_over_gs": {
+          "median": 0.999297027384359,
+          "q1": 0.9952721606594339,
+          "q3": 1.0028707717012768
+        },
+        "share_above_1": 0.4474885844748858
+      },
+      "87 ms": {
+        "fraction_of_T": 0.6,
+        "ratio_hybrid_over_gs": {
+          "median": 0.9992543639929969,
+          "q1": 0.9956232628869188,
+          "q3": 1.0025435240311333
+        },
+        "share_above_1": 0.4246575342465753
+      },
+      "116 ms": {
+        "fraction_of_T": 0.8,
+        "ratio_hybrid_over_gs": {
+          "median": 0.9993004129639532,
+          "q1": 0.9960482561384285,
+          "q3": 1.0018253671774953
+        },
+        "share_above_1": 0.45662100456621
+      }
+    }
   },
   "ratio_median_by_group": {
-    "gen": 0.9984021233045064,
-    "bench": 0.9943557940473552
+    "gen": 0.9994312734319104,
+    "bench": 0.9990912071911486
   },
-  "earlier_checkpoint": "30000 steps: ratio median 0.9994 (net 0.9745, GS 0.9755, 10 GS iterations in 34.4 ms); 8000 steps: 0.9948",
-  "reading": "the network and GS at 10 iterations are a statistical tie in accuracy (the network is above GS on 46 percent of the held-out targets); GS at 30 and 300 iterations is above the network (0.987 and 0.992 against 0.9745), so the network is a faster, not a more accurate, method at this size"
+  "earlier_measurements": "network alone against GS at the network's own inference time (35.8 ms, 10 GS iterations): ratio 0.9983 (8000 steps 0.9948, 30000 steps 0.9994)",
+  "reading": "the hybrid ties with GS alone at every budget from 48 ms to 145 ms (ratio 0.9993, the hybrid above GS on 43 to 47 percent of the 219 targets); GS at 300 iterations stays above both (0.9925 against 0.9865). The network start does not shorten GS's convergence on these targets. The network alone reaches 0.9745 in 33 ms. ONNX parity on the reconstructed focal intensity is 3.3e-6 relative (inside 1e-5); on the phase it is 8.4e-4 at worst because the SLM field is near zero at a few pixels."
 }

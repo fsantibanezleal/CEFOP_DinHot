@@ -74,6 +74,24 @@ def parity(net: torch.nn.Module, path: Path, inputs: list[tuple[np.ndarray, ...]
     return parity_stats(net, path, inputs)["max"]
 
 
+def intensity_parity(net: torch.nn.Module, path: Path, inputs: list[tuple[np.ndarray, ...]]) -> float:
+    """cgh-net parity on the reconstructed focal intensity: the largest ``max|I_torch - I_onnx| / max(I_torch)`` over ``inputs``,
+    with ``I`` the unit-sum focal intensity of the phase mask. The phase itself is ill-conditioned where the SLM field is near zero
+    (atan2), the intensity the mask makes is not."""
+    from . import torch_forward as tf
+    net = net.eval().cpu()
+    sess = session(path)
+    amp = tf.input_amplitude(128)
+    worst = 0.0
+    for (a,) in inputs:
+        with torch.no_grad():
+            p_t = net(torch.as_tensor(a))
+        p_o = torch.as_tensor(sess.run(None, {"target": a})[0])
+        i_t, i_o = tf.focal_intensity(p_t[:, 0], amp), tf.focal_intensity(p_o[:, 0], amp)
+        worst = max(worst, float((i_t - i_o).abs().max() / i_t.max()))
+    return worst
+
+
 def io_spec(path: Path) -> tuple[list[dict], list[dict]]:
     m = onnx.load(str(path))
 

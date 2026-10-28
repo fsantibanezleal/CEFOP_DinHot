@@ -15,7 +15,7 @@ from dataclasses import dataclass
 
 from ..core.types import MethodSpec
 
-SUBPACKAGES = ("baseline", "control", "optim", "beyond")
+SUBPACKAGES = ("baseline", "control", "optim", "beyond", "learned")
 
 
 @dataclass(frozen=True)

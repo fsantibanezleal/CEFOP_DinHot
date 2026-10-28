@@ -79,10 +79,16 @@ def release(slot: str, run_dir: Path, repo_root: Path = REPO_ROOT) -> dict:
     if bad:
         raise RuntimeError(f"operators outside the web-safe list: {sorted(bad)}")
     err = export.parity_stats(net, out, probes)
+    inten = export.intensity_parity(net, out, probes) if slot == "cgh-net" else None
     trained_on, held_out = card_texts(slot, ck, heldout.sha256_file(held), n)
+    if inten is not None:
+        trained_on = {"en": trained_on["en"] + f" ONNX parity with torch is stated on the reconstructed focal intensity (max |dI| / max I = {inten:.2e}), "
+                      f"not on the phase, which is ill-conditioned where the SLM field is near zero.",
+                      "es": trained_on["es"] + f" La paridad ONNX con torch se declara sobre la intensidad focal reconstruida (max |dI| / max I = {inten:.2e}), "
+                      f"no sobre la fase, mal condicionada donde el campo del SLM es casi nulo."}
     card = export.write_card(slot, out, repo_root, trained_on, held_out)
     rec = {"slot": slot, "config": c, "steps": ck["step"], "onnx_bytes": card["bytes"], "opset": card["opset"],
-           "operators": sorted(export.onnx_ops(out)), "parity_wrapped_abs_diff": err, "heldout_sha256": heldout.sha256_file(held)}
+           "operators": sorted(export.onnx_ops(out)), "parity_wrapped_abs_diff": err, "parity_intensity_rel_max": inten, "heldout_sha256": heldout.sha256_file(held)}
     export.dump(rec, repo_root / "data" / "derived" / "models" / f"{slot}-training.json")
     return rec
 

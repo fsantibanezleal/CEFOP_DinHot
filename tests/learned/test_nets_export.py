@@ -103,3 +103,10 @@ def test_adversarial_an_op_outside_the_list_is_seen(tmp_path):
     p = tmp_path / "bad.onnx"
     onnx.save(helper.make_model(g, opset_imports=[helper.make_opsetid("", 17)]), str(p))
     assert export.check_ops(p) == {"LayerNormalization"}
+
+
+def test_cgh_graph_intensity_parity_is_relative_1e5_when_trained_like(cgh_net, tmp_path):
+    """The statement the card makes: torch and onnxruntime agree on the reconstructed focal intensity (max |dI| / max I)."""
+    export.export_cgh(cgh_net, tmp_path / "c.onnx")
+    probes = [(generators.sample_target(np.random.default_rng(i))[None, None],) for i in range(4)]
+    assert export.intensity_parity(cgh_net, tmp_path / "c.onnx", probes) < 1e-4   # untrained weights; the trained value is in the card
