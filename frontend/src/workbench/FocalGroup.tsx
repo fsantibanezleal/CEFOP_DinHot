@@ -10,7 +10,7 @@ import { cutRequest, type Plane } from './cuts';
 import { getEngine } from './engine';
 import { Heatmap, type HeatMark, type HeatRect } from './HeatmapStage';
 import { cardOf } from './HologramGroup';
-import { is3D, useSelection, type Axial, type Selection } from './model';
+import { is3D, isShaped, useSelection, type Axial, type Selection } from './model';
 import { pixelToUm, umToPixel } from './traps';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 
@@ -71,13 +71,16 @@ export function FocalPlaneView({ sel }: { sel: Selection }) {
   }, [sel.region, focal, size, bin]);
 
   const trap = sel.traps.find((x) => x.id === sel.trapId) ?? sel.traps[0] ?? null;
+  // A trap target is read through its selected trap; a shaped target has none, so the profiles go through the centre of the field.
+  const through = trap ? { x: trap.x_um, y: trap.y_um, id: trap.id } : focal && isShaped(sel.data.manifest) ? { x: 0, y: 0, id: null } : null;
   const profile = useMemo(() => {
-    if (!focal || !trap) return null;
-    const [col, row] = umToPixel(trap.x_um, trap.y_um, size, bin);
+    if (!focal || !through) return null;
+    const [col, row] = umToPixel(through.x, through.y, size, bin);
     if (col < 0 || col >= size || row < 0 || row >= size) return null;
     const xs = Array.from({ length: size }, (_, i) => (i - centre) * bin);
     return { xs, alongX: xs.map((_, i) => focal.db[row * size + i]), alongY: xs.map((_, i) => focal.db[i * size + col]) };
-  }, [focal, trap, size, bin, centre]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focal, through?.x, through?.y, size, bin, centre]);
 
   if (!maps) return <Pending label={LOADING} />;
   const range: [number, number] = [sel.dbFloor, 0];
@@ -149,10 +152,10 @@ export function FocalPlaneView({ sel }: { sel: Selection }) {
       </PlotCard>
       <PlotCard fill title={{ en: 'Profiles through the selected trap', es: 'Perfiles por la trampa elegida' }} {...c} dataKey={stateKey}>
         <Fill quiet>
-          {profile && trap ? (
+          {profile && through ? (
             <UPlotChart
               height="fill"
-              title={{ en: `Intensity along x and y through trap ${trap.id}`, es: `Intensidad a lo largo de x e y por la trampa ${trap.id}` }}
+              title={through.id === null ? { en: 'Intensity along x and y through the centre of the field', es: 'Intensidad a lo largo de x e y por el centro del campo' } : { en: `Intensity along x and y through trap ${through.id}`, es: `Intensidad a lo largo de x e y por la trampa ${through.id}` }}
               x={{ values: profile.xs, label: { en: 'Offset from the centre', es: 'Distancia al centro' }, unit: 'um', format: { decimals: 1 } }}
               y={{ label: { en: 'Intensity', es: 'Intensidad' }, unit: 'dB', range: [sel.dbFloor, 3] }}
               series={[

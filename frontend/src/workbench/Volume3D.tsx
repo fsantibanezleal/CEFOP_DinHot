@@ -13,9 +13,9 @@ import { type Selection } from './model';
 import { Fill, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 import { slabPlan, volumeExtent, volumePoints, type Slab } from './volume';
 
-const PLANES_PER_AXIS = 6;
+const PLANES_PER_AXIS = 4;
 const POINT_CAP = 60000;
-const CUT_NZ = 64;
+const CUT_NZ = 40;
 
 interface Computed {
   key: string;

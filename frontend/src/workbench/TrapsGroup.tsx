@@ -87,7 +87,8 @@ export function IntensityView({ sel }: { sel: Selection }) {
   const items = useMemo(() => (trapI ? ordered({ ...sel, sortBy }, trapI) : []), [sel, trapI, sortBy]);
   const hist = useMemo(() => (trapI ? histogram(trapI, Math.min(0.5, ...trapI), Math.max(1.5, ...trapI), 21) : null), [trapI]);
   const within = trapI ? trapI.filter((v) => Math.abs(v - 1) <= band).length : 0;
-  if ((!trapI || !stats || !hist) && isShaped(sel.data.manifest)) {
+  const noTraps = !trapI || trapI.length === 0;
+  if (noTraps && isShaped(sel.data.manifest)) {
     return (
       <ShapedPotential
         sel={sel}
@@ -96,7 +97,7 @@ export function IntensityView({ sel }: { sel: Selection }) {
       />
     );
   }
-  if (!trapI || !stats || !hist) {
+  if (noTraps || !stats || !hist) {
     return (
       <PlotCard fill title={{ en: 'Per-trap intensity', es: 'Intensidad por trampa' }} {...c} dataKey={stateKey}>
         <Fill>
@@ -191,7 +192,7 @@ export function DepthView({ sel }: { sel: Selection }) {
   const values = trapI ? trapI.map((v) => (scale === null ? v : v * scale)) : null;
   const unit = scale === null ? { en: 'ratio to the mean', es: 'razón a la media' } : { en: dyn!.depth.unit, es: dyn!.depth.unit };
   const items = useMemo(() => (values ? sel.traps.map((tr, i) => ({ id: tr.id, v: values[i] })) : []), [sel.traps, values]);
-  if (!values && isShaped(sel.data.manifest)) {
+  if ((!values || values.length === 0) && isShaped(sel.data.manifest)) {
     return (
       <ShapedPotential
         sel={sel}
@@ -200,7 +201,7 @@ export function DepthView({ sel }: { sel: Selection }) {
       />
     );
   }
-  if (!values) {
+  if (!values || values.length === 0) {
     return (
       <PlotCard fill title={{ en: 'Trap depth', es: 'Profundidad de las trampas' }} {...c} dataKey={stateKey}>
         <Fill>
