@@ -3,13 +3,13 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from e3_helpers import check_finite_difference, make_setup, task_10x10
+from e3_helpers import bin_grid, check_finite_difference, make_setup, task_10x10
 
 from pipeline.model.holo.core.device import Device, device_focal_field
 from pipeline.model.holo.core.forward import fft_focal_field, point_trap_fields, trap_fields_from_fft
 from pipeline.model.holo.core.metrics import trap_intensities, uniformity
 from pipeline.model.holo.core.rng import Rng
-from pipeline.model.holo.core.traps import Trap, TrapSet, snap_to_bins, square_grid
+from pipeline.model.holo.core.traps import Trap, TrapSet
 from pipeline.model.holo.methods.optim import _common as C
 from pipeline.model.holo.methods.optim import _gs_family as G
 
@@ -139,7 +139,7 @@ def test_trap_forward_ideal_with_z_and_vortex_matches_core_and_gradient_is_exact
 
 def test_trap_forward_device_reads_the_nearest_bin_and_gradient_is_exact():
     s = make_setup(16)
-    traps = snap_to_bins(s, square_grid(3, 3, 8 * 8.32))
+    traps = bin_grid(s, 3, 3, 8)
     dev = Device(crosstalk=(1.24, 1.8))
     phi = Rng(9).phases(256).reshape(16, 16)
     fwd = C.TrapForward(s, traps, dev)
@@ -172,7 +172,7 @@ def test_field_cost_rejects_wrong_shapes():
 
 def test_history_entry_has_the_required_keys():
     s = make_setup(16)
-    traps = snap_to_bins(s, square_grid(2, 2, 40.0))
+    traps = bin_grid(s, 2, 2, 8)
     v = point_trap_fields(Rng(1).phases(256).reshape(16, 16), s, traps)
     h = C.trap_history(3, v, traps.weight, 0.0)
     for k in ("iteration", "efficiency", "uniformity", "rel_std", "time_s"):
@@ -203,7 +203,7 @@ def test_gs_family_reaches_the_published_trends_on_the_10x10_task():
 
 def test_gs_family_is_deterministic_and_validates():
     s = make_setup(32)
-    traps = snap_to_bins(s, square_grid(3, 3, 8 * 8.32 * 4))
+    traps = bin_grid(s, 3, 3, 12)
     a, _ = G.weighted_gs(s, traps, 5, Rng(2), variant="gsw")
     b, _ = G.weighted_gs(s, traps, 5, Rng(2), variant="gsw")
     assert np.array_equal(a, b)

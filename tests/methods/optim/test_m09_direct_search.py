@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from e3_helpers import make_setup, quasi_periodic_119, task_10x10, trap_stats
+from e3_helpers import bin_grid, make_setup, quasi_periodic_119, task_10x10, trap_stats
 
 from pipeline.model.holo.core.forward import point_trap_fields
 from pipeline.model.holo.core.rng import Rng
-from pipeline.model.holo.core.traps import Trap, TrapSet, snap_to_bins, square_grid
+from pipeline.model.holo.core.traps import Trap, TrapSet
 from pipeline.model.holo.core.types import Budget, Target
 from pipeline.model.holo.methods.optim import m09_direct_search as M09
 
@@ -40,7 +40,7 @@ def test_unsupported_target_names_the_supported_kinds():
 
 def test_incremental_fields_equal_a_full_evaluation_and_cost_never_rises():
     s = make_setup(32)
-    traps = snap_to_bins(s, square_grid(4, 4, 8 * 8.32 * 2))
+    traps = bin_grid(s, 4, 4, 16)
     res = M09.run(s, Target.from_traps(traps), budget=Budget(2), rng=Rng(3), levels=8)
     v = point_trap_fields(res.phi, s, traps)
     assert np.allclose(v, res.fields, atol=1e-10)
@@ -52,7 +52,7 @@ def test_incremental_fields_equal_a_full_evaluation_and_cost_never_rises():
 
 def test_trial_budget_is_honoured():
     s = make_setup(32)
-    traps = snap_to_bins(s, square_grid(2, 2, 80.0))
+    traps = bin_grid(s, 2, 2, 8)
     res = M09.run(s, Target.from_traps(traps), budget=Budget(50), rng=Rng(3), max_trials=500)
     assert res.meta["trials"] <= 500
 
@@ -66,7 +66,7 @@ def test_vortex_and_axial_traps_are_supported_by_the_point_trap_form():
 
 def test_deterministic_for_a_seed():
     s = make_setup(32)
-    traps = snap_to_bins(s, square_grid(3, 3, 8 * 8.32 * 2))
+    traps = bin_grid(s, 3, 3, 16)
     a = M09.run(s, Target.from_traps(traps), budget=Budget(1), rng=Rng(7))
     b = M09.run(s, Target.from_traps(traps), budget=Budget(1), rng=Rng(7))
     c = M09.run(s, Target.from_traps(traps), budget=Budget(1), rng=Rng(8))

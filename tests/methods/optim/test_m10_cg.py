@@ -8,12 +8,12 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from e3_helpers import (
+    bin_grid,
     check_finite_difference, disc_target, lattice_target, make_setup, ring_target, signal_error,
 )
 
 from pipeline.model.holo.core.forward import fft_focal_field, point_trap_fields
 from pipeline.model.holo.core.rng import Rng
-from pipeline.model.holo.core.traps import snap_to_bins, square_grid
 from pipeline.model.holo.core.types import Budget, Target
 from pipeline.model.holo.methods.optim import _common as C
 from pipeline.model.holo.methods.optim import m10_cg as M10
@@ -36,7 +36,7 @@ def test_analytic_gradient_matches_finite_differences_on_a_shaped_target(t):
 @pytest.mark.parametrize("t", [2, 4])
 def test_analytic_gradient_matches_finite_differences_on_traps(t):
     s = make_setup(16)
-    traps = snap_to_bins(s, square_grid(3, 3, 8 * 8.32 * 1.5))
+    traps = bin_grid(s, 3, 3, 12)
     cost = C.TrapCost(s, traps, t=t, efficiency=0.8)
     phi = Rng(6).phases(256).reshape(16, 16)
     assert check_finite_difference(lambda x: cost.value_grad(x), phi, np.random.default_rng(2), n_dirs=6) <= 1e-5
@@ -62,7 +62,7 @@ def test_sequential_powers_run_t4_then_t2():
 
 def test_trap_target_improves_uniformity_over_a_random_start():
     s = make_setup(64)
-    traps = snap_to_bins(s, square_grid(4, 4, 8 * 8.32))
+    traps = bin_grid(s, 4, 4, 8)
     res = M10.run(s, Target.from_traps(traps), budget=Budget(60), rng=Rng(2), t=2)
     h0, h1 = res.history[0], res.history[-1]
     assert h1["rel_std"] < h0["rel_std"]
