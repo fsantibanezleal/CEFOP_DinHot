@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "model-card.schema.json",
+  "title": "ModelCard",
+  "description": "Model slots, catalog rows cgh-net 1.0.0 and warmstart-model 1.0.0 (they share this card): models/<slot>.json beside models/<slot>.onnx, written by the model unit's export and read by the pipeline and the web. cgh-net: in target float32 [1, 1, 128, 128] (target amplitude on the focal crop, normalised to unit energy), out phase float32 [1, 1, 128, 128] in radians; baseline GS (M04) at 30 iterations. warmstart-model: in traps float32 [1, 1024, 4] (x and y in focal bins over the half field, z in Rayleigh ranges, weight; padded) and mask float32 [1, 1024], out trap_phase float32 [1, 1024] in radians; baseline random trap phases from the portable RNG (the M02 start). With no valid released model the baseline answers and readiness says training. Rules the schema cannot state, checked by the model tests: sha256 and bytes are those of the file at onnx, and inputs and outputs are the graph's.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "slot",
+    "onnx",
+    "sha256",
+    "bytes",
+    "opset",
+    "inputs",
+    "outputs",
+    "trained_on",
+    "held_out",
+    "metrics_path"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dinhot.model-card/v1"
+    },
+    "slot": {
+      "enum": [
+        "cgh-net",
+        "warmstart-model"
+      ]
+    },
+    "onnx": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\.\\.)[^\\\\]+\\.onnx$",
+      "description": "Path of the ONNX graph."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "bytes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "opset": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "shape",
+          "dtype"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "shape": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 1
+          },
+          "dtype": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "shape",
+          "dtype"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "shape": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 1
+          },
+          "dtype": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "grid": {
+      "const": 128,
+      "description": "The focal-crop side of cgh-net; warmstart-model has none."
+    },
+    "trained_on": {
+      "$ref": "#/$defs/text"
+    },
+    "held_out": {
+      "$ref": "#/$defs/text"
+    },
+    "metrics_path": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "text": {
+      "type": "object",
+      "description": "Every reader-facing string is bilingual at the source.",
+      "additionalProperties": false,
+      "required": [
+        "en",
+        "es"
+      ],
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "slot": {
+            "const": "cgh-net"
+          }
+        },
+        "required": [
+          "slot"
+        ]
+      },
+      "then": {
+        "required": [
+          "grid"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "grid"
+          ]
+        }
+      }
+    }
+  ]
+}
