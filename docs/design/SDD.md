@@ -122,7 +122,7 @@ resolves it to. The runtimes are Python 3.12 (CI; the device's venv may be newer
 | contracts | openapi-spec-validator | 0.9.0 | validates `docs/contracts/api.openapi.json` | none: the only maintained validator for the OpenAPI 3.1 document |
 | API | fastapi | 0.143.0 | the dormant `app/`, run by the API contract tests | flask, rejected: no response models to compare with the OpenAPI document |
 | API | httpx | 0.28.1 | the test client of the dormant `app/` | requests, rejected: FastAPI's test client needs httpx |
-| shell | @fasl-work/caos-app-shell | 0.19.5 | the shared app shell (pinned exactly, ADR-0078) | a hand-rolled shell, forbidden by ADR-0078 |
+| shell | @fasl-work/caos-app-shell | 0.19.6 | the shared app shell (pinned exactly, ADR-0078) | a hand-rolled shell, forbidden by ADR-0078 |
 | web | react | 19.3.0 | the UI | none: the shell requires it |
 | web | react-dom | 19.3.0 | the UI renderer | none: the shell requires it |
 | web | react-router | 8.4.0 | the routes | none: the shell requires it |
@@ -293,7 +293,7 @@ retired after the Pages site passes its live checks. The target is written in `d
 | ADR-0071 | the page is the viewport; one tab row; drawing at least half the viewport | the shell's `CaseWorkbench`; the gate |
 | ADR-0074 | CI runs cheap checks only; no training in CI | `.github/workflows/ci.yml`, `scripts/check_ci_budget.py` |
 | ADR-0075 | every requirement names its gate | `docs/design/features/`, `scripts/check_sdd.py` |
-| ADR-0078 | rules live in the base | shell 0.19.5 pinned exactly and template 0.12.000 |
+| ADR-0078 | rules live in the base | shell 0.19.6 pinned exactly and template 0.12.000 |
 | ADR-0080 | contract-first parallel delivery | `docs/contracts/`, `tests/contracts/`, `scripts/check_contracts.py`, `scripts/check_readiness.py` |
 | extension (no ADR) | a WebGPU backend for the live FFT iterations, optional, with the CPU path as the fallback and a browser agreement test | `frontend/src/engine/holo/gpu/`; proposed to the base as a rule for in-browser accelerated compute |
 | extension (no ADR) | a perceptually uniform cyclic colormap for phase, which the visualization rubric does not name | `frontend/src/workbench/colormaps.ts`, its source and licence in `ATTRIBUTION.md` |

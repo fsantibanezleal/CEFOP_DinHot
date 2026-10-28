@@ -17,7 +17,7 @@
     "engine:browser": "node scripts/engine-browser.mjs --assert"
   },
   "dependencies": {
-    "@fasl-work/caos-app-shell": "0.19.5",
+    "@fasl-work/caos-app-shell": "0.19.6",
     "fft.js": "4.0.4",
     "katex": "0.19.1",
     "lucide-react": "^1.52.0",
