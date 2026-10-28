@@ -1,5 +1,7 @@
 // The build copies what the index declares: one artifact or several per manifest, and the index's further files.
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -23,9 +25,9 @@ describe('the declared files of the site', () => {
     put('manifests/index.json', {
       files: ['contract/index.json'],
       cases: [
-        { case_id: 'A', manifest_path: 'manifests/A.json' },
-        { case_id: 'B', manifest_path: 'manifests/B.json' },
-        { case_id: 'C', manifest_path: 'manifests/C.json' },
+        { case_id: 'A', path: 'manifests/A.json' },
+        { case_id: 'B', path: 'manifests/B.json' },
+        { case_id: 'C', path: 'manifests/C.json' },
       ],
     });
     put('manifests/A.json', { artifact: { path: 'A/trace.json' } });
@@ -63,7 +65,7 @@ describe('a declared-partial bake builds', () => {
     contracts: [{ id: 'trace', state, missing }, { id: 'params-record', state: 'partial', missing: ['some_case_id'] }],
   });
   const setup = (doc: unknown) => {
-    putPartial('manifests/index.json', { cases: [{ case_id: 'A', manifest_path: 'manifests/A.json' }, { case_id: 'B', manifest_path: 'manifests/B.json' }] });
+    putPartial('manifests/index.json', { cases: [{ case_id: 'A', path: 'manifests/A.json' }, { case_id: 'B', path: 'manifests/B.json' }] });
     putPartial('manifests/A.json', { artifact: { path: 'A/trace.json' } });
     putPartial('manifests/B.json', { artifact: { path: 'B/trace.json' } });
     putPartial('A/trace.json', {});
@@ -92,3 +94,81 @@ describe('a declared-partial bake builds', () => {
     expect(declaredFiles(partial).tolerated).toEqual([]);
   });
 });
+
+describe('a refused case', () => {
+  it('declares no manifest and no artifact: the index carries its reason', () => {
+    const r = join(root, 'refused');
+    mkdirSync(join(r, 'manifests'), { recursive: true });
+    writeFileSync(join(r, 'manifests/index.json'), JSON.stringify({ cases: [{ case_id: 'C11', path: null, status: 'refused', reason: { en: 'x', es: 'y' } }, { case_id: 'A', path: 'manifests/A.json', status: 'baked' }] }));
+    writeFileSync(join(r, 'manifests/A.json'), JSON.stringify({ artifact: { path: 'A/trace.json' } }));
+    mkdirSync(join(r, 'A'), { recursive: true });
+    writeFileSync(join(r, 'A/trace.json'), '{}');
+    writeFileSync(join(r, 'readiness.json'), '{}');
+    const d = declaredFiles(r);
+    expect(d.declared).toEqual(['manifests/index.json', 'readiness.json', 'manifests/A.json', 'A/trace.json']);
+    expect(d.missing).toEqual([]);
+  });
+});
+
+// each case starts a node process; a loaded machine needs more than the default 5 s
+describe('copy-data.mjs: DinHot declared files (benchmark, model metrics, released models)', { timeout: 60000 }, () => {
+  const script = new URL('../../scripts/copy-data.mjs', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+  const make = (name: string, opts: { benchmark?: boolean; metrics?: boolean; readinessRows?: object[] }) => {
+    const base = join(root, name);
+    const derived = join(base, 'derived');
+    const put2 = (rel: string, doc: unknown) => {
+      mkdirSync(dirname(join(derived, rel)), { recursive: true });
+      writeFileSync(join(derived, rel), typeof doc === 'string' ? doc : JSON.stringify(doc));
+    };
+    put2('manifests/index.json', { cases: [{ case_id: 'A', path: 'manifests/A.json', status: 'baked' }] });
+    put2('manifests/A.json', { artifact: { path: 'A/trace.json' } });
+    put2('A/trace.json', {});
+    put2('readiness.json', { contracts: opts.readinessRows ?? [] });
+    if (opts.benchmark) put2('benchmark/results.json', {});
+    if (opts.metrics) put2('models/metrics.json', {});
+    return { base, derived, out: join(base, 'public'), models: join(base, 'models') };
+  };
+  const run = (p: { derived: string; out: string; models: string }) =>
+    spawnSync(process.execPath, [script], { env: { ...process.env, CAOS_DATA_ROOT: p.derived, CAOS_PUBLIC_DIR: p.out, CAOS_MODELS_DIR: p.models }, encoding: 'utf8' });
+
+  it('copies the benchmark and the metrics beside the case files', () => {
+    const p = make('full', { benchmark: true, metrics: true });
+    const r = run(p);
+    expect(r.status, r.stderr).toBe(0);
+    for (const rel of ['benchmark/results.json', 'models/metrics.json', 'A/trace.json', 'readiness.json']) expect(existsSync(join(p.out, rel)), rel).toBe(true);
+  });
+  it('adversarial: stops on an absent benchmark the readiness does not call missing, and builds when it does', () => {
+    const p = make('nobench', { metrics: true });
+    const stop = run(p);
+    expect(stop.status).toBe(1);
+    expect(stop.stderr).toMatch(/benchmark\/results\.json/);
+    const q = make('nobench-ok', { metrics: true, readinessRows: [{ id: 'benchmark-results', state: 'missing', missing: [] }] });
+    const ok = run(q);
+    expect(ok.status, ok.stderr).toBe(0);
+    expect(ok.stdout).toMatch(/1 declared absent/);
+    expect(existsSync(join(q.out, 'benchmark/results.json'))).toBe(false);
+  });
+  it('ships a released model (card and graph) and refuses a card whose graph is absent or altered', () => {
+    const p = make('model', { benchmark: true, metrics: true });
+    const graph = Buffer.from([1, 2, 3, 4]);
+    mkdirSync(p.models, { recursive: true });
+    const card = { onnx: 'models/cgh-net.onnx', bytes: 4, sha256: createHash('sha256').update(graph).digest('hex') };
+    writeFileSync(join(p.models, 'cgh-net.json'), JSON.stringify(card));
+    const absent = run(p);
+    expect(absent.status).toBe(1);
+    expect(absent.stderr).toMatch(/graph models\/cgh-net\.onnx, which is absent/);
+    writeFileSync(join(p.models, 'cgh-net.onnx'), Buffer.from([1, 2, 3, 5]));
+    expect(run(p).stderr).toMatch(/not the one its card describes/);
+    writeFileSync(join(p.models, 'cgh-net.onnx'), graph);
+    const ok = run(p);
+    expect(ok.status, ok.stderr).toBe(0);
+    expect(existsSync(join(p.out, 'models/cgh-net.json'))).toBe(true);
+    expect(existsSync(join(p.out, 'models/cgh-net.onnx'))).toBe(true);
+  });
+  it('without a card no model ships (the baseline answers)', () => {
+    const p = make('nomodel', { benchmark: true, metrics: true });
+    expect(run(p).status).toBe(0);
+    expect(existsSync(join(p.out, 'models/cgh-net.json'))).toBe(false);
+  });
+});
+
