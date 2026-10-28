@@ -1,0 +1,43 @@
+{
+  "slot": "cgh-net",
+  "config": {
+    "data_seed": 20261103,
+    "init_seed": 13,
+    "steps": 16000,
+    "batch": 32,
+    "lr": 0.001,
+    "max_hours": 2.2,
+    "channels": 14
+  },
+  "steps": 16000,
+  "onnx_bytes": 4671540,
+  "opset": 17,
+  "operators": [
+    "Add",
+    "Atan",
+    "Concat",
+    "Constant",
+    "ConstantOfShape",
+    "Conv",
+    "ConvTranspose",
+    "Div",
+    "Equal",
+    "Expand",
+    "Greater",
+    "Less",
+    "MatMul",
+    "Mul",
+    "ReduceSum",
+    "Relu",
+    "Slice",
+    "Sub",
+    "Where"
+  ],
+  "parity_wrapped_abs_diff": {
+    "max": 0.004246830940246582,
+    "p999": 0.00038704365491870884,
+    "share_above_1e-5": 0.2799835205078125
+  },
+  "parity_intensity_rel_max": 8.417985554842744e-06,
+  "heldout_sha256": "3c974555676078b4756443e750793ae8c3a5bced595d673a0fa3092f1d316cb0"
+}

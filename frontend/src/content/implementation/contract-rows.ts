@@ -1,4 +1,4 @@
-// The eleven rows of the contract catalog as the Implementation page shows them: id, version and producer are the catalog's own
+// The twelve rows of the contract catalog as the Implementation page shows them: id, version and producer are the catalog's own
 // cells (docs/contracts/catalog.md, table "Contracts"; `contract.test.ts` in this folder reads the catalog and fails when a row
 // here drifts from it), and `reader` says who consumes the document, from the code (the consumer-test cell of the catalog names the
 // test, this column names the module that reads it at run time).
@@ -71,6 +71,13 @@ export const CONTRACT_ROWS: ContractRow[] = [
     owner: 'data-pipeline/pipeline/stages/evaluate.py',
     what: { en: 'The held-out metrics of the two model slots against their baselines.', es: 'Las métricas con datos reservados de los dos espacios de modelo frente a sus líneas base.' },
     reader: { en: 'The Benchmark page', es: 'La página Benchmark' },
+  },
+  {
+    id: 'model-evidence',
+    version: '1.0.0',
+    owner: 'data-pipeline/pipeline/stages/train.py',
+    what: { en: 'The evidence behind model-metrics: the training records, the rejected candidates and the evaluation detail of the model slots.', es: 'La evidencia detrás de model-metrics: los registros de entrenamiento, los candidatos rechazados y el detalle de la evaluación de los espacios de modelo.' },
+    reader: { en: 'The Benchmark page and the tests of the learned methods (tests/learned/)', es: 'La página Benchmark y las pruebas de los métodos aprendidos (tests/learned/)' },
   },
   {
     id: 'engine-reference',
