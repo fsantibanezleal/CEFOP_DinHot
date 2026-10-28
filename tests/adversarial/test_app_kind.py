@@ -14,7 +14,7 @@ from planting import add_schema, drop_row, guard, make_tree
 
 NODE = shutil.which("node")
 INPUTS = ("scripts/*.py", "docs/design", "tests", "data", "frontend/src/**/*.test.ts", "frontend/src/**/*.test.tsx", "frontend/scripts",
-          "requirements*.txt", "data-pipeline/requirements.txt", "content", "frontend/public/executive", "product.json", "deploy/TARGET")
+          "requirements*.txt", "data-pipeline/requirements.txt", "content", "frontend/public/executive", "product.json", "deploy/TARGET", ".template-source")
 SDD = "docs/design/SDD.md"
 VALIDATION = "docs/design/features/web/validation.md"
 REASON = "this hub only links to studies and runs no simulation or dynamic synthetic scenario"

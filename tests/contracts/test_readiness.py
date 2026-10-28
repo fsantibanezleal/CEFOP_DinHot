@@ -122,7 +122,7 @@ def test_state_available_for_the_rows_the_bake_serves(repo):
 def test_state_partial_params_lists_the_rejected_case_ids(repo):
     e = entry(run(repo), "params-record")
     assert (e["state"], e["provenance"]) == ("partial", "real")
-    assert e["reason"] == fill(template("contract 1 rejects some records"), n=1, total=12)
+    assert e["reason"] == fill(template("contract 1 rejects some records"), n=1, total=13)
     assert e["missing"] == ["C11_outside_field"]
 
 

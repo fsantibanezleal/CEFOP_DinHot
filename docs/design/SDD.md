@@ -182,32 +182,33 @@ Every method is one complete vertical (ADR-0069): Python engine, its acceptance 
 card in `docs/frameworks/`, its Methodology topic and, when live, its TypeScript port with a parity test. The acceptance
 criteria are measured on DinHot's own grids; the anchors are the published results they are set against.
 
-| id | method | acceptance criterion | gate |
-|---|---|---|---|
-| M01 | Superposition of prisms and lenses | on the 10x10 task with a flat beam, efficiency within 0.10 of 0.29 and uniformity below 0.05 | `tests/methods/baseline/test_m01_superposition.py` |
-| M02 | Random superposition | on the 10x10 task with a flat beam, efficiency above M01 and at least 0.65; uniformity below 0.35 (DinHot measured 0.25 at 256 squared against 0.01 at 768 squared in the source; the ordering, not the value, transfers) | `tests/methods/baseline/test_m02_random_superposition.py` |
-| M03 | Random mask | efficiency about 1/M; at the source's 768 squared grid, uniformity within the spread of 0.58 | `tests/methods/baseline/test_m03_random_mask.py` |
-| M04 | Gerchberg-Saxton, point-trap and FFT forms | the two forms agree to 1e-9 rad; 30 iterations on the 10x10 task with a flat beam reach efficiency at least 0.9 and uniformity near 0.6 | `tests/methods/baseline/test_m04_gs.py` |
-| M05 | Generalized adaptive additive | uniformity above GS at equal iterations on the 10x10 task | `tests/methods/baseline/test_m05_gaa.py` |
-| M06 | Weighted GS | efficiency and uniformity at least 0.9 within a median of 15 iterations on the 10x10 task with a flat beam (the source reports about 10); the 3x3x3 lattice above 0.9 and 0.98 | `tests/methods/baseline/test_m06_gsw.py` |
-| M07 | Phase-fixed weighted GS | fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations (DinHot's measured default; at the source's 12 it stalls at 2.9 percent on this grid) | `tests/methods/baseline/test_m07_phase_fixed_wgs.py` |
-| M08 | MRAF | on disc, ring and bar targets, signal-region error at least five times below GS at the cost of efficiency | `tests/methods/baseline/test_m08_mraf.py` |
-| M09 | Direct search | uniformity at least 0.98 on the 10x10 task; under 5 percent rms variation on a quasi-periodic set | `tests/methods/optim/test_m09_direct_search.py` |
-| M10 | Conjugate-gradient minimization | the analytic gradient matches finite differences; a square lattice below 1 percent error | `tests/methods/optim/test_m10_cg.py` |
-| M11 | Wirtinger gradient descent with Adam | lower trap-intensity error than M04 at equal iterations on the 10x10 task | `tests/methods/optim/test_m11_wirtinger_adam.py` |
-| M12 | Closed-loop WGS on an emulated camera | from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7 | `tests/methods/control/test_m12_closed_loop.py` |
-| M13 | Device-aware CG with pixel crosstalk | on the crosstalk device, lower error than M10 without the model on a large disc | `tests/methods/optim/test_m13_crosstalk_cg.py` |
-| M14 | Zernike correction and sensorless modal recovery | recovers an injected set of Noll modes 4 to 11 within 5 percent of their amplitude | `tests/methods/control/test_m14_zernike.py` |
-| M15 | Laguerre-Gaussian vortex traps | the ring phase winds by 2 pi l with an error under 0.1 rad | `tests/methods/control/test_m15_vortex.py` |
-| M16 | Hungarian assignment and linear phase interpolation | no crossing moves for alpha 1.5 on a 7x7 to 3x3 sort; a moving trap above 70 percent of its mean intensity | `tests/methods/control/test_m16_rearrangement.py` |
-| M17 | Unsupervised CNN hologram refined by GS (DeepCGH-style start) | on held-out targets, the network start followed by GS refinement inside the same wall-clock budget reaches a higher accuracy than GS alone (measured alone, the network matches GS at equal time: median ratio 0.998) | `tests/learned/test_m17_cgh_net.py` |
-| M18 | Optimal-transport initialized MRAF | lower error than MRAF from a random start on the shaped targets | `tests/methods/optim/test_m18_ot_mraf.py` |
-| M19 | Multi-plane GS | on a three-plane target, every plane mean within 25 percent of the overall mean (volumetric 3D GS of Whyte and Courtial) | `tests/methods/baseline/test_m19_multiplane.py` |
-| B1 | Device-aware weighted GS | on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower | `tests/methods/beyond/test_b1_device_wgs.py` |
-| B2 | Flicker-bounded phase-continuous sequence | minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI | `tests/methods/beyond/test_b2_flicker_bounded.py` |
-| B3 | Learned warm start for phase-fixed WGS (refuted) | measured negative: on held-out geometries the network start needs a median 8 iterations to 1 percent against 14 from a random start (1.75 times, below the 2 times claimed), and a control with the same early phase fix and no network gains as much; the model is not released and the claim BS-3 is reported as refuted | `tests/learned/test_b3_warm_start.py` |
-| B4 | Aberration-robust hologram | over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower; robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.02 times) | `tests/methods/beyond/test_b4_robust.py` |
-| B5 | Efficiency-uniformity Pareto front | hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task | `tests/methods/beyond/test_b5_pareto.py` |
+| id | tier | method | acceptance criterion | gate |
+|---|---|---|---|---|
+| M01 | classical | Superposition of prisms and lenses | on the 10x10 task with a flat beam, efficiency within 0.10 of 0.29 and uniformity below 0.05 | `tests/methods/baseline/test_m01_superposition.py` |
+| M02 | classical | Random superposition | on the 10x10 task with a flat beam, efficiency above M01 and at least 0.65; uniformity below 0.35 (DinHot measured 0.25 at 256 squared against 0.01 at 768 squared in the source; the ordering, not the value, transfers) | `tests/methods/baseline/test_m02_random_superposition.py` |
+| M03 | classical | Random mask | efficiency about 1/M; at the source's 768 squared grid, uniformity within the spread of 0.58 | `tests/methods/baseline/test_m03_random_mask.py` |
+| M04 | classical | Gerchberg-Saxton, point-trap and FFT forms | the two forms agree to 1e-9 rad; 30 iterations on the 10x10 task with a flat beam reach efficiency at least 0.9 and uniformity near 0.6 | `tests/methods/baseline/test_m04_gs.py` |
+| M05 | classical | Generalized adaptive additive | uniformity above GS at equal iterations on the 10x10 task | `tests/methods/baseline/test_m05_gaa.py` |
+| M06 | classical | Weighted GS | efficiency and uniformity at least 0.9 within a median of 15 iterations on the 10x10 task with a flat beam (the source reports about 10); the 3x3x3 lattice above 0.9 and 0.98 | `tests/methods/baseline/test_m06_gsw.py` |
+| M07 | sota | Phase-fixed weighted GS | fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations (DinHot's measured default; at the source's 12 it stalls at 2.9 percent on this grid) | `tests/methods/baseline/test_m07_phase_fixed_wgs.py` |
+| M08 | sota | MRAF | on disc, ring and bar targets, signal-region error at least five times below GS at the cost of efficiency | `tests/methods/baseline/test_m08_mraf.py` |
+| M09 | classical | Direct search | uniformity at least 0.98 on the 10x10 task; under 5 percent rms variation on a quasi-periodic set | `tests/methods/optim/test_m09_direct_search.py` |
+| M10 | sota | Conjugate-gradient minimization | the analytic gradient matches finite differences; a square lattice below 1 percent error | `tests/methods/optim/test_m10_cg.py` |
+| M11 | sota | Wirtinger gradient descent with Adam | lower trap-intensity error than M04 at equal iterations on the 10x10 task | `tests/methods/optim/test_m11_wirtinger_adam.py` |
+| M12 | sota | Closed-loop WGS on an emulated camera | from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7 | `tests/methods/control/test_m12_closed_loop.py` |
+| M13 | sota | Device-aware CG with pixel crosstalk | on the crosstalk device, lower error than M10 without the model on a large disc | `tests/methods/optim/test_m13_crosstalk_cg.py` |
+| M14 | classical | Zernike correction and sensorless modal recovery | recovers an injected set of Noll modes 4 to 11 within 5 percent of their amplitude | `tests/methods/control/test_m14_zernike.py` |
+| M15 | classical | Laguerre-Gaussian vortex traps | the ring phase winds by 2 pi l with an error under 0.1 rad | `tests/methods/control/test_m15_vortex.py` |
+| M16 | sota | Hungarian assignment and linear phase interpolation | no crossing moves for alpha 1.5 on a 7x7 to 3x3 sort; a moving trap above 70 percent of its mean intensity | `tests/methods/control/test_m16_rearrangement.py` |
+| M17 | sota | Unsupervised CNN hologram refined by GS (DeepCGH-style start) | on held-out targets, the network start followed by GS refinement inside the same wall-clock budget reaches a higher accuracy than GS alone (measured alone, the network matches GS at equal time: median ratio 0.998) | `tests/learned/test_m17_cgh_net.py` |
+| M18 | sota | Optimal-transport initialized MRAF | lower error than MRAF from a random start on the shaped targets | `tests/methods/optim/test_m18_ot_mraf.py` |
+| M19 | classical | Multi-plane GS | on a three-plane target, every plane mean within 25 percent of the overall mean (volumetric 3D GS of Whyte and Courtial) | `tests/methods/baseline/test_m19_multiplane.py` |
+| BS-1 | beyond | Device-aware weighted GS (engine id B1) | on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower | `tests/methods/beyond/test_b1_device_wgs.py` |
+| BS-2 | beyond | Flicker-bounded phase-continuous sequence (engine id B2) | minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI | `tests/methods/beyond/test_b2_flicker_bounded.py` |
+| BS-3 | beyond | Learned warm start for phase-fixed WGS (refuted) (engine id B3) | measured negative: on held-out geometries the network start needs a median 8 iterations to 1 percent against 14 from a random start (1.75 times, below the 2 times claimed), and a control with the same early phase fix and no network gains as much; the model is not released and the claim BS-3 is reported as refuted | `tests/learned/test_b3_warm_start.py` |
+| BS-4 | beyond | Aberration-robust hologram (engine id B4) | over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower; robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.02 times) | `tests/methods/beyond/test_b4_robust.py` |
+| BS-5 | beyond | Efficiency-uniformity Pareto front (engine id B5) | hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task | `tests/methods/beyond/test_b5_pareto.py` |
+| BS-6 | beyond | Open camera-in-the-loop emulator (engine: M12 on core/camera.py) | from the published open-loop spreads (19 percent rms, Nogrette 2014; 22 percent, Kim 2019), the emulated loop reaches the published curves within a factor of 1.5 (measured: 1.08 and 1.47 percent at 20 iterations; 0.53 and 0.77 percent in three phase-fixed steps) | `tests/methods/control/test_m12_closed_loop.py` |
 
 Physics components, each tested in `tests/engine/`: the FFT and point-trap forward models (agreement at the trap positions), the
 angular spectrum for defocused planes, the device model (quantization, crosstalk, fill-factor envelope, zero order, flicker),
@@ -243,21 +244,21 @@ None of these is a model judging a model.
 Each component is DinHot's own, grounded in a sourced gap, measured by the benchmark protocol against the strongest baseline,
 and covered by a level 4 notebook in each language.
 
-- BS-1 (B1) device-aware weighted GS: the WGS weights kept, the phase update replaced by gradient steps through the crosstalk
+- BS-1 (engine id B1) device-aware weighted GS: the WGS weights kept, the phase update replaced by gradient steps through the crosstalk
   kernel and the quantizer. Gap: the crosstalk model has been used only with conjugate gradient on shaped potentials (Schroff et
   al. 2023, https://doi.org/10.1038/s41598-023-30296-6).
-- BS-2 (B2) flicker-bounded phase-continuous sequences: each intermediate hologram optimized with the trap phases locked to a
+- BS-2 (engine id B2) flicker-bounded phase-continuous sequences: each intermediate hologram optimized with the trap phases locked to a
   smooth trajectory. Gap: linear phase interpolation does not optimize its intermediate frames (https://arxiv.org/abs/2501.01391).
-- BS-3 (B3) learned warm start, tested and refuted: a permutation-invariant network over trap coordinates predicting the initial
+- BS-3 (engine id B3) learned warm start, tested and refuted: a permutation-invariant network over trap coordinates predicting the initial
   trap phases of phase-fixed WGS gives no gain over an early phase fix without a network (measured on held-out geometries); the gap
   it addressed (no source initializes WGS with a network, algorithms dossier D5.1) is answered by the measurement, and the model is
   not released.
-- BS-4 (B4) robust hologram: the expected cost over residual aberrations. Gap: corrections are global or per site, never robust
+- BS-4 (engine id B4) robust hologram: the expected cost over residual aberrations. Gap: corrections are global or per site, never robust
   (https://arxiv.org/abs/2512.15967). Measured: robustness to pointing errors does not follow (1.02 times), because the spot width
   bounds it; the benchmark reports that negative result.
-- BS-5 (B5) the efficiency-uniformity Pareto front by continuation. Gap: methods report single trade-off points (Di Leonardo et
+- BS-5 (engine id B5) the efficiency-uniformity Pareto front by continuation. Gap: methods report single trade-off points (Di Leonardo et
   al. 2007, https://doi.org/10.1364/OE.15.001913).
-- BS-6 (M12) an open camera-in-the-loop emulator that reproduces the published feedback curves in the browser. Gap: feedback is
+- BS-6 (engine: M12 on the emulated camera) an open camera-in-the-loop emulator that reproduces the published feedback curves in the browser. Gap: feedback is
   published on hardware only (Nogrette et al. 2014, https://arxiv.org/abs/1402.5329).
 
 ## Deploy driver

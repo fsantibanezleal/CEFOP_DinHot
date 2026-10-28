@@ -50,6 +50,8 @@ jobs:
         run: python scripts/check_sdd.py
       - name: The notebooks, layout, English and Spanish mirror, levels, anatomy, metadata and cleanliness (static; the execution is a local gate, ADR-0074)
         run: python scripts/check_notebooks.py
+      - name: The manuscripts, product.json declares the Zenodo technical report (static; the online read is a local release step, ADR-0074)
+        run: python scripts/check_manuscripts.py
       - name: The README states the repository by areas
         run: python scripts/check_readme_areas.py
       - name: An animated SVG carries its reduced-motion block and plays ten seconds at most (shell 0.14.0, reuses the shell's analysis)
