@@ -69,6 +69,25 @@ Research, then the executive brief, then sizing, contracts and the units.
 | requirements | `docs/design/features/<feature>/requirements.md` | `scripts/check_sdd.py` |
 | adversarial validation | `docs/design/features/<feature>/validation.md`, `tests/adversarial/` | `scripts/check_sdd.py`, `tests/adversarial/` |
 
+## DinHot's features
+
+| feature | what it specifies | adversarial tests |
+|---|---|---|
+| `engine` | the physics engine of the Python reference | `tests/adversarial/test_dinhot_engine_refuted.py` |
+| `methods` | the acceptance test of every method of the ladder | `tests/adversarial/test_dinhot_methods_refuted.py` |
+| `learned` | the two model slots, the release rule, the ONNX graphs | `tests/adversarial/test_dinhot_learned_refuted.py` |
+| `bake` | contract 1, the thirteen cases, the ranges, the lane and units gates | `tests/adversarial/test_dinhot_bake_refuted.py` |
+| `benchmark` | the protocol, fairness, skipped cells | `tests/adversarial/test_dinhot_benchmark_refuted.py` |
+| `contracts` | the catalog, versions, readiness states | `tests/adversarial/test_dinhot_contracts_refuted.py` |
+| `live-engine` | the TypeScript port, the worker, WebGPU | `tests/adversarial/test_dinhot_live_engine_refuted.py` |
+| `workbench` | groups, lanes, the trap editor | `tests/adversarial/test_dinhot_workbench_refuted.py` |
+| `documents` | the pages after the executive view | `tests/adversarial/test_dinhot_documents_refuted.py` |
+| `web`, `notebooks`, `method-tiers` | the template's rows that apply | the template's own plants |
+| `architecture` | the architecture modal (planned) | none yet |
+
+A planted row wraps a defect around the product's code (`tests/adversarial/plant_plugin.py`) or edits the web source in a copy
+(`tests/adversarial/web_plant.py`) and runs the requirement's own gate, which must pass untouched and fail planted.
+
 ## Changing a contract
 
 Edit the schema, bump the version in the catalog by the semver rule (removed or renamed field, narrowed type or new
