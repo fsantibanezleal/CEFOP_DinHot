@@ -42,35 +42,78 @@ export interface Trajectory {
   p: ArrayLike<number>;
   fcHz: number;
   stiffness: { value: number; unit: string };
+  /** Why a live simulation was asked for and not delivered (the baked trajectory is shown instead). */
+  failed?: string | null;
+  /** A live simulation is out: what is shown is the baked trajectory until it lands. */
+  pending?: boolean;
 }
 
-/** The baked trajectory, or the engine's when it can run the particle on the live focal map (seed and power from the rail). */
+/**
+ * One simulation per distinct request, shared by every view that asks (the particle and the spectrum read the same trajectory): the
+ * promise is kept by its key, the last few only. A request is never made at rest: only a change of seed, power, method or edits asks.
+ */
+const simulations = new Map<string, Promise<ParticleResult>>();
+function simulate(key: string, run: () => Promise<ParticleResult>): Promise<ParticleResult> {
+  const hit = simulations.get(key);
+  if (hit) return hit;
+  const p = run();
+  simulations.set(key, p);
+  p.catch(() => simulations.delete(key));
+  while (simulations.size > 8) simulations.delete(simulations.keys().next().value as string);
+  return p;
+}
+
+/** True while the rail asks for exactly what the bake simulated: its seed, its power, its hologram, no edits. */
+export function atTheBake(sel: Selection): boolean {
+  const dyn = sel.data.manifest.params.dynamics;
+  return !!dyn && sel.maps?.lane === 'replay' && sel.seed === sel.data.manifest.seed && sel.powerMw === dyn.power_mw && !sel.edited && !sel.aberrationEdited && sel.device === (sel.data.manifest.params.device ? 'case' : 'ideal');
+}
+
+/**
+ * The baked trajectory while the rail shows what the bake simulated, else the engine's: the particle in the local map of the hologram on
+ * screen (live or the baked phase), at the rail's seed and power. The engine takes the phase and the case, so the map is the exact
+ * point-trap one, not an interpolation of the sampled focal plane.
+ */
 export function useTrajectory(sel: Selection): Trajectory | null {
   const dyn = sel.data.trace.dynamics;
   const params = sel.data.manifest.params.dynamics;
   const maps = sel.maps;
   const [live, setLive] = useState<{ key: string; r: ParticleResult } | null>(null);
-  const key = `${maps?.method}|${sel.seed}|${sel.powerMw}|${sel.edited}|${maps?.lane}`;
+  const [failed, setFailed] = useState<string | null>(null);
+  const key = `${sel.data.manifest.case_id}|${maps?.method}|${maps?.lane}|${sel.device}|${sel.seed}|${sel.powerMw}|${sel.traps.map((t) => `${t.id},${t.x_um},${t.y_um},${t.z_um}`).join(';')}`;
+  const wantLive = sel.engineAvailable && !!params && !!maps && !atTheBake(sel);
   useEffect(() => {
-    if (!sel.engineAvailable || !params || !maps?.focal || maps.lane !== 'live') return;
+    if (!wantLive || !params || !maps) return;
     let on = true;
+    setFailed(null);
     void getEngine().then(async (e) => {
       try {
-        const linear = Float32Array.from(maps.focal!.db, (d) => 10 ** (d / 10));
-        const r = await e.client.particle({ focal: linear, focalSize: maps.focal!.size, binUm: maps.focal!.binUm, dynamics: { ...params, power_mw: sel.powerMw }, seed: sel.seed });
+        const focal = maps.focal ? Float32Array.from(maps.focal.db, (d) => 10 ** (d / 10)) : new Float32Array(0);
+        const r = await simulate(key, () =>
+          e.client.particle({
+            focal,
+            focalSize: maps.focal?.size ?? 0,
+            binUm: maps.focal?.binUm ?? maps.binUm,
+            dynamics: { ...params, power_mw: sel.powerMw },
+            seed: sel.seed,
+            phase: Float64Array.from(sel.device === 'case' && maps.displayed ? maps.displayed : maps.phase),
+            params: sel.runParams,
+          }),
+        );
         if (on) setLive({ key, r });
-      } catch {
-        // NotLive or a failed run: the baked trajectory answers
+      } catch (err) {
+        // NotLive or a failed simulation: the baked trajectory answers and the view says why
+        if (on) setFailed(String(err));
       }
     });
     return () => {
       on = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-  if (live?.key === key) {
+  }, [key, wantLive]);
+  if (wantLive && live?.key === key) {
     const r = live.r;
-    return { lane: 'live', xUm: r.xUm, yUm: r.yUm, dtS: r.dtS, fHz: r.psd.fHz, p: r.psd.p, fcHz: r.fcHz, stiffness: r.stiffness };
+    return { lane: 'live', xUm: r.xUm, yUm: r.yUm, dtS: r.dtS, fHz: r.psd.fHz, p: r.psd.p, fcHz: r.fcHz, stiffness: r.stiffness, failed: null };
   }
   if (!dyn) return null;
   return {
@@ -82,6 +125,8 @@ export function useTrajectory(sel: Selection): Trajectory | null {
     p: dyn.psd.p,
     fcHz: dyn.fc_hz,
     stiffness: dyn.kappa_pn_per_um !== undefined ? { value: dyn.kappa_pn_per_um, unit: 'pN/um' } : { value: dyn.omega_r_hz ?? NaN, unit: 'Hz' },
+    failed,
+    pending: wantLive && !failed,
   };
 }
 
@@ -145,9 +190,21 @@ export function ParticleView({ sel }: { sel: Selection }) {
     );
   }
   const bakedPower = params.power_mw;
+  const what = { en: params.particle === 'bead' ? 'A bead' : 'An atom', es: params.particle === 'bead' ? 'Una microesfera' : 'Un átomo' };
+  const holo = sel.maps?.lane === 'live' ? { en: `the live ${sel.maps.method} hologram`, es: `el holograma ${sel.maps.method} en vivo` } : { en: `the baked ${sel.maps?.method} hologram`, es: `el holograma ${sel.maps?.method} de la generación` };
+  const where =
+    tr?.lane === 'live'
+      ? { en: `simulated now in your browser in the local map of ${holo.en}, seed ${sel.seed % 1000}, ${fmt(sel.powerMw, { decimals: 2 })} mW`, es: `simulado ahora en su navegador en el mapa local de ${holo.es}, semilla ${sel.seed % 1000}, ${fmt(sel.powerMw, { decimals: 2 })} mW` }
+      : tr?.pending
+        ? { en: 'the baked trajectory is shown while the engine simulates your settings', es: 'se muestra la trayectoria de la generación mientras el motor simula su configuración' }
+        : tr?.failed
+          ? { en: `the live simulation failed (${tr.failed}), so the baked trajectory is shown`, es: `falló la simulación en vivo (${tr.failed}), así que se muestra la trayectoria de la generación` }
+          : !sel.engineAvailable && sel.powerMw !== bakedPower
+            ? { en: `replayed from the bake at ${fmt(bakedPower, { decimals: 1 })} mW; the live engine is not on this build, so the rail power rescales depth only`, es: `reproducido de la generación con ${fmt(bakedPower, { decimals: 1 })} mW; el motor en vivo no está en esta versión, así que la potencia del panel solo reescala la profundidad` }
+            : { en: 'replayed from the bake', es: 'reproducido de la generación' };
   const note = {
-    en: `${params.particle === 'bead' ? 'A bead' : 'An atom'} in trap ${params.trap_id}, ${tr?.lane === 'live' ? 'simulated live in your browser' : 'replayed from the bake'}${tr?.lane === 'replay' && sel.powerMw !== bakedPower ? `; baked at ${fmt(bakedPower, { decimals: 1 })} mW, so the rail power rescales depth only until the live engine is on this build` : ''}. Press play, or scrub; time ${fmt(((tr?.dtS ?? 0) * frame) * 1e3, { decimals: 2 })} ms.`,
-    es: `${params.particle === 'bead' ? 'Una microesfera' : 'Un átomo'} en la trampa ${params.trap_id}, ${tr?.lane === 'live' ? 'simulado en vivo en su navegador' : 'reproducido de la generación'}${tr?.lane === 'replay' && sel.powerMw !== bakedPower ? `; calculado con ${fmt(bakedPower, { decimals: 1 })} mW, así que la potencia del panel solo reescala la profundidad hasta que el motor en vivo esté en esta versión` : ''}. Pulse reproducir o recorra; tiempo ${fmt(((tr?.dtS ?? 0) * frame) * 1e3, { decimals: 2 })} ms.`,
+    en: `${what.en} in trap ${params.trap_id}, ${where.en}. Press play, or scrub; time ${fmt(((tr?.dtS ?? 0) * frame) * 1e3, { decimals: 2 })} ms.`,
+    es: `${what.es} en la trampa ${params.trap_id}, ${where.es}. Pulse reproducir o recorra; tiempo ${fmt(((tr?.dtS ?? 0) * frame) * 1e3, { decimals: 2 })} ms.`,
   };
   return (
     <PlotCard fill title={{ en: 'Particle trajectory over the focal map', es: 'Trayectoria de la partícula sobre el mapa focal' }} {...c} lane={tr?.lane ?? 'replay'} dataKey={stateKey} note={note}>

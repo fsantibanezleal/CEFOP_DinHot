@@ -26,7 +26,7 @@ if (!existsSync(join(derived, INDEX_REL))) {
 const { index, declared, missing, tolerated, problems } = declaredFiles(derived);
 
 // DinHot's further declared files (catalog rows benchmark-results and model-metrics): documents of the bake that the Benchmark views and the
-// workbench's Pareto view read. They are required, unless the readiness document says the row is `missing` (the views then say not available
+// workbench's Pareto view read. They are required, unless the readiness document says the row is `missing` or `provider` (the views then say not available
 // yet, with the reason, which is the catalog's behaviour for an unbaked benchmark).
 const PRODUCT_FILES = [
   { rel: 'benchmark/results.json', row: 'benchmark-results' },
@@ -43,7 +43,8 @@ for (const f of PRODUCT_FILES) {
   declared.push(f.rel);
   if (!existsSync(join(derived, f.rel))) {
     missing.push(f.rel);
-    if (rowState(f.row) === 'missing') tolerated.push(f.rel);
+    // `provider`: the row is served by its provider until the producer exists (catalog), so a bake without the file is declared, not broken.
+    if (['missing', 'provider'].includes(rowState(f.row))) tolerated.push(f.rel);
   }
 }
 

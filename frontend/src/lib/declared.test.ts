@@ -148,6 +148,14 @@ describe('copy-data.mjs: DinHot declared files (benchmark, model metrics, releas
     expect(ok.stdout).toMatch(/1 declared absent/);
     expect(existsSync(join(q.out, 'benchmark/results.json'))).toBe(false);
   });
+  it('builds when the metrics are absent and the readiness row says provider (the producer does not exist yet)', () => {
+    const p = make('nometrics-provider', { benchmark: true, readinessRows: [{ id: 'model-metrics', state: 'provider', missing: [] }] });
+    const ok = run(p);
+    expect(ok.status, ok.stderr).toBe(0);
+    expect(existsSync(join(p.out, 'models/metrics.json'))).toBe(false);
+    const q = make('nometrics-available', { benchmark: true, readinessRows: [{ id: 'model-metrics', state: 'available', missing: [] }] });
+    expect(run(q).status).toBe(1);
+  });
   it('ships a released model (card and graph) and refuses a card whose graph is absent or altered', () => {
     const p = make('model', { benchmark: true, metrics: true });
     const graph = Buffer.from([1, 2, 3, 4]);

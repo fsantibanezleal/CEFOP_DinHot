@@ -182,7 +182,15 @@ describe('which model answers a learned slot', () => {
     expect(modelAnswers(doc(entry('cgh-net', 'available')), 'warmstart-model')).toBe('baseline');
     expect(modelAnswers(null, 'cgh-net')).toBe('baseline');
   });
-  it('the committed documents say baseline for both slots while no model is released', () => {
-    for (const d of [committed, fixture]) for (const slot of ['cgh-net', 'warmstart-model'] as const) expect(modelAnswers(d, slot)).toBe('baseline');
+  it('a training row whose bake used the baseline while a model is released answers by the model; the row with no released model by the baseline', () => {
+    const released = entry('cgh-net', 'training', { provenance: 'baseline', reason: { en: "The bake's metrics come from the baseline; bake again to use the released model.", es: 'x' } });
+    expect(modelAnswers(doc(released), 'cgh-net')).toBe('model');
+    const none = entry('warmstart-model', 'training', { provenance: 'baseline', reason: { en: "No released model; the slot's baseline answers.", es: 'x' } });
+    expect(modelAnswers(doc(none), 'warmstart-model')).toBe('baseline');
+  });
+  it('the committed documents: the fixture says baseline for both slots, the bake says the released cgh-net answers and the warm start has none', () => {
+    for (const slot of ['cgh-net', 'warmstart-model'] as const) expect(modelAnswers(fixture, slot)).toBe('baseline');
+    expect(modelAnswers(committed, 'cgh-net')).toBe('model');
+    expect(modelAnswers(committed, 'warmstart-model')).toBe('baseline');
   });
 });

@@ -55,7 +55,12 @@ export function modelAnswers(doc: Readiness | null, slot: 'cgh-net' | 'warmstart
   const e = entryFor(doc, slot);
   if (!e) return 'baseline';
   if (e.state === 'available' || e.state === 'stale') return 'model';
-  if (e.state === 'training') return e.provenance === 'real' ? 'model' : 'baseline';
+  if (e.state === 'training') {
+    // The catalog's second training rule: the bake's metrics came from the baseline, but a released model is on the site ("bake again to use
+    // the released model"); the first rule, "No released model", is the baseline.
+    if (e.provenance === 'baseline' && /use the released model/.test(e.reason?.en ?? '')) return 'model';
+    return e.provenance === 'real' ? 'model' : 'baseline';
+  }
   return 'baseline';
 }
 

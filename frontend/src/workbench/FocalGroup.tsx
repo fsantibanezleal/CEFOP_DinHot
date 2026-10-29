@@ -1,19 +1,21 @@
 // Group 2, Focal plane: where the light goes (V2, with the zero order, the replica boundary and the trap editor), how tall a trap is
-// along z (V5) and, on three-dimensional cases, where the lobes of traps in different planes overlap (V6).
+// along z (V5, the xz and yz cuts) and, on three-dimensional cases, the focal volume the engine computes (V6).
 // The trap editor is a mode of the map (inspect, add, move, delete): the map is the surface the traps live on.
-import { PlotCard, SubTabs, ViewsRow } from '@fasl-work/caos-app-shell';
+import { ChipGroup, PlotCard, SubTabs, ViewsRow } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { rayleighUm } from '../lib/ort';
 import { INTENSITY_LUT } from './colormaps';
+import { cutRequest, type Plane } from './cuts';
 import { getEngine } from './engine';
 import { Heatmap, type HeatMark, type HeatRect } from './HeatmapStage';
 import { cardOf } from './HologramGroup';
-import { is3D, useSelection, type Axial, type Selection } from './model';
+import { is3D, isShaped, useSelection, type Axial, type Selection } from './model';
 import { pixelToUm, umToPixel } from './traps';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 
 const Lobes3D = lazy(() => import('./Lobes3D').then((m) => ({ default: m.Lobes3D })));
+const Volume3D = lazy(() => import('./Volume3D').then((m) => ({ default: m.Volume3D })));
 
 export function FocalGroup() {
   const { t } = useT();
@@ -22,7 +24,11 @@ export function FocalGroup() {
     { id: 'plane', label: t('Focal plane', 'Plano focal'), content: sel ? <FocalPlaneView sel={sel} /> : <Pending label={LOADING} /> },
     { id: 'cuts', label: t('Axial cut', 'Corte axial'), content: sel ? <AxialView sel={sel} /> : <Pending label={LOADING} /> },
     ...(sel && is3D(sel.traps)
-      ? [{ id: 'lobes', label: t('3D lobes', 'Lóbulos 3D'), content: <Suspense fallback={<Pending label={LOADING} />}><Lobes3D sel={sel} /></Suspense> }]
+      ? [
+          sel.engineAvailable
+            ? { id: 'volume', label: t('3D volume', 'Volumen 3D'), content: <Suspense fallback={<Pending label={LOADING} />}><Volume3D sel={sel} /></Suspense> }
+            : { id: 'lobes', label: t('3D lobes', 'Lóbulos 3D'), content: <Suspense fallback={<Pending label={LOADING} />}><Lobes3D sel={sel} /></Suspense> },
+        ]
       : []),
   ];
   return <SubTabs ariaLabel={t('Focal plane views', 'Vistas del plano focal')} tabs={tabs} />;
@@ -65,13 +71,16 @@ export function FocalPlaneView({ sel }: { sel: Selection }) {
   }, [sel.region, focal, size, bin]);
 
   const trap = sel.traps.find((x) => x.id === sel.trapId) ?? sel.traps[0] ?? null;
+  // A trap target is read through its selected trap; a shaped target has none, so the profiles go through the centre of the field.
+  const through = trap ? { x: trap.x_um, y: trap.y_um, id: trap.id } : focal && isShaped(sel.data.manifest) ? { x: 0, y: 0, id: null } : null;
   const profile = useMemo(() => {
-    if (!focal || !trap) return null;
-    const [col, row] = umToPixel(trap.x_um, trap.y_um, size, bin);
+    if (!focal || !through) return null;
+    const [col, row] = umToPixel(through.x, through.y, size, bin);
     if (col < 0 || col >= size || row < 0 || row >= size) return null;
     const xs = Array.from({ length: size }, (_, i) => (i - centre) * bin);
     return { xs, alongX: xs.map((_, i) => focal.db[row * size + i]), alongY: xs.map((_, i) => focal.db[i * size + col]) };
-  }, [focal, trap, size, bin, centre]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focal, through?.x, through?.y, size, bin, centre]);
 
   if (!maps) return <Pending label={LOADING} />;
   const range: [number, number] = [sel.dbFloor, 0];
@@ -143,10 +152,10 @@ export function FocalPlaneView({ sel }: { sel: Selection }) {
       </PlotCard>
       <PlotCard fill title={{ en: 'Profiles through the selected trap', es: 'Perfiles por la trampa elegida' }} {...c} dataKey={stateKey}>
         <Fill quiet>
-          {profile && trap ? (
+          {profile && through ? (
             <UPlotChart
               height="fill"
-              title={{ en: `Intensity along x and y through trap ${trap.id}`, es: `Intensidad a lo largo de x e y por la trampa ${trap.id}` }}
+              title={through.id === null ? { en: 'Intensity along x and y through the centre of the field', es: 'Intensidad a lo largo de x e y por el centro del campo' } : { en: `Intensity along x and y through trap ${through.id}`, es: `Intensidad a lo largo de x e y por la trampa ${through.id}` }}
               x={{ values: profile.xs, label: { en: 'Offset from the centre', es: 'Distancia al centro' }, unit: 'um', format: { decimals: 1 } }}
               y={{ label: { en: 'Intensity', es: 'Intensidad' }, unit: 'dB', range: [sel.dbFloor, 3] }}
               series={[
@@ -164,30 +173,39 @@ export function FocalPlaneView({ sel }: { sel: Selection }) {
   );
 }
 
+/** The cut as the card draws it: dB against the mean trap, clipped to the colour floor. */
+function cutDb(xz: Float32Array, floor: number): Float32Array {
+  return Float32Array.from(xz, (v) => Math.max(floor, Math.min(0, 10 * Math.log10(Math.max(v, 1e-30)))));
+}
+
 export function AxialView({ sel }: { sel: Selection }) {
   const { t, pick } = useT();
   const fmt = useFmt();
   const stateKey = useStateKey();
+  const act = useActions();
   const maps = sel.maps;
   const c = cardOf(sel);
-  const [cut, setCut] = useState<{ axial: Axial; key: string } | null>(null);
+  const plane = sel.plane;
+  const [cut, setCut] = useState<{ axial: Axial; key: string; from: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const trap = sel.traps.find((x) => x.id === sel.trapId) ?? sel.traps[0] ?? null;
-  const live = maps?.lane === 'live' && sel.engineAvailable;
-  const wanted = `${maps?.method}|${trap?.id}|${sel.edited}|${live}`;
+  const shaped = sel.data.manifest.params.target.kind !== 'traps';
+  // The bake keeps one xz cut, through its own trap; every other cut (the yz plane, another trap, a live hologram) is the engine's.
+  const baked = plane === 'xz' && maps?.lane === 'replay' && maps.axial && trap && maps.axial.trapId === trap.id ? maps.axial : null;
+  const wanted = `${maps?.method}|${maps?.lane}|${trap?.id}|${plane}|${sel.edited}|${sel.device}|${sel.aberrationEdited}|${sel.coeffKey}|${sel.dbFloor}`;
+  const needEngine = !baked && sel.engineAvailable && !!maps && !!trap && !shaped;
 
-  // The live cut is computed on demand for the selected trap; the baked cut belongs to the trap the bake chose.
   useEffect(() => {
-    if (!live || !maps || !trap) return;
+    if (!needEngine || !maps || !trap) return;
     let on = true;
     setError(null);
     void getEngine().then(async (e) => {
       try {
-        const params = { case_id: sel.data.manifest.case_id, ...sel.data.manifest.params };
-        const r = await e.client.axialCut({ phase: Float64Array.from(maps.phase), params, trapId: trap.id, nz: 64 });
+        const phase = sel.device === 'case' && maps.displayed ? maps.displayed : maps.phase;
+        const req = cutRequest(plane, phase, maps.nPix, sel.runParams, trap.id, 64);
+        const r = await e.client.axialCut(req);
         if (!on) return;
-        const db = Float32Array.from(r.xz, (v) => Math.max(sel.dbFloor, Math.min(0, 10 * Math.log10(Math.max(v, 1e-30)))));
-        setCut({ axial: { db, nx: r.nx, nz: r.nz, zUm: r.zUm, trapId: trap.id }, key: wanted });
+        setCut({ axial: { db: cutDb(r.xz, sel.dbFloor), nx: r.nx, nz: r.nz, zUm: r.zUm, trapId: trap.id }, key: wanted, from: maps.method });
       } catch (err) {
         if (on) setError(String(err));
       }
@@ -196,36 +214,57 @@ export function AxialView({ sel }: { sel: Selection }) {
       on = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wanted]);
+  }, [wanted, needEngine]);
 
   if (!maps) return <Pending label={LOADING} />;
-  const axial = cut?.key === wanted ? cut.axial : maps.axial;
+  const live = needEngine && cut?.key === wanted ? cut : null;
+  const axial = baked ?? live?.axial ?? null;
+  const lane: 'live' | 'replay' = live ? 'live' : 'replay';
   const zr = rayleighUm(sel.data.manifest.params.setup);
-  const lane = cut?.key === wanted ? 'live' : maps.lane;
+  const lateral = plane === 'xz' ? 'x' : 'y';
   const rects: HeatRect[] = axial
     ? [-zr, zr]
         .map((z) => ((z - axial.zUm[0]) / (axial.zUm[1] - axial.zUm[0])) * axial.nz)
         .filter((r) => r >= 0 && r <= axial.nz)
         .map((r) => ({ c0: 0, r0: r, c1: axial.nx, r1: r, tone: 'warn' as const, dashed: true, label: 'z_R' }))
     : [];
+  const source = live
+    ? maps.lane === 'live'
+      ? { en: `Computed now in your browser from the live ${maps.method} hologram.`, es: `Calculado ahora en su navegador desde el holograma ${maps.method} en vivo.` }
+      : { en: `Computed now in your browser from the baked ${maps.method} hologram (its 8-bit phase).`, es: `Calculado ahora en su navegador desde el holograma ${maps.method} de la generación (su fase de 8 bits).` }
+    : axial
+      ? { en: `Replayed from the bake: the xz cut of the reference method ${maps.method} through trap ${axial.trapId}.`, es: `Reproducido de la generación: el corte xz del método de referencia ${maps.method} por la trampa ${axial.trapId}.` }
+      : { en: '', es: '' };
   return (
     <PlotCard
       fill
-      title={{ en: 'Axial (xz) cut through a trap', es: 'Corte axial (xz) por una trampa' }}
+      title={{ en: `Axial (${plane}) cut through a trap`, es: `Corte axial (${plane}) por una trampa` }}
       {...c}
       lane={lane}
       dataKey={stateKey}
       note={{
-        en: `Intensity in dB, x across and z down, dashed lines at plus and minus one Rayleigh range (${fmt(zr, { decimals: 2 })} um). The bake keeps the xz cut of one trap; the yz cut and the lateral profiles are in the focal-plane view.`,
-        es: `Intensidad en dB, x a lo ancho y z hacia abajo, líneas segmentadas en más y menos un rango de Rayleigh (${fmt(zr, { decimals: 2 })} um). La generación guarda el corte xz de una trampa; el corte yz y los perfiles laterales están en la vista del plano focal.`,
+        en: `Intensity in dB, ${lateral} across and z down, dashed lines at plus and minus one Rayleigh range (${fmt(zr, { decimals: 2 })} um). ${source.en}`,
+        es: `Intensidad en dB, ${lateral} a lo ancho y z hacia abajo, líneas segmentadas en más y menos un rango de Rayleigh (${fmt(zr, { decimals: 2 })} um). ${source.es}`,
       }}
+      actions={
+        <ChipGroup
+          id="cut-plane"
+          label={{ en: 'Plane', es: 'Plano' }}
+          value={plane}
+          onChange={(v) => act.setPlane(v as Plane)}
+          options={[
+            { id: 'xz', label: { en: 'xz', es: 'xz' }, hint: { en: 'Across x and down z through the selected trap.', es: 'A lo ancho de x y hacia abajo en z por la trampa elegida.' } },
+            { id: 'yz', label: { en: 'yz', es: 'yz' }, hint: { en: 'Across y and down z through the selected trap (computed by the engine).', es: 'A lo ancho de y y hacia abajo en z por la trampa elegida (la calcula el motor).' } },
+          ]}
+        />
+      }
     >
       <Fill>
         {error && <p className="dh-alert" role="alert">{error}</p>}
         {axial ? (
           <Heatmap
             square={false}
-            label={{ en: `xz cut through trap ${axial.trapId}, intensity in dB`, es: `Corte xz por la trampa ${axial.trapId}, intensidad en dB` }}
+            label={{ en: `${plane} cut through trap ${axial.trapId}, intensity in dB`, es: `Corte ${plane} por la trampa ${axial.trapId}, intensidad en dB` }}
             data={axial.db}
             cols={axial.nx}
             rows={axial.nz}
@@ -235,12 +274,20 @@ export function AxialView({ sel }: { sel: Selection }) {
             describe={(col, row, v) => {
               const z = axial.zUm[0] + (row / axial.nz) * (axial.zUm[1] - axial.zUm[0]);
               const x = (col - Math.floor(axial.nx / 2)) * maps.binUm;
-              return pick({ en: `x ${fmt(x, { decimals: 2 })} um, z ${fmt(z, { decimals: 2 })} um: ${fmt(v, { decimals: 1 })} dB`, es: `x ${fmt(x, { decimals: 2 })} um, z ${fmt(z, { decimals: 2 })} um: ${fmt(v, { decimals: 1 })} dB` });
+              return pick({ en: `${lateral} ${fmt(x, { decimals: 2 })} um, z ${fmt(z, { decimals: 2 })} um: ${fmt(v, { decimals: 1 })} dB`, es: `${lateral} ${fmt(x, { decimals: 2 })} um, z ${fmt(z, { decimals: 2 })} um: ${fmt(v, { decimals: 1 })} dB` });
             }}
-            summary={t(`Axial cut of trap ${axial.trapId}, ${axial.nx} columns by ${axial.nz} rows, z from ${fmt(axial.zUm[0], { decimals: 2 })} to ${fmt(axial.zUm[1], { decimals: 2 })} um.`, `Corte axial de la trampa ${axial.trapId}, ${axial.nx} columnas por ${axial.nz} filas, z de ${fmt(axial.zUm[0], { decimals: 2 })} a ${fmt(axial.zUm[1], { decimals: 2 })} um.`)}
+            summary={t(`Axial ${plane} cut of trap ${axial.trapId}, ${axial.nx} columns by ${axial.nz} rows, z from ${fmt(axial.zUm[0], { decimals: 2 })} to ${fmt(axial.zUm[1], { decimals: 2 })} um.`, `Corte axial ${plane} de la trampa ${axial.trapId}, ${axial.nx} columnas por ${axial.nz} filas, z de ${fmt(axial.zUm[0], { decimals: 2 })} a ${fmt(axial.zUm[1], { decimals: 2 })} um.`)}
           />
+        ) : needEngine && !error ? (
+          <Pending label={{ en: 'The engine is computing the cut', es: 'El motor está calculando el corte' }} />
         ) : (
-          <Unavailable reason={{ en: 'This case has no axial cut in the bake (only cases with traps off the focal plane carry one), and the live engine is not on this build.', es: 'Este caso no tiene corte axial en la generación (solo lo tienen los casos con trampas fuera del plano focal) y el motor en vivo no está en esta versión.' }} />
+          <Unavailable
+            reason={
+              shaped
+                ? { en: 'A shaped target has no trap to cut through: the axial cut is defined for trap targets.', es: 'Un objetivo con forma no tiene una trampa por la que cortar: el corte axial se define para objetivos con trampas.' }
+                : { en: 'This case has no axial cut in the bake for this trap and plane (the bake keeps the xz cut of one trap), and the live engine is not on this build.', es: 'Este caso no tiene corte axial en la generación para esta trampa y plano (la generación guarda el corte xz de una trampa) y el motor en vivo no está en esta versión.' }
+            }
+          />
         )}
       </Fill>
     </PlotCard>

@@ -3,7 +3,7 @@
 // `Selection`, so the lane of every number is one field and cannot be forgotten (ADR-0054).
 import { createContext, useContext } from 'react';
 import type { CaseData } from '../api/artifacts';
-import type { CaseManifest, Device, Text, Trace, Trap } from '../lib/contract.types';
+import type { CaseManifest, Device, ParamsRecord, Text, Trace, Trap } from '../lib/contract.types';
 import { b64ToU8, dbFromU8, decodeRle, linearToDb, phaseFromU8, type DeviceStage } from './decode';
 import type { Progress, RunResult } from './engine';
 import { umToPixel } from './traps';
@@ -132,12 +132,21 @@ export interface Selection {
   zmode: number;
   /** Correction on: the aberration of the case is removed before the edits apply. */
   corrected: boolean;
+  /** The aberration as a key: changes when any coefficient does, so a computed cut knows when it is stale. */
+  coeffKey: string;
+  /** The plane of the axial cut and the threshold of the 3D view (fraction of the peak). */
+  plane: 'xz' | 'yz';
+  volThreshold: number;
   /** Which model answered the learned slot this method uses, for the label. */
   slot: { slot: 'cgh-net' | 'warmstart-model'; answered: 'model' | 'baseline' } | null;
   /** A live run is under way (progress) or failed (error). */
   running: boolean;
   progress: Progress | null;
   liveError: string | null;
+  /** The reader cancelled the run in flight. */
+  cancelled: boolean;
+  /** The params record the engine would run for the rail's values (device, traps, aberration, iterations): what a cut or a particle needs. */
+  runParams: ParamsRecord;
   /** Live engine present in this build. */
   engineAvailable: boolean;
   liveMethods: string[];

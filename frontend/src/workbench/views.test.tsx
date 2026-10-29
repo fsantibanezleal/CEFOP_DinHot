@@ -7,7 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { conform, MANIFEST, TRACE } from '../lib/contract.types';
 import { ConvergenceGroup, CameraView, MetricsView } from './ConvergenceGroup';
-import { DynamicsGroup, lorentzianFit, ParticleView, RearrangementView, SpectrumView, thermalSigmaUm } from './DynamicsGroup';
+import { atTheBake, DynamicsGroup, lorentzianFit, ParticleView, RearrangementView, SpectrumView, thermalSigmaUm } from './DynamicsGroup';
 import { AxialView, FocalGroup, FocalPlaneView } from './FocalGroup';
 import { AberrationView, DeviceEffectsView, HologramGroup, PhaseMaskView } from './HologramGroup';
 import { lobesOf, overlaps } from './Lobes3D';
@@ -31,6 +31,8 @@ const actions: Actions = {
   zmode: 4,
   setCorrected: () => undefined,
   setCoeff: () => undefined,
+  setPlane: () => undefined,
+  setVolThreshold: () => undefined,
 };
 
 function render(node: ReactElement, sel: Selection | null, unavailable: { en: string; es: string } | null = null): string {
@@ -124,12 +126,12 @@ describe('the lane of everything shown (ADR-0054)', () => {
     expect(html).not.toMatch(/Live:/);
     expect(html).toContain('data-lane="replay"');
   });
-  it('a live result is labelled live with its backend and time, and a WebGPU fallback is named', () => {
+  it('a live result is labelled live with its backend and time', () => {
     const base = selectionFor(cases.device);
     const s = selectionFor(cases.device, { maps: { ...base.maps!, lane: 'live', method: 'M06', backend: 'cpu', timeMs: 120, fallbackReason: 'no adapter' } });
     const html = renderToStaticMarkup(createElement(Provenance, { sel: s, mapsOnly: false }));
     expect(html).toMatch(/Live: M06 computed in your browser \(CPU, 120 ms\)/);
-    expect(html).toMatch(/WebGPU fell back to CPU: no adapter/);
+    expect(html).not.toMatch(/fell back/); // the reason is in the rail, not repeated on every card
     expect(html).toContain('data-lane="live"');
   });
   it('trap edits without the live engine are held back and the result is said to be the baked case', () => {
@@ -138,15 +140,19 @@ describe('the lane of everything shown (ADR-0054)', () => {
     const t = selectionFor(cases.device, { edited: true, engineAvailable: true, liveMethods: ['M04'], methodId: 'M06' });
     expect(renderToStaticMarkup(createElement(Provenance, { sel: t, mapsOnly: false }))).toMatch(/M06 is replayed from the bake, not run live/);
   });
+  it('a cancelled run says the replay is shown', () => {
+    const s = selectionFor(cases.device, { cancelled: true });
+    expect(renderToStaticMarkup(createElement(Provenance, { sel: s, mapsOnly: false }))).toMatch(/The live run was cancelled; the replay is shown/);
+  });
   it('a running method shows its progress and a failed run shows its message', () => {
     const s = selectionFor(cases.device, { running: true, progress: { iteration: 7, efficiency: 0.5, uniformity: 0.812, relStdPct: 9 }, liveError: 'boom' });
     const html = renderToStaticMarkup(createElement(Provenance, { sel: s, mapsOnly: false }));
     expect(html).toMatch(/Running: iteration 7, uniformity 0\.812. Change any control to cancel/);
     expect(html).toMatch(/The live run failed: boom/);
   });
-  it('the metrics of another method than the maps are named as such', () => {
+  it('a baked method shows its own metrics and says the maps are those of the reference method', () => {
     const s = selectionFor(cases.device, { methodId: 'M06', result: replayResult(cases.device.trace, 'M06') });
-    expect(renderToStaticMarkup(createElement(Provenance, { sel: s, mapsOnly: false }))).toMatch(/Metrics: M06 Weighted GS, replayed/);
+    expect(renderToStaticMarkup(createElement(Provenance, { sel: s, mapsOnly: false }))).toMatch(/M06 is not run live, so its metrics and per-trap intensities are its own but the maps drawn are those of the reference method M04/);
   });
 });
 
@@ -168,7 +174,7 @@ describe('the model of the workbench', () => {
     const trapsList = c.trace.traps.slice(0, 1);
     focal[4 * size + 4] = 2;
     const { maps, result } = liveMaps(
-      { method: 'M04', backend: 'gpu', fallbackReason: null, nPix: 64, pad: 2, binUm: 10, halfFieldUm: 665, phase: new Float64Array(64 * 64).fill(-1), displayedPhase: null, focal, focalSize: size, trapIntensity: Float64Array.of(2, 4), history: [], metrics: { efficiency: 0.5, uniformity: 0.9, relStdPct: 3, zeroOrder: 0, ghost: 0 }, timeMs: 5 },
+      { method: 'M04', backend: 'gpu', fallbackReason: null, nPix: 64, pad: 2, binUm: 10, halfFieldUm: 665, phase: new Float64Array(64 * 64).fill(-1), displayedPhase: null, focal, focalSize: size, trapIntensity: Float64Array.of(2, 4), history: [], metrics: { efficiency: 0.5, uniformity: 0.9, relStdPct: 3, zeroOrder: 0, ghost: 0 }, timeMs: 5, timing: { methodMs: 4, scoreMs: 1, yieldMs: 0 } },
       [{ ...trapsList[0], x_um: 0, y_um: 0 }],
       -60,
     );
@@ -230,5 +236,23 @@ describe('the 3D lobes', () => {
     expect(overlaps(near)).toEqual({ pairs: 1, checked: 1 });
     expect(overlaps(far)).toEqual({ pairs: 0, checked: 1 });
     expect(overlaps(Array.from({ length: 401 }, (_, i) => ({ ...near[0], id: i })))).toBeNull();
+  });
+});
+
+describe('the particle is replayed only while the rail asks for what the bake simulated', () => {
+  const c = cases.device;
+  const base = () => selectionFor(c, { seed: c.manifest.seed });
+  it('at the bake seed and power on the baked hologram, nothing is asked of the engine', () => {
+    expect(atTheBake(base())).toBe(true);
+  });
+  it.each([
+    ['another seed', { seed: c.manifest.seed + 1 }],
+    ['another power', { powerMw: (c.manifest.params.dynamics?.power_mw ?? 1) * 2 }],
+    ['edited traps', { edited: true }],
+    ['an edited aberration', { aberrationEdited: true }],
+    ['the ideal device', { device: 'ideal' as const }],
+    ['a live hologram', { maps: { ...replayMaps(c.trace), lane: 'live' as const } }],
+  ])('%s asks the engine', (_n, over) => {
+    expect(atTheBake({ ...base(), ...over })).toBe(false);
   });
 });
