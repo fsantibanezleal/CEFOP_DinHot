@@ -98,12 +98,14 @@ export const ruleGsw: Rule = (state, v) => {
   return scaleBy(phasor(v), state.w);
 };
 
-/** Kim 2019: `g_i = (<B>/B_m) g_{i-1}`, `c_m = g_m a_m e^{i psi_i}`, `psi_i = psi_N` for `i >= N`. */
+/** Kim 2019: `g_i = (<B>/B_m) g_{i-1}`, `g_0 = 1`, `c_m = g_m a_m e^{i psi_i}`, `psi_i = psi_N` for `i >= N`. The field of the start hologram is projected with `g_0 = 1` (k = 1 is plain GS). */
 export const ruleWgsFixed: Rule = (state, v, k) => {
   const { a } = state;
-  const b = ratio(v, a);
-  const m = meanOf(b);
-  state.w = state.w.map((w, i) => w * (m / b[i]));
+  if (k > 1) {
+    const b = ratio(v, a);
+    const m = meanOf(b);
+    state.w = state.w.map((w, i) => w * (m / b[i]));
+  }
   let psi: Float64Array;
   if (k < (state.nFix as number)) psi = angle(v);
   else if (k === state.nFix) psi = state.psi = angle(v);
