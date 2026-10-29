@@ -118,3 +118,7 @@ On C04 M13 has the lowest mean error in the bake (about 26 percent, with M18 at 
 
 - Schroff, La Rooij, Haller and Kuhr 2023, Sci. Rep. 13, 3252, https://doi.org/10.1038/s41598-023-30296-6 ; arXiv 2212.10507
 - Harte, Bruce, Belmonte and Arnold 2014, Opt. Express 22, 26548, https://doi.org/10.1364/OE.22.026548 (the cost)
+
+## Update after the corrections of 2026-10-29
+
+On the quantizing device of C08 the cost is a staircase and the strong-Wolfe line search failed after three iterations whatever the budget; a staircase (ladder) line search (`_common.staircase_search`, used by M13 only) lets it run its budget (5 and 60 iterations run 5 and 60). The scored spread on that device does not improve systematically (three seeds: 31.1, 18.9 and 30.8 percent before; 23.7, 11.3 and 40.7 after): a measured negative, with the ranges re-measured.

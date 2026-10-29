@@ -117,3 +117,7 @@ frames; the measured file does not name the method of that driver, so it is not 
 - Linear phase interpolation, https://arxiv.org/abs/2501.01391
 - Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the phase-fixed WGS)
 - Lee, Kim and Ahn 2017, Phys. Rev. A 95, 053424, https://doi.org/10.1103/PhysRevA.95.053424 (the assignment of the sort)
+
+## Update after the corrections of 2026-10-29
+
+Measured scope, with one assignment shared by B2 and linear phase interpolation (LPI) and the transient model of the acceptance test: the claim holds when the peak step per frame is at most 0.2 Fourier units (`b2_flicker_bounded.frames_for_move`). Acceptance task (moves of 4 bins, 13 frames): B2 0.919 to 0.923 of the mean, LPI 0.536 to 0.724. C10's long sort (17 moving traps, the longest 29 bins): at 25 frames LPI leads (0.531 against 0.379); B2 needs the end phases and 137 frames to reach 0.904, where LPI reaches 0.691; with held phases B2 collapses to 0. Calibrated on one sort and one seed; the transient model is not verified in absolute terms.

@@ -133,3 +133,7 @@ case has its own optics, listed in `data/derived/manifests/`):
 - Ebadi et al. 2021, https://arxiv.org/abs/2012.12281
 - Manetsch et al. 2025, https://arxiv.org/abs/2403.12021
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913 (the weights of M06)
+
+## Update after the corrections of 2026-10-29
+
+From the same start, M07 now matches slmsuite 0.5.0's WGS-Kim to 1e-4 percent in the final relative standard deviation (C03, 1024 traps, 30 iterations, n_fix 12, 4 of 4 seeds: 0.1803, 0.1865, 0.3643 and 0.3256 percent). The earlier code reweighted the field of the start hologram; Kim et al. 2019 start the recursion with g_0 = 1, so the first iteration is plain GS (`tests/methods/baseline/test_m07_against_slmsuite.py`). slmsuite's default feedback exponent is 0.8; M07 and Kim use 1, and M07 also reproduces slmsuite at 0.8 once the first update is skipped.

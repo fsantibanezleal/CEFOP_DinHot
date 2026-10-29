@@ -122,3 +122,7 @@ the factor of two holds on the harder device, which has the 4-bit quantizer and 
 - Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178
 - Ebadi et al. 2021, https://arxiv.org/abs/2012.12281
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913
+
+## Update after the corrections of 2026-10-29
+
+Re-measured against the corrected M07 and against slmsuite's WGS-Kim directly (crosstalk device, 10x10 task, 256 x 256 pixels padded 2, five seeds, the same random-superposition start): the ratio of the reference's relative standard deviation to B1's is a median of 33.1 times (22.0 to 60.5) against both, at 0.994 of the reference's efficiency (0.987 to 0.995). B1's spread per seed: 0.091, 0.145, 0.175, 0.086 and 0.240 percent. The claim holds; the crosstalk of the device, not the first-update defect of the old M07, sets the baseline's floor near 5 percent.

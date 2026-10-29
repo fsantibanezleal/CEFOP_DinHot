@@ -122,7 +122,7 @@ resolves it to. The runtimes are Python 3.12 (CI; the device's venv may be newer
 | notebooks | matplotlib | 3.11.2 | the figures of the notebooks (`notebooks/requirements.txt`); https://pypi.org/pypi/matplotlib/json read on 2026-10-19, released 2026-09-11 | none: the figures of the notebooks need a plotting library, and the web's uplot runs in the browser only |
 | notebooks | scipy | 1.18.1 | a dependency of slmsuite and the signal tools of the notebooks (`notebooks/requirements.txt`); https://pypi.org/pypi/scipy/json read on 2026-10-26, released 2026-08-21 | none: slmsuite requires it; the engine itself stays numpy only |
 | notebooks | slmsuite | 0.5.0 | the pinned reference implementation of the level 3 notebooks: its weighted Gerchberg-Saxton, run on the same targets as DinHot's methods (MIT; https://pypi.org/pypi/slmsuite/json read on 2026-10-28, released 2026-10-05) | odak 0.2.7 (MPL-2.0), not adopted: slmsuite implements the WGS family DinHot compares against |
-| notebooks | onnxruntime | 1.31.1 | runs the released ONNX graphs: in the learned-method notebooks, in the method modules M17 and B3 and in the evaluation (`requirements-gpu.txt`), the same files the web runs (https://pypi.org/pypi/onnxruntime/json read on 2026-10-28) | none: the models ship as ONNX |
+| notebooks | onnxruntime | 1.31.1 | runs the released ONNX graphs: in the learned-method notebooks, in the method modules M17 and B3, in the bake (`data-pipeline/requirements.txt`) and in the evaluation (`requirements-gpu.txt`), the same files the web runs (https://pypi.org/pypi/onnxruntime/json read on 2026-10-28) | none: the models ship as ONNX |
 | training | torch | 2.14.1+cu126 | offline GPU training and ONNX export of cgh-net and warmstart-model (`requirements-gpu.txt`, CUDA 12.6 wheel from the index PyTorch documents for it), never in CI | none: the training needs a framework with a GPU backend and an ONNX exporter |
 | training | onnx | 1.23.2 | graph inspection (operators, input and output shapes) in the export and in the contract test | none: the format's own library |
 | training | onnxscript | 0.7.2 | required by torch 2.14.1 for its ONNX exporter | none: a dependency of the exporter |
@@ -184,7 +184,7 @@ released when the run ends or is cancelled.
   runs the benchmark protocol and the units gate. Training runs locally only. Never in CI, never in the browser.
 - Replay: the committed artifacts (manifests, traces, benchmark results, model metrics and the ONNX models), copied into the
   site by `frontend/scripts/copy-data.mjs` and fetched with the version in the address. The script also copies `benchmark/results.json` and
-  `models/metrics.json` (required, unless the readiness row is `missing`) and, when `models/cgh-net.json` or `models/warmstart.json` exist, the card and
+  `data/derived/models/metrics.json` (required, unless the readiness row is `missing`) and, when a model card exists (`models/cgh-net.json`; the warm-start card would sit beside it if that model were released), the card and
   the graph it names, stopping the build when the graph is absent or its size or sha256 is not the card's; it reads the index's `path` and skips
   refused cases.
 - Live: `frontend/src/engine/holo/`, a TypeScript port of the forward models, the device model and the live methods, running
@@ -238,23 +238,23 @@ criteria are measured on DinHot's own grids; the anchors are the published resul
 | M04 | classical | Gerchberg-Saxton, point-trap and FFT forms | the two forms agree to 1e-9 rad; 30 iterations on the 10x10 task with a flat beam reach efficiency at least 0.9 and uniformity near 0.6 | `tests/methods/baseline/test_m04_gs.py` |
 | M05 | classical | Generalized adaptive additive | uniformity above GS at equal iterations on the 10x10 task | `tests/methods/baseline/test_m05_gaa.py` |
 | M06 | classical | Weighted GS | efficiency and uniformity at least 0.9 within a median of 15 iterations on the 10x10 task with a flat beam (the source reports about 10); the 3x3x3 lattice above 0.9 and 0.98 | `tests/methods/baseline/test_m06_gsw.py` |
-| M07 | sota | Phase-fixed weighted GS | fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations in the acceptance run (the code default `n_fix` is 12, as in Kim et al. 2019; at 12 it stalls at 2.9 percent on DinHot's grid) | `tests/methods/baseline/test_m07_phase_fixed_wgs.py` |
+| M07 | sota | Phase-fixed weighted GS | fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations in the acceptance run (the code default `n_fix` is 12, as in Kim et al. 2019; at 12 it stalls at 2.9 percent on DinHot's grid); from the same start M07 matches slmsuite 0.5.0's WGS-Kim to 1e-4 percent (the first field is not reweighted, g_0 = 1) | `tests/methods/baseline/test_m07_phase_fixed_wgs.py` |
 | M08 | sota | MRAF | on disc, ring and bar targets, signal-region error at least five times below GS at the cost of efficiency | `tests/methods/baseline/test_m08_mraf.py` |
 | M09 | classical | Direct search | uniformity at least 0.98 on the 10x10 task; under 5 percent rms variation on a quasi-periodic set | `tests/methods/optim/test_m09_direct_search.py` |
 | M10 | sota | Conjugate-gradient minimization | the analytic gradient matches finite differences; a square lattice below 1 percent error | `tests/methods/optim/test_m10_cg.py` |
 | M11 | sota | Wirtinger gradient descent with Adam | lower trap-intensity error than M04 at equal iterations on the 10x10 task | `tests/methods/optim/test_m11_wirtinger_adam.py` |
 | M12 | sota | Closed-loop WGS on an emulated camera | from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7; the acceptance runs on the emulated camera (`core/camera.py`), which reproduces the published feedback curves (Nogrette 2014: 19 percent to under 2.1; Kim 2019: 22 percent to under 1.8 in three phase-fixed steps) | `tests/methods/control/test_m12_closed_loop.py` |
-| M13 | sota | Device-aware CG with pixel crosstalk | on the crosstalk device, lower error than M10 without the model on a large disc | `tests/methods/optim/test_m13_crosstalk_cg.py` |
+| M13 | sota | Device-aware CG with pixel crosstalk | on the crosstalk device, lower error than M10 without the model on a large disc; a staircase line search lets it run its budget on a quantizing device, where its scored spread does not improve systematically (a measured negative) | `tests/methods/optim/test_m13_crosstalk_cg.py` |
 | M14 | classical | Zernike correction and sensorless modal recovery | recovers an injected set of Noll modes 4 to 11 within 5 percent of their amplitude | `tests/methods/control/test_m14_zernike.py` |
 | M15 | classical | Laguerre-Gaussian vortex traps | the ring phase winds by 2 pi l with an error under 0.1 rad | `tests/methods/control/test_m15_vortex.py` |
 | M16 | sota | Hungarian assignment and linear phase interpolation | no crossing moves for alpha 1.5 on a 7x7 to 3x3 sort; a moving trap above 70 percent of its mean intensity | `tests/methods/control/test_m16_rearrangement.py` |
 | M17 | sota | Multi-plane CNN start refined by the volumetric GS (DeepCGH-style) | on 162 held-out three-plane volumes, the network start followed by M19 refinement inside the same wall-clock budget reaches a higher accuracy than M19 alone (measured median ratio 1.140) | `tests/learned/test_m17_cgh_net.py` |
 | M18 | sota | Optimal-transport initialized MRAF | lower error than MRAF from a random start on the shaped targets | `tests/methods/optim/test_m18_ot_mraf.py` |
 | M19 | classical | Multi-plane GS | on a three-plane target, every plane mean within 25 percent of the overall mean (volumetric 3D GS of Whyte and Courtial) | `tests/methods/baseline/test_m19_multiplane.py` |
-| BS-1 | beyond | Device-aware weighted GS (engine id B1) | on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; the factor varies with the seed (about 22 to 60 times over five seeds) and is 2.2 times on the full C08 device with 4-bit phase and flicker | `tests/methods/beyond/test_b1_device_wgs.py` |
-| BS-2 | beyond | Flicker-bounded phase-continuous sequence (engine id B2) | minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI | `tests/methods/beyond/test_b2_flicker_bounded.py` |
+| BS-1 | beyond | Device-aware weighted GS (engine id B1) | on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; measured against the corrected M07 and against slmsuite's WGS-Kim alike: a median of 33.1 times (22.0 to 60.5 over five seeds) at 0.994 of the efficiency, and 2.2 times on the full C08 device with 4-bit phase and flicker | `tests/methods/beyond/test_b1_device_wgs.py` |
+| BS-2 | beyond | Flicker-bounded phase-continuous sequence (engine id B2) | minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: holds when the peak step per frame is at most 0.2 Fourier units (acceptance task: B2 0.919 to 0.923, LPI 0.536 to 0.724); on C10's long sort at 25 frames LPI leads (0.531 against 0.379), and B2 needs the end phases and 137 frames to reach 0.904 (LPI 0.691) | `tests/methods/beyond/test_b2_flicker_bounded.py` |
 | BS-3 | beyond | Learned warm start for phase-fixed WGS (refuted) (engine id B3) | measured negative: on held-out geometries the network start needs a median 8 iterations to 1 percent against 14 from a random start (1.75 times, below the 2 times claimed), and a control with the same early phase fix and no network gains as much; the model is not released and the claim BS-3 is reported as refuted | `tests/learned/test_b3_warm_start.py` |
-| BS-4 | beyond | Aberration-robust hologram (engine id B4) | over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower; robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.02 times) | `tests/methods/beyond/test_b4_robust.py` |
+| BS-4 | beyond | Aberration-robust hologram (engine id B4) | over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.455 times, 1.44 to 1.53 over three seeds, at 0.979 of the efficiency); robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.02 times) | `tests/methods/beyond/test_b4_robust.py` |
 | BS-5 | beyond | Efficiency-uniformity Pareto front (engine id B5) | hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task | `tests/methods/beyond/test_b5_pareto.py` |
 
 Physics components, each tested in `tests/engine/`: the FFT and point-trap forward models (agreement at the trap positions), the
@@ -264,15 +264,15 @@ recovers the input corner frequency).
 
 ## Cases
 
-Thirteen cases in four categories. Arrays: C01 small square grid (3x3), C02 10x10 grid with camera feedback, C03 large array
+Fourteen cases in four categories (thirteen baked, C11 refused by contract 1). Arrays: C01 small square grid (3x3), C02 10x10 grid with camera feedback, C03 large array
 (the 32x32 lattice), C12 calibration (the 10x10 task of the analytic and GS baselines), C13 the disordered array of 819 traps on
 integer FFT bins at least 5 bins apart (the geometry of Kim et al. 2019, drawn by DinHot because the coordinates are not published). Shaped and 3D: C04 ring and
-disc potentials with the crosstalk model on and off, C05 three-plane array with vortices, C06 vortex ring with a line trap.
+disc potentials with the crosstalk model on and off, C05 three-plane array with vortices, C06 vortex ring with a line trap, C14 a three-plane volume at the learned model's geometry (128 x 128 pixels, pad 1, 48 voxels on planes at -8, 0 and +8 SLM-limited Rayleigh ranges; reference M17).
 Device and optics: C07 high numerical aperture, C08 device-limited (crosstalk, 4-bit phase, fill factor, flicker), C09 aberrated
 with and without correction. Dynamics and controls: C10 rearrangement sequence, C11 a trap outside the field of view (refused,
 never computed). The ids are `C01_square_grid`, `C02_grid_feedback` (the default), `C03_large_array`, `C04_disc_crosstalk`,
 `C05_multiplane_vortices`, `C06_vortex_ring_line`, `C07_high_na`, `C08_device_limited`, `C09_aberrated`, `C10_rearrangement`,
-`C11_outside_field`, `C12_calibration` and `C13_disordered_array`. C13 has the setup, the device and the method set of C03 (M01, M02, M04,
+`C11_outside_field`, `C12_calibration`, `C13_disordered_array` and `C14_volume_learned`. C13 has the setup, the device and the method set of C03 (M01, M02, M04,
 M06, M07, M12, B3), reference M07, camera feedback at gain 0.9 for 5 steps with a camera gain error of 0.22 rms and no dynamics block (a params
 record holds one target; the lattice stays C03); its target `DISORDERED_819` is `n=819, half_bins=100, min_bins=5, seed=20261847`. Kim et al.
 2019 (1.2 +- 0.11 percent after five adaptive steps) is context for C13, not a band: the build measures 0.45 to 0.52 percent after five steps
@@ -345,17 +345,19 @@ and covered by a level 4 notebook in each language.
 
 - BS-1 (engine id B1) device-aware weighted GS: the WGS weights kept, the phase update replaced by gradient steps through the crosstalk
   kernel and the quantizer. Measured: the factor over M07 on the crosstalk device varies with the seed (about 22 to 60 times over five seeds) and is
-  2.2 times on the full C08 device with 4-bit phase and flicker. Gap: the crosstalk model has been used only with conjugate gradient on shaped potentials (Schroff et
+  2.2 times on the full C08 device with 4-bit phase and flicker; the median is 33.1 times against the corrected M07 and slmsuite's WGS-Kim alike. Gap: the crosstalk model has been used only with conjugate gradient on shaped potentials (Schroff et
   al. 2023, https://doi.org/10.1038/s41598-023-30296-6).
 - BS-2 (engine id B2) flicker-bounded phase-continuous sequences: each intermediate hologram optimized with the trap phases locked to a
   smooth trajectory. Gap: linear phase interpolation does not optimize its intermediate frames (https://arxiv.org/abs/2501.01391).
+  Measured scope: the claim holds when the peak step per frame is at most 0.2 Fourier units; on long moves at equal frames linear
+  phase interpolation leads, and B2 needs the end phases and more frames (C10: 137 frames, 0.904 against 0.691).
 - BS-3 (engine id B3) learned warm start, tested and refuted: a permutation-invariant network over trap coordinates predicting the initial
   trap phases of phase-fixed WGS gives no gain over an early phase fix without a network (measured on held-out geometries); the gap
   it addressed (no source initializes WGS with a network, algorithms dossier D5.1) is answered by the measurement, and the model is
   not released.
 - BS-4 (engine id B4) robust hologram: the expected cost over residual aberrations. Gap: corrections are global or per site, never robust
   (https://arxiv.org/abs/2512.15967). Measured: robustness to pointing errors does not follow (1.02 times), because the spot width
-  bounds it; the benchmark reports that negative result.
+  bounds it; the benchmark reports that negative result. Against the corrected M07 the aberration claim holds at a median of 1.455 times.
 - BS-5 (engine id B5) the efficiency-uniformity Pareto front by continuation. Gap: methods report single trade-off points (Di Leonardo et
   al. 2007, https://doi.org/10.1364/OE.15.001913).
 

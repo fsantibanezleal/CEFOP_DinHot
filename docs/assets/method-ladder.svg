@@ -37,7 +37,7 @@
   <text class="h" x="430" y="234">Beyond the published state of the art</text>
   <text x="430" y="256">B1 device-aware WGS     B2 flicker-bounded sequence</text>
   <text x="430" y="276">B4 aberration-robust hologram     B5 Pareto front</text>
-  <text class="m" x="430" y="296">B3 sits under Learned; M12 on an emulated camera is BS-6</text>
+  <text class="m" x="430" y="296">B3 sits under Learned (refuted); the emulated camera is part of M12</text>
 
   <text class="m" x="20" y="262">Physics under every method: forward models, device, Zernike,</text>
   <text class="m" x="20" y="278">trap physics, particle dynamics, emulated camera, portable RNG.</text>

@@ -1,6 +1,6 @@
 # Method design records
 
-One design record for every row of the method ladder of the [software design document](../SDD.md): the ten classical methods, the nine state-of-the-art methods and the six methods beyond them. The ladder gives one
+One design record for every row of the method ladder of the [software design document](../SDD.md): the ten classical methods, the nine state-of-the-art methods and the five methods beyond them. The ladder gives one
 acceptance criterion and one gate per row; the record gives the full design that a reviewer checks the code and the results against (ADR-0075, ADR-0069). The frameworks cards in [frameworks](../../frameworks.md)
 describe the same methods for a reader of the site; the records differ in what they promise: every default is the code's, with its file and line and the source or the measurement that set it, and every measured number
 names its report or committed artifact and its conditions.
@@ -20,7 +20,7 @@ the test measures it), the evaluation that confirms or refutes it, the measured 
   `data/derived/manifests/`. Each case has its own optics and device, so these values are not the acceptance-test conditions and must not be compared with them without reading the case.
 - Metrics follow `core/metrics.py`: efficiency $e = \sum_m I_m$, uniformity $u = 1 - (\max I - \min I)/(\max I + \min I)$ and relative standard deviation $\sigma = 100\,\mathrm{std}(I)/\mathrm{mean}(I)$ in percent, with
   $I_m = |V_m|^2$ divided by the target weight where the weights differ.
-- The numbering is the ladder's: `M<n>` and `BS-<n>`; the engine id of a beyond method is `B<n>` (BS-6 is M12 on the emulated camera).
+- The numbering is the ladder's: `M<n>` and `BS-<n>`; the engine id of a beyond method is `B<n>` (BS-6, the emulated camera, was withdrawn as a beyond claim and is part of M12's record).
 - Unverified items are written UNVERIFIED with what was tried; a field the sources cannot fill is written as not established.
 
 ## Classical
@@ -61,4 +61,3 @@ the test measures it), the evaluation that confirms or refutes it, the measured 
 | [BS-3](BS-3-learned-warm-start.md) | Learned warm start for phase-fixed WGS (B3) | hypothesis refuted: 1.75 times against 2, and a control without the network gains as much |
 | [BS-4](BS-4-aberration-robust-hologram.md) | Aberration-robust hologram (B4) | confirmed for residual aberrations (1.55 times); pointing errors not obtained (1.02 times) |
 | [BS-5](BS-5-pareto-front.md) | Efficiency-uniformity Pareto front (B5) | hypothesis confirmed by a small margin: hypervolume 0.8201 against 0.8033 |
-| [BS-6](BS-6-camera-in-the-loop-emulator.md) | Open camera-in-the-loop emulator (M12 on the emulated camera) | the published feedback levels are reached or bettered; the classification of the row is open |
