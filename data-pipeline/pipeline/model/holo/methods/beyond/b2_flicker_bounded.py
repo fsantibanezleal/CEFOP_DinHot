@@ -50,15 +50,18 @@ gives the frames a move needs (137 for the longest move of C10).
 Against LPI on the same assignment (one Hungarian assignment at alpha 1.0, 17 moving traps, the same transient model; LPI is the
 test module's two independent phase-fixed WGS endpoints, interpolated linearly) the lowest moving trap measured:
 
-    C10 sort    13 frames  25 frames  137 frames
-    LPI           0.241      0.531      0.691
-    B2            (n/a)      0.379      0.904
-    acceptance task (13 frames, 3 seeds): B2 0.919 to 0.923, LPI 0.536 to 0.724.
+    C10 sort, seeds 1 to 6       25 frames        137 frames
+    LPI                          0.514 to 0.588   0.678 to 0.756
+    B2 (end phases given)        0.328 to 0.418   0.899 to 0.919 (median 0.905, 5 of 6 at least 0.9)
+    acceptance task (13 frames, seeds 1 to 3): B2 0.916 to 0.926, LPI 0.551 to 0.709.
 
 So B2 leads LPI on the acceptance task and on the long sort only with enough frames (about 137); at 25 frames LPI leads B2
-on the long sort. BS-2 (0.9) holds for B2 when the peak step per frame is at most 0.2 Fourier units and the end phases are given;
-LPI does not reach 0.9 in any row. Beyond that number of frames per unit of distance the claim does not
-hold. The 0.2 is calibrated on one sort (one seed) and the transient model is unverified in absolute terms.
+on the long sort in every seed. BS-2 (0.9) holds for B2 when the peak step per frame is at most 0.2 Fourier units and the end
+phases are given, on most seeds and not on all: on the acceptance lattice with two columns moved 12 or 20 bins (8 seeds,
+``frames_for_move`` frames) the median lowest moving trap is 0.933 and 0.936 and 6 of 8 seeds reach 0.9; the other seeds stay
+below with twice the frames as well (0.023 and 0.768 at 12 bins, 0.584 and 0.847 at 20), so their limit is the phase path the
+end phases prescribe and not the frame count. LPI does not reach 0.9 in any row. Measured 2026-10-29 after the GS family was
+made the ladder methods' own rules (``optim/_gs_family.py``); the transient model is unverified in absolute terms.
 
 ``run(setup, target, ..., destination=None, frames=13)``: ``target`` holds the initial traps, ``destination`` the final
 positions with the same ids (``None``: the traps hold still, a static sequence). 13 holograms are the dossier's

@@ -57,7 +57,10 @@ def test_c13_is_819_traps_on_bins_at_least_five_bins_apart():
 def test_c13_keys_every_method_range_to_its_method():
     ex = _case().record["expect"]
     measured = library._measured_ranges()[CID]
-    assert ex == measured and len(ex) == 20, "the case's ranges are the measured ones, not the declared bands"
-    assert not any(k.startswith("B3.") for k in ex)           # B3 is not registered in this build: nothing was measured
+    methods = _case().record["methods"]
+    assert ex == measured, "the case's ranges are the measured ones, not the declared bands"
+    # three metrics per method of the case, plus the two of the camera loop
+    assert len(ex) == 3 * len(methods) + 2, (len(ex), methods)
+    assert {k.split(".")[0] for k in ex if "." in k} == set(methods)
     for k in ex:
         assert "." in k or k.startswith(("feedback_", "fc_")) or k in ("efficiency", "rel_std_pct", "uniformity"), k

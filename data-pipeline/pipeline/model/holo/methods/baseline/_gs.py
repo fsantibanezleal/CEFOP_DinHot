@@ -86,9 +86,16 @@ def rule_gaa(state, v, k):
 
 
 def rule_gsw(state, v, k):
-    r"""$w_m \leftarrow w_m \langle r\rangle / r_m$, $c_m = w_m V_m/|V_m|$, $r_m = |V_m|/a_m$ (R2 D3.4, Eq. 18)."""
-    r = np.maximum(np.abs(v) / state["a"], 1e-300)
-    state["w"] = state["w"] * (np.mean(r) / r)
+    r"""$w_m \leftarrow w_m \langle r\rangle / r_m$, $c_m = w_m V_m/|V_m|$, $r_m = |V_m|/a_m$ (R2 D3.4, Eq. 18).
+
+    The weights start at $w_m = a_m$ and the field of the start hologram is projected with them unchanged (iteration
+    ``k = 1`` is plain GS); the first update uses the field of ``k = 2``, as in slmsuite's WGS-Leonardo (no update at its
+    iteration 0). Measured from the same start on C03 (1024 traps, 30 iterations, 4 seeds): with this rule M06 equals
+    slmsuite 0.5.0's WGS-Leonardo at ``feedback_exponent=1`` to four digits (``tests/methods/baseline/test_m06_against_slmsuite.py``).
+    """
+    if k > 1:
+        r = np.maximum(np.abs(v) / state["a"], 1e-300)
+        state["w"] = state["w"] * (np.mean(r) / r)
     return state["w"] * phasor(v)
 
 
