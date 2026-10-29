@@ -229,7 +229,7 @@ def main() -> int:
             if tmp_root is not None:
                 # a copy of the repository's inputs at the same relative depth: the notebook reads `../../../data/...`
                 work = tmp_root / "repo"
-                for item in ("data", "data-pipeline", "docs", "content", "notebooks"):
+                for item in ("data", "data-pipeline", "docs", "content", "models", "notebooks"):
                     if (ROOT / item).exists() and not (work / item).exists():
                         shutil.copytree(ROOT / item, work / item, ignore=shutil.ignore_patterns("__pycache__", ".ipynb_checkpoints"))
                 work.mkdir(parents=True, exist_ok=True)

@@ -165,3 +165,31 @@ def test_adversarial_without_method_packages_the_runner_is_unchanged(product: Pa
     paths.clear()
     (product / "product.json").write_text(json.dumps({"method_packages": []}), encoding="utf-8")
     assert run(monkeypatch) == 0 and paths
+
+
+def test_adversarial_check_copies_models_so_a_notebook_can_run_a_released_model(product: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (product / "models").mkdir()
+    (product / "models" / "slot.onnx").write_bytes(b"released-model")
+    seen: list[bytes | None] = []
+
+    def execute(src: Path, dest: Path) -> str | None:
+        model = src.parents[3] / "models" / "slot.onnx"  # the notebook reads `../../../models/...` from its folder
+        seen.append(model.read_bytes() if model.exists() else None)
+        if not model.exists():
+            return "FileNotFoundError: models/slot.onnx"
+        dest.write_bytes((product / REL).read_bytes())
+        return None
+    monkeypatch.setattr(RUNNER, "execute", execute)
+    tmp = tmp_path / "temp-root"
+    tmp.mkdir()
+    assert run(monkeypatch, "--check", "--tmp", str(tmp)) == 0
+    assert seen == [b"released-model"], "the work tree holds models/ as committed"
+    assert (product / "models" / "slot.onnx").read_bytes() == b"released-model" and list(tmp.iterdir()) == []
+
+
+def test_adversarial_check_without_a_models_folder_runs_as_before(product: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    paths = stand_in(monkeypatch, product)
+    tmp = tmp_path / "temp-root"
+    tmp.mkdir()
+    assert not (product / "models").exists()
+    assert run(monkeypatch, "--check", "--tmp", str(tmp)) == 0 and paths
