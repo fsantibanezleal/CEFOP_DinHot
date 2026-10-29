@@ -15,7 +15,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 TOPIC = "08-learned-holography"
-NOTEBOOKS = ("01-a-network-start-for-volume-holograms", "02-is-a-learned-warm-start-worth-it")
+NOTEBOOKS = ("03-a-network-start-for-volume-holograms", "04-is-a-learned-warm-start-worth-it")
 ANSWER = {"en": "**Answer:**", "es": "**Respuesta:**"}
 NUMBER = re.compile(r"\d+(?:[.,]\d+)?")
 
