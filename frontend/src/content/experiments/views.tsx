@@ -39,6 +39,7 @@ export const CASE_REFS: Record<string, string[]> = {
   C04_disc_crosstalk: ['schroff2023', 'pasienski2008'],
   C05_multiplane_vortices: ['polin2005'],
   C06_vortex_ring_line: ['polin2005'],
+  C14_volume_learned: ['eybposh2020', 'whyte2005'],
   C07_high_na: ['leutenegger2006'],
   C08_device_limited: ['schroff2023'],
   C09_aberrated: ['nogrette2014', 'noll1976'],

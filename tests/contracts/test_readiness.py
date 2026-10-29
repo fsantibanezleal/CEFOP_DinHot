@@ -59,7 +59,7 @@ def set_status(r: Path, row_id: str, status: str) -> None:
 
 @pytest.fixture()
 def repo(tmp_path: Path, sandbox_bake) -> Path:
-    """A temporary repository: the catalog with the producer rows ``real``, VERSION, the twelve cases, a bake, a benchmark and a
+    """A temporary repository: the catalog with the producer rows ``real``, VERSION, the cases, a bake, a benchmark and a
     metrics document of the current version, an engine reference file, and no released model."""
     r = tmp_path / "repo"
     (r / "docs" / "contracts").mkdir(parents=True)

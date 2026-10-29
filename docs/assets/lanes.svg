@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="t d">
   <title id="t">The lanes of DinHot</title>
-  <desc id="d">The offline lane bakes twelve cases and the benchmark in Python and commits the artifacts; the replay lane copies them into the static site; the live lane re-runs the live methods in a TypeScript engine in a Web Worker; a dormant read-only API serves the same documents.</desc>
+  <desc id="d">The offline lane bakes fourteen cases and the benchmark in Python and commits the artifacts; the replay lane copies them into the static site; the live lane re-runs the live methods in a TypeScript engine in a Web Worker; a dormant read-only API serves the same documents.</desc>
   <style>
     :root { --bg:#ffffff; --fg:#1b1f24; --mut:#5b6573; --line:#9aa5b1; --a:#e8f0fb; --b:#e9f5ec; --c:#fdf1e1; --d:#f4eaf8; --ar:#5b6573; }
     @media (prefers-color-scheme: dark) { :root { --bg:#0e1116; --fg:#e6e9ed; --mut:#9aa5b1; --line:#4b5563; --a:#1c2b44; --b:#1b3326; --c:#3a2c17; --d:#2d2038; --ar:#9aa5b1; } }

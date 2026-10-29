@@ -91,7 +91,7 @@ on each side, its missing-data behavior and a provider.
   `data-pipeline/pipeline/io/contract.py` over a standard-library validator (`io/jsonschema_lite.py`) of
   `docs/contracts/schemas/params-record.schema.json`; a trap at or beyond the half field `lambda f / (2 p)` is refused, which is the engine's
   own rule (the bin at the bound is outside the centred FFT grid).
-- Artifacts (case-index, case-manifest, trace, contract 2): the index of the thirteen cases (twelve baked, C11 refused by contract 1) with
+- Artifacts (case-index, case-manifest, trace, contract 2): the index of the fourteen cases (thirteen baked, C11 refused by contract 1) with
   bilingual titles and categories; one manifest per case (parameters, seed, engine version, lane verdict, metrics per method, expected ranges,
   bilingual band); one trace per case (per method: the metric series against iteration, the final per-trap intensities and
   metrics; for the case's reference method: the quantized phase mask and the focal intensity map in dB at the live grid, the
@@ -165,7 +165,7 @@ with its measurement in [`measured-resources.md`](measured-resources.md) before 
 
 | stage | memory | disk | time | where it runs |
 |---|---|---|---|---|
-| bake (`data-pipeline/run.py`, thirteen cases, twelve baked and C11 refused, every valid method per case) | at most 4 GB peak (measured: 322 MB for one case process, under 3.6 GB for the eleven of the parallel bake) | at most 3 MB of artifacts in `data/derived/` (measured 1.95 MiB; each trace at most 256 KiB, the largest 258,681 bytes) | at most 20 min (measured 515 s on an idle 12-core machine) | workstation, never CI |
+| bake (`data-pipeline/run.py`, fourteen cases, thirteen baked and C11 refused, every valid method per case) | at most 4 GB peak (measured: 322 MB for one case process, under 3.6 GB for the eleven of the parallel bake) | at most 3 MB of artifacts in `data/derived/` (measured 1.95 MiB; each trace at most 256 KiB, the largest 258,681 bytes) | at most 20 min (measured 515 s on an idle 12-core machine) | workstation, never CI |
 | benchmark (the protocol, 7 geometries, 24 methods, 20 seeds, three budgets) | at most 4 GB peak | at most 2 MB of results | at most 6 h, resumable by cell | workstation, never CI |
 | training (cgh-net and warmstart-model, PyTorch on the GPU) | at most 7 GB GPU memory, 8 GB host | at most 10 MB of ONNX models and metrics (measured: the released graph 4,671,540 bytes); datasets in the data root, never in the repository | at most 3 h (the configured cap of cgh-net is 2.2 h; its record is `data/derived/models/cgh-net-training.json`) | workstation GPU, never CI |
 | tests (pytest, the whole suite) | at most 2 GB peak | temporary copies under the temp root | at most 10 min | workstation; the plants (`tests/adversarial`) also in CI |

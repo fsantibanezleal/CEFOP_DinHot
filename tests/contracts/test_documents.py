@@ -5,7 +5,7 @@ swap side is frontend/src/lib/contract.test.ts, which runs the same assertions o
 engine-reference tests (model cards, ONNX graphs, engine reference) belong to the units that produce those documents.
 
 The sandbox bake runs the small cases of tests/bake/bakefix.py with the planted methods; the canonical bake is the same
-code on the twelve cases."""
+code on the cases."""
 from __future__ import annotations
 
 import base64

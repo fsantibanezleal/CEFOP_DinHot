@@ -1,6 +1,6 @@
 # Guide: run the precompute pipeline
 
-The offline lane bakes the twelve cases with every method valid for each, runs the benchmark protocol and writes the readiness document. It runs on the workstation, never in CI (ADR-0074).
+The offline lane bakes the fourteen cases with every method valid for each, runs the benchmark protocol and writes the readiness document. It runs on the workstation, never in CI (ADR-0074).
 
 ## Set up
 
@@ -13,7 +13,7 @@ The environment is isolated and pinned (`requirements-precompute.txt` and `requi
 ## Bake
 
 ```bash
-./scripts/precompute.sh                                   # the canonical bake of the twelve cases, then the benchmark (resumable)
+./scripts/precompute.sh                                   # the canonical bake of the fourteen cases, then the benchmark (resumable)
 ./scripts/precompute.sh C02_grid_feedback --output <sandbox>   # one case into a sandbox
 ./scripts/precompute.sh benchmark --seeds 20 --workers 12 --resume   # the benchmark alone
 ./scripts/precompute.sh readiness                          # recompute the readiness document from the catalog

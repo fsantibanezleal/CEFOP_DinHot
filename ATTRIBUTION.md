@@ -70,7 +70,7 @@ pinned with exact versions in `docs/design/SDD.md` (technology and versions), in
 
 ## Data
 
-The product uses **no third-party dataset**. Its twelve cases are synthetic, with stated parameters. Published numbers that appear in the documentation and in the pages are quoted as facts with their source, never as data files. The sourced
+The product uses **no third-party dataset**. Its fourteen cases are synthetic, with stated parameters. Published numbers that appear in the documentation and in the pages are quoted as facts with their source, never as data files. The sourced
 figures of the executive view of the Introduction carry their sources in `content/executive.json`.
 
 ## Trademarks and institutions

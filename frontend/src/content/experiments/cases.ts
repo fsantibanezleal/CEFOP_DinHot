@@ -473,6 +473,41 @@ export const CASES: Record<string, CaseText> = {
     },
   },
 
+  C14_volume_learned: {
+    question: {
+      en: 'On a volume of point voxels at the geometry the released multi-plane network was trained for, does the network\'s phase compete with the volumetric GS, and what does the hybrid add?',
+      es: '¿En un volumen de vóxeles puntuales con la geometría para la que se entrenó la red multiplano publicada, compite la fase de la red con el GS volumétrico, y qué agrega el híbrido?',
+    },
+    setup: {
+      en: 'The case holds {n} point voxels, {perPlane} on each of {planes} planes at {zList} um, with {wl} nm light, a lens of {focal} mm, a numerical aperture of {na} and an SLM of {npix} by {npix} pixels at {pitch} um pitch and padding {pad}: the SLM, the padding and the plane depths of the model card of the slot cgh-net, so the network answers here and on no other case. Every voxel sits on an integer bin with equal weight, the form the network and the volumetric GS M19 take. {nm} methods run with the seed {seed} and a budget of {iters} iterations, and the reference method is {ref}, the network followed by M19 for what is left of the budget when that raises the volume accuracy of the network\'s mask.',
+      es: 'El caso tiene {n} vóxeles puntuales, {perPlane} en cada uno de {planes} planos a {zList} um, con luz de {wl} nm, un lente de {focal} mm, una apertura numérica de {na} y un SLM de {npix} por {npix} píxeles con paso de {pitch} um y relleno {pad}: el SLM, el relleno y las profundidades de los planos de la ficha del modelo del espacio cgh-net, de modo que la red responde aquí y en ningún otro caso. Cada vóxel está en un bin entero con igual peso, la forma que toman la red y el GS volumétrico M19. Corren {nm} métodos con la semilla {seed} y un presupuesto de {iters} iteraciones, y el método de referencia es {ref}, la red seguida de M19 durante lo que queda del presupuesto cuando eso sube la exactitud de volumen de la máscara de la red.',
+    },
+    result: {
+      en: 'The phase of {ref} comes from {prov}. On the trap metrics of this case it puts {refEff} of the power in the voxels with a relative standard deviation of {refSd} percent, while the volumetric GS M19 reaches {eff19} with {sd19} percent and weighted GS M06 {eff06} with {sd06} percent. The network was trained on the plane images, its loss being one minus the plane accuracy, and not on the voxel intensities, so these are numbers its training did not optimise; the measure it did optimise, against M19 at the same wall clock on held-out volumes, is on the Benchmark page. DeepCGH reports its advantage on volume targets with its own SLM and accuracy measure, so the paper is context and no range of the case is built on it. {okAll} of {ofAll} methods with checked ranges sit inside all of them.',
+      es: 'La fase de {ref} viene de {prov}. Con las métricas de trampas de este caso pone {refEff} de la potencia en los vóxeles con una desviación estándar relativa de {refSd} por ciento, mientras que el GS volumétrico M19 llega a {eff19} con {sd19} por ciento y el GS ponderado M06 a {eff06} con {sd06} por ciento. La red se entrenó sobre las imágenes de los planos, con una pérdida de uno menos la exactitud de los planos, y no sobre las intensidades de los vóxeles, así que estos son números que su entrenamiento no optimizó; la medida que sí optimizó, contra M19 con el mismo tiempo de reloj sobre volúmenes reservados, está en la página Benchmark. DeepCGH informa su ventaja sobre objetivos de volumen con su propio SLM y su propia medida de exactitud, así que el artículo es contexto y ningún rango del caso se apoya en él. {okAll} de {ofAll} métodos con rangos verificados caen dentro de todos ellos.',
+    },
+    vals: (v, f) => {
+      const pl = planesUm(v.manifest);
+      const n = trapCount(v.manifest);
+      const real = v.manifest.models?.['cgh-net'] === 'real';
+      const es = f.lang === 'es';
+      return {
+        ...common(v, f),
+        planes: f.n(pl.length, { decimals: 0 }),
+        perPlane: f.n(pl.length && n !== null ? n / pl.length : undefined, { decimals: 0 }),
+        zList: pl.map((z) => f.n(z, { digits: 4 })).join(es ? '; ' : ', '),
+        pad: f.n(v.manifest.params.setup.pad, { decimals: 0 }),
+        prov: real
+          ? es ? 'el modelo publicado, ejecutado por onnxruntime en el precálculo' : 'the released model, run by onnxruntime in the bake'
+          : es ? 'la línea base del espacio, M19 a treinta iteraciones, porque no hay un modelo publicado' : 'the baseline of the slot, M19 at thirty iterations, because no model is released',
+        eff19: nfmt(f, metricOf(v, 'M19', 'efficiency'), { decimals: 3 }),
+        sd19: nfmt(f, metricOf(v, 'M19', 'rel_std_pct'), { digits: 3 }),
+        eff06: nfmt(f, metricOf(v, 'M06', 'efficiency'), { decimals: 3 }),
+        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
+      };
+    },
+  },
+
   C06_vortex_ring_line: {
     question: {
       en: 'Can extended structures, a ring of vortices, and point-like ones, a line of plain traps, be balanced in one hologram?',

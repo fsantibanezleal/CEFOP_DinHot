@@ -1,6 +1,6 @@
 # Docs, the DinHot wiki
 
-The product wiki (ADR-0056), written as the product is built, unit by unit, never at the end. DinHot is a holography studio for optical trap arrays and shaped light fields: twelve cases, 24 methods from the classical
+The product wiki (ADR-0056), written as the product is built, unit by unit, never at the end. DinHot is a holography studio for optical trap arrays and shaped light fields: fourteen cases, 24 methods from the classical
 baselines through the published state of the art to methods beyond it, a device model, a camera feedback emulator, trapped-particle dynamics, and a static web workbench that runs in the browser. The pipeline, its
 validation and these documents are the product; the web app is its companion workbench. The design, with every requirement and its gate, is [design/SDD.md](design/SDD.md).
 
@@ -13,7 +13,7 @@ licences are in [ATTRIBUTION.md](../ATTRIBUTION.md).
   data contracts, the method interface and registry.
 - **[frameworks/](frameworks.md)**: one card per method of the ladder (M01 to M19, B1 to B5) and per physics component (P01 to P07): equations with their sources, implementation and defaults, acceptance criterion and test,
   measured values with their conditions, limits and references. The deep research, made binding.
-- **[cases/](cases.md)**: the coverage matrix of the twelve cases (C01 to C12), their categories and one card per case.
+- **[cases/](cases.md)**: the coverage matrix of the fourteen cases (C01 to C14), their categories and one card per case.
 - **[guides/](guides.md)**: runnable how-tos: run the precompute pipeline, bring your own case, the GPU lane, run the API, the architecture modal, the executive view, the documentation pages, the notebooks.
 - **[design/](design/README.md)**: the software design document, its features and requirements, and the measured resources.
 - **[contracts/](contracts/catalog.md)**: the contract catalog, the schemas, the examples and the provider tree.
@@ -33,8 +33,8 @@ licences are in [ATTRIBUTION.md](../ATTRIBUTION.md).
 
 - Numbers come from the engine and the committed artifacts, never from a claim. A number on a card is either a published result, labelled with its source and conditions, or a DinHot measurement, labelled with its seeds, grid
   and date. Where DinHot does not reproduce a published number, the card says so; where a source could not be read, the card says UNVERIFIED and what was tried.
-- All twelve cases are synthetic: parameters are stated, absolute numbers are those of the stated model, not of a measured instrument. The product does not drive hardware.
+- All fourteen cases are synthetic: parameters are stated, absolute numbers are those of the stated model, not of a measured instrument. The product does not drive hardware.
 - Public derived artifacts are committed (`data/derived/`); raw and private sources stay out of git (`data/raw/`) per ADR-0055. The two data contracts ([architecture/08_data-contracts.md](architecture/08_data-contracts.md))
   govern the cases in and the artifacts out.
-- The canonical bake of the twelve cases and the full benchmark are not committed yet. The case cards state their expected ranges and say which are provisional; the learned methods (M17, B3) state their contract and say that
-  their measurements are pending.
+- The canonical bake of the fourteen cases (thirteen baked, C11 refused by contract 1) and the benchmark are committed in `data/derived/`; each case card
+  states the ranges the bake checks (written by `scripts/write_case_ranges.py`), and the learned methods' measurements are in `data/derived/models/`.

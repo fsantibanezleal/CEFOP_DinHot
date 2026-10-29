@@ -1,4 +1,4 @@
-# Adversarial validation: the bake: contract 1, the thirteen cases, the expected ranges, the lane and units gates
+# Adversarial validation: the bake: contract 1, the fourteen cases, the expected ranges, the lane and units gates
 
 For each requirement of [`requirements.md`](requirements.md), the check that tries to break it: what was planted or refuted, and the test that plants it. `scripts/check_sdd.py` fails when a requirement has no row here (or two), when a check is empty, and when a gate names a test that does not exist. A planted row runs the requirement's own gate twice in child processes (`tests/adversarial/plant_run.py`): untouched, where it passes, and with the defect wrapped around the product's code, where it must fail.
 
@@ -20,3 +20,4 @@ For each requirement of [`requirements.md`](requirements.md), the check that tri
 | BK-014 | the number of substeps is forced to 1 (omega dt above 2, velocity Verlet unstable): the atom leaves the map and the oracle assertions fail | `tests/adversarial/test_dinhot_bake_refuted.py::test_a_driver_with_a_single_substep_fails_the_atom_oracle_gate` |
 | BK-015 | the form of every method is forced to the point-trap form: the on-bin assertion fails | `tests/adversarial/test_dinhot_bake_refuted.py::test_a_form_selector_that_never_picks_the_fft_form_fails_the_form_gate` |
 | BK-016 | the signal error is scaled by one half: the agreement with the method's own history fails | `tests/adversarial/test_dinhot_bake_refuted.py::test_a_score_that_ignores_the_shape_fails_the_signal_region_gate` |
+| BK-017 | the registry's C14 record is given padding 2: the card-geometry assertion fails | `tests/adversarial/test_dinhot_bake_refuted.py::test_a_c14_off_the_model_geometry_fails_the_c14_gate` |

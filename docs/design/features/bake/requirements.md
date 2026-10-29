@@ -1,7 +1,7 @@
-# Requirements: the bake: contract 1, the thirteen cases, the expected ranges, the lane and units gates
+# Requirements: the bake: contract 1, the fourteen cases, the expected ranges, the lane and units gates
 
 EARS (Mavin et al., RE'09, doi:10.1109/RE.2009.9). Every requirement names the gate that fails when it is violated.
-The bake (`data-pipeline/run.py`, `pipeline/pipeline.py`, `pipeline/bake.py`) turns the thirteen cases of `data/examples/cases.json` into
+The bake (`data-pipeline/run.py`, `pipeline/pipeline.py`, `pipeline/bake.py`) turns the fourteen cases of `data/examples/cases.json` into
 the committed artifacts of `data/derived/`: contract 1 validates each record, every method valid for the case runs, the expected
 ranges (`core/expect.py`) fail the bake outside the band, the lane gate and the units gate judge the result and the readiness is
 recomputed. The bake runs on a workstation, never in CI. The tests are `tests/test_contract.py`, `tests/test_expect.py`,
@@ -14,7 +14,7 @@ refuses.
 | BK-001 | IF a value is missing, not numeric, NaN, infinite, boolean where a number is due or out of range, THEN contract 1 SHALL reject the record with the field named in its reason, never coerce it. | `tests/test_contract.py::test_adversarial_bad_values_rejected_not_coerced` |
 | BK-002 | IF a record lacks a required field or carries one the schema does not declare, THEN contract 1 SHALL reject it with the field named. | `tests/test_contract.py::test_missing_field_and_extra_field_rejected` |
 | BK-003 | IF a trap lies at or beyond the half field of its setup, THEN contract 1 SHALL reject the record with the bound in micrometres in its reason, so that case C11 is refused and never computed. | `tests/test_contract.py::test_out_of_field_names_the_bound` |
-| BK-004 | THE case registry SHALL list thirteen cases, C13 (the disordered array of 819 traps) next to C03, and contract 1 SHALL accept C13 and the committed cases document SHALL hold it. | `tests/bake/test_c13.py::test_the_registry_lists_c13_next_to_c03` |
+| BK-004 | THE case registry SHALL list C13 (the disordered array of 819 traps) next to C03, and contract 1 SHALL accept C13 and the committed cases document SHALL hold it. | `tests/bake/test_c13.py::test_the_registry_lists_c13_next_to_c03` |
 | BK-005 | THE target of C13 SHALL be 819 traps on integer FFT bins at least 5 bins apart, drawn from the seed `20261847`, because the coordinates of Kim et al. 2019 are not published. | `tests/bake/test_c13.py::test_c13_is_819_traps_on_bins_at_least_five_bins_apart` |
 | BK-006 | IF a baked value lies outside the expected range its case declares, THEN the bake SHALL fail naming the case, the method and the metric. | `tests/test_expect.py::test_a_value_outside_its_range_is_named` |
 | BK-007 | THE measured range of a metric SHALL be the wider of 10 percent around the median and the spread of the seeds. | `tests/methods/integration/test_i1_integration.py::test_range_rule_is_the_wider_of_ten_percent_and_the_seed_spread` |
@@ -27,3 +27,4 @@ refuses.
 | BK-014 | THE atom driver SHALL integrate with a step small enough that omega dt is at most 0.2 and SHALL oscillate at the radial frequency predicted by the curvature of the same map, within 20 percent. | `tests/methods/integration/test_i1_integration.py::test_the_atom_stays_in_the_map_and_oscillates_at_the_predicted_frequency` |
 | BK-015 | THE `auto` form of M04, M05, M06 and M07 SHALL be the FFT form when every trap is on an FFT bin with z = 0 and charge 0, and the point-trap form otherwise, and the manifest SHALL flag the form each method chose. | `tests/methods/integration/test_i1_integration.py::test_auto_form_is_fft_on_bins_and_point_off_bins` |
 | BK-016 | FOR a shaped target, THE bake SHALL score the signal region (the root-mean-square error over the measure region after the scale fit) in the two required metric slots, and the manifest SHALL flag that it does. | `tests/methods/integration/test_i1_integration.py::test_signal_error_agrees_with_the_methods_own_history` |
+| BK-017 | THE case registry SHALL list C14, and its SLM size, padding and plane depths SHALL be those of the released cgh-net model card, so that the network answers on it. | `tests/bake/test_c14.py::test_c14_is_the_geometry_of_the_released_model_card` |

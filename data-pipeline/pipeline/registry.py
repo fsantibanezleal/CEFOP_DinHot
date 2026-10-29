@@ -1,7 +1,7 @@
 """The case registry, cases grouped by CATEGORY (the four of the SDD). The App shows ONE selected case; the Benchmark views
 show cross-case summaries by category.
 
-The registry owns the reader-facing metadata of the twelve cases (titles, categories, bands, anchors) and their default
+The registry owns the reader-facing metadata of the fourteen cases (titles, categories, bands, anchors) and their default
 records (``cases/library.py``). The records the bake runs are read from ``data/examples/cases.json`` through contract 1
 (``stages/preprocess.py``); a record whose id the registry does not know gets generic metadata, so a reader's own case
 bakes like the twelve.
@@ -32,7 +32,7 @@ def default_case() -> str:
 
 
 def records() -> list[dict]:
-    """The default params records of the twelve cases, as ``data/examples/cases.json`` holds them."""
+    """The default params records of the fourteen cases, as ``data/examples/cases.json`` holds them."""
     return [copy.deepcopy(c.record) for c in CASES]
 
 
