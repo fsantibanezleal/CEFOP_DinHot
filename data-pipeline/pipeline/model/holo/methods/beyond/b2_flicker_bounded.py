@@ -42,7 +42,7 @@ iterations per frame; more iterations per frame change nothing):
 
     frames       25     49     97    129
     peak step    1.13   0.57   0.28  0.21   Fourier units per frame
-    lowest       0.379  0.735  0.875 0.900
+    lowest       0.333  0.741  0.883 0.905
 
 So BS-2 (at least 0.9) holds for a move only when the peak step per frame is at most ``CLAIM_STEP_FU`` = 0.2 Fourier units, which the
 13-frame default allows for moves of about 1.3 Fourier units on that calibration (the acceptance task meets it at 2); ``frames_for_move``
