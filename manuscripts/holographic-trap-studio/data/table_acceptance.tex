@@ -5,22 +5,22 @@
 M01 & \footnotesize efficiency 0.281, uniformity 0.0003 (deterministic) & \footnotesize 1\\
 M02 & \footnotesize efficiency 0.750 [0.738, 0.752], uniformity 0.252 [0.106, 0.272] & \footnotesize 6\\
 M03 & \footnotesize 256 squared: efficiency 0.010, uniformity 0.057 [0.031, 0.072]; 768 squared: efficiency 0.008, uniformity 0.566 [0.543, 0.590] & \footnotesize 5 and 2\\
-M04 & \footnotesize flat beam: efficiency 0.939 [0.933, 0.939], uniformity 0.604 [0.557, 0.626]; Gaussian beam: efficiency 0.815 & \footnotesize 5\\
-M05 & \footnotesize uniformity 0.688 [0.638, 0.709] against 0.615 [0.550, 0.637] for GS at equal iterations & \footnotesize 5\\
-M06 & \footnotesize efficiency and uniformity both at 0.9 after 10 to 13 iterations (flat and Gaussian beams); 3 x 3 x 3 lattice reaches 0.9 and 0.98 & \footnotesize 3\\
-M07 & \footnotesize 50 x 30 array to 0.5 percent in 63 and 64 iterations against 121 and 147 for M06 (phase fixed after 60); with the source value of 12 it stalls at 2.88 percent & \footnotesize 2\\
-M08 & \footnotesize signal-region error 14.5 (disc), 7.9 (ring) and 12.1 (bar) times below GS; efficiency 0.18 against 0.97 to 0.99 & \footnotesize 3\\
+M04 & \footnotesize flat beam: efficiency 0.939 [0.933, 0.939], uniformity 0.604 [0.557, 0.626]; Gaussian beam: efficiency 0.815 against its ceiling 0.869 & \footnotesize 3\\
+M05 & \footnotesize uniformity 0.688 [0.638, 0.709] against 0.615 [0.550, 0.637] for GS at equal iterations; efficiency 0.811 against 0.816 & \footnotesize 5\\
+M06 & \footnotesize flat beam: efficiency and uniformity both at 0.9 after 12, 15 and 12 iterations (median uniformity 0.857 at 10); Gaussian beam: 12, 15 and 12; 3 x 3 x 3 lattice (0.9 and 0.98): 35, 20 and 27; budgets 15, 20 and 100 & \footnotesize 3\\
+M07 & \footnotesize 50 x 30 array to 0.5 percent in 64 and 64 iterations against 136 and 106 for M06 (phase fixed after 60; efficiency 0.83 and 0.83); with the source value of 12 it stalls at 3.58 percent & \footnotesize 2\\
+M08 & \footnotesize signal-region error 12.4 (disc), 7.8 (ring) and 10.4 (bar) times below GS at the worse of two starts; efficiency 0.181 to 0.184 against 0.963 to 0.992 & \footnotesize 2 starts\\
 M09 & \footnotesize uniformity 0.9994 and 0.9992 (efficiency 0.66 and 0.65); 119 quasi-periodic traps at 0.023 percent rms & \footnotesize 2 and 1\\
-M10 & \footnotesize analytic gradient within 1.8e-7 of finite differences; square lattice error 0.55 and 0.51 percent & \footnotesize 2\\
-M11 & \footnotesize relative standard deviation 2.54, 2.46 and 2.26 percent against 17.79, 17.98 and 18.82 for GS at 30 iterations & \footnotesize 3\\
-M12 & \footnotesize emulated camera loop: open-loop 20.9 and 20.1 percent to 1.47 and 1.08 percent in 20 iterations; 24.3 and 23.4 percent to 0.77 and 0.53 percent in three phase-fixed steps & \footnotesize 2\\
-M13 & \footnotesize error 0.241 (efficiency 0.535) against 1.38 (0.507) for M10 without the device model, large disc on the crosstalk device & \footnotesize 1\\
+M10 & \footnotesize analytic gradient within 2.5e-06 of finite differences; square lattice error 0.55 and 0.51 percent & \footnotesize 2\\
+M11 & \footnotesize relative standard deviation 2.53, 2.46 and 2.26 percent against 17.78, 17.98 and 18.82 for GS at 30 iterations & \footnotesize 3\\
+M12 & \footnotesize emulated camera loop: open-loop 20.9 and 20.4 percent to 0.84 and 1.07 percent in 20 iterations; 24.3 and 23.6 percent to 1.05 and 0.74 percent in three phase-fixed steps & \footnotesize 2\\
+M13 & \footnotesize error 0.241 (efficiency 0.535) against 1.382 (0.507) for M10 without the device model, large disc on the crosstalk device & \footnotesize 1\\
 M14 & \footnotesize worst per-mode relative error 0.002 [0.001, 0.002] over Noll modes 4 to 11 & \footnotesize 3\\
-M15 & \footnotesize ring phase winds by 2 pi l with a maximum error of 0.033 rad [0.028, 0.060] (isolated vortex) & \footnotesize 3\\
-M16 & \footnotesize 0 path crossings in 60 loadings; moving traps keep 0.870 [0.748, 0.963] of their mean intensity & \footnotesize 60 loadings\\
-M17 & \footnotesize three-plane network refined by M19: median accuracy ratio 1.140 [1.102, 1.160] on 162 held-out volumes & \footnotesize 162 volumes\\
-M18 & \footnotesize signal-region error 0.0204 (disc), 0.0179 (ring) and 0.0221 (line) against 0.250, 0.192 and 0.250 for MRAF from a random start & \footnotesize 1\\
-M19 & \footnotesize plane means over overall mean 0.938, 0.987, 1.075 and 0.926, 1.034, 1.039 on three planes & \footnotesize 2\\
-BS-4 & \footnotesize 95th percentile of the relative standard deviation 4.045 against 6.268 for M07 (1.55 times) over a 200-sample aberration ensemble; efficiency 0.7031 against 0.7169; pointing errors 1.02 times & \footnotesize 1\\
-BS-5 & \footnotesize hypervolume 0.8201 against 0.8033 for the union of the GS-family points; one front point dominates M04 and M05 & \footnotesize 1\\
+M15 & \footnotesize ring phase winds by 2 pi l (winding error below the 1e-9 rad of the arithmetic) with a maximum error of 0.033 [0.028, 0.060] rad (isolated vortices of charge 1, 2, 3 and -2) & \footnotesize 2 per charge\\
+M16 & \footnotesize 0 path crossings in 60 loadings; moving traps keep 0.767 [0.747, 0.792] of their mean intensity (worst moving trap of each of 5 loadings) & \footnotesize 60 loadings\\
+M17 & \footnotesize three-plane network refined by M19: median accuracy ratio 1.140 (quartiles 1.102 and 1.160) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here & \footnotesize 162 volumes\\
+M18 & \footnotesize signal-region error 0.0204 (disc), 0.0179 (ring) and 0.0221 (line) against 0.250, 0.188 and 0.223 for MRAF from a random start (the better of two); baked size: 0.0259 (disc) and 0.0171 (ring) against 0.266 and 0.228 & \footnotesize 2 and 1\\
+M19 & \footnotesize plane means over overall mean 0.938, 0.987 and 1.075 and 0.926, 1.034 and 1.039 on three planes & \footnotesize 2\\
+BS-4 & \footnotesize 95th percentile of the relative standard deviation 3.947 against 6.192 for M07 (1.57 times) over a 200-sample aberration ensemble; efficiency 0.7047 against 0.7181; pointing errors 1.04 times & \footnotesize 1\\
+BS-5 & \footnotesize hypervolume 0.8190 against 0.8018 for the union of the M04, M05, M06 and M09 points; 7 front points dominate M04 and 8 dominate M05; front built in 17 seconds & \footnotesize 1\\
 \bottomrule\end{longtable}
