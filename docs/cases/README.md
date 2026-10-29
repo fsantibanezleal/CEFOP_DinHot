@@ -1,17 +1,18 @@
 # Cases and the coverage matrix
 
-Thirteen cases in four categories. A case is a params record (catalog row params-record): an optical setup, a device, a target (a list of traps or a shaped potential), an aberration,
+Fourteen cases in four categories. A case is a params record (catalog row params-record): an optical setup, a device, a target (a list of traps or a shaped potential), an aberration,
 the method set, a seed, and for the dynamic cases the particle and the rearrangement. The records live in `data-pipeline/pipeline/cases/library.py` and are written to
 `data/examples/cases.json`. Each case declares numeric expected ranges for its metrics (`data-pipeline/pipeline/core/expect.py` fails the bake outside them), a bilingual band, a
 real or synthetic flag and a published anchor. The App shows ONE selected case; the Experiments and Benchmark pages show cross-case summaries by category and never mix them into the App.
 
-All thirteen cases are synthetic: the parameters are stated and no measured sample is used. Two optical setups carry most of them:
+All fourteen cases are synthetic: the parameters are stated and no measured sample is used. Two optical setups carry most of them, and two cases have their own:
 
 | Setup | Wavelength | Focal length | NA | SLM | Focal bin | Half field |
 |---|---|---|---|---|---|---|
 | Atom (C01 to C04, C09 to C13) | 850 nm | 6 mm | 0.5 in air | 256 by 256 at 20 um, padding 2 | 0.498 um | 127.50 um |
 | Bead (C05 to C07) | 1064 nm | 2.4 mm | 1.2 in water (1.33) | 256 by 256 at 10 um, padding 2 | 0.499 um | 127.68 um |
 | C08 | 850 nm | 3 mm | 0.5 in air | 128 by 128 at 20 um, padding 2 | 0.498 um | 63.75 um |
+| C14 (the geometry of the released cgh-net) | 850 nm | 2.56 mm | 0.5 in air | 128 by 128 at 20 um, padding 1 | 0.850 um | 54.40 um |
 
 ## The coverage matrix
 
@@ -25,6 +26,7 @@ All thirteen cases are synthetic: the parameters are stated and no measured samp
 | [C04_disc_crosstalk](shaped-3d/C04_disc_crosstalk.md) | Shaped and 3D | disc of 15 um radius | shaped potential, crosstalk on and off | M13 | provisional | Schroff 2023 |
 | [C05_multiplane_vortices](shaped-3d/C05_multiplane_vortices.md) | Shaped and 3D | 51 traps on 3 planes, 12 vortices of charge 8 | 3D and orbital angular momentum | M09 | provisional | Polin 2005 |
 | [C06_vortex_ring_line](shaped-3d/C06_vortex_ring_line.md) | Shaped and 3D | ring of 16 vortices and a line of 9 traps | mixed extended and point-like structure | M07 | provisional | Polin 2005 (no band) |
+| [C14_volume_learned](shaped-3d/C14_volume_learned.md) | Shaped and 3D | 48 voxels on 3 planes at -8, 0, +8 Rayleigh ranges (a lattice, a ring, a shifted lattice) | the learned model answers: a 128 by 128 SLM with padding 1, the cgh-net card's planes | M17 | provisional | Eybposh 2020 (context) |
 | [C07_high_na](device-optics/C07_high_na.md) | Device and optics | 5 by 5 traps, 3 um | scalar model past its validity (NA 1.2) | M07 | provisional | Leutenegger 2006 (no band) |
 | [C08_device_limited](device-optics/C08_device_limited.md) | Device and optics | 8 by 8 traps, 5 um | 4-bit phase, crosstalk, fill factor 0.85, flicker | B1 | provisional | Schroff 2023 (parameters) |
 | [C09_aberrated](device-optics/C09_aberrated.md) | Device and optics | 4 by 4 traps, 5 um | Zernike aberration with and without correction | M14 | provisional | Nogrette 2014 |
@@ -32,14 +34,14 @@ All thirteen cases are synthetic: the parameters are stated and no measured samp
 | [C11_outside_field](dynamics-controls/C11_outside_field.md) | Dynamics and controls | one trap at 200 um | negative control: refused, never computed | M06 (declared, not run) | provisional | derived pixel relation |
 
 "Band basis" says what sets the expected ranges: **anchor** means a published result sets them with the margin of the seed spread; **provisional** means they were set from the physical limits of the
-case and are replaced by measured bands with their margin at the first bake of the real methods (`EXPECT_BASIS` in the library). The provisional bands of the cases baked so far were replaced by measured ones (three seeds, `data-pipeline/pipeline/cases/measured_ranges.json`), C13 included.
+case and are replaced by measured bands with their margin at the first bake of the real methods (`EXPECT_BASIS` in the library). The provisional bands of the cases baked so far were replaced by measured ones (three seeds, `data-pipeline/pipeline/cases/measured_ranges.json`), C13 and C14 included.
 
 ## Categories and what they stand for
 
 | Category | Cases | What a reader learns |
 |---|---|---|
 | Arrays | C01, C02, C03, C12, C13 | how well the methods equalise many point traps, from nine to a thousand, in a lattice and in a disordered set, and how a camera loop and a particle test the result |
-| Shaped and 3D | C04, C05, C06 | extended potentials, traps at several depths, optical vortices, and what the device costs a shaped field |
+| Shaped and 3D | C04, C05, C06, C14 | extended potentials, traps at several depths, optical vortices, what the device costs a shaped field, and a volume at the geometry the released network answers for |
 | Device and optics | C07, C08, C09 | where the model stops (high NA), what a real SLM costs, what aberrations cost and what correction recovers |
 | Dynamics and controls | C10, C11 | moving traps without dimming, and the refusal of a task the optics cannot do |
 
@@ -60,4 +62,4 @@ What each App group shows, and Notes. The cards are generated from the case libr
 
 - The disordered 819-trap set of Kim et al. is C13; its coordinates are not published, so the set is DinHot's own seeded draw with the same count and the same kind of constraint (integer bins, a minimum spacing).
 - C07 is a scalar case with a validity flag; no vectorial lane exists in this build.
-- The canonical bake holds twelve baked cases and C11, refused by contract 1; the learned methods (M17, B3) are flagged missing in the manifests. The older cards still describe their bands as provisional.
+- The canonical bake holds thirteen baked cases and C11, refused by contract 1. M17 answers with the released graph on C14 (the only case at the network's geometry: 128 by 128 pixels, padding 1); B3 is flagged missing in the manifests. The older cards still describe their bands as provisional.

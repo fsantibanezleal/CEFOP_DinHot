@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from e3_helpers import check_finite_difference, disc_target, make_setup, signal_error
+from e3_helpers import bin_grid, check_finite_difference, disc_target, make_setup, signal_error
 
 from pipeline.model.holo.core.device import Device, device_focal_field
 from pipeline.model.holo.core.rng import Rng
 from pipeline.model.holo.core.traps import Trap, TrapSet
 from pipeline.model.holo.core.types import Budget, Target
 from pipeline.model.holo.methods.optim import _common as C
+from pipeline.model.holo.methods.baseline import m06_gsw
 from pipeline.model.holo.methods.optim import m10_cg as M10
 from pipeline.model.holo.methods.optim import m13_crosstalk_cg as M13
 
@@ -79,3 +80,26 @@ def test_acceptance_lower_error_than_m10_on_the_crosstalk_device_for_a_large_dis
             res = mod.run(s, Target.from_field(amp, mask), device=dev, budget=Budget(ITERATIONS), rng=Rng(seed), t=2)
             out[name] = signal_error(device_focal_field(res.phi, s, DEVICE, None), amp, mask)
         assert out["m13"][0] < out["m10"][0], (seed, out)
+
+
+def test_a_quantizing_device_does_not_stop_the_run_after_a_few_iterations():
+    """The early stop of the C08 notebook: with a 4-bit quantizer (backward pass: identity) the strong-Wolfe search ran out of
+    evaluations after two or three iterations whatever the budget; the run now follows its budget and the cost never rises."""
+    s = make_setup(64)
+    traps = bin_grid(s, 3, 3, 4)
+    dev = Device(bit_depth=4, crosstalk=(1.24, 1.80), upsample=3)
+    start = m06_gsw.run(s, Target.from_traps(traps), budget=Budget(20), rng=Rng(1)).phi
+    runs = {b: M13.run(s, Target.from_traps(traps), device=dev, budget=Budget(b), rng=Rng(1), init=start) for b in (5, 30)}
+    assert [runs[b].meta["iterations"] for b in (5, 30)] == [5, 30]
+    for res in runs.values():
+        c = [h["cost"] for h in res.history]
+        assert all(b <= a * (1 + 1e-12) for a, b in zip(c, c[1:])) and c[-1] < c[0]
+    assert runs[30].history[-1]["cost"] < runs[5].history[-1]["cost"]
+
+
+def test_without_quantization_the_search_is_unchanged():
+    """A smooth crosstalk device keeps the strong-Wolfe search: the 30-iteration run is the same as before the fix."""
+    s = make_setup(16)
+    amp, mask = disc_target(s, 8.0, 2.0)
+    smooth = M13.run(s, Target.from_field(amp, mask), device=DEVICE, budget=Budget(6), rng=Rng(4), t=2)
+    assert smooth.meta["iterations"] == 6

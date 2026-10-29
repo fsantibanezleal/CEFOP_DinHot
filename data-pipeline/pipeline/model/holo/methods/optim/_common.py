@@ -23,6 +23,8 @@ fraction of ``n_pix^2`` in the signal region, Parseval). ``s`` is a fixed multip
 """
 from __future__ import annotations
 
+import contextlib
+import contextvars
 import math
 import time
 from dataclasses import dataclass, replace
@@ -91,6 +93,8 @@ class FocalForward:
         self.device = None if device is None else replace(device, flicker_rad=0.0)
         self.amp = input_amplitude(setup)
         d = self.device
+        # a quantizer makes the cost a staircase in the phase while the backward pass is the identity (module docstring)
+        self.smooth = d is None or d.bit_depth is None
         if d is not None:
             self._swap_env = _sinc_1d(setup, d.fill_factor)
             if d.crosstalk is not None:
@@ -201,6 +205,7 @@ class TrapCost:
         if not (0 < efficiency <= 1):
             raise ValueError(f"efficiency must be in (0, 1], got {efficiency}")
         self.fwd = TrapForward(setup, traps, device, chunk)
+        self.smooth = self.fwd._focal is None or self.fwd._focal.smooth
         self.t, self.s = int(t), float(scale)
         self.target = efficiency * traps.weight / np.sum(traps.weight)
 
@@ -239,6 +244,7 @@ class FieldCost:
             raise ValueError(f"efficiency must be in (0, 1], got {efficiency}")
         self.setup, self.mask = setup, mask
         self.fwd = FocalForward(setup, device)
+        self.smooth = self.fwd.smooth
         self.t, self.s = int(t), float(scale)
         a2 = np.where(mask, amplitude**2, 0.0)
         if a2.sum() <= 0:
@@ -261,6 +267,21 @@ class FieldCost:
 
 
 # ---- optimizers -----------------------------------------------------------------------------------------------
+
+_STAIRCASE = contextvars.ContextVar("staircase_search", default=False)
+
+
+@contextlib.contextmanager
+def staircase_search():
+    """Within the block ``cg_minimize`` searches a model flagged not ``smooth`` (a quantizing device) with the ladder of
+    ``_sufficient_decrease`` instead of strong Wolfe (``cg_minimize``, Straight-through models). Opt-in, so a caller that
+    optimises such a model with the Wolfe search keeps its results (B1 on case C08)."""
+    token = _STAIRCASE.set(True)
+    try:
+        yield
+    finally:
+        _STAIRCASE.reset(token)
+
 
 @dataclass
 class OptResult:
@@ -287,7 +308,7 @@ def _cubic_min(a, fa, ga, b, fb, gb):
 
 
 def cg_minimize(fun, x0: np.ndarray, iterations: int, *, callback=None, deadline: float | None = None,
-                c1: float = 1e-4, c2: float = 0.1, max_line_evals: int = 25) -> OptResult:
+                c1: float = 1e-4, c2: float = 0.1, max_line_evals: int = 25, nonsmooth: bool | None = None) -> OptResult:
     """Nonlinear conjugate gradient, Fletcher-Reeves, with a strong-Wolfe line search.
 
     ``fun(x) -> (f, grad, aux)``. Directions ``d_i = -g_i + gamma_i d_{i-1}`` with ``gamma_i = g_i.g_i / g_{i-1}.g_{i-1}``
@@ -298,18 +319,36 @@ def cg_minimize(fun, x0: np.ndarray, iterations: int, *, callback=None, deadline
     direction or the search fails, the iteration restarts from steepest descent and the run stops if that fails too.
     ``callback(i, x, f, aux)`` is called after every accepted step and stops the run when it returns True. The cost
     value never increases.
+
+    Straight-through models. Inside ``staircase_search()`` (opt-in: M13), when ``fun`` is a bound method of an object whose
+    ``smooth`` attribute is False (a cost on a device that quantizes the phase: the value is evaluated on the rounded phase,
+    the backward pass is the identity), the
+    cost is a staircase in the phase and the gradient is not its derivative, so the slope along a direction and the
+    change of the value disagree and the curvature condition ``|phi'(a)| <= c2 |phi'(0)|`` has nothing to measure. The
+    strong-Wolfe search then ran out of evaluations after two or three iterations whatever the budget (the early stop of
+    M13 on case C08, found in the U12b notebooks: measured, 26 evaluations per search and no step). Such a model takes
+    ``_sufficient_decrease`` instead, a ladder of trial steps that asks for the sufficient-decrease condition alone. When
+    no trial lowers the cost the run walks on to the lowest trial instead of stopping (the straight-through direction is a
+    good one for the smooth cost, and the staircase value at the point the last search chose is a lucky low), keeps the
+    lowest point seen, reports that point to the callback and returns it, so the cost the caller sees never increases; the
+    run uses its whole budget (measured on C08, 60 iterations: the lowest value was reached at iteration 33 and the remaining 27
+    iterations did not improve it). ``nonsmooth`` overrides the choice. Outside the block, and for a
+    smooth model, nothing changes: the runs of M10, B1 and the others are unchanged.
     """
+    if nonsmooth is None:
+        nonsmooth = _STAIRCASE.get() and not getattr(getattr(fun, "__self__", None), "smooth", True)
     x = np.array(x0, dtype=np.float64)
     f, g, aux = fun(x)
     evals = 1
     d = -g
     f_old = None
+    best = (x, f, aux)                      # the lowest value seen (on a smooth model it is always the current point)
     it = 0
     for it in range(1, int(iterations) + 1):
         if expired(deadline):
             it -= 1
             break
-        step = None
+        step = forced = None
         for restart in (False, True):
             if restart or float(np.sum(g * d)) >= 0:
                 d = -g
@@ -320,10 +359,15 @@ def cg_minimize(fun, x0: np.ndarray, iterations: int, *, callback=None, deadline
                 a0 = 2.0 * (f - f_old) / gd
             else:
                 a0 = 0.1 / max(float(np.abs(d).max()), 1e-300)
-            step, n_ev = _wolfe(fun, x, d, f, gd, a0, c1, c2, max_line_evals)
+            if nonsmooth:
+                step, forced, n_ev = _sufficient_decrease(fun, x, d, f, gd, a0, c1, max_line_evals)
+            else:
+                step, n_ev = _wolfe(fun, x, d, f, gd, a0, c1, c2, max_line_evals)
             evals += n_ev
             if step is not None:
                 break
+        if step is None and forced is not None:
+            step = forced                   # no step lowers a staircase cost: walk on to the lowest trial, keep the best point
         if step is None:
             it -= 1
             break
@@ -332,9 +376,11 @@ def cg_minimize(fun, x0: np.ndarray, iterations: int, *, callback=None, deadline
         gg = float(np.sum(g * g))
         d = -gn_vec + (float(np.sum(gn_vec * gn_vec)) / gg if gg > 0 else 0.0) * d
         f_old, f, g, aux = f, fn, gn_vec, auxn
-        if callback is not None and callback(it, x, f, aux):
+        if f < best[1]:
+            best = (x, f, aux)
+        if callback is not None and callback(it, best[0], best[1], best[2]):
             break
-    return OptResult(x, f, it, evals, aux)
+    return OptResult(best[0], best[1], it, evals, best[2])
 
 
 def _wolfe(fun, x, d, f0, g0, a1, c1, c2, max_evals):
@@ -393,6 +439,51 @@ def _wolfe(fun, x, d, f0, g0, a1, c1, c2, max_evals):
         return None, evals
     fa, _, ga, aux = cache[result]
     return (result, fa, ga, aux), evals
+
+
+def _sufficient_decrease(fun, x, d, f0, g0, a1, c1, max_evals):
+    """Ladder search along ``d`` for a staircase cost: ``(step, lowest, evaluations)``, steps as ``_wolfe`` returns them.
+
+    A staircase is flat for steps too short to move a pixel across a level and jumps for longer ones, so the ladder goes in
+    both directions: from ``a1`` the step is doubled while the value keeps falling (a flat or higher first trial does not end
+    the doubling: the useful step may be longer), and when no doubled step satisfied the condition either, halved from ``a1``
+    (``DOUBLINGS`` and ``HALVINGS`` trials at most, within ``max_evals``). ``step`` is the lowest trial that satisfies
+    ``f(a) <= f0 + c1 a g0`` and ``f(a) < f0`` (``None`` if none does); ``lowest`` is the lowest trial of all, which the caller
+    may walk to when ``step`` is ``None``.
+    """
+    best: tuple | None = None
+    lowest: tuple | None = None
+    evals = 0
+
+    def trial(a):
+        nonlocal best, lowest, evals
+        fa, ga, aux = fun(x + a * d)
+        evals += 1
+        if math.isfinite(fa) and (lowest is None or fa < lowest[1]):
+            lowest = (a, fa, ga, aux)
+        ok = math.isfinite(fa) and fa <= f0 + c1 * a * g0 and fa < f0
+        if ok and (best is None or fa < best[1]):
+            best = (a, fa, ga, aux)
+            return True
+        return False
+
+    a = a1
+    for _ in range(min(DOUBLINGS + 1, max_evals)):
+        improved = trial(a)
+        if best is not None and not improved:
+            break                           # the value stopped falling after a good step
+        a *= 2.0
+    if best is None:
+        a = a1
+        for _ in range(min(HALVINGS, max_evals - evals)):
+            a *= 0.5
+            if trial(a):
+                break
+    return best, lowest, evals
+
+
+DOUBLINGS = 10      # trial steps a1 * 2^k, k = 0..DOUBLINGS, of the sufficient-decrease fallback
+HALVINGS = 6        # then a1 * 2^-k, k = 1..HALVINGS, when no longer step lowered the cost
 
 
 def adam_minimize(fun, x0: np.ndarray, iterations: int, *, lr: float, beta1: float = 0.9, beta2: float = 0.999,
