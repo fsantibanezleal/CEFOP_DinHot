@@ -30,12 +30,12 @@ ROWS = {
     "03-gerchberg-saxton/02-weights-for-uniformity": (2, []),
     "03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite": (3, []),
     "03-gerchberg-saxton/04-device-aware-wgs": (4, ["BS-1"]),
-    "04-shaped-potentials/01-mraf-and-the-signal-region": (3, []),
-    "04-shaped-potentials/02-optimal-transport-start": (3, []),
+    "04-shaped-potentials/03-mraf-and-the-signal-region": (3, []),
+    "04-shaped-potentials/04-optimal-transport-start": (3, []),
 }
 METHODS = {"03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite": ["M07"],
-           "04-shaped-potentials/01-mraf-and-the-signal-region": ["M08"],
-           "04-shaped-potentials/02-optimal-transport-start": ["M18"]}
+           "04-shaped-potentials/03-mraf-and-the-signal-region": ["M08"],
+           "04-shaped-potentials/04-optimal-transport-start": ["M18"]}
 LEVEL3 = [k for k, (level, _) in ROWS.items() if level == 3]
 LEVEL4 = [k for k, (level, _) in ROWS.items() if level == 4]
 MARKERS = {"en": ("**Question:**", "**Answer:**"), "es": ("**Pregunta:**", "**Respuesta:**")}
