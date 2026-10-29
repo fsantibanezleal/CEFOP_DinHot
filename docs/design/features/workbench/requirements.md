@@ -1,16 +1,22 @@
-# Requirements: the example workbench, end to end
+# Requirements: the App workbench: groups, lanes, the trap editor and Focus
 
 EARS (Mavin et al., RE'09, doi:10.1109/RE.2009.9). Every requirement names the gate that fails when it is violated.
+The App route is a case workbench on the shared shell (`CaseWorkbench`): five groups (Hologram, Focal plane, Traps, Convergence, Dynamics) and the
+Context write-up, six peers, each group with sub-views V1 to V14 (`frontend/src/workbench/`). A reader picks a case and a method; every map shown carries its
+lane, live (the TypeScript engine computed it in this browser) or replayed (the committed bake), and never the one for the other. The trap editor
+(add, drag, delete) changes the case's target and re-runs the live methods; without the engine the edits are held and the card says the result is the baked
+case. Focus mode (ADR-0070) opens the open group in the full viewport. The measured gate (`npm run gate`, local) holds the half-viewport rule (G6), the selection
+key (G9) and Focus (G18). The shell's frame rules (the routes, the full width) are the feature `web`.
 
 | ID | Requirement | Gate |
 |---|---|---|
-| EX-001 | WHEN the bake runs a case, THE pipeline SHALL fail if a result metric lies outside the range the case declares, naming the metric. | `tests/test_expect.py::test_a_value_outside_its_range_is_named` |
-| EX-002 | THE pipeline SHALL write identical artifacts for the same case and seed. | `tests/test_pipeline_smoke.py::test_adversarial_same_seed_bakes_identical_bytes_and_a_changed_byte_of_equal_size_is_seen` |
-| EX-003 | IF a test writes into the committed artifacts, THEN THE test session SHALL fail and name the files. | `tests/conftest.py` |
-| EX-004 | WHEN an ingestion value is missing, non-numeric, NaN or out of range, THE pipeline SHALL reject the record with its reason. | `tests/test_contract.py::test_adversarial_bad_rows_rejected_not_coerced` |
-| EX-005 | THE web SHALL read exactly the keys the pipeline writes, with their types, in every committed artifact. | `frontend/src/lib/contract.test.ts::the index conforms and names a baked default case` (and, per case, `manifest and trace conform`, over the bake and the provider tree) |
-| EX-008 | IF an artifact answers anything but JSON, THEN THE web SHALL raise an error naming the file. | `frontend/src/api/artifacts.test.ts::adversarial: refuses an HTML answer (the host fallback for a missing file)` |
-| EX-009 | WHEN a reader opens any route directly, with or without a trailing slash, THE site SHALL answer 200 with that route. | `frontend/scripts/materialize-routes.mjs`, measured by `frontend/scripts/gate.mjs` (G4) |
-| EX-010 | WHILE the App route is open at 1280x800 or larger, THE drawn views SHALL cover at least half of the viewport. | `frontend/scripts/gate.mjs` (G6) |
-| EX-011 | WHEN any registered control changes, THE workbench SHALL change the selection key, and no view SHALL keep an earlier key. | `frontend/scripts/gate.mjs` (G9) |
-| EX-012 | THE repository SHALL state its version in VERSION only. | `scripts/check_version_coherence.py` |
+| WK-001 | IF an added or moved trap lies at or beyond the half field lambda f / (2 p) on either axis, THEN THE trap editor SHALL refuse it with the engine's message in both languages and leave the list unchanged. | `frontend/src/workbench/traps.test.ts::accepts a trap strictly inside and names the bound for one at or beyond it, in both languages` |
+| WK-002 | THE trap editor SHALL never delete the last trap, because a target needs at least one. | `frontend/src/workbench/traps.test.ts::deletes a trap but never the last one (a target needs at least one trap)` |
+| WK-003 | THE trap editor SHALL refuse a list longer than the 4096 traps the params record allows. | `frontend/src/workbench/traps.test.ts::refuses a list longer than the contract allows` |
+| WK-004 | THE device view SHALL show the closed forms of the source: sinc^2(1/N) for the phase levels, the fill factor squared for the diffracted power and sinc^2(sqrt(f) / 2) for the aperture roll-off. | `frontend/src/workbench/decode.test.ts::the closed forms match the sources: sinc^2(1/N) gives 0.405 for N = 2 and 0.684 for N = 3, f^2 for the fill factor` |
+| WK-005 | THE displayed phase of the Device effects view SHALL be the phase quantized to the nearest of 2^b levels, computed in the browser with the engine's order. | `frontend/src/workbench/decode.test.ts::quantizes to the nearest of 2^b levels and reports the level` |
+| WK-006 | IF the run-length mask of a trace does not cover the focal crop, THEN THE decoder SHALL refuse it, never draw a shifted shape. | `frontend/src/workbench/decode.test.ts::expands a run-length mask, false first, and refuses a mask that does not cover the crop` |
+| WK-007 | A result SHALL be labelled live only when the engine produced it and replay when the bake did. | `frontend/src/workbench/engine.test.ts::labels a result live only when the engine produced it, replay when the bake did` |
+| WK-008 | A replayed map SHALL be labelled replayed from the bake, SHALL name the reference method whose maps they are, and SHALL never be labelled live. | `frontend/src/workbench/views.test.tsx::replayed maps are labelled replayed from the bake and name the reference method; they are never labelled live` |
+| WK-009 | WHILE the live engine is not on the build, THE workbench SHALL hold trap edits and say the result is the baked case. | `frontend/src/workbench/views.test.tsx::trap edits without the live engine are held back and the result is said to be the baked case` |
+| WK-010 | IF the index lists a case as refused, THEN every view SHALL show its reason, never an empty chart or a spinner. | `frontend/src/workbench/views.test.tsx::a refused case shows its reason in every view, never an empty chart` |

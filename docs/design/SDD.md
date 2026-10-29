@@ -17,7 +17,7 @@ the pattern survives a real device (phase quantization, pixel crosstalk, aberrat
 the traps move. The methods that solve this span fifty years, from the superposition of prisms and lenses to phase-fixed
 weighted Gerchberg-Saxton, gradient optimization with a device model, optimal transport and learned holography. No public tool
 runs them side by side on the same task, with the same seeds and metrics, together with the device and the physics of what is
-trapped. DinHot does that, and adds six methods past the published state of the art.
+trapped. DinHot does that, and adds five methods past the published state of the art.
 
 Non-goals, each something a reader could reasonably assume:
 
@@ -87,13 +87,21 @@ on each side, its missing-data behavior and a provider.
   factor, flicker), a target (a list of traps with id, position in micrometres, relative weight and topological charge, or a
   shaped potential), an aberration (Noll coefficients in waves), the method set and budgets, a seed, the grid, and for the
   dynamic cases the particle and the rearrangement. A missing, non-numeric, NaN or out-of-range value is rejected with its
-  reason; a trap outside the unaliased field of view is rejected with the field's bounds (case C11 exists to prove it).
-- Artifacts (case-index, case-manifest, trace, contract 2): the index of the twelve cases with bilingual titles and
-  categories; one manifest per case (parameters, seed, engine version, lane verdict, metrics per method, expected ranges,
+  reason; a trap outside the unaliased field of view is rejected with the field's bounds (case C11 exists to prove it). Contract 1 is
+  `data-pipeline/pipeline/io/contract.py` over a standard-library validator (`io/jsonschema_lite.py`) of
+  `docs/contracts/schemas/params-record.schema.json`; a trap at or beyond the half field `lambda f / (2 p)` is refused, which is the engine's
+  own rule (the bin at the bound is outside the centred FFT grid).
+- Artifacts (case-index, case-manifest, trace, contract 2): the index of the thirteen cases (twelve baked, C11 refused by contract 1) with
+  bilingual titles and categories; one manifest per case (parameters, seed, engine version, lane verdict, metrics per method, expected ranges,
   bilingual band); one trace per case (per method: the metric series against iteration, the final per-trap intensities and
   metrics; for the case's reference method: the quantized phase mask and the focal intensity map in dB at the live grid, the
   axial cuts; for the dynamic cases: the particle trace and the rearrangement frames), each trace within the lane gate's
-  256 KiB.
+  256 KiB. In a trace, `shape.mask_rle` is the run-length code of the shape over the focal crop, row-major, alternating false and true
+  runs and starting with false; `dynamics.x_um` and `dynamics.y_um` are displacements from the trap centre in micrometres, and `fc_hz` is the
+  fitted corner frequency of a bead and the spectral peak of an atom. For a shaped target the two required metric slots carry the
+  signal-region metrics: `rel_std_pct` is the root-mean-square fractional error over the measure region after the scale fit (Pasienski and
+  DeMarco 2008, Eq. 2; percent; clipped at 1000, the units domain) and `uniformity` is `max(0, 1 - signal_rms_error_pct / 100)`; the
+  manifest flags of every shaped case say so and list, per method, `signal_rms_error_pct` and `signal_efficiency` unclipped.
 - The benchmark (benchmark-results): the protocol's table, method by geometry by budget, medians and inter-quartile ranges
   over 20 seeds, and the Pareto fronts.
 - The model slots (cgh-net, warmstart-model): two ONNX models with their held-out metrics; the baselines behind the same
@@ -114,7 +122,10 @@ resolves it to. The runtimes are Python 3.12 (CI; the device's venv may be newer
 | notebooks | matplotlib | 3.11.2 | the figures of the notebooks (`notebooks/requirements.txt`); https://pypi.org/pypi/matplotlib/json read on 2026-10-19, released 2026-09-11 | none: the figures of the notebooks need a plotting library, and the web's uplot runs in the browser only |
 | notebooks | scipy | 1.18.1 | a dependency of slmsuite and the signal tools of the notebooks (`notebooks/requirements.txt`); https://pypi.org/pypi/scipy/json read on 2026-10-26, released 2026-08-21 | none: slmsuite requires it; the engine itself stays numpy only |
 | notebooks | slmsuite | 0.5.0 | the pinned reference implementation of the level 3 notebooks: its weighted Gerchberg-Saxton, run on the same targets as DinHot's methods (MIT; https://pypi.org/pypi/slmsuite/json read on 2026-10-28, released 2026-10-05) | odak 0.2.7 (MPL-2.0), not adopted: slmsuite implements the WGS family DinHot compares against |
-| notebooks | onnxruntime | 1.31.1 | runs the two released ONNX models in the learned-method notebooks, the same files the web runs (https://pypi.org/pypi/onnxruntime/json read on 2026-10-28) | none: the models ship as ONNX |
+| notebooks | onnxruntime | 1.31.1 | runs the released ONNX graphs: in the learned-method notebooks, in the method modules M17 and B3 and in the evaluation (`requirements-gpu.txt`), the same files the web runs (https://pypi.org/pypi/onnxruntime/json read on 2026-10-28) | none: the models ship as ONNX |
+| training | torch | 2.14.1+cu126 | offline GPU training and ONNX export of cgh-net and warmstart-model (`requirements-gpu.txt`, CUDA 12.6 wheel from the index PyTorch documents for it), never in CI | none: the training needs a framework with a GPU backend and an ONNX exporter |
+| training | onnx | 1.23.2 | graph inspection (operators, input and output shapes) in the export and in the contract test | none: the format's own library |
+| training | onnxscript | 0.7.2 | required by torch 2.14.1 for its ONNX exporter | none: a dependency of the exporter |
 | notebooks | nbclient | 0.11.0 | executes a notebook top to bottom in a fresh kernel (`scripts/run_notebooks.py`); https://pypi.org/pypi/nbclient/json read on 2026-10-19, released 2026-06-05 | nbconvert --execute, rejected: a heavier install for the same execution |
 | notebooks | nbformat | 5.11.1 | reads and writes the notebook format (`scripts/run_notebooks.py`); https://pypi.org/pypi/nbformat/json read on 2026-10-19, released 2026-08-17 | none: the format's own library |
 | notebooks | ipykernel | 7.4.0 | the Python kernel the notebooks run in; https://pypi.org/pypi/ipykernel/json read on 2026-10-19, released 2026-09-29 | none: nbclient needs a kernel |
@@ -150,37 +161,74 @@ resolves it to. The runtimes are Python 3.12 (CI; the device's venv may be newer
 
 What each stage needs on the development workstation (Windows 11, Intel Core i9-14900HX, 48 GB RAM, RTX 4070 Laptop 8 GB).
 These are bounds set from the dossiers' measured FFT timings and the method costs; the bake and the training replace each bound
-with its measurement in [`measured-resources.md`](measured-resources.md) before the release.
+with its measurement in [`measured-resources.md`](measured-resources.md) before the release; the bake and the live engine have theirs there.
 
 | stage | memory | disk | time | where it runs |
 |---|---|---|---|---|
-| bake (`data-pipeline/run.py`, twelve cases, every valid method per case) | at most 4 GB peak (1024 squared complex grids, a few at once) | at most 3 MB of artifacts in `data/derived/` (each trace at most 256 KiB) | at most 20 min | workstation, never CI |
+| bake (`data-pipeline/run.py`, thirteen cases, twelve baked and C11 refused, every valid method per case) | at most 4 GB peak (measured: 322 MB for one case process, under 3.6 GB for the eleven of the parallel bake) | at most 3 MB of artifacts in `data/derived/` (measured 1.95 MiB; each trace at most 256 KiB, the largest 258,681 bytes) | at most 20 min (measured 515 s on an idle 12-core machine) | workstation, never CI |
 | benchmark (the protocol, 7 geometries, 24 methods, 20 seeds, three budgets) | at most 4 GB peak | at most 2 MB of results | at most 6 h, resumable by cell | workstation, never CI |
-| training (cgh-net and warmstart-model, PyTorch on the GPU) | at most 7 GB GPU memory, 8 GB host | at most 10 MB of ONNX models and metrics; datasets in the data root, never in the repository | at most 3 h | workstation GPU, never CI |
+| training (cgh-net and warmstart-model, PyTorch on the GPU) | at most 7 GB GPU memory, 8 GB host | at most 10 MB of ONNX models and metrics (measured: the released graph 4,671,540 bytes); datasets in the data root, never in the repository | at most 3 h (the configured cap of cgh-net is 2.2 h; its record is `data/derived/models/cgh-net-training.json`) | workstation GPU, never CI |
 | tests (pytest, the whole suite) | at most 2 GB peak | temporary copies under the temp root | at most 10 min | workstation; the plants (`tests/adversarial`) also in CI |
 | install (`npm ci`) | at most 400 MB peak | at most 400 MB in `node_modules` | at most 3 min | workstation and CI web job |
 | build (`npm run build`) | at most 600 MB peak | at most 30 MB in `frontend/dist` (the onnxruntime WASM is the largest file) | at most 60 s | workstation and CI web job |
 | web unit tests (`npm test`, engine parity included) | at most 1 GB peak | none | at most 60 s | workstation and CI web job |
 | deploy payload (GitHub Pages) | none | at most 30 MB uploaded | one Pages deploy, under 3 min | CI after main |
 
+The live engine keeps, for the length of a run, the x factors of the column groups and the y factors of every trap of the point-trap plan
+(`M n <= 2e6` values, 32 MB at most); the WebGPU path holds two `nFft^2` complex float32 buffers (4 MB at 512 squared) and a few trap-sized buffers,
+released when the run ends or is cancelled.
+
 ## Lanes
 
 - Offline: `data-pipeline/run.py` bakes every case with every method valid for it, checks each against its expected ranges,
   runs the benchmark protocol and the units gate. Training runs locally only. Never in CI, never in the browser.
 - Replay: the committed artifacts (manifests, traces, benchmark results, model metrics and the ONNX models), copied into the
-  site by `frontend/scripts/copy-data.mjs` and fetched with the version in the address.
+  site by `frontend/scripts/copy-data.mjs` and fetched with the version in the address. The script also copies `benchmark/results.json` and
+  `models/metrics.json` (required, unless the readiness row is `missing`) and, when `models/cgh-net.json` or `models/warmstart.json` exist, the card and
+  the graph it names, stopping the build when the graph is absent or its size or sha256 is not the card's; it reads the index's `path` and skips
+  refused cases.
 - Live: `frontend/src/engine/holo/`, a TypeScript port of the forward models, the device model and the live methods, running
   in a Web Worker so the interface never blocks. The FFT is fft.js (Float64). An optional WebGPU backend runs the FFT-form
   iterations on the GPU when the browser offers it, and falls back to the CPU path otherwise. The basis is measured: the lane gate
   gives each case a run budget of 1500 ms and a trace budget of 256 KiB. At the live grid (256 squared padded to 512 squared) a
   weighted GS iteration measured about 24 ms in Node 24, so a 30-iteration run fits the budget. The baked methods (M09, M13,
   M18, B4, B5, the training of M17 and B3) are replayed and labelled as such.
+- The live lane is held to the Python engine by vitest parity tests over fixtures the Python engine writes
+  (`tests/fixtures/engine/*.json`, catalog row `engine-reference`, written by `data-pipeline/pipeline/stages/engine_reference.py`). The ported
+  methods are exactly those whose Python `SPEC.lane` is `live` or `both`: M01 to M08, M10, M11, M12, M14, M15, M16, M19 (15 methods). B1 and
+  B2 are baked in their specs, not live; M09, M13, M18, B4 and B5 are baked; B3 inference is the learned slot's. Every other id raises `NotLive`
+  ("replayed from the bake"), never a fallback. A method is live in the workbench when the engine client's `liveMethods()` lists it, else
+  it is replayed from the trace.
+- Measured basis (Chromium 153.0.8010.12, Playwright 1.63, i9-14900HX laptop; 30 iterations of M07 on the 256 x 256 padded-2 grid, a warm run,
+  in the worker, CPU path, the scoring included): C02, the default case (100 off-bin traps, point form), 0.49 to 0.80 s, inside the 1500 ms
+  budget; C03 (1024 off-bin traps) 2.4 to 4.3 s, outside it. The cases C01, C02 and C03 sit on integer-bin lattices (8, 8 and 10 bins) so that
+  the FFT form applies and the live lane keeps its budget; C05 to C10 keep off-bin traps (3D, vortex, high NA, device, aberration,
+  rearrangement). The figures per run are in [`measured-resources.md`](measured-resources.md).
+- The WebGPU backend runs the FFT-form iterations of M04, M06 and M07 for ideal-device point traps on FFT bins with z = 0 and no vortex;
+  everything else is CPU. Measured with the traps on FFT bins: 0.31 to 0.32 s against 1.5 to 1.6 s on the CPU (5 times), agreement 3e-5 rad
+  after one iteration, 5e-7 in efficiency and 9e-5 relative in the trap intensities after thirty. Every absent, ineligible or failing GPU run
+  takes the CPU path and records the reason in `RunResult.fallbackReason`; an explicit `backend: 'cpu'` records none.
+- The workbench labels every map with its lane. The trace carries the hologram and the focal maps of the reference method only; for another
+  method the maps stay the reference's (the card says so) and the metrics, history and per-trap intensities are the selected method's. Trap
+  edits and the device and iteration controls re-run the live methods; without the engine they are held and the card says the result is the
+  baked case.
+- The lane gate judges the reference method of a case (live or both in its spec, one warm run at most 1500 ms, trace at most 256 KiB); each
+  method gets its own lane. A trace over the gate is squeezed in five fixed steps (`core/trace.py` `SQUEEZE`) and the step is recorded as a
+  manifest flag. The verdict comes from the wall time of a warm Python run of the reference method, so a case near the budget (C01, C02) can move
+  between `live` and `precompute` with the machine load; the other fields of the manifests do not move, and the determinism test therefore
+  compares manifests without `gate` and `lane`.
+- Benchmark protocol: one converged run per seed also serves as the 60 s row; the 50 ms and 1 s rows are time-capped runs; the 10, 30 and 100
+  iteration rows are runs of exactly that length; every run is scored from its final phase through the device. Tuned rows exist only for
+  methods that declare `TUNING` (four candidate keyword dictionaries) or have an entry in `FALLBACK_TUNING` (M05's key is `alpha`). The benchmark
+  schema holds one geometry per id, so G6 pools two targets by seed parity (even seeds the 32 x 32 lattice, odd seeds the disordered 819-trap set
+  of Kim et al. 2019, `cases.library.disordered_set`) and G7 pools four shaped targets (seed `s` runs shape `s mod 4`). The cases bake in
+  parallel, one case per process, at most 12 processes, one BLAS thread each.
 
 ## Method ladder
 
 Every method is one complete vertical (ADR-0069): Python engine, its acceptance test, its run in the benchmark protocol, its
 card in `docs/frameworks/`, its Methodology topic and, when live, its TypeScript port with a parity test. The acceptance
-criteria are measured on DinHot's own grids; the anchors are the published results they are set against.
+criteria are measured on DinHot's own grids; the anchors are the published results they are set against. Each row has a detailed design record in docs/design/methods/.
 
 | id | tier | method | acceptance criterion | gate |
 |---|---|---|---|---|
@@ -190,25 +238,24 @@ criteria are measured on DinHot's own grids; the anchors are the published resul
 | M04 | classical | Gerchberg-Saxton, point-trap and FFT forms | the two forms agree to 1e-9 rad; 30 iterations on the 10x10 task with a flat beam reach efficiency at least 0.9 and uniformity near 0.6 | `tests/methods/baseline/test_m04_gs.py` |
 | M05 | classical | Generalized adaptive additive | uniformity above GS at equal iterations on the 10x10 task | `tests/methods/baseline/test_m05_gaa.py` |
 | M06 | classical | Weighted GS | efficiency and uniformity at least 0.9 within a median of 15 iterations on the 10x10 task with a flat beam (the source reports about 10); the 3x3x3 lattice above 0.9 and 0.98 | `tests/methods/baseline/test_m06_gsw.py` |
-| M07 | sota | Phase-fixed weighted GS | fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations (DinHot's measured default; at the source's 12 it stalls at 2.9 percent on this grid) | `tests/methods/baseline/test_m07_phase_fixed_wgs.py` |
+| M07 | sota | Phase-fixed weighted GS | fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations in the acceptance run (the code default `n_fix` is 12, as in Kim et al. 2019; at 12 it stalls at 2.9 percent on DinHot's grid) | `tests/methods/baseline/test_m07_phase_fixed_wgs.py` |
 | M08 | sota | MRAF | on disc, ring and bar targets, signal-region error at least five times below GS at the cost of efficiency | `tests/methods/baseline/test_m08_mraf.py` |
 | M09 | classical | Direct search | uniformity at least 0.98 on the 10x10 task; under 5 percent rms variation on a quasi-periodic set | `tests/methods/optim/test_m09_direct_search.py` |
 | M10 | sota | Conjugate-gradient minimization | the analytic gradient matches finite differences; a square lattice below 1 percent error | `tests/methods/optim/test_m10_cg.py` |
 | M11 | sota | Wirtinger gradient descent with Adam | lower trap-intensity error than M04 at equal iterations on the 10x10 task | `tests/methods/optim/test_m11_wirtinger_adam.py` |
-| M12 | sota | Closed-loop WGS on an emulated camera | from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7 | `tests/methods/control/test_m12_closed_loop.py` |
+| M12 | sota | Closed-loop WGS on an emulated camera | from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7; the acceptance runs on the emulated camera (`core/camera.py`), which reproduces the published feedback curves (Nogrette 2014: 19 percent to under 2.1; Kim 2019: 22 percent to under 1.8 in three phase-fixed steps) | `tests/methods/control/test_m12_closed_loop.py` |
 | M13 | sota | Device-aware CG with pixel crosstalk | on the crosstalk device, lower error than M10 without the model on a large disc | `tests/methods/optim/test_m13_crosstalk_cg.py` |
 | M14 | classical | Zernike correction and sensorless modal recovery | recovers an injected set of Noll modes 4 to 11 within 5 percent of their amplitude | `tests/methods/control/test_m14_zernike.py` |
 | M15 | classical | Laguerre-Gaussian vortex traps | the ring phase winds by 2 pi l with an error under 0.1 rad | `tests/methods/control/test_m15_vortex.py` |
 | M16 | sota | Hungarian assignment and linear phase interpolation | no crossing moves for alpha 1.5 on a 7x7 to 3x3 sort; a moving trap above 70 percent of its mean intensity | `tests/methods/control/test_m16_rearrangement.py` |
-| M17 | sota | Unsupervised CNN hologram refined by GS (DeepCGH-style start) | on held-out targets, the network start followed by GS refinement inside the same wall-clock budget reaches a higher accuracy than GS alone (measured alone, the network matches GS at equal time: median ratio 0.998) | `tests/learned/test_m17_cgh_net.py` |
+| M17 | sota | Multi-plane CNN start refined by the volumetric GS (DeepCGH-style) | on 162 held-out three-plane volumes, the network start followed by M19 refinement inside the same wall-clock budget reaches a higher accuracy than M19 alone (measured median ratio 1.140) | `tests/learned/test_m17_cgh_net.py` |
 | M18 | sota | Optimal-transport initialized MRAF | lower error than MRAF from a random start on the shaped targets | `tests/methods/optim/test_m18_ot_mraf.py` |
 | M19 | classical | Multi-plane GS | on a three-plane target, every plane mean within 25 percent of the overall mean (volumetric 3D GS of Whyte and Courtial) | `tests/methods/baseline/test_m19_multiplane.py` |
-| BS-1 | beyond | Device-aware weighted GS (engine id B1) | on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower | `tests/methods/beyond/test_b1_device_wgs.py` |
+| BS-1 | beyond | Device-aware weighted GS (engine id B1) | on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; the factor varies with the seed (about 22 to 60 times over five seeds) and is 2.2 times on the full C08 device with 4-bit phase and flicker | `tests/methods/beyond/test_b1_device_wgs.py` |
 | BS-2 | beyond | Flicker-bounded phase-continuous sequence (engine id B2) | minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI | `tests/methods/beyond/test_b2_flicker_bounded.py` |
 | BS-3 | beyond | Learned warm start for phase-fixed WGS (refuted) (engine id B3) | measured negative: on held-out geometries the network start needs a median 8 iterations to 1 percent against 14 from a random start (1.75 times, below the 2 times claimed), and a control with the same early phase fix and no network gains as much; the model is not released and the claim BS-3 is reported as refuted | `tests/learned/test_b3_warm_start.py` |
 | BS-4 | beyond | Aberration-robust hologram (engine id B4) | over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower; robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.02 times) | `tests/methods/beyond/test_b4_robust.py` |
 | BS-5 | beyond | Efficiency-uniformity Pareto front (engine id B5) | hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task | `tests/methods/beyond/test_b5_pareto.py` |
-| BS-6 | beyond | Open camera-in-the-loop emulator (engine: M12 on core/camera.py) | from the published open-loop spreads (19 percent rms, Nogrette 2014; 22 percent, Kim 2019), the emulated loop reaches the published curves within a factor of 1.5 (measured: 1.08 and 1.47 percent at 20 iterations; 0.53 and 0.77 percent in three phase-fixed steps) | `tests/methods/control/test_m12_closed_loop.py` |
 
 Physics components, each tested in `tests/engine/`: the FFT and point-trap forward models (agreement at the trap positions), the
 angular spectrum for defocused planes, the device model (quantization, crosstalk, fill-factor envelope, zero order, flicker),
@@ -217,14 +264,66 @@ recovers the input corner frequency).
 
 ## Cases
 
-Twelve cases in four categories. Arrays: C01 small square grid (3x3), C02 10x10 grid with camera feedback, C03 large array
-(32x32 and the disordered 819 set), C12 calibration (the 10x10 task of the analytic and GS baselines). Shaped and 3D: C04 ring and
+Thirteen cases in four categories. Arrays: C01 small square grid (3x3), C02 10x10 grid with camera feedback, C03 large array
+(the 32x32 lattice), C12 calibration (the 10x10 task of the analytic and GS baselines), C13 the disordered array of 819 traps on
+integer FFT bins at least 5 bins apart (the geometry of Kim et al. 2019, drawn by DinHot because the coordinates are not published). Shaped and 3D: C04 ring and
 disc potentials with the crosstalk model on and off, C05 three-plane array with vortices, C06 vortex ring with a line trap.
 Device and optics: C07 high numerical aperture, C08 device-limited (crosstalk, 4-bit phase, fill factor, flicker), C09 aberrated
 with and without correction. Dynamics and controls: C10 rearrangement sequence, C11 a trap outside the field of view (refused,
-never computed). Each case states numeric expected ranges for its metrics (`data-pipeline/pipeline/core/expect.py` fails the bake
-outside them) and a bilingual band. Variants: the method the reader picks among those valid for the case, and the device (ideal
+never computed). The ids are `C01_square_grid`, `C02_grid_feedback` (the default), `C03_large_array`, `C04_disc_crosstalk`,
+`C05_multiplane_vortices`, `C06_vortex_ring_line`, `C07_high_na`, `C08_device_limited`, `C09_aberrated`, `C10_rearrangement`,
+`C11_outside_field`, `C12_calibration` and `C13_disordered_array`. C13 has the setup, the device and the method set of C03 (M01, M02, M04,
+M06, M07, M12, B3), reference M07, camera feedback at gain 0.9 for 5 steps with a camera gain error of 0.22 rms and no dynamics block (a params
+record holds one target; the lattice stays C03); its target `DISORDERED_819` is `n=819, half_bins=100, min_bins=5, seed=20261847`. Kim et al.
+2019 (1.2 +- 0.11 percent after five adaptive steps) is context for C13, not a band: the build measures 0.45 to 0.52 percent after five steps
+with a Gaussian beam and a camera emulator without read noise, and the two are not comparable. A device case excludes traps off the focal
+plane, vortex charge and an aberration. Each case states numeric expected ranges for its metrics (`data-pipeline/pipeline/core/expect.py`
+fails the bake outside them) and a bilingual band. The ranges are `expect` keys `<metric>` (the reference method), `<method>.<metric>` and the case
+metrics `feedback_initial_rel_std_pct`, `feedback_final_rel_std_pct`, `fc_ratio`, `boltzmann_tv`, `min_transient` and `final_filling`; for a
+shaped target `<method>.signal_rms_error_pct` and `<method>.signal_efficiency`. They are measured on 3 seeds, each range the wider of 10 percent
+around the median and the seed spread, and a library basis stays `provisional` where no published band sets it. Variants: the method the reader picks among those valid for the case, and the device (ideal
 or the case's own), computed live where the method is live. The trap editor (add, drag, delete) changes the case's target live.
+
+## The App and the engine
+
+- Groups: five groups plus the Context write-up, six peers (the shell's maximum, `MAX_WORKBENCH_GROUPS`, counts the Context tab). Hologram:
+  Phase mask (V1), Device effects (V7), Aberrations (V8). Focal plane: Focal plane (V2, with the trap editor), Axial cut (V5), 3D lobes (V6,
+  three-dimensional cases only). Traps: Per-trap intensity (V3), Depth (V13), Power budget (V14). Convergence: Metrics by iteration (V4),
+  Pareto front (B5), Camera feedback (V9). Dynamics: Trapped particle (V10), Spectrum (V11), Rearrangement (V12).
+- Views: V6 is a model of each trap's focus (Gaussian envelope: lateral FWHM 0.51 lambda / NA, axial FWHM two Rayleigh ranges
+  n lambda / (pi NA^2), scaled by the trap's intensity), not the computed field; overlaps are counted at true size and the drawing may be magnified,
+  which the card states. V5 shows the baked xz cut of one trap (the trace carries no yz cut); the lateral profiles in V2 stand in for it.
+- Device: the displayed phase is computed in the browser from the baked phase with the engine's own order and kernel (quantize, response curve,
+  separable crosstalk blur at pixel centres, `decode.ts`); the closed forms of the device effects are sinc^2(1/N) (Moreno et al. Eq. 6), the fill
+  factor squared (arXiv:1512.06241) and the pixel-aperture roll-off sinc^2(sqrt(f) / 2) (`device.py`).
+- Learned models: M17 (cgh-net) answers in the browser only on 128 x 128 cases with a released model; its phase is shown and its focal plane
+  needs the engine. Without a model its baseline, GS (M04) at 30 iterations, answers. B3 (warmstart-model) hands M07 its trap phases
+  (`trapPhases`); without a model the engine's own random start answers. The readiness document decides first: a slot it lists as training with
+  the baseline is not fetched (no 404 in the console). The graphs are run by `onnxruntime-web`, whose WASM binary is bundled by Vite from the
+  package (the same release as the JavaScript, served from the site, no CDN; one thread, no proxy worker, because GitHub Pages sends no COOP or
+  COEP).
+- Engine API: `createEngineClient()` in `frontend/src/engine/holo/client.ts`. `RunRequest.options.extra` carries a method's keywords,
+  `RunResult.timing` the milliseconds of the method, the scoring and the yields, `EngineClient.gpu()` the backend state; for the particle
+  simulation `ParticleRequest.phase`, `params`, `trap` and `setup` (the exact local map needs the phase and the case; the focal-only form
+  interpolates the sampled intensity and is an approximation).
+- Method interfaces. Form selection: M04, M05, M06 and M07 take `form="auto"` by default, the FFT form when every trap is on an FFT bin (to
+  0.002 bin; case coordinates are rounded to 1e-4 um) with z = 0 and charge 0, and the point-trap form otherwise; the chosen form is
+  `Result.meta["form"]` and the manifest flags it. M16 calls M07 with `auto`; M12 stays FFT-only (its camera reads the focal field at the nearest
+  bin, so its cases are on bins). The TypeScript client selects the point form for M07 off the bins as well. Case inputs: the case's wavefront
+  reaches M14 as `injected`, and not B4, whose `aberration` keyword is the rms of residual aberrations; M16 receives the loaded sites as `atoms`
+  and `rearrangement.target_ids` as its target, and is scored over all the case's sites. M17 runs only on the 128 x 128, pad 1 geometry and on
+  shaped targets, B3 only on trap targets without vortex charges; a bake or a benchmark cell that does not fit raises `ValueError` from the module
+  with the requirement in the message and its caller skips it. M17 is the hybrid (the network phase, then GS from it inside the wall-clock
+  budget); `run(..., refine=False)` is the network alone; its accuracy is `AC = 2 sum(T I) / (sum T^2 + sum I^2)` on unit-sum intensities. B3's
+  default `n_fix` is 12 (M07's); a candidate trained with `n_fix = 3` was measured and rejected. The coordinates of the warmstart-model are `x`,
+  `y` in focal bins (one bin is `lambda f / (pad N p)`) and `z` in units of the SLM-limited Rayleigh range `z_R = lambda f^2 / (pi R^2)`,
+  `R = N p / 2`, so that the quadratic delay at the aperture edge is exactly `Z` radians and the model is independent of lambda, f and p;
+  weights are target intensities and a vortex trap is refused.
+- Drivers: the record's `dt_s` is the sampling step of the trace; the integration step is `dt_s / k` with `k` such that `omega_r dt` is at most
+  0.2 (atom) or `dt` at most `tau / 20` (bead), `k` at most 64. The oracle for an atom is the spectral peak of the simulated position against
+  `omega_r = sqrt(U |d2 I_hat/dx2| / m)` of the same map, within 20 percent, and the driver raises when the trajectory leaves the computed map.
+  The feedback and rearrangement drivers use a weight-aware registered method (M07, else M06, else M04) with `init` and weights in the target;
+  they do not call the internals of M12 or M16.
 
 ## Oracles
 
@@ -245,7 +344,8 @@ Each component is DinHot's own, grounded in a sourced gap, measured by the bench
 and covered by a level 4 notebook in each language.
 
 - BS-1 (engine id B1) device-aware weighted GS: the WGS weights kept, the phase update replaced by gradient steps through the crosstalk
-  kernel and the quantizer. Gap: the crosstalk model has been used only with conjugate gradient on shaped potentials (Schroff et
+  kernel and the quantizer. Measured: the factor over M07 on the crosstalk device varies with the seed (about 22 to 60 times over five seeds) and is
+  2.2 times on the full C08 device with 4-bit phase and flicker. Gap: the crosstalk model has been used only with conjugate gradient on shaped potentials (Schroff et
   al. 2023, https://doi.org/10.1038/s41598-023-30296-6).
 - BS-2 (engine id B2) flicker-bounded phase-continuous sequences: each intermediate hologram optimized with the trap phases locked to a
   smooth trajectory. Gap: linear phase interpolation does not optimize its intermediate frames (https://arxiv.org/abs/2501.01391).
@@ -258,8 +358,6 @@ and covered by a level 4 notebook in each language.
   bounds it; the benchmark reports that negative result.
 - BS-5 (engine id B5) the efficiency-uniformity Pareto front by continuation. Gap: methods report single trade-off points (Di Leonardo et
   al. 2007, https://doi.org/10.1364/OE.15.001913).
-- BS-6 (engine: M12 on the emulated camera) an open camera-in-the-loop emulator that reproduces the published feedback curves in the browser. Gap: feedback is
-  published on hardware only (Nogrette et al. 2014, https://arxiv.org/abs/1402.5329).
 
 ## Deploy driver
 
@@ -297,8 +395,8 @@ retired after the Pages site passes its live checks. The target is written in `d
 | ADR-0070 | Focus mode for the App: the workbench opens the open group of a case in the full viewport; `?focus=1`, Escape or the exit button returns to the same case, group and sub-view | `frontend/src/workbench/Workbench.tsx` (`focus`), `npm run gate` with `--require-focus` (G18) |
 | ADR-0071 | the page is the viewport; one tab row; drawing at least half the viewport | the shell's `CaseWorkbench`; the gate |
 | ADR-0074 | CI runs cheap checks only; no training in CI | `.github/workflows/ci.yml`, `scripts/check_ci_budget.py` |
-| ADR-0075 | every requirement names its gate | `docs/design/features/`, `scripts/check_sdd.py` |
+| ADR-0075 | every requirement names its gate | `docs/design/features/` (eleven live features and the planned `architecture`), `tests/adversarial/` (the planted defects), `scripts/check_sdd.py` |
 | ADR-0078 | rules live in the base | shell 0.19.6 pinned exactly and template 0.12.000 |
 | ADR-0080 | contract-first parallel delivery | `docs/contracts/`, `tests/contracts/`, `scripts/check_contracts.py`, `scripts/check_readiness.py` |
-| extension (no ADR) | a WebGPU backend for the live FFT iterations, optional, with the CPU path as the fallback and a browser agreement test | `frontend/src/engine/holo/gpu/`; proposed to the base as a rule for in-browser accelerated compute |
+| extension (no ADR) | a WebGPU backend for the live FFT iterations, optional, with the CPU path as the fallback and a browser agreement test; its gates (ADR-0069 A69.7): parity (`AGREEMENT_TOL` 2e-3 of the mean trap intensity inside the run, rejected otherwise, and the browser agreement test of `frontend/scripts/engine-browser.mjs`), latency and memory (measured in Lanes and Resources), and fallback (every absent, ineligible or failing GPU run takes the CPU path and records `fallbackReason`) | `frontend/src/engine/holo/gpu/`, feature `live-engine`; proposed to the base as a rule for in-browser accelerated compute |
 | extension (no ADR) | a perceptually uniform cyclic colormap for phase, which the visualization rubric does not name | `frontend/src/workbench/colormaps.ts`, its source and licence in `ATTRIBUTION.md` |
