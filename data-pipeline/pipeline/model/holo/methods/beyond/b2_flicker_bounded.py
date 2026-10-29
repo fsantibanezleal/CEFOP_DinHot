@@ -29,6 +29,37 @@ read at its trajectory point ``x_m(s + a)``: ``I_m(s, a) = |V_m(f_a; x_m(s+a))|^
 each trap ``min_{s,a} I_m(s, a) / mean_s I_m(s)``. Both B2 and the LPI baseline of the tests are scored by the same
 function. Not modelled: SLM refresh rate, the temporal response of the device.
 
+Limit of the claim (measured, case C10, ``frames_for_move``). The blend model has a closed form for a pattern that shifts by
+``delta`` Fourier units (``lambda f / (n_pix p)``) between two frames: with a flat input, the trap read half way has the amplitude
+``sinc(delta / 2)``, so its intensity falls to ``sinc^2(delta / 2)`` of the frame's (0.9 at ``delta`` = 0.35 Fourier units); the
+minimal-jerk profile moves fastest by ``PEAK_JERK = 15/8`` times the mean step, so the frames needed grow with the move: ``frames - 1 >=
+PEAK_JERK L / delta`` for a move of ``L`` Fourier units. That is an upper bound, and the lowest moving trap measured 0.03 to
+0.07 below it (frame-to-frame changes of the other traps). The acceptance task moves 4 bins (2 Fourier units at padding 2) in the
+default 13 frames, a peak step of 0.31 Fourier units, and meets 0.9. The sort of C10 moves 17 of its 36 traps by up to 29 bins
+(14.5 Fourier units) with the end phases of the final hologram given (``end_phases``; held phases collapse to 0.000, the phases that
+make the traps equal at the end of a long move are other ones), and the lowest moving trap measured, over frames (seed 1, 10
+iterations per frame; more iterations per frame change nothing):
+
+    frames       25     49     97    129
+    peak step    1.13   0.57   0.28  0.21   Fourier units per frame
+    lowest       0.379  0.735  0.875 0.900
+
+So BS-2 (at least 0.9) holds for a move only when the peak step per frame is at most ``CLAIM_STEP_FU`` = 0.2 Fourier units, which the
+13-frame default allows for moves of about 1.3 Fourier units on that calibration (the acceptance task meets it at 2); ``frames_for_move``
+gives the frames a move needs (137 for the longest move of C10).
+Against LPI on the same assignment (one Hungarian assignment at alpha 1.0, 17 moving traps, the same transient model; LPI is the
+test module's two independent phase-fixed WGS endpoints, interpolated linearly) the lowest moving trap measured:
+
+    C10 sort    13 frames  25 frames  137 frames
+    LPI           0.241      0.531      0.691
+    B2            (n/a)      0.379      0.904
+    acceptance task (13 frames, 3 seeds): B2 0.919 to 0.923, LPI 0.536 to 0.724.
+
+So B2 leads LPI on the acceptance task and on the long sort only with enough frames (about 137); at 25 frames LPI leads B2
+on the long sort. BS-2 (0.9) holds for B2 when the peak step per frame is at most 0.2 Fourier units and the end phases are given;
+LPI does not reach 0.9 in any row. Beyond that number of frames per unit of distance the claim does not
+hold. The 0.2 is calibrated on one sort (one seed) and the transient model is unverified in absolute terms.
+
 ``run(setup, target, ..., destination=None, frames=13)``: ``target`` holds the initial traps, ``destination`` the final
 positions with the same ids (``None``: the traps hold still, a static sequence). 13 holograms are the dossier's
 6x6 to 4x4 sort. Point-trap form (any trap position, not only bins), ideal device.
@@ -42,7 +73,7 @@ from dataclasses import replace
 import numpy as np
 
 from ...core.forward import point_trap_backproject, point_trap_projection, slm_field
-from ...core.geometry import Setup, input_amplitude
+from ...core.geometry import Setup, focal_bin_m, input_amplitude
 from ...core.rng import Rng
 from ...core.traps import TrapSet
 from ...core.types import Budget, MethodSpec, Result, Target
@@ -54,12 +85,38 @@ SPEC = MethodSpec(id="B2", name="Flicker-bounded phase-continuous sequence", fam
 DEFAULT_FRAMES = 13
 DEFAULT_FRAME_ITERATIONS = 10
 DEFAULT_PHASE_VELOCITY_MAX = 0.3
+PEAK_JERK = 15.0 / 8.0       # peak velocity of the minimal-jerk profile in units of the mean velocity: d/dtau (10 t^3 - 15 t^4 + 6 t^5) at 1/2
+CLAIM_STEP_FU = 0.2          # peak step per frame, in Fourier units, at which the lowest moving trap of C10's sort measured 0.9 (docstring)
 
 
 def min_jerk(tau: np.ndarray | float) -> np.ndarray | float:
     """Minimal-jerk time profile ``10 tau^3 - 15 tau^4 + 6 tau^5`` (0 at 0, 1 at 1, zero velocity and acceleration at both)."""
     tau = np.clip(tau, 0.0, 1.0)
     return 10.0 * tau**3 - 15.0 * tau**4 + 6.0 * tau**5
+
+
+def move_fourier_units(setup: Setup, start: TrapSet, end: TrapSet | None) -> float:
+    """The longest lateral move of any trap, in Fourier units ``lambda f / (n_pix p)`` (a focal bin is ``1 / pad`` of one)."""
+    if end is None or len(end) == 0:
+        return 0.0
+    longest = max(math.hypot(e.x_m - t.x_m, e.y_m - t.y_m) for t, e in zip(start, end))
+    return longest / (focal_bin_m(setup) * setup.pad)
+
+
+def peak_step_fu(setup: Setup, start: TrapSet, end: TrapSet | None, frames: int) -> float:
+    """The largest shift between two consecutive frames, in Fourier units: ``PEAK_JERK`` times the mean step of the longest move."""
+    if frames < 2:
+        raise ValueError("frames must be >= 2")
+    return PEAK_JERK * move_fourier_units(setup, start, end) / (frames - 1)
+
+
+def frames_for_move(setup: Setup, start: TrapSet, end: TrapSet | None, step_fu: float = CLAIM_STEP_FU,
+                    minimum: int = DEFAULT_FRAMES) -> int:
+    """The fewest frames (at least ``minimum``) whose peak step per frame is at most ``step_fu`` Fourier units (module docstring)."""
+    if not step_fu > 0:
+        raise ValueError("step_fu must be positive")
+    need = PEAK_JERK * move_fourier_units(setup, start, end) / step_fu
+    return max(int(minimum), int(math.ceil(need - 1e-9)) + 1)
 
 
 def wrap_pi(x: np.ndarray) -> np.ndarray:
