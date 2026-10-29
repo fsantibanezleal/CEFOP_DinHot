@@ -35,8 +35,8 @@ Limit of the claim (measured, case C10, ``frames_for_move``). The blend model ha
 minimal-jerk profile moves fastest by ``PEAK_JERK = 15/8`` times the mean step, so the frames needed grow with the move: ``frames - 1 >=
 PEAK_JERK L / delta`` for a move of ``L`` Fourier units. That is an upper bound, and the lowest moving trap measured 0.03 to
 0.07 below it (frame-to-frame changes of the other traps). The acceptance task moves 4 bins (2 Fourier units at padding 2) in the
-default 13 frames, a peak step of 0.31 Fourier units, and meets 0.9. The sort of C10 moves 17 of its 36 traps by up to 29 bins
-(14.5 Fourier units) with the end phases of the final hologram given (``end_phases``; held phases collapse to 0.000, the phases that
+default 13 frames, a peak step of 0.31 Fourier units, and meets 0.9. The sort of C10, on M16's own plan, moves 16 of its 36 traps by up to 29 bins
+(14.5 Fourier units) with the end phases of the final hologram given (``end_phases``; held phases dim the moving traps to 0.177 on seed 1, the phases that
 make the traps equal at the end of a long move are other ones), and the lowest moving trap measured, over frames (seed 1, 10
 iterations per frame; more iterations per frame change nothing):
 
@@ -50,13 +50,14 @@ gives the frames a move needs (137 for the longest move of C10).
 Against LPI on the same assignment (one Hungarian assignment at alpha 1.0, 17 moving traps, the same transient model; LPI is the
 test module's two independent phase-fixed WGS endpoints, interpolated linearly) the lowest moving trap measured:
 
-    C10 sort, seeds 1 to 6       25 frames        137 frames
-    LPI                          0.514 to 0.588   0.678 to 0.756
-    B2 (end phases given)        0.328 to 0.418   0.899 to 0.919 (median 0.905, 5 of 6 at least 0.9)
+    C10 sort on M16's plan (16 moving traps), seeds 1 to 6
+                                 25 frames        137 frames
+    LPI                          0.320 to 0.594   0.360 to 0.690
+    B2 (end phases given)        0.205 to 0.391   0.902 to 0.917 on 5 of 6 seeds (median 0.910); seed 2 collapses to 0.155
     acceptance task (13 frames, seeds 1 to 3): B2 0.916 to 0.926, LPI 0.551 to 0.709.
 
 So B2 leads LPI on the acceptance task and on the long sort only with enough frames (about 137); at 25 frames LPI leads B2
-on the long sort in every seed. BS-2 (0.9) holds for B2 when the peak step per frame is at most 0.2 Fourier units and the end
+on the long sort in every seed, and at 137 frames on every seed but one. BS-2 (0.9) holds for B2 when the peak step per frame is at most 0.2 Fourier units and the end
 phases are given, on most seeds and not on all: on the acceptance lattice with two columns moved 12 or 20 bins (8 seeds,
 ``frames_for_move`` frames) the median lowest moving trap is 0.933 and 0.936 and 6 of 8 seeds reach 0.9; the other seeds stay
 below with twice the frames as well (0.023 and 0.768 at 12 bins, 0.584 and 0.847 at 20), so their limit is the phase path the
