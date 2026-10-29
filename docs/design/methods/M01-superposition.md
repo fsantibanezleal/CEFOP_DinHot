@@ -109,6 +109,7 @@ number, so the three seeds agree; each case has its own optics, listed in `data/
 | C09 | 1 | 0.208 (0.208 to 0.208) | 0.154 (0.154 to 0.154) | 78.4 (78.4 to 78.4) |
 | C12 | 1 | 0.328 (0.328 to 0.328) | 0.000275 (0.000275 to 0.000275) | 269 (269 to 269) |
 | C13 | 1 | 0.596 (0.596 to 0.596) | 0.357 (0.357 to 0.357) | 24.8 (24.8 to 24.8) |
+| C14 | 30 | 0.5 (0.5 to 0.5) | 0.196 (0.196 to 0.196) | 68.9 (68.9 to 68.9) |
 
 ## Limits and failure modes
 

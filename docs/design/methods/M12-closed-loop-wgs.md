@@ -109,10 +109,10 @@ listed in `data/derived/manifests/`):
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
-| C01 | 30 | 0.812 (0.811 to 0.814) | 0.73 (0.689 to 0.752) | 18.1 (17.6 to 19.1) |
-| C02 | 30 | 0.806 (0.805 to 0.806) | 0.553 (0.502 to 0.608) | 19.9 (19.2 to 20.8) |
-| C03 | 30 | 0.809 (0.808 to 0.811) | 0.435 (0.362 to 0.479) | 19.8 (19.3 to 20.4) |
-| C13 | 30 | 0.743 (0.743 to 0.744) | 0.452 (0.383 to 0.491) | 19.4 (18.6 to 20.2) |
+| C01 | 30 | 0.812 (0.811 to 0.815) | 0.73 (0.689 to 0.752) | 18.1 (17.6 to 19.1) |
+| C02 | 30 | 0.806 (0.801 to 0.814) | 0.553 (0.516 to 0.611) | 19.8 (19.2 to 20.8) |
+| C03 | 30 | 0.809 (0.809 to 0.81) | 0.441 (0.377 to 0.475) | 19.8 (19.2 to 20.3) |
+| C13 | 30 | 0.744 (0.743 to 0.744) | 0.454 (0.381 to 0.492) | 19.4 (18.6 to 20.2) |
 
 These bake values are scored on the true trap fields: the relative standard deviation of 17 to 20 percent is the size of the default camera's own
 gain error (0.19), which is what a loop that equalizes the camera readings leaves in the true intensities. The reduction is visible in the

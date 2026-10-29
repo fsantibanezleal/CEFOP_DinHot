@@ -96,10 +96,10 @@ values of $\lambda$ (20), the bake returns the knee):
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
-| C01 | 20 | 0.801 (0.77 to 0.817) | 0.999 (0.998 to 1) | 0.0318 (4.95e-11 to 0.0955) |
-| C02 | 20 | 0.8 (0.796 to 0.805) | 0.995 (0.985 to 1) | 0.224 (8.62e-09 to 0.671) |
-| C05 | 20 | 0.898 (0.893 to 0.904) | 0.984 (0.976 to 0.991) | 0.712 (0.482 to 0.983) |
-| C07 | 20 | 0.795 (0.787 to 0.799) | 0.997 (0.995 to 1) | 0.172 (2.5e-12 to 0.278) |
+| C01 | 20 | 0.801 (0.77 to 0.817) | 1 (0.999 to 1) | 0.031 (1.45e-11 to 0.0929) |
+| C02 | 20 | 0.803 (0.798 to 0.811) | 0.989 (0.976 to 1) | 0.528 (4.39e-08 to 1.13) |
+| C05 | 20 | 0.895 (0.889 to 0.901) | 0.985 (0.981 to 0.989) | 0.659 (0.507 to 0.82) |
+| C07 | 20 | 0.799 (0.795 to 0.803) | 0.99 (0.982 to 0.995) | 0.545 (0.246 to 0.993) |
 
 On C02 the knee has a relative standard deviation of 0.67 percent or below against 0.6 to 1.3 percent for M06, at the same efficiency (0.80); on C05 (3D) its efficiency is 0.90 against 0.89.
 

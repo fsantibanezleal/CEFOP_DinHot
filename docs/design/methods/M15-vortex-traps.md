@@ -101,8 +101,8 @@ and runs the same weighted GS as M15):
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
-| C05 | 30 | 0.892 (0.89 to 0.895) | 0.977 (0.966 to 0.985) | 0.924 (0.71 to 1.29) |
-| C06 | 30 | 0.705 (0.7 to 0.708) | 0.997 (0.997 to 0.998) | 0.129 (0.0875 to 0.169) |
+| C05 | 30 | 0.894 (0.891 to 0.897) | 0.971 (0.942 to 0.989) | 1.16 (0.496 to 2.29) |
+| C06 | 30 | 0.705 (0.7 to 0.708) | 0.998 (0.997 to 0.998) | 0.126 (0.0826 to 0.168) |
 
 ## Limits and failure modes
 

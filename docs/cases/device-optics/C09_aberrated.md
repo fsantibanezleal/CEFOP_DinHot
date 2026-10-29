@@ -45,16 +45,33 @@ A 4 by 4 array with the injected wavefront. Methods that ignore the aberration l
 
 ### Expected ranges (checked by the bake)
 
-Basis of the bands: **provisional: set from the physical limits of the case, to be replaced by a measured band with its margin at the first bake of the real methods**. A key is a metric of the reference method, or `<method>.<metric>` for another method of the case. The bake fails when a result is outside its range
-(`data-pipeline/pipeline/core/expect.py`).
+Basis of the bands: **measured**, 3 seeds (the case seed and the next ones), range = mean plus or minus the wider of
+10 percent of the mean and the seed spread, clipped to the domain.
+The values are in `data-pipeline/pipeline/cases/measured_ranges.json` (`data-pipeline/pipeline/ranges.py`); every method range is keyed `<method>.<metric>`,
+so it is never applied to another method. The bake fails when a result is outside its range (`data-pipeline/pipeline/core/expect.py`).
+This section is written by `scripts/write_case_ranges.py`.
+The seeds of M01 give the same value (the method does not depend on the seed here), so the band is the 10 percent floor.
 
-| Key | Range | Meaning |
-|---|---|---|
-| `efficiency` | 0.2 to 1 | efficiency, the fraction of the input power in the trap peaks (traps) or in the signal region (shaped fields), 0 to 1 |
-| `rel_std_pct` | 0 to 40 | relative standard deviation of the trap intensities, in percent |
-
-No canonical bake of the twelve cases is committed yet: the measured values of the real methods on this case are shown by the Experiments page when the bake has run for the build, and this card
-does not quote a number the bake has not produced.
+| Key | Range | Measured on the 3 seeds | Meaning |
+|---|---|---|---|
+| `B4.efficiency` | 0.3985 to 0.487 | 0.448389, 0.433588, 0.446296 | fraction of the input power in the trap peaks |
+| `B4.rel_std_pct` | 4.071 to 6.547 | 5.50111, 4.59428, 5.83217 | relative standard deviation of the trap intensities, in percent |
+| `B4.uniformity` | 0.823 to 1 | 0.90901, 0.924989, 0.909324 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M01.efficiency` | 0.187 to 0.2286 | 0.207777, 0.207777, 0.207777 | fraction of the input power in the trap peaks |
+| `M01.rel_std_pct` | 70.53 to 86.2 | 78.3643, 78.3643, 78.3643 | relative standard deviation of the trap intensities, in percent |
+| `M01.uniformity` | 0.1385 to 0.1693 | 0.153904, 0.153904, 0.153904 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M04.efficiency` | 0.4112 to 0.5026 | 0.457634, 0.457977, 0.455183 | fraction of the input power in the trap peaks |
+| `M04.rel_std_pct` | 13.81 to 16.88 | 14.9758, 15.7108, 15.3581 | relative standard deviation of the trap intensities, in percent |
+| `M04.uniformity` | 0.6605 to 0.8073 | 0.739057, 0.726877, 0.735694 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M06.efficiency` | 0.4044 to 0.4943 | 0.453299, 0.440877, 0.453859 | fraction of the input power in the trap peaks |
+| `M06.rel_std_pct` | 3.478 to 8.551 | 7.30763, 4.77116, 5.96436 | relative standard deviation of the trap intensities, in percent |
+| `M06.uniformity` | 0.8148 to 0.9959 | 0.886746, 0.914662, 0.914728 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M07.efficiency` | 0.4027 to 0.4922 | 0.452637, 0.437777, 0.451986 | fraction of the input power in the trap peaks |
+| `M07.rel_std_pct` | 3.732 to 8.596 | 7.09303, 4.66108, 6.73869 | relative standard deviation of the trap intensities, in percent |
+| `M07.uniformity` | 0.8127 to 0.9933 | 0.889167, 0.924499, 0.895259 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M14.efficiency` | 0.7191 to 0.8789 | 0.805082, 0.786524, 0.805337 | fraction of the input power in the trap peaks |
+| `M14.rel_std_pct` | 0 to 0.9327 | 0.0773177, 0.680228, 0.231835 | relative standard deviation of the trap intensities, in percent |
+| `M14.uniformity` | 0.895 to 1 | 0.998793, 0.988886, 0.995665 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
 
 ## Validation anchor
 

@@ -97,7 +97,7 @@ optics and device in `data/derived/manifests/`; the C04 row is the shaped disc s
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
-| C08 | 30 | 0.412 (0.266 to 0.522) | 0.174 (0.0469 to 0.317) | 27 (18.9 to 31.1) |
+| C08 | 30 | 0.418 (0.252 to 0.547) | 0.371 (0.0796 to 0.685) | 25.2 (11.3 to 40.7) |
 
 | Case | Iterations | Signal-region power fraction | Signal rms error (percent) |
 |---|---|---|---|

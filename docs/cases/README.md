@@ -62,4 +62,4 @@ What each App group shows, and Notes. The cards are generated from the case libr
 
 - The disordered 819-trap set of Kim et al. is C13; its coordinates are not published, so the set is DinHot's own seeded draw with the same count and the same kind of constraint (integer bins, a minimum spacing).
 - C07 is a scalar case with a validity flag; no vectorial lane exists in this build.
-- The canonical bake holds thirteen baked cases and C11, refused by contract 1. M17 answers with the released graph on C14 (the only case at the network's geometry: 128 by 128 pixels, padding 1); B3 is flagged missing in the manifests. The older cards still describe their bands as provisional.
+- The canonical bake holds thirteen baked cases and C11, refused by contract 1. M17 answers with the released graph on C14 (the only case at the network's geometry: 128 by 128 pixels, padding 1); B3 runs with its random-start baseline, since no warm-start model is released (its record says baseline). Every card states the ranges the bake checks, measured on three seeds and written by `scripts/write_case_ranges.py`.

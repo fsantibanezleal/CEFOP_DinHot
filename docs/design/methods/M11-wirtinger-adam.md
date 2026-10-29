@@ -101,6 +101,7 @@ optics, listed in `data/derived/manifests/`; the C04 row is the shaped disc scor
 | C02 | 30 | 0.763 (0.762 to 0.763) | 0.929 (0.921 to 0.942) | 2.5 (2.39 to 2.6) |
 | C05 | 30 | 0.822 (0.814 to 0.83) | 0.957 (0.953 to 0.963) | 1.77 (1.76 to 1.79) |
 | C07 | 30 | 0.766 (0.763 to 0.769) | 0.947 (0.935 to 0.958) | 2.49 (2 to 3.23) |
+| C14 | 30 | 0.755 (0.754 to 0.755) | 0.956 (0.951 to 0.959) | 2.02 (1.95 to 2.05) |
 
 | Case | Iterations | Signal-region power fraction | Signal rms error (percent) |
 |---|---|---|---|
