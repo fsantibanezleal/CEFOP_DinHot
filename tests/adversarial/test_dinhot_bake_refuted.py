@@ -17,7 +17,7 @@ TABLE = {
         {"target": 'pipeline.io.contract:_cross_field', "wrap": 'lambda *a, **k: None'},
     ]),
     'BK-004': ('tests/bake/test_c13.py::test_the_registry_lists_c13_next_to_c03', [
-        {"target": 'pipeline.cases.library:CASES', "wrap": 'orig[:-1]'},
+        {"target": 'pipeline.cases.library:CASES', "wrap": "[c for c in orig if not c.id.startswith('C13')]"},
     ]),
     'BK-005': ('tests/bake/test_c13.py::test_c13_is_819_traps_on_bins_at_least_five_bins_apart', [
         {"target": 'pipeline.cases.library:CASES', "wrap": "[dataclasses.replace(c, record=dict(c.record, target=dict(c.record['target'], traps=c.record['target']['traps'][:-1]))) if c.id.startswith('C13') else c for c in orig]"},
@@ -76,7 +76,7 @@ def test_a_validator_without_the_cross_field_rules_fails_the_field_gate(cases):
 
 
 def test_a_case_library_without_c13_fails_the_registry_gate(cases):
-    """BK-004: the registry is replaced by one that drops its last case: the registry assertion fails"""
+    """BK-004: the registry is replaced by one that drops C13: the registry assertion fails"""
     cases.refuted('BK-004')
 
 

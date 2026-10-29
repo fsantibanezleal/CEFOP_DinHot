@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -416,8 +417,10 @@ def runner_repo(tmp_path: Path, body: str) -> tuple[Path, Path]:
 
 
 def run_runner(base: Path, *args: str) -> subprocess.CompletedProcess:
+    """The runner on ``base``; ``--check`` needs a temp root, given as the test's own folder next to the repository."""
+    env = dict(os.environ, CAOS_TEMP_ROOT=str(base.parent / "temp-root"))
     return subprocess.run([str(NOTEBOOK_PYTHON), str(base / "scripts" / "run_notebooks.py"), *args], capture_output=True, encoding="utf-8",
-                          errors="replace", cwd=base, timeout=300)
+                          errors="replace", cwd=base, timeout=300, env=env)
 
 
 needs_env = pytest.mark.skipif(NOTEBOOK_PYTHON is None, reason="the notebook environment is not built (scripts/setup.sh --notebooks)")

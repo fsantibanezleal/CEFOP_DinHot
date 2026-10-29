@@ -246,8 +246,8 @@ def plant_method_handed_over_as_a_callback(nb: dict) -> None:
     """Every call of a product method goes through a name the gate cannot follow: no method cell is left."""
     for cell in nb["cells"]:
         if cell["cell_type"] == "code":
-            body = re.sub(r"\b(m\d\d_\w+|b\d_\w+)\.run\(", "(lambda f: f)(print).__call__(", text(cell))
-            body = re.sub(r"\b(forward|modes|traps)\.\w+\(", "(lambda f: f)(print).__call__(", body)
+            body = re.sub(r"\b(m\d\d_\w+|b\d_\w+)\.\w+\(", "(lambda f: f)(print).__call__(", text(cell))
+            body = re.sub(r"\b(forward|modes|traps|metrics|evaluation)\.\w+\(", "(lambda f: f)(print).__call__(", body)
             cell["source"] = body
 
 
