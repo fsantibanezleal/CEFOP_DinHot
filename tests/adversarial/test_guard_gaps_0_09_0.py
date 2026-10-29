@@ -90,17 +90,17 @@ def declare_binary(repo: Path, glob: str, rel: str, payload: bytes) -> None:
 
 
 def test_a_declared_onnx_file_passes_when_its_row_names_a_test(docs: Path) -> None:
-    declare_binary(docs, "models/*.onnx", "models/net.onnx", b"\x08\x07onnx\x00\xff\xfe")
+    declare_binary(docs, "models/planted/*.onnx", "models/planted/net.onnx", b"\x08\x07onnx\x00\xff\xfe")
     r = guard(docs, "check_documents.py")
-    assert r.returncode == 0 and "documents:" in r.stdout and "not JSON" in r.stdout and "models/net.onnx" in r.stdout, r.stdout
+    assert r.returncode == 0 and "documents:" in r.stdout and "not JSON" in r.stdout and "models/planted/net.onnx" in r.stdout, r.stdout
 
 
 def test_a_declared_onnx_file_fails_when_its_row_names_no_test(docs: Path) -> None:
-    declare_binary(docs, "models/*.onnx", "models/net.onnx", b"\x08\x07onnx\x00\xff\xfe")
+    declare_binary(docs, "models/planted/*.onnx", "models/planted/net.onnx", b"\x08\x07onnx\x00\xff\xfe")
     set_cell(docs, CATALOG, "params-record", PRODUCER, "-")
     set_cell(docs, CATALOG, "params-record", CONSUMER, "")
     r = guard(docs, "check_documents.py")
-    assert r.returncode == 1 and "models/net.onnx" in r.stdout and "params-record" in r.stdout and "producer test" in r.stdout, r.stdout
+    assert r.returncode == 1 and "models/planted/net.onnx" in r.stdout and "params-record" in r.stdout and "producer test" in r.stdout, r.stdout
 
 
 def test_a_declared_csv_table_passes_with_a_test_and_fails_without_one(docs: Path) -> None:
