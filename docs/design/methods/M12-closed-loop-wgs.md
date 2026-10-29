@@ -17,7 +17,7 @@ Nogrette et al., Phys. Rev. X 4, 021034 (2014), https://arxiv.org/abs/1402.5329 
 iterations at gain $G = 0.7$), and Kim, Kim, Lee and Ahn, Opt. Lett. 44, 3178 (2019), https://doi.org/10.1364/OL.44.003178 (22 percent to
 1.59 percent in three phase-fixed steps against 6.47 percent for conventional WGS). The camera is an emulation (`core/camera.py`: per-trap fixed
 gain error, additive noise, blur, roll-off): a result here shows that the loop works against those stated errors, not against an instrument
-(the measured hardware loop is a documented frontier of the product). BS-6 is the claim built on this module and this camera.
+(the measured hardware loop is a documented frontier of the product). The case feedback curves of the section below, formerly the claim BS-6 (withdrawn as a beyond claim), are built on this module and this camera.
 
 ## Problem it answers
 
@@ -72,7 +72,7 @@ The port has the same defaults (`control.ts` lines 28 to 38).
 
 One feedback iteration: `n_inner` FFT-form GS iterations plus one camera evaluation (a focal field and a read at the trap bins). Lane `live`;
 parity worst difference 6.8e-14 (T1 report D2). The case feedback driver (`data-pipeline/pipeline/stages/feedback.py`) is a separate loop that
-applies the same Nogrette factor to the case's weight-aware method; it is not M12 and is the subject of BS-6.
+applies the same Nogrette factor to the case's weight-aware method; it is not M12 and is the subject of the feedback curves of the section below.
 
 ## Acceptance criterion and gate
 
@@ -116,7 +116,7 @@ listed in `data/derived/manifests/`):
 
 These bake values are scored on the true trap fields: the relative standard deviation of 17 to 20 percent is the size of the default camera's own
 gain error (0.19), which is what a loop that equalizes the camera readings leaves in the true intensities. The reduction is visible in the
-measured-spread history of the run and in the case feedback curves (BS-6), not in this score. The M12 entry runs 30 feedback iterations in the manifests (for example C02) and `data-pipeline/pipeline/stages/infer.py` passes it no camera,
+measured-spread history of the run and in the case feedback curves (section below), not in this score. The M12 entry runs 30 feedback iterations in the manifests (for example C02) and `data-pipeline/pipeline/stages/infer.py` passes it no camera,
 so the module default camera applies; both were read from those files, not re-run.
 
 ## Limits and failure modes
@@ -138,7 +138,7 @@ Withdrawn as a beyond-the-state-of-the-art claim on 2026-10-28: an emulator that
 
 | Item | Value |
 |---|---|
-| Ladder row | BS-6, tier beyond (SDD, Method ladder and Beyond the state of the art) |
+| Ladder row | none: formerly BS-6, tier beyond; withdrawn as a beyond claim, the emulator is part of this record (SDD, Beyond the state of the art) |
 | Family, lane | beyond, feedback emulation, live (it is M12 on `core/camera.py`; the research record calls it B6) |
 | Targets, dimensions | traps on FFT bins, 2D |
 | Module | `data-pipeline/pipeline/model/holo/methods/control/m12_closed_loop.py` (`run`, line 54) on `data-pipeline/pipeline/model/holo/core/camera.py` (`EmulatedCamera`, line 34); the case driver is `data-pipeline/pipeline/stages/feedback.py` |
@@ -244,8 +244,8 @@ The M12 method itself, scored on the true fields in the bake, is listed in the M
 
 - Reproducing a published number by choosing the camera's error is a tuning of the emulator, not a validation of a real device: the real errors come from the SLM and the optics. The emulator is a teaching and test tool, and
   the result shows that the loop works against these stated errors (the research record's own risk statement).
-- Classification, left open: the method tiers rule says a validation protocol, a calibration or a benchmark design is not by itself a method beyond the state of the art. BS-6 is an open emulator that reproduces published
-  curves; whether it counts as a method beyond the state of the art or as a validation tool is a decision for the main session, and this record does not settle it.
+- Classification, decided: the method tiers rule says a validation protocol, a calibration or a benchmark design is not by itself a method beyond the state of the art. The
+  emulator reproduces published curves, so it is a validation tool of M12 and the claim BS-6 was withdrawn (decision of 2026-10-28, recorded in the SDD's Beyond the state of the art).
 - Only the end points of the two published curves are compared; the conventional-WGS clause of the research record is not run.
 - The Nogrette update is read multiplicatively (UNVERIFIED); the printed form was not confirmed.
 - Noise, blur and roll-off make the result worse than the ideal camera; the published experiments' own noise floor is not modelled.
