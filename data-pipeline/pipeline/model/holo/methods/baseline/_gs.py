@@ -93,10 +93,15 @@ def rule_gsw(state, v, k):
 
 
 def rule_wgs_fixed(state, v, k):
-    r"""Kim 2019: $g_i = (\langle B\rangle / B_m)\, g_{i-1}$, $c_m = g_m a_m e^{i\psi_i}$, $\psi_i = \psi_N$ for $i \ge N$."""
+    r"""Kim 2019: $g_i = (\langle B\rangle / B_m)\, g_{i-1}$, $g_0 = 1$, $c_m = g_m a_m e^{i\psi_i}$, $\psi_i = \psi_N$ for $i \ge N$.
+
+    The field of the start hologram is $B_0$ and is projected with $g_0 = 1$ (iteration ``k = 1`` is plain GS); the first
+    weight update uses the field of ``k = 2``. slmsuite's WGS-Kim does the same (no update at its iteration 0).
+    """
     a = state["a"]
-    b = np.maximum(np.abs(v) / a, 1e-300)
-    state["w"] = state["w"] * (np.mean(b) / b)
+    if k > 1:
+        b = np.maximum(np.abs(v) / a, 1e-300)
+        state["w"] = state["w"] * (np.mean(b) / b)
     if k < state["n_fix"]:
         psi = np.angle(v)
     elif k == state["n_fix"]:

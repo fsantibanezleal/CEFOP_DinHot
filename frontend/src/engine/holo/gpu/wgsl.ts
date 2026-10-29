@@ -162,7 +162,7 @@ fn rule(@builtin(local_invocation_id) lid: vec3<u32>) {
       w[i] = w[i] * mean / rr;
       c = w[i] * ph;
     } else {
-      w[i] = w[i] * mean / rr;
+      if (r.k > 1u) { w[i] = w[i] * mean / rr; }
       let ang = atan2(vi.y, vi.x);
       var p = ang;
       if (r.k > r.nfix) { p = psi[i]; }
