@@ -136,7 +136,7 @@ export function GsFigure({ t }: { t: Tr }) {
       <PathArrow id={id} d="M 430 130 C 360 160 280 160 210 130" label={t('inverse: F⁻¹ or Σ exp(+iΔ)', 'inversa: F⁻¹ o Σ exp(+iΔ)')} lx={320} ly={172} />
       <Box x={240} y={190} w={160} h={44} lines={[t('weights w_m or g_i', 'pesos w_m o g_i'), t('rescale the target', 'reescalan el objetivo')]} tone="good" />
       <PathArrow id={id} d="M 400 212 C 460 212 520 190 525 154" dashed />
-      <Label x={320} y={20} kind="note">{t('repeat; after N iterations phase-fixed WGS keeps ψ_i = ψ_N', 'repetir; tras N iteraciones el WGS con fase fija mantiene ψ_i = ψ_N')}</Label>
+      <Label x={320} y={20} kind="note">{t('repeat until the stop rule; the weights rescale the target at each pass', 'repetir hasta la regla de parada; los pesos reescalan el objetivo en cada pasada')}</Label>
     </Svg>
   );
 }
@@ -167,28 +167,28 @@ export function ShapedFigure({ t }: { t: Tr }) {
   );
 }
 
-/** The three families of cost-function methods. */
+/** The gradient methods of the state-of-the-art tier: conjugate gradient, Wirtinger descent and conjugate gradient through the device. */
 export function CostFigure({ t }: { t: Tr }) {
   const id = 'ah-cost';
   return (
-    <Svg h={250} label={t('Direct search, conjugate gradient and Wirtinger descent as three loops', 'Búsqueda directa, gradiente conjugado y descenso de Wirtinger como tres lazos')}>
+    <Svg h={250} label={t('Conjugate gradient, Wirtinger descent and device-aware conjugate gradient as three loops', 'Gradiente conjugado, descenso de Wirtinger y gradiente conjugado consciente del dispositivo como tres lazos')}>
       <ArrowDefs id={id} />
-      <Label x={110} y={22}>M09</Label>
-      <Box x={20} y={34} w={180} h={40} lines={[t('change one pixel', 'cambiar un píxel')]} />
-      <Box x={20} y={102} w={180} h={40} lines={[t('cost C decreases?', '¿baja el costo C?')]} />
-      <Box x={20} y={170} w={180} h={40} lines={[t('keep or undo', 'conservar o deshacer')]} tone="good" />
+      <Label x={110} y={22}>M10</Label>
+      <Box x={20} y={34} w={180} h={40} lines={[t('two FFTs: C and ∂C/∂φ', 'dos FFT: C y ∂C/∂φ')]} />
+      <Box x={20} y={102} w={180} h={40} lines={['d = g + γ d_prev']} />
+      <Box x={20} y={170} w={180} h={40} lines={[t('line step along d', 'paso en línea a lo largo de d')]} tone="good" />
       <Arrow id={id} x1={110} y1={74} x2={110} y2={102} />
       <Arrow id={id} x1={110} y1={142} x2={110} y2={170} />
-      <Label x={320} y={22}>M10</Label>
-      <Box x={230} y={34} w={180} h={40} lines={[t('two FFTs: C and ∂C/∂φ', 'dos FFT: C y ∂C/∂φ')]} />
-      <Box x={230} y={102} w={180} h={40} lines={['d = g + γ d_prev']} />
-      <Box x={230} y={170} w={180} h={40} lines={[t('line step along d', 'paso en línea a lo largo de d')]} tone="good" />
+      <Label x={320} y={22}>M11</Label>
+      <Box x={230} y={34} w={180} h={40} lines={[t('forward model P(φ)', 'modelo directo P(φ)')]} />
+      <Box x={230} y={102} w={180} h={40} lines={[t('Wirtinger gradient', 'gradiente de Wirtinger')]} />
+      <Box x={230} y={170} w={180} h={40} lines={[t('Adam step on φ', 'paso de Adam sobre φ')]} tone="good" />
       <Arrow id={id} x1={320} y1={74} x2={320} y2={102} />
       <Arrow id={id} x1={320} y1={142} x2={320} y2={170} />
-      <Label x={530} y={22}>M11</Label>
-      <Box x={440} y={34} w={180} h={40} lines={[t('forward model P(φ)', 'modelo directo P(φ)')]} />
-      <Box x={440} y={102} w={180} h={40} lines={[t('Wirtinger gradient', 'gradiente de Wirtinger')]} />
-      <Box x={440} y={170} w={180} h={40} lines={[t('Adam step on φ', 'paso de Adam sobre φ')]} tone="good" />
+      <Label x={530} y={22}>M13</Label>
+      <Box x={440} y={34} w={180} h={40} lines={[t('device: K * Uφ, quantizer', 'dispositivo: K * Uφ, cuantizador')]} tone="accent" />
+      <Box x={440} y={102} w={180} h={40} lines={[t('cost C of M10 on the field', 'costo C de M10 sobre el campo')]} />
+      <Box x={440} y={170} w={180} h={40} lines={[t('adjoint of K: gradient', 'adjunto de K: gradiente')]} tone="good" />
       <Arrow id={id} x1={530} y1={74} x2={530} y2={102} />
       <Arrow id={id} x1={530} y1={142} x2={530} y2={170} />
       <Label x={320} y={236} kind="note">{t('each loop returns to its first box until the stop rule', 'cada lazo vuelve a su primera caja hasta la regla de parada')}</Label>
@@ -275,20 +275,20 @@ export function RearrangeFigure({ t }: { t: Tr }) {
 export function CnnFigure({ t }: { t: Tr }) {
   const id = 'ah-cnn';
   return (
-    <Svg h={260} label={t('Unsupervised training of a hologram network through a differentiable propagation, beside the Gerchberg-Saxton baseline', 'Entrenamiento no supervisado de una red de hologramas a través de una propagación diferenciable, junto a la línea base de Gerchberg-Saxton')}>
+    <Svg h={260} label={t('Unsupervised training of a hologram network on three planes through a differentiable propagation, beside the volumetric GS baseline', 'Entrenamiento no supervisado de una red de hologramas en tres planos a través de una propagación diferenciable, junto a la línea base de GS volumétrico')}>
       <ArrowDefs id={id} />
-      <Box x={10} y={40} w={100} h={56} lines={[t('target T', 'objetivo T'), t('traps or field', 'trampas o campo')]} />
+      <Box x={10} y={40} w={100} h={56} lines={[t('target T', 'objetivo T'), t('3 planes, traps', '3 planos, trampas')]} />
       <Box x={140} y={40} w={110} h={56} lines={[t('network N_θ', 'red N_θ'), t('CNN, ONNX', 'CNN, ONNX')]} tone="accent" />
       <Box x={280} y={40} w={100} h={56} lines={[t('phase φ', 'fase φ'), t('2π range', 'rango 2π')]} />
-      <Box x={410} y={40} w={110} h={56} lines={[t('propagation P', 'propagación P'), t('differentiable', 'diferenciable')]} />
+      <Box x={410} y={40} w={110} h={56} lines={[t('propagation P', 'propagación P'), t('to each plane', 'a cada plano')]} />
       <Box x={550} y={40} w={80} h={56} lines={['|E|²', t('loss vs T', 'pérdida vs T')]} tone="warn" />
       <Arrow id={id} x1={110} y1={68} x2={140} y2={68} />
       <Arrow id={id} x1={250} y1={68} x2={280} y2={68} />
       <Arrow id={id} x1={380} y1={68} x2={410} y2={68} />
       <Arrow id={id} x1={520} y1={68} x2={550} y2={68} />
       <PathArrow id={id} d="M 590 96 L 590 140 L 195 140 L 195 96" label={t('gradient to θ (training, offline)', 'gradiente hacia θ (entrenamiento, fuera de línea)')} lx={392} ly={158} dashed />
-      <Box x={140} y={186} w={250} h={44} lines={[t('baseline: GS to the same wall-clock', 'línea base: GS al mismo tiempo de reloj')]} />
-      <Label x={500} y={212} kind="note">{t('compared on held-out targets', 'comparado en objetivos reservados')}</Label>
+      <Box x={140} y={180} w={250} h={52} lines={[t('baseline: M19', 'línea base: M19'), t('same wall-clock', 'igual tiempo de reloj')]} />
+      <Label x={410} y={212} anchor="start" kind="note">{t('held-out volumes', 'volúmenes reservados')}</Label>
     </Svg>
   );
 }
@@ -310,7 +310,7 @@ export function WarmFigure({ t }: { t: Tr }) {
       <Arrow id={id} x1={530} y1={86} x2={530} y2={120} />
       <Box x={150} y={120} w={130} h={50} lines={[t('baseline start', 'arranque base'), t('random θ_m', 'θ_m aleatorio')]} />
       <PathArrow id={id} d="M 280 145 L 430 145" dashed label={t('same WGS', 'mismo WGS')} lx={355} ly={138} />
-      <Label x={320} y={218} kind="note">{t('claim: median iterations at least 2x lower, final e and u equal within 1 %', 'afirmación: iteraciones medianas al menos 2 veces menores, e y u finales iguales dentro de 1 %')}</Label>
+      <Label x={320} y={218} kind="note">{t('criterion: median iterations at least 2x lower (not met: refuted)', 'criterio: iteraciones medianas al menos 2 veces menores (no cumplido: refutado)')}</Label>
     </Svg>
   );
 }
