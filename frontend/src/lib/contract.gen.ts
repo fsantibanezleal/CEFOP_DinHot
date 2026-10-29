@@ -439,7 +439,7 @@ export interface components {
         };
         /**
          * ModelMetrics
-         * @description Contract 2 (artifact), catalog row model-metrics 1.0.0: the held-out metrics of the model slots, written by data-pipeline/pipeline/stages/evaluate.py to data/derived/models/metrics.json. A slot with no released model has no entry.
+         * @description Contract 2 (artifact), catalog row model-metrics 1.0.1: the held-out metrics of the model slots, written by data-pipeline/pipeline/stages/evaluate.py to data/derived/models/metrics.json. A slot with no released model has no entry.
          */
         ModelMetrics: {
             /** @constant */
@@ -451,7 +451,7 @@ export interface components {
                     accuracy_vs_gs: components["schemas"]["stat"];
                     time_ms: components["schemas"]["stat"];
                     /** @constant */
-                    baseline: "M04";
+                    baseline: "M19";
                 };
                 "warmstart-model"?: {
                     held_out_n: number;
@@ -468,7 +468,7 @@ export interface components {
         };
         /**
          * ModelCard
-         * @description Model slots, catalog rows cgh-net 1.0.0 and warmstart-model 1.0.0 (they share this card): models/<slot>.json beside models/<slot>.onnx, written by the model unit's export and read by the pipeline and the web. cgh-net: in target float32 [1, 1, 128, 128] (target amplitude on the focal crop, normalised to unit energy), out phase float32 [1, 1, 128, 128] in radians; baseline GS (M04) at 30 iterations. warmstart-model: in traps float32 [1, 1024, 4] (x and y in focal bins over the half field, z in Rayleigh ranges, weight; padded) and mask float32 [1, 1024], out trap_phase float32 [1, 1024] in radians; baseline random trap phases from the portable RNG (the M02 start). With no valid released model the baseline answers and readiness says training. Rules the schema cannot state, checked by the model tests: sha256 and bytes are those of the file at onnx, and inputs and outputs are the graph's.
+         * @description Model slots, catalog rows cgh-net 1.0.1 and warmstart-model 1.0.1 (they share this card): models/<slot>.json beside models/<slot>.onnx, written by the model unit's export and read by the pipeline and the web. cgh-net: in target float32 [1, 3, 128, 128] (the target amplitudes of three focal planes at -8, 0 and +8 SLM-limited Rayleigh ranges, unit-sum intensities, for a 128 x 128 SLM with pad 1), out phase float32 [1, 1, 128, 128] in radians; baseline the volumetric GS (M19) at 30 iterations. warmstart-model: in traps float32 [1, 1024, 4] (x and y in focal bins over the half field, z in Rayleigh ranges, weight; padded) and mask float32 [1, 1024], out trap_phase float32 [1, 1024] in radians; baseline random trap phases from the portable RNG (the M02 start). With no valid released model the baseline answers and readiness says training. Rules the schema cannot state, checked by the model tests: sha256 and bytes are those of the file at onnx, and inputs and outputs are the graph's.
          */
         ModelCard: {
             /** @constant */

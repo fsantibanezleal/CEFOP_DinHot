@@ -25,19 +25,19 @@
     "sha256": "1aad5fa721fb25a6c04c4d0ea2c84fa79eb569b53f9526d4687ed12362659c5e"
   },
   "cgh-net": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "schema": "docs/contracts/schemas/model-card.schema.json",
-    "sha256": "c27a2a52034ecb77c1526ae4b863dd923c58f0aa5295e07a1eda47bbc273f471"
+    "sha256": "fbf5bb1cfce76201e3ba2cd41e13facdf990bf413f4d9b5695744c45c144cc34"
   },
   "warmstart-model": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "schema": "docs/contracts/schemas/model-card.schema.json",
-    "sha256": "c27a2a52034ecb77c1526ae4b863dd923c58f0aa5295e07a1eda47bbc273f471"
+    "sha256": "fbf5bb1cfce76201e3ba2cd41e13facdf990bf413f4d9b5695744c45c144cc34"
   },
   "model-metrics": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "schema": "docs/contracts/schemas/model-metrics.schema.json",
-    "sha256": "c3aff7cd0889572f11ff0e439e5f6a542fac1004b1d412e19ca1dfbfca620092"
+    "sha256": "b611aaae257d6f22ca9960911a9307a5c77184c174607204c365141cad0d4b48"
   },
   "model-evidence": {
     "version": "1.0.0",

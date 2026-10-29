@@ -1,8 +1,8 @@
 """Baselines of the two model slots (catalog rows cgh-net and warmstart-model): what answers behind the same contract while
 no released model exists, and the other side of the swap tests.
 
-- ``cgh_net_baseline``: Gerchberg-Saxton (M04, ladder row M04) for 30 iterations on the same target as the network, through
-  the method registry (it needs the engine's M04 module).
+- ``cgh_net_baseline``: the volumetric 3D Gerchberg-Saxton (M19, ladder row M19) for 30 iterations on the same three-plane
+  target as the network, through the method registry (it needs the engine's M19 module); M17 measures itself against it.
 - ``warmstart_baseline``: the random trap phases of the portable RNG, the start of the random-superposition method (M02) and
   of every method that draws its own start, so the model's warm start is measured against exactly this.
 
@@ -18,11 +18,11 @@ from .holo.core.rng import Rng
 from .holo.core.types import Budget, Target
 
 GS_ITERATIONS = 30
-GS_METHOD = "M04"
+GS_METHOD = "M19"
 
 
 def cgh_net_baseline(setup: Setup, target: Target, seed: int, device=None) -> np.ndarray:
-    """The GS phase mask (``n_pix x n_pix``, radians) for ``target``; ``LookupError`` if M04 is not registered."""
+    """The M19 phase mask (``n_pix x n_pix``, radians) for ``target``; ``LookupError`` if M19 is not registered."""
     try:
         method = methods.get(GS_METHOD)
     except KeyError as exc:

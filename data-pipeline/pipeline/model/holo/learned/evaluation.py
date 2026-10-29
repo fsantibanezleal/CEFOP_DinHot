@@ -2,10 +2,9 @@
 ``methods/learned/m17_cgh_net.py`` and ``b3_warm_start.py`` and the baselines through the engine, on the held-out files of
 ``heldout.py``; ``stages/evaluate.py`` writes its numbers into ``data/derived/models/metrics.json``.
 
-cgh-net: per held-out target, the accuracy AC (unit-sum intensities, ``torch_forward.accuracy`` in numpy) of the network's mask
-and of GS (M04) given the SAME wall-clock as the network's median inference time (``Budget`` with a time cap; at least one
-iteration), plus GS at 30 iterations (the catalog baseline) and 300 iterations, and a lean numpy GS (two FFTs per iteration)
-at the same wall-clock, because the engine's M04 does extra bookkeeping per iteration. ``accuracy_vs_gs`` is the per-target ratio.
+cgh-net: per held-out volume (three focal planes), the accuracy AC (unit-sum intensities, ``torch_forward.accuracy`` in numpy) of
+the hybrid (the network's phase refined by M19) against the volumetric GS (M19) alone at the same wall-clock; see
+``evaluate_cgh``. ``accuracy_vs_gs`` is the per-volume ratio.
 
 warmstart-model: per held-out geometry and per seed, M07 from the random start (its own, ``init=None``) and from the learned
 start, the same ``Rng`` seed and the same iteration budget; iterations to 1 percent of relative standard deviation (the budget
@@ -94,10 +93,10 @@ def evaluate_cgh(models_dir: Path, heldout_path: Path) -> tuple[dict, dict]:
         curve[f"{1000 * tb:.0f} ms"] = {"fraction_of_T": frac, "n_volumes": len(rr), "ratio_hybrid_over_m19": stat(rr), "share_above_1": float(np.mean(np.array(rr) > 1.0))}
     col = lambda k: np.array([r[k] for r in rows])  # noqa: E731
     ratio = col("ac_hybrid") / col("ac_m19_matched")
-    entry = {"held_out_n": len(rows), "accuracy_vs_gs": stat(ratio), "time_ms": stat(col("time_hybrid_ms")), "baseline": "M04"}
+    entry = {"held_out_n": len(rows), "accuracy_vs_gs": stat(ratio), "time_ms": stat(col("time_hybrid_ms")), "baseline": "M19"}
     kinds_arr = np.array([k.split("/")[1] if "/" in k else k for k in kinds])
     detail = {
-        "slot": "cgh-net", "variant": "three planes at Z = -8, 0, +8 Rayleigh ranges", "baseline_is": "M19 (the schema constant 'M04' names GS, the catalog baseline before this decision)",
+        "slot": "cgh-net", "variant": "three planes at Z = -8, 0, +8 Rayleigh ranges", "baseline_is": "M19",
         "wall_clock_budget_ms": 1000 * budget_s, "budget_definition": "median wall time of M19 at 30 iterations on the held-out volumes, this machine",
         "accuracy": "mean over planes of AC = 2 sum(TI) / (sum T^2 + sum I^2), unit-sum plane intensities",
         "ac_median": {k: float(np.median(col(k))) for k in ("ac_hybrid", "ac_net_alone", "ac_m19_matched")},

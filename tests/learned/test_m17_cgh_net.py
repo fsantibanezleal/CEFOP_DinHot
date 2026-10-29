@@ -113,3 +113,21 @@ def test_sampled_held_out_volumes_beat_m19_at_the_same_wall_clock():
         g = m19_multiplane.run(SETUP, t, budget=Budget(10**6, budget_s), rng=Rng(1), dz_m=dz)
         ratios.append(evaluation.plane_accuracy(amps[i], h.phi) / evaluation.plane_accuracy(amps[i], g.phi))
     assert float(np.median(ratios)) > 1.0, np.round(np.percentile(ratios, [25, 50, 75]), 4)
+
+
+def test_a_released_model_without_onnxruntime_refuses(monkeypatch):
+    """A released slot with no onnxruntime is a broken environment: the run raises instead of answering with the baseline."""
+    if not is_valid_slot(MODELS, "cgh-net"):
+        pytest.skip("no released cgh-net graph in models/")
+    import builtins
+    from pipeline.model.holo.methods.learned import _slot
+    real_import = builtins.__import__
+    def no_ort(name, *a, **k):
+        if name == "onnxruntime" or name.startswith("onnxruntime."):
+            raise ImportError("planted: onnxruntime absent")
+        return real_import(name, *a, **k)
+    monkeypatch.setattr(_slot, "_CACHE", {})
+    monkeypatch.setattr(builtins, "__import__", no_ort)
+    rows = generators.sample_volume(np.random.default_rng(2), "lattice")[1]
+    with pytest.raises(RuntimeError, match="onnxruntime is not installed"):
+        m17_cgh_net.run(SETUP, _target(rows), budget=Budget(1), rng=Rng(1))

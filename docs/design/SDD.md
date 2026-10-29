@@ -297,7 +297,7 @@ or the case's own), computed live where the method is live. The trap editor (add
   separable crosstalk blur at pixel centres, `decode.ts`); the closed forms of the device effects are sinc^2(1/N) (Moreno et al. Eq. 6), the fill
   factor squared (arXiv:1512.06241) and the pixel-aperture roll-off sinc^2(sqrt(f) / 2) (`device.py`).
 - Learned models: M17 (cgh-net) answers in the browser only on 128 x 128 cases with a released model; its phase is shown and its focal plane
-  needs the engine. Without a model its baseline, GS (M04) at 30 iterations, answers. B3 (warmstart-model) hands M07 its trap phases
+  needs the engine. Without a model its baseline, the volumetric GS (M19) at 30 iterations, answers. B3 (warmstart-model) hands M07 its trap phases
   (`trapPhases`); without a model the engine's own random start answers. The readiness document decides first: a slot it lists as training with
   the baseline is not fetched (no 404 in the console). The graphs are run by `onnxruntime-web`, whose WASM binary is bundled by Vite from the
   package (the same release as the JavaScript, served from the site, no CDN; one thread, no proxy worker, because GitHub Pages sends no COOP or

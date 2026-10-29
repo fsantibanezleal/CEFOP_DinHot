@@ -13,9 +13,9 @@ Python validates against them in its tests, and the TypeScript types are generat
 | case-manifest | 1.0.0 | `docs/contracts/schemas/case-manifest.schema.json` | `data-pipeline/pipeline/core/manifest.py` | the web, the API |
 | trace | 1.0.0 | `docs/contracts/schemas/trace.schema.json` | `data-pipeline/pipeline/core/trace.py` | the web, the API |
 | benchmark-results | 1.0.0 | `docs/contracts/schemas/benchmark-results.schema.json` | `data-pipeline/pipeline/stages/benchmark.py` | the web, the API |
-| cgh-net (model slot) | 1.0.0 | `docs/contracts/schemas/model-card.schema.json` | the training stage | the bake, the web (ONNX inference) |
-| warmstart-model (model slot) | 1.0.0 | `docs/contracts/schemas/model-card.schema.json` | the training stage | the bake, the web (ONNX inference) |
-| model-metrics | 1.0.0 | `docs/contracts/schemas/model-metrics.schema.json` | the evaluate stage | the web, the API |
+| cgh-net (model slot) | 1.0.1 | `docs/contracts/schemas/model-card.schema.json` | the training stage | the bake, the web (ONNX inference) |
+| warmstart-model (model slot) | 1.0.1 | `docs/contracts/schemas/model-card.schema.json` | the training stage | the bake, the web (ONNX inference) |
+| model-metrics | 1.0.1 | `docs/contracts/schemas/model-metrics.schema.json` | the evaluate stage | the web, the API |
 | engine-reference | 1.0.0 | `docs/contracts/schemas/engine-reference.schema.json` | the engine-reference writer of the Python engine | the TypeScript engine's parity tests |
 | readiness | 1.0.0 | `docs/contracts/schemas/readiness.schema.json` | `data-pipeline/pipeline/core/readiness.py` | the web, the API |
 | api | 1.0.0 | `docs/contracts/api.openapi.json` (OpenAPI 3.1) | `app/` | any HTTP client |
@@ -59,8 +59,9 @@ A manifest is a pure function of `(params, seed)`: no clock. Units are fixed (se
 
 ## The model slots
 
-Two slots, each an ONNX graph plus a card (the card names its own slot, its byte size and its SHA-256). **cgh-net**: input `target` float32 [1, 1, 128, 128] (the target amplitude on the focal crop, unit energy), output `phase`
-float32 [1, 1, 128, 128] in radians; baseline: GS ([M04](../frameworks/M04_gerchberg-saxton.md)) at 30 iterations. **warmstart-model**: input `traps` float32 [1, 1024, 4] (x and y in focal bins over the half field, z in Rayleigh
+Two slots, each an ONNX graph plus a card (the card names its own slot, its byte size and its SHA-256). **cgh-net**: input `target` float32 [1, 3, 128, 128] (the target amplitudes of three focal planes at -8, 0 and +8 SLM-limited Rayleigh
+ranges, unit-sum intensities, for a 128 x 128 SLM with pad 1), output `phase` float32 [1, 1, 128, 128] in radians; baseline: the volumetric GS
+([M19](../frameworks/M19_volumetric-3d-gs.md)) at 30 iterations. **warmstart-model**: input `traps` float32 [1, 1024, 4] (x and y in focal bins over the half field, z in Rayleigh
 ranges, weight; padded) and `mask` float32 [1, 1024], output `trap_phase` float32 [1, 1024] in radians; baseline: the random trap phases of the portable generator ([P07](../frameworks/P07_portable-rng.md)). A slot is released
 only when its card validates and its graph exists with the card's size and hash (`data-pipeline/pipeline/io/model_card.py`); otherwise the baseline answers and readiness says `training`. A swap test runs the same assertions
 against the baseline and the released model. The baselines are in `data-pipeline/pipeline/model/baseline.py`; they need no released model.

@@ -1,13 +1,13 @@
-# M17, Unsupervised CNN hologram (DeepCGH-style)
+# M17, Unsupervised CNN hologram (DeepCGH-style, three planes)
 
 | Item | Value |
 |---|---|
 | Family | learned |
 | Lane | baked training, live inference in the browser (ONNX, WebAssembly, one thread) |
-| Targets, dimensions | shaped and point targets on a focal crop, 2D |
-| Module | pending: the learned-methods package is in development and is not on this branch |
+| Targets, dimensions | point traps on three focal planes (-8, 0, +8 SLM-limited Rayleigh ranges), 3D |
+| Module | `data-pipeline/pipeline/model/holo/methods/learned/m17_cgh_net.py` (`SPEC` line 40, `run` line 82); network and training in `data-pipeline/pipeline/model/holo/learned/` |
 | Anchor | Eybposh et al., Opt. Express 28, 26636 (2020) |
-| Status | architecture and contract documented; measured values pending (see the end of this card) |
+| Status | released: `models/cgh-net.onnx` and its card `models/cgh-net.json`; design record [M17](../design/methods/M17-unsupervised-cnn-hologram.md) |
 
 ## Purpose
 
@@ -25,16 +25,18 @@ uniformity of hundreds of point traps. A supervised variant for tweezers (Ren et
 
 ## DinHot's design (contract and training protocol)
 
-- Input: the target amplitude on a $128\times128$ focal crop, normalised to unit energy; output: the phase on the SLM grid of 128 pixels at training time, in radians.
+- Input: the target amplitudes of three focal planes ($z = -8, 0, +8$ SLM-limited Rayleigh ranges) on a $128\times128$ focal crop, each plane normalised to unit
+  energy; output: the phase on the SLM grid of 128 pixels with padding 1, in radians. A first single-plane version tied with GS and was not released (record
+  `data/derived/models/cgh-net-2d-rejected.json`); the released model is the volume setting of the source.
 - Loss: unsupervised, a normalised intensity error (or the negative accuracy) through a differentiable Fourier model in the training framework. That forward model is re-implemented
   there and checked against the numpy engine of [P01](P01_forward-models-and-metrics.md) in a test.
-- Training targets: random point-trap sets and shaped targets from a seeded generator. Held-out: geometries drawn with a different seed, and the benchmark geometries at that size; the held-out set
+- Training targets: point voxels on the three planes (random sets, shifted lattices, rings, mixed) from a seeded generator. Held-out: geometries drawn with a different seed, and the benchmark geometries at that size; the held-out set
   is written before training and its hash is recorded in the model card.
 - Network: a small U-Net sized for at most 5 MB as an ONNX graph, using only operators the WebAssembly provider of onnxruntime-web supports; inference in the browser with a single thread
   (GitHub Pages sends no cross-origin isolation headers, so no shared memory).
 - Training runs locally on the GPU, never in CI, never in the browser (ADR-0069, ADR-0074). The released files are the model and its card; datasets and checkpoints stay in the data root.
-- Contract (catalog row `cgh-net`, version 1.0.0): input `target` float32 of shape [1, 1, 128, 128]; output `phase` float32 of shape [1, 1, 128, 128] in radians; the baseline behind
-  the slot is GS ([M04](M04_gerchberg-saxton.md)) at 30 iterations. If no valid released model exists, the baseline answers and the views label the result with the model that produced it.
+- Contract (catalog row `cgh-net`, version 1.0.1): input `target` float32 of shape [1, 3, 128, 128]; output `phase` float32 of shape [1, 1, 128, 128] in radians; the baseline behind
+  the slot is the volumetric GS ([M19](M19_volumetric-3d-gs.md)) at 30 iterations. If no valid released model exists, the baseline answers and the views label the result with the model that produced it.
   See [the data contracts](../architecture/08_data-contracts.md).
 
 ## Equations
@@ -47,18 +49,20 @@ with $T$ the normalised target intensity. This is the general form of the unsupe
 
 ## Acceptance criterion and test
 
-On held-out targets, accuracy above GS at the same wall-clock budget. The gate is a test of the learned methods named in the method ladder of the SDD (the file
-tests/methods/test_m17_cgh_net.py in the ladder; it is created with the learned-methods package and does not exist on this branch yet). A model that does not meet the criterion is not released: the baseline answers, readiness says
+On held-out three-plane volumes, the network start followed by M19 refinement inside the same wall-clock budget reaches a higher accuracy than M19 alone (median
+per-volume ratio above 1). Gate: `tests/learned/test_m17_cgh_net.py`. A model that does not meet the criterion is not released: the baseline answers, readiness says
 training, and the measured values are reported as they are.
 
 ## Measured values
 
-Pending. The measured values of the released model on the held-out set (accuracy against GS at equal wall clock, model size, inference time) are shown on the Benchmark page once the model is
-trained and released. No number is stated here before it is measured.
+Measured on the released model: `data/derived/models/metrics.json` (the median ratio against M19 at equal wall-clock and its quartiles) and
+`data/derived/models/evaluation-detail.json` (by kind, the budget curve, the network time). The conditions and the numbers are stated in the design record
+[M17](../design/methods/M17-unsupervised-cnn-hologram.md), Measured result, and shown on the Benchmark page.
 
 ## Limits
 
-- DeepCGH trains a separate model per resolution and target set; the released model is specific to its crop size.
+- DeepCGH trains a separate model per resolution and target set; the released model is specific to its crop size and its three planes.
+- The accuracy is DinHot's plane-image definition; the advantage is on plane images, not on trap uniformity (design record, Limits).
 - No published controlled comparison against WGS on trap-array uniformity exists; the benchmark protocol is DinHot's own.
 
 ## References
@@ -66,7 +70,3 @@ trained and released. No number is stated here before it is measured.
 - Eybposh et al. 2020, Opt. Express 28, 26636, https://doi.org/10.1364/OE.399624
 - Ren et al. 2024, https://arxiv.org/abs/2401.06014
 - Shi et al. 2021, Nature 591, https://doi.org/10.1038/s41586-020-03152-0 (the size of a hologram network; abstract only read)
-
-## Pending
-
-Training, export, held-out evaluation and the acceptance test of M17 (learned-methods work in progress); then this card and the Benchmark page take the measured values.
