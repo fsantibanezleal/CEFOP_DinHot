@@ -57,6 +57,59 @@ def test_cg_cost_never_increases_and_callback_can_stop():
     assert all(b <= a + 1e-15 for a, b in zip(seen, seen[1:]))
 
 
+class _Staircase:
+    """A cost the way a quantizing device makes it: the value is evaluated on the rounded phase, the gradient is the
+    straight-through one (the derivative of the unrounded cost), so the slope along a direction is not the slope of the value."""
+
+    def __init__(self, smooth: bool):
+        self.smooth = smooth
+        self.c = np.linspace(-1.3, 1.9, 24)
+        self.q = 0.45
+
+    def value_grad(self, x):
+        xq = self.q * np.round(x / self.q)
+        return float(np.sum((xq - self.c) ** 2) + 0.05 * np.sum(np.sin(7 * x) ** 2)), 2.0 * (x - self.c), None
+
+
+def test_cg_on_a_straight_through_staircase_follows_the_budget_and_never_raises_the_cost():
+    cost = _Staircase(smooth=False)
+    x0 = np.linspace(2.0, -1.0, 24)
+    for budget in (5, 40):
+        seen = []
+        with C.staircase_search():
+            res = C.cg_minimize(cost.value_grad, x0, budget, callback=lambda i, x, f, aux: seen.append(f) and False)
+        assert res.iterations == budget, res.iterations
+        assert all(b <= a + 1e-15 for a, b in zip(seen, seen[1:])) and res.f < cost.value_grad(x0)[0]
+
+
+def test_the_ladder_is_opt_in_and_only_for_a_nonsmooth_model():
+    """Outside ``staircase_search()`` a staircase model keeps the strong-Wolfe search (B1 on C08 keeps its results), and inside it a
+    model flagged smooth keeps it too: the run is that of the same function with no flag."""
+    x0 = np.linspace(2.0, -1.0, 24)
+    stair, smooth = _Staircase(smooth=False), _Staircase(smooth=True)
+    bare = C.cg_minimize(lambda x: stair.value_grad(x), x0, 40)
+    outside = C.cg_minimize(stair.value_grad, x0, 40)
+    assert outside.iterations == bare.iterations and np.array_equal(outside.x, bare.x) and outside.iterations < 40
+    with C.staircase_search():
+        inside_smooth = C.cg_minimize(smooth.value_grad, x0, 40)
+        inside_stair = C.cg_minimize(stair.value_grad, x0, 40)
+    assert np.array_equal(inside_smooth.x, C.cg_minimize(lambda x: smooth.value_grad(x), x0, 40).x)
+    assert inside_stair.iterations == 40 and inside_stair.f < outside.f
+    assert C.cg_minimize(stair.value_grad, x0, 40).iterations == bare.iterations      # the block is left again
+
+
+def test_cost_classes_report_whether_the_model_is_smooth():
+    s = make_setup(16)
+    traps = bin_grid(s, 2, 2, 4)
+    ideal, crosstalk_only = Device(), Device(crosstalk=(1.24, 1.80), upsample=3)
+    four_bit = Device(bit_depth=4, crosstalk=(1.24, 1.80), upsample=3)
+    assert C.TrapCost(s, traps).smooth and C.TrapCost(s, traps, ideal).smooth and C.TrapCost(s, traps, None).smooth
+    assert C.FocalForward(s, crosstalk_only).smooth and not C.FocalForward(s, four_bit).smooth
+    assert not C.TrapCost(s, traps, Device(bit_depth=4)).smooth
+    amp, mask = np.ones((32, 32)), np.ones((32, 32), dtype=bool)
+    assert C.FieldCost(s, amp, mask, crosstalk_only).smooth and not C.FieldCost(s, amp, mask, four_bit).smooth
+
+
 def test_adam_matches_hand_computed_first_steps():
     # f = x^2 / 2 at x0 = 1: g = 1, m1 = 0.1, v1 = 0.001 -> mhat = 1, vhat = 1, step lr * 1 / (1 + eps)
     def fun(x):
