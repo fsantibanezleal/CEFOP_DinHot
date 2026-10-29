@@ -120,3 +120,34 @@ def test_geometries_are_valid_records_and_in_units():
     assert {G.record("G7", device=False, seed=s)["target"]["shape"] for s in range(4)} == {"ring", "disc", "line", "lg_ring"}
     assert G.unit_um(256) == pytest.approx(G.unit_um(512)) and G.unit_um(256) == pytest.approx(0.996, abs=1e-3)
 
+
+
+def test_a_method_that_refuses_a_geometry_is_skipped_with_its_reason(tmp_path, monkeypatch):
+    """A ValueError of the method is a refusal: the cell is listed in skipped with the method's message, no row of it is kept,
+    and the other methods' cells still run (the run does not stop)."""
+    orig = protocol.infer.run_method
+
+    def refusing(rec, mid, *a, **k):
+        if mid == "M04":
+            raise ValueError("planted: the fft form needs traps on FFT bins")
+        return orig(rec, mid, *a, **k)
+
+    with Planted(tmp_path / "pl", ("M02", "M04"), "refusepkg"):
+        monkeypatch.setattr(protocol.infer, "run_method", refusing)
+        doc = protocol.run(tmp_path / "out", seeds=2, workers=1, reduced=True, geometries=["G1"], methods=["M02", "M04"])
+    assert cs.errors("benchmark-results", doc) == []
+    skipped = {(s["method"], s["geometry"]): s["reason"] for s in doc.get("skipped", [])}
+    assert "planted: the fft form needs traps on FFT bins" in skipped[("M04", "G1")]["en"]
+    assert skipped[("M04", "G1")]["es"].startswith("El método rechaza esta geometría")
+    assert not [r for r in doc["rows"] if r["method"] == "M04"]
+    assert [r for r in doc["rows"] if r["method"] == "M02" and r["geometry"] == "G1"]
+
+
+def test_an_error_that_is_not_a_refusal_stops_the_run(tmp_path, monkeypatch):
+    def broken(rec, mid, *a, **k):
+        raise RuntimeError("planted bug")
+
+    with Planted(tmp_path / "pl", ("M02",), "brokenpkg"):
+        monkeypatch.setattr(protocol.infer, "run_method", broken)
+        with pytest.raises(RuntimeError, match="planted bug"):
+            protocol.run(tmp_path / "out", seeds=2, workers=1, reduced=True, geometries=["G1"], methods=["M02"])

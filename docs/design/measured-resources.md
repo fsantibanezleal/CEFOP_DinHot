@@ -27,7 +27,7 @@ guard allows. The SDD's bound of 3 MB of artifacts and 256 KiB per trace holds.
 
 ## The bake: time and memory
 
-Measured by unit I1 (`changes/i1.md`, now in this record) with `python data-pipeline/run.py all --allow-missing-methods --workers 12` on the
+Measured by unit I1 with `python data-pipeline/run.py all --allow-missing-methods --workers 12` on the
 workstation (12 workers, 13 GB of RAM free):
 
 | measurement | value |
@@ -45,7 +45,7 @@ parallelism; the methods of a case run in sequence.
 
 ## The live engine: median time of one run
 
-Measured by unit T1 (`changes/t1.md`, now in this record): 30 iterations of M07 on the 256 x 256 padded-2 grid, a warm run, in the dedicated
+Measured by unit T1: 30 iterations of M07 on the 256 x 256 padded-2 grid, a warm run, in the dedicated
 Web Worker, CPU path, the whole run including the scoring from the final phase, in Chromium 153.
 
 | case | traps | form | time |

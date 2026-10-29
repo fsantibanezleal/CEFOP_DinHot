@@ -1,6 +1,6 @@
 // The fourth group of the Implementation page, "How does it ship?": the models and their slots, the web, and the versions, CI and deploy
 // (area `deployment`). Sources: the contract catalog (rows cgh-net, warmstart-model, model-metrics and their missing-data states),
-// frontend/src/lib/ort.ts, frontend/scripts/copy-data.mjs, data-pipeline/pipeline/model/baseline.py, the U2b fragment changes/u2b.md,
+// frontend/src/lib/ort.ts, frontend/scripts/copy-data.mjs, data-pipeline/pipeline/model/baseline.py,
 // the SDD ("Deploy driver", "Technology and versions", "ADR fit"), frontend/src/App.tsx, frontend/vite.config.ts, frontend/scripts/
 // {materialize-routes,gate}.mjs, .github/workflows/{ci,deploy-pages}.yml and scripts/check_live.py. The learned models are in progress
 // (unit M1): this page describes their slots from the catalog and the code; their measurements are on the Benchmark page.

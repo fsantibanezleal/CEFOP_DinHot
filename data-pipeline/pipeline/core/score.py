@@ -17,7 +17,7 @@ device and aberration, so methods are compared on one footing and a method canno
   after the scale fit, Pasienski and DeMarco 2008, Eq. 2, algorithms dossier D1.0) and ``signal_efficiency`` (power in the
   signal region over the total). The two required slots of the contracts carry them: ``rel_std_pct`` is
   ``signal_rms_error_pct`` (clipped to the units domain, 1000) and ``uniformity`` is ``max(0, 1 - signal_rms_error_pct /
-  100)``; the schema change that gives them names of their own is proposed in ``changes/i1.md``.
+  100)``; names of their own would need a minor version of the trace and manifest schemas, not made in this release.
 - The aberration of the record multiplies the SLM field (added to the phase) in an ideal-device case.
 """
 from __future__ import annotations

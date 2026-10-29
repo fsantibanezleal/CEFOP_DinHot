@@ -5,7 +5,7 @@
 //    (https://creativecommons.org/licenses/by/4.0/), https://colorcet.com ; Kovesi, "Good Colour Maps: How to Design Them",
 //    arXiv:1509.03700. A cyclic map: the phase 0 and 2 pi are the same colour, so the wrap is not an edge.
 //  - INTENSITY_LUT: inferno, Nathaniel Smith and Stefan van der Walt (matplotlib 3.11.2 _cm_listed.py), licence CC0.
-// The attribution line is in changes/u2b.md for ATTRIBUTION.md.
+// The attribution line is in ATTRIBUTION.md (Colormaps).
 const PHASE_B64 = [
   '+YX4+oT2+4Pz/ILx/IHu/X/r/X7o/Xzl/Xri/Xje/Xbb/HTX/HLU+3DQ+23M+mvI+mnF+WfB+GS992K591+19l2y9Vuu9Fiq81am',
   '8lSj8VGf8E+b70yX7kqU7UiQ7EaM6kOI6UGE6D+B5j195Tt54zl14Tdx4DVt3jNq3DFm2i9i2S1e1yxa1SpW0yhT0SZPzyRLzSNH',

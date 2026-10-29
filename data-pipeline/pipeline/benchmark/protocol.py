@@ -23,7 +23,9 @@ tuning runs is the same for every tuned method (``TUNING_CANDIDATES * TUNING_SEE
 each row says which it is.
 
 A cell that cannot run is listed in ``skipped`` with its reason (the method is not registered, its spec does not take the
-geometry's target, or a device model cannot be read off the focal plane), never silently absent (ADR-0069).
+geometry's target, the method refuses the geometry when it runs, or a device model cannot be read off the focal plane), never
+silently absent (ADR-0069). A refusal is a ``ValueError`` the method raises on the geometry (for example M12's FFT bins, M17's
+trained SLM size, M19's axial pitch): its message is the reason, and no row of that cell is kept. Any other exception stops the run.
 """
 from __future__ import annotations
 
@@ -154,9 +156,25 @@ def tune(mid: str, geometry: str, device: bool, reduced: bool) -> dict | None:
     return min((r for r in results if r[1] >= floor), key=lambda r: r[2])[0]
 
 
+def refusal_reason(message: str) -> dict:
+    """The skipped reason of a cell whose method refused the geometry: the method's own message, which is English."""
+    msg = message.strip().rstrip(".")
+    return _text(f"The method refuses this geometry: {msg}.",
+                 f"El método rechaza esta geometría (motivo que da el método, en inglés): {msg}.")
+
+
 def run_group(task: dict) -> dict:
     """One (method, geometry, device, parameter set) group over all seeds: its rows, and B5's Pareto points if any.
-    Runs in a worker process; ``task`` is plain data."""
+    Runs in a worker process; ``task`` is plain data. A ``ValueError`` of the method (it refuses the geometry) returns no rows
+    and the refusal instead."""
+    try:
+        return _run_group(task)
+    except ValueError as exc:
+        return {"rows": [], "pareto": None, "geometry": task["geometry"],
+                "refused": {"method": task["method"], "geometry": task["geometry"], "reason": refusal_reason(str(exc))}}
+
+
+def _run_group(task: dict) -> dict:
     for p in task.get("sys_path", []):
         if p not in sys.path:
             sys.path.insert(0, p)
@@ -284,8 +302,23 @@ def run(derived_root: str | Path, *, seeds: int = 20, workers: int = 12, reduced
 
     n_workers = max(1, min(int(workers), MAX_WORKERS))
 
+    refused: set[tuple[str, str]] = set()
+
     def absorb(res: dict) -> None:
-        nonlocal pareto
+        nonlocal pareto, rows
+        if res.get("refused"):
+            cell = (res["refused"]["method"], res["refused"]["geometry"])
+            if cell not in refused:
+                refused.add(cell)
+                skipped.append(res["refused"])
+            rows = [r for r in rows if (r["method"], r["geometry"]) != cell]
+            if cell[0] == "B5":
+                pareto = [p for p in pareto if p["geometry"] != cell[1]]
+            flush()
+            return
+        cell = (res["rows"][0]["method"], res["rows"][0]["geometry"]) if res["rows"] else None
+        if cell in refused:
+            return
         rows.extend(res["rows"])
         if res["pareto"]:
             pareto = [p for p in pareto if p["geometry"] != res["geometry"]] + [
