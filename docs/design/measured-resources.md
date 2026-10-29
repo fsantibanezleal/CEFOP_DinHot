@@ -1,148 +1,79 @@
-# Measured resources and the numbers of the example
+# Measured resources of DinHot
 
-The committed evidence behind the numbers that [`SDD.md`](SDD.md) and the example's technical view state in the Lanes, the
-Resources and the Deploy driver. The example's executive view (`content/executive.json`) states none of them: it frames
-a problem space with sourced industry figures only. Measured on 2026-10-12 on the development workstation (Windows 11, Python 3.13, Node
-24.14.1) on a `git archive` copy of the release branch, so that nothing of the working tree was touched. A product
-measures its own and replaces this record. Sizes are bytes of file content unless a line says "on disk" (allocated
-blocks, which is what `du -sk` reports and is larger).
+The committed evidence behind the numbers that [`SDD.md`](SDD.md) states in the Resources, the Lanes and the Deploy driver. Each section
+says who measured it, on what, and where the measurement can be repeated. The measuring machine is the development workstation (Windows 11,
+Intel Core i9-14900HX, 48 GB RAM, RTX 4070 Laptop 8 GB, Python 3.13, Node 24); the browser is Chromium 153.0.8010.12 driven by Playwright
+1.63. Sizes are bytes of file content. A figure that was measured by a unit of the build and is not repeated here is marked with the unit that
+holds its report in the coordination records; nothing below is quoted from a paper.
 
 ## Stored size of the committed artifacts
 
+Measured on 2026-10-28 on the tree of the release branch.
+
 ```
 $ find data/derived -type f | xargs du -cb | tail -1
-35145	total
+2046947	total
 $ find data/derived -type f | wc -l
-14
-$ du -sk data/derived | cut -f1
-112
+33
+$ ls -l models/cgh-net.onnx
+4671540
 ```
 
-The artifacts hold 35,145 bytes in 14 files (34.3 KiB). The 112 is kilobytes allocated on disk, not content. The
-SDD says 35 KB.
+`data/derived/` holds 2,046,947 bytes (1.95 MiB) in 33 files: the thirteen cases (twelve baked, one refused), the index, the manifests
+(245,687 bytes together), the traces, the benchmark results (39,636 bytes), the model metrics and the readiness. The twelve traces together hold
+1,701,463 bytes (1,661.6 KiB); the largest is C03, the 32x32 lattice, with 258,681 bytes, under the lane gate's 262,144 bytes (256 KiB), and the
+next is C13 with 217,494 bytes. The released graph `models/cgh-net.onnx` holds 4,671,540 bytes (4.46 MiB), under the 5 MB per file the base-integrity
+guard allows. The SDD's bound of 3 MB of artifacts and 256 KiB per trace holds.
 
 ## The bake: time and memory
 
-A throwaway root, so the committed artifacts stay as they are. The script prints the wall time of `run_all` (five
-cases, the released surrogate) and the peak working set of the process (`GetProcessMemoryInfo`).
+Measured by unit I1 (`changes/i1.md`, now in this record) with `python data-pipeline/run.py all --allow-missing-methods --workers 12` on the
+workstation (12 workers, 13 GB of RAM free):
 
-```python
-"""Bake all five cases into a throwaway root and print the wall time, the peak working set and the bytes written."""
-import ctypes
-import ctypes.wintypes as wt
-import sys
-import time
-from pathlib import Path
+| measurement | value |
+|---|---|
+| canonical bake, 11 cases in parallel, C11 refused, idle machine | 515 s (8 min 36 s) |
+| the same bake while the machine ran other jobs | 761 s |
+| the slowest cases | C05 514 s, C08 354 s, C02 347 s |
+| the sequential bake of the first sandbox run | 5,084 s |
+| peak working set of one case process | 322 MB; the 11 processes together under 3.6 GB |
+| measurement of the expected ranges, 3 seeds, 33 case bakes | 1,813 s |
+| case C13 alone: ranges run (3 seeds, 3 workers) / canonical bake (1 worker) | 504 s / about 450 s |
 
-sys.path.insert(0, "data-pipeline")
-from pipeline import pipeline  # noqa: E402
-
-
-class Counters(ctypes.Structure):
-    _fields_ = [("cb", wt.DWORD), ("PageFaultCount", wt.DWORD), ("PeakWorkingSetSize", ctypes.c_size_t),
-                ("WorkingSetSize", ctypes.c_size_t), ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
-                ("QuotaPagedPoolUsage", ctypes.c_size_t), ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
-                ("QuotaNonPagedPoolUsage", ctypes.c_size_t), ("PagefileUsage", ctypes.c_size_t),
-                ("PeakPagefileUsage", ctypes.c_size_t)]
-
-
-out = Path(sys.argv[1])
-start = time.perf_counter()
-entries = pipeline.run_all(seed=42, output_root=out)
-elapsed = time.perf_counter() - start
-c = Counters()
-c.cb = ctypes.sizeof(c)
-kernel = ctypes.windll.kernel32
-psapi = ctypes.windll.psapi
-kernel.GetCurrentProcess.restype = wt.HANDLE
-psapi.GetProcessMemoryInfo.argtypes = [wt.HANDLE, ctypes.POINTER(Counters), wt.DWORD]
-psapi.GetProcessMemoryInfo(kernel.GetCurrentProcess(), ctypes.byref(c), c.cb)
-size = sum(p.stat().st_size for p in out.rglob("*") if p.is_file())
-print(f"cases={len(entries)} seconds={elapsed:.3f} peak_working_set_mb={c.PeakWorkingSetSize / 1048576:.1f} bytes_written={size}")
-```
-
-```
-$ python measure_bake.py <a throwaway directory>      (three runs, the directory emptied before each)
-cases=5 seconds=0.083 peak_working_set_mb=32.9 bytes_written=35293
-cases=5 seconds=0.138 peak_working_set_mb=33.0 bytes_written=35293
-cases=5 seconds=0.132 peak_working_set_mb=33.1 bytes_written=35293
-```
-
-So the bake of five cases takes 0.1 s (0.08 to 0.14 s) and peaks at 33 MB. The SDD says 0.1 s and 33 MB.
+The Resources row of the SDD says about 9 minutes and 4 GB on 12 cores for the thirteen cases. One case per process is the unit of
+parallelism; the methods of a case run in sequence.
 
 ## The live engine: median time of one run
 
-`frontend/src/engine/sir.ts` run by Node 24 on the parameters of each committed manifest, 2000 timed runs after 200
-warm-up runs (`node bench_live.mjs` from the repository root; Node strips the types itself).
+Measured by unit T1 (`changes/t1.md`, now in this record): 30 iterations of M07 on the 256 x 256 padded-2 grid, a warm run, in the dedicated
+Web Worker, CPU path, the whole run including the scoring from the final phase, in Chromium 153.
 
-```js
-// Median wall time of one live run (frontend/src/engine/sir.ts) for each committed case, 2000 timed runs after 200 warm-up runs.
-import { readFileSync, readdirSync } from 'node:fs';
-import { simulate } from './frontend/src/engine/sir.ts';
+| case | traps | form | time |
+|---|---|---|---|
+| C02, the default case | 100, off bin | point-trap | 0.49 to 0.80 s depending on the browser mode and the machine load; inside the 1500 ms budget |
+| C03, the large array | 1,024, off bin | point-trap | 2.4 to 4.3 s; outside the budget (Node on the same machine: 0.55 s; the factor between the worker and Node is a measured variance of this laptop) |
+| C03 as measured by unit I1 in another run | 1,024, off bin | point-trap | 1.0 to 3.5 s in Chromium, against 0.49 to 0.80 s for the on-bin C02 |
 
-const dir = 'data/derived/manifests';
-for (const f of readdirSync(dir).filter((n) => n.endsWith('.json') && n !== 'index.json').sort()) {
-  const m = JSON.parse(readFileSync(`${dir}/${f}`, 'utf8'));
-  const p = m.params;
-  for (let i = 0; i < 200; i++) simulate(p);
-  const times = [];
-  for (let i = 0; i < 2000; i++) {
-    const t = performance.now();
-    simulate(p);
-    times.push(performance.now() - t);
-  }
-  times.sort((a, b) => a - b);
-  console.log(`${m.case_id} median_ms=${times[1000].toFixed(4)} p95_ms=${times[1900].toFixed(4)} budget_ms=${m.gate.run_ms_budget}`);
-}
-console.log(`node ${process.version}`);
-```
+The FFT of the engine (fft.js, Float64, radix 4) measured 34.9 ms for a 1024 squared complex transform in Node 24, and a weighted GS iteration
+at the live grid (256 squared padded to 512 squared) about 24 ms in Node 24. The cases C01, C02 and C03 sit on integer-bin lattices so that the
+FFT form applies and the live lane keeps its 1500 ms budget.
 
-```
-CTRL_degenerate median_ms=0.0055 p95_ms=0.0199 budget_ms=1500
-EX01_subcritical median_ms=0.0090 p95_ms=0.0224 budget_ms=1500
-EX02_epidemic median_ms=0.0096 p95_ms=0.0121 budget_ms=1500
-EX03_fast_burn median_ms=0.0090 p95_ms=0.0113 budget_ms=1500
-EX04_slow_spread median_ms=0.0090 p95_ms=0.0115 budget_ms=1500
-node v24.14.1
-```
+WebGPU (Intel gen-12lp adapter, Chromium new headless mode only): 30 iterations of M07 on the same cases with the traps moved onto FFT bins take
+0.31 to 0.32 s against 1.5 to 1.6 s on the CPU in that mode, 5 times faster. Agreement with the CPU path: 3e-5 rad after one iteration, 5e-7 in
+efficiency and 9e-5 relative in the trap intensities after thirty. The GPU path holds two `nFft^2` complex float32 buffers (4 MB at 512 squared) and
+a few trap-sized buffers, released when the run ends or is cancelled; the point-trap plan caches at most `M n <= 2e6` factors (32 MB). These
+numbers are repeated by `frontend/scripts/engine-browser.mjs` (real Worker and WebGPU in Chromium, local, never in Node CI).
 
-The medians are 0.006 to 0.010 ms per run, against the run budget of 1500 ms that every manifest carries
-(`gate.run_ms_budget`, set by `data-pipeline/pipeline/core/gate.py`). The SDD of 2026-10-04 said 0.02 to 0.08 ms; this
-measurement replaces it.
+## Training the learned model
+
+The training record `data/derived/models/cgh-net-training.json` (unit M1) holds the configuration and the sizes of `cgh-net`: 16,000 steps of
+batch 32, learning rate 0.001, 14 channels, at most 2.2 hours, 4,671,540 bytes of ONNX at opset 17. The graph agrees with the training
+framework on the reconstructed focal intensity to a relative 8.4e-6 (the card states 1e-5). On 162 held-out volumes the median accuracy against GS is
+1.140 (quartiles 1.102 and 1.160), and one solve takes a median 7,486 ms in the comparison that gave it (`data/derived/models/metrics.json`).
+The slot `warmstart-model` was trained and rejected: `data/derived/models/warmstart-model-rejected.json` records the measured negative.
 
 ## The site: build and deploy payload
 
-`npm ci` then `npm run build` in `frontend/` (87 packages added in 2 min with a cold cache; Vite reports the bundle
-built in 4.72 s).
-
-```
-$ find dist -type f | xargs du -cb | tail -1
-1917973	total
-$ find dist -type f | wc -l
-83
-$ find dist -path '*data*' -type f | xargs du -cb | tail -1      (the artifacts the site serves)
-35145	total
-$ find dist -type f -not -path '*data*' | xargs du -cb | tail -1  (the site itself)
-1882828	total
-$ find dist -name '*.woff*' -o -name '*.ttf' | xargs du -cb | tail -1   (the KaTeX fonts)
-1072948	total
-$ du -sk dist | cut -f1                                           (allocated on disk)
-2274
-```
-
-The deploy payload is the whole of `frontend/dist`: 1,917,973 bytes (1.9 MB) in 83 files, made of 1,882,828 bytes of
-site files (1.88 MB, 1.07 MB of them KaTeX fonts) and 35,145 bytes of artifacts (35 KB, the same bytes as
-`data/derived`). The 2.2 MB the SDD used to state is the allocation on disk (2274 KB), not the payload that is uploaded.
-
-## The numbers of the example's technical view that come from committed files
-
-- Epidemic case: `data/derived/manifests/EX02_epidemic.json` holds `beta 0.55`, `gamma 0.2`, `N 100000.0`, so the
-  reproduction number is 0.55 / 0.2 = 2.75 for 100000 people; `data/derived/EX02_epidemic/trace.json` holds
-  `peak_I 27345.24` and `t_peak 24.25` (27345 people on day 24.25).
-- Fast-burn case: `data/derived/manifests/EX03_fast_burn.json` holds `beta 1.2`, `gamma 0.2` (a reproduction number
-  of 6); `data/derived/EX03_fast_burn/trace.json` holds `t_peak 9.25`.
-- Herd threshold: computed as 1 - 1/2.75 = 0.636 from the relation of the cited work
-  (https://doi.org/10.1007/BF00178324 defines the basic reproduction ratio); the paper does not state 63.6 itself.
-- Held-out error of the fast approximation: `data/derived/manifests/EX02_epidemic.json` holds
-  `surrogate_peakfrac_rmse 0.00732` and `n_holdout 20`.
-- Run budget: `gate.run_ms_budget 1500.0` in each manifest.
+The deploy payload is the build of `frontend/` plus the committed artifacts copied by `frontend/scripts/copy-data.mjs`; the largest single file
+is the onnxruntime WASM binary. The SDD bound is 30 MB uploaded to GitHub Pages. This record is updated with the measured size of
+`frontend/dist` by the release check (`npm run build`), whose output is not committed.

@@ -1,4 +1,5 @@
 # Features whose requirements.md carries "Status: planned" or "Status: superseded" (scripts/check_sdd.py).
 # One line per feature folder: "<feature>: <reason>". A status other than live with no line here, or a line with no
 # reason, is a finding: a feature cannot leave the gate by relabelling itself. Reviewed with the pull request that adds
-# a line. The example workbench is live, so this file lists nothing.
+# a line. Every other feature is live.
+architecture: no product test reads the five diagrams of the architecture modal yet; the shell's measured gate (npm run gate, local) opens the modal and scripts/check_svg_animation.py holds the motion rule, and a vitest test over frontend/src/architecture/index.ts is planned with the documents unit
