@@ -30,7 +30,8 @@ from __future__ import annotations
 import inspect
 import os
 import sys
-from concurrent.futures import ProcessPoolExecutor
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -49,6 +50,10 @@ TUNING_SEEDS = 3
 TUNING_SEED_OFFSET = 1000
 TUNING_ITERATIONS = 30
 MAX_WORKERS = 12
+# A group runs seeds until it has used GROUP_BUDGET_S of wall-clock time, never fewer than MIN_SEEDS: every row records the
+# seeds it ran (n_seeds), so a group that stopped early says so instead of holding the whole run.
+GROUP_BUDGET_S = 600.0
+MIN_SEEDS = 2
 # the dossier's tuned parameters (D4.3 item 5); applied only when the method's run accepts the name
 FALLBACK_TUNING: dict[str, list[dict]] = {
     "M05": [{"alpha": a} for a in (0.25, 0.5, 0.75, 1.0)],
@@ -165,7 +170,10 @@ def run_group(task: dict) -> dict:
     extra = infer._accepted(run_fn, extra)
     per: dict[tuple, list] = {}
     pareto = None
+    t_group = time.perf_counter()
     for seed in range(proto.seeds):
+        if seed >= MIN_SEEDS and not proto.reduced and time.perf_counter() - t_group > GROUP_BUDGET_S:
+            break
         rec = _record(geometry, device, seed, proto.reduced)
         ctx = infer.case_context(rec)
         runs = [("iterations", n, Budget(n)) for n in proto.iterations]
@@ -201,7 +209,8 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
                                      "fill factor 0.85, flicker 0.05 rad). Every hologram is scored against its device. The "
                                      "device rows run with the default parameters only (the tuning is done on the ideal "
                                      "model) and not on the multi-plane geometries (a device model is read at one focal "
-                                     "plane). The converged row runs to 300 iterations or 20 s. Times are wall-clock "
+                                     "plane). The converged row runs to 300 iterations or 20 s; a group runs its seeds until 600 s of wall clock "
+                                     "(at least 2, n_seeds says how many). Times are wall-clock "
                                      "seconds of the machine that ran the benchmark, under shared load, and differ "
                                      "between runs.",
                                      "Ideal, y el dispositivo C08 (fase de 4 bits, diafonía sigma 1,24 q 1,80 en 3 x 3 "
@@ -209,7 +218,8 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
                                      "su dispositivo. Las filas con dispositivo usan solo los parámetros por defecto (el ajuste "
                                      "se hace sobre el modelo ideal) y no se ejecutan en las geometrías de varios planos (el "
                                      "modelo del dispositivo se lee en un solo plano focal). La fila convergida corre hasta "
-                                     "300 iteraciones o 20 s. Los tiempos son segundos de reloj de la máquina que ejecutó el "
+                                     "300 iteraciones o 20 s; un grupo corre semillas hasta 600 s de reloj (al menos 2, n_seeds dice cuántas). "
+                                     "Los tiempos son segundos de reloj de la máquina que ejecutó el "
                                      "benchmark, con carga compartida, y difieren entre ejecuciones.")},
         "geometries": [{"id": g, "name": G.GEOMETRIES[g][0], "n_traps": G.n_traps(g, proto.reduced), "dims": G.GEOMETRIES[g][2]}
                        for g in G.GEOMETRIES],
@@ -287,6 +297,7 @@ def run(derived_root: str | Path, *, seeds: int = 20, workers: int = 12, reduced
             absorb(run_group(t))
     else:
         with ProcessPoolExecutor(max_workers=n_workers) as pool:
-            for fut in [pool.submit(run_group, t) for t in tasks]:
+            # absorb each group as it finishes, so a slow group never holds back the flush of the others
+            for fut in as_completed([pool.submit(run_group, t) for t in tasks]):
                 absorb(fut.result())
     return flush()

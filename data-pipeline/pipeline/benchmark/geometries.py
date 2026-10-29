@@ -3,7 +3,7 @@ code the bake uses (``core/score.py``) and runs methods through ``stages/infer.p
 
 Lengths are in Fourier units ``u = lambda f / (n_pix p)`` (one unit is ``pad`` focal bins). The benchmark optics keep ``u``
 and the focal bin fixed across grids (``f`` scales with ``n_pix``), so a geometry means the same thing at 64, 128, 256 and
-512 pixels. Grids: 256 for G1 to G5, 512 for G6, 128 for G7 (SDD). ``reduced`` shrinks counts and grids for the tests only.
+512 pixels. Grids: 128 for G1 to G5 and G7, 256 for G6 (the release protocol; the cases run at their own grids). ``reduced`` shrinks counts and grids for the tests only.
 
 - G1 square 10 x 10 at 8 u; G2 ring of 36 traps; G3 random 100 traps with at least 3 u between them; G4 quasi-periodic 119
   (cut-and-project of Z^5 to a five-fold set, scaled 7 u: the quasi-periodic set of Polin et al. is not published as
@@ -34,7 +34,7 @@ GEOMETRIES = {
     "G6": ({"en": "Large: 32 x 32 and disordered 819", "es": "Grande: 32 x 32 y desordenada de 819"}, 1024, 2),
     "G7": ({"en": "Shaped fields (ring, disc, line, LG ring)", "es": "Campos con forma (anillo, disco, línea, anillo LG)"}, 0, 2),
 }
-FULL_GRID = {"G1": 256, "G2": 256, "G3": 256, "G4": 256, "G5": 256, "G6": 512, "G7": 128}
+FULL_GRID = {"G1": 128, "G2": 128, "G3": 128, "G4": 128, "G5": 128, "G6": 256, "G7": 128}
 DEVICE = {"bit_depth": 4, "crosstalk": {"sigma_per_px": 1.24, "q": 1.8}, "upsample": 3, "fill_factor": 0.85,
           "flicker_rad": 0.05, "lut_gamma": 1.0}   # the C08 device
 
