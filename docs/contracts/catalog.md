@@ -120,7 +120,7 @@ readiness is current, `scripts/check_readiness.py`); any other absent file stops
   `FX01_fixture` (three traps at n_pix 64 on a 3 x 3 focal crop, three methods: M02, M04 and M06), its manifest and its
   trace (7365 bytes, far under the 256 KiB gate); the index (`manifests/index.json`), which lists one refused case
   (`C11_fixture`, no manifest, with its reason) to exercise that path; a benchmark-results document with two rows and one
-  skipped cell (`benchmark/results.json`); a model-metrics document (`models/metrics.json`); and a readiness document that
+  skipped cell (`benchmark/results.json`); a model-metrics document (`docs/contracts/fixtures/data/derived/models/metrics.json`); and a readiness document that
   says `provider` for every row but `api`, which is dormant and so `missing`. The frontend builds on it with
   `CAOS_DATA_ROOT=docs/contracts/fixtures/data/derived` (a walking skeleton before any bake), the API serves it with
   `DATA_DIR=docs/contracts/fixtures/data/derived`, and the contract tests run against it and against `data/derived/` with the
