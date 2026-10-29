@@ -44,10 +44,10 @@ Hypervolume at least that of the M04, M05, M09 and M06 points on the 10 by 10 ta
 
 | Quantity | Measured | Conditions |
 |---|---|---|
-| Front, uniform end to efficient end (efficiency, uniformity) | from (0.790, 1.000) to (0.8305, 0.094) | 20 values of lambda, 15 CG iterations each, 1 seed |
-| Hypervolume | 0.8201 against 0.8033 for the union of the M04, M05, M09 and M06 points | same |
-| Domination | one front point dominates M04 (0.8114, 0.5503) and M05 (0.8086, 0.7093) | same |
-| Time | 24.9 s | under contention on the development workstation; limit 60 s |
+| Front, uniform end to efficient end (efficiency, uniformity) | from (0.790, 1.000) to (0.8305, 0.094) | 20 values of lambda, 15 CG iterations each, 1 seed, measured before the 2026-10-29 rule corrections |
+| Hypervolume | 0.8190 against 0.8018 for the union of the M04, M05, M09 and M06 points (0.8201 against 0.8033 before the corrections) | re-measured 2026-10-29 |
+| Domination | 7 front points dominate M04 (0.8114, 0.5503) and 8 dominate M05 (0.8086, 0.7093) | re-measured 2026-10-29 |
+| Time | 16.6 s | under contention on the development workstation, 2026-10-29; limit 60 s |
 
 ## Limits
 

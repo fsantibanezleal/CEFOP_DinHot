@@ -344,13 +344,13 @@ Each component is DinHot's own, grounded in a sourced gap, measured by the bench
 and covered by a level 4 notebook in each language.
 
 - BS-1 (engine id B1) device-aware weighted GS: the WGS weights kept, the phase update replaced by gradient steps through the crosstalk
-  kernel and the quantizer. Measured: the factor over M07 on the crosstalk device varies with the seed (about 22 to 60 times over five seeds) and is
-  2.2 times on the full C08 device with 4-bit phase and flicker; the median is 25.8 times (15.9 to 33.3 over five seeds) against the corrected M07, which equals slmsuite's WGS-Kim. Gap: the crosstalk model has been used only with conjugate gradient on shaped potentials (Schroff et
+  kernel and the quantizer. Measured: the factor over M07 on the crosstalk device varies with the seed, a median of 25.8 times (15.9 to 33.3 over five seeds)
+  against the corrected M07, which equals slmsuite's WGS-Kim, and it is 2.2 times on the full C08 device with 4-bit phase and flicker. Gap: the crosstalk model has been used only with conjugate gradient on shaped potentials (Schroff et
   al. 2023, https://doi.org/10.1038/s41598-023-30296-6).
 - BS-2 (engine id B2) flicker-bounded phase-continuous sequences: each intermediate hologram optimized with the trap phases locked to a
   smooth trajectory. Gap: linear phase interpolation does not optimize its intermediate frames (https://arxiv.org/abs/2501.01391).
   Measured scope: the claim holds when the peak step per frame is at most 0.2 Fourier units; on long moves at equal frames linear
-  phase interpolation leads, and B2 needs the end phases and more frames (C10: 137 frames, 0.904 against 0.691).
+  phase interpolation leads, and B2 needs the end phases and more frames (C10, six seeds: 137 frames, 0.899 to 0.919 against 0.678 to 0.756).
 - BS-3 (engine id B3) learned warm start, tested and refuted: a permutation-invariant network over trap coordinates predicting the initial
   trap phases of phase-fixed WGS gives no gain over an early phase fix without a network (measured on held-out geometries); the gap
   it addressed (no source initializes WGS with a network, algorithms dossier D5.1) is answered by the measurement, and the model is
