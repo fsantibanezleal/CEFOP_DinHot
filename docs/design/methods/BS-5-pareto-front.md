@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b5_pareto.py` |
 | Live port | none (lane `baked`; `getMethod('B5')` raises `NotLive`) |
 | Card | [B5](../../frameworks/B5_pareto-front.md) |
-| Outcome | hypothesis confirmed on the ladder criterion (hypervolume 0.8201 against 0.8033, the front dominates M04 and M05, 24.9 s); the margin is small |
+| Outcome | hypothesis confirmed on the ladder criterion (hypervolume 0.8190 against 0.8018 after the 2026-10-29 rule corrections, 0.8201 against 0.8033 before; the front dominates M04 and M05, 16.6 s); the margin is small |
 
 ## Tier and role
 
@@ -116,3 +116,7 @@ On C02 the knee has a relative standard deviation of 0.67 percent or below again
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913
 - Polin, Hovhannisyan and Sorensen 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
 - Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the phase-fixed start)
+
+## Update after the corrections of 2026-10-29
+
+Re-measured after M06 and M07 were made to project the start's field unweighted and the GS family of the beyond methods was made the ladder methods' own rules: on the acceptance task the front's hypervolume is 0.8190 against 0.8018 for the M04, M05, M06 and M09 points, and 7 and 8 front points dominate M04 (0.8114, 0.5503) and M05 (0.8086, 0.7093); 16.6 s on the CPU. The criterion holds. In notebook 05-05 the front starts from M07's own hologram, so its uniform end is M07 refined and M07 is not dominated (0.7931 against 0.7930 at equal uniformity); the other five single points are.
