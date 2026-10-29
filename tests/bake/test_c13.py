@@ -20,7 +20,7 @@ def _case():
 
 def test_the_registry_lists_c13_next_to_c03():
     ids = [c.id for c in library.CASES]
-    assert CID in ids and len(ids) == 13 and ids.count(CID) == 1
+    assert CID in ids and len(ids) >= 13 and ids.count(CID) == 1   # I3: a fourteenth case landed (C14)
     c, c03 = _case(), next(c for c in library.CASES if c.id == "C03_large_array")
     assert c.category == library.CAT_ARRAYS
     r, r03 = c.record, c03.record
