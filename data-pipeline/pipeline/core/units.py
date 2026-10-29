@@ -61,11 +61,14 @@ def _consistency(trace_method: dict, equal_weights: bool, who: str) -> list[str]
     if equal_weights and mean > 0:
         pct = 100.0 * statistics.pstdev(ti) / mean
         got = trace_method["final"]["rel_std_pct"]
-        if abs(pct - got) > 0.05 + 5e-3 * pct:
+        if abs(pct - got) > 0.05 + 5e-3 * pct + 100.0 * _rounding_step(ti):
             out.append(f"{who}: rel_std_pct={got:.6g} but the per-trap intensities give {pct:.6g} percent "
                        f"(a fraction written as a percent, or the wrong quantity)")
         u = 1.0 - (max(ti) - min(ti)) / (max(ti) + min(ti)) if max(ti) + min(ti) > 0 else 0.0
-        if abs(u - trace_method["final"]["uniformity"]) > 2e-3:
+        # the trace rounds the per-trap intensities (fewer decimals when a large trace is squeezed): a uniformity recomputed
+        # from them is only as good as that rounding step, so the tolerance carries it
+        step = _rounding_step(ti)
+        if abs(u - trace_method["final"]["uniformity"]) > 2e-3 + step:
             out.append(f"{who}: uniformity={trace_method['final']['uniformity']:.6g} but the per-trap intensities give {u:.6g}")
     return out
 
@@ -202,3 +205,13 @@ def check_tree(derived_root: str | Path) -> list[str]:
 def require(problems: list[str]) -> None:
     if problems:
         raise UnitsError("units gate failed:\n  " + "\n  ".join(problems))
+
+
+def _rounding_step(values) -> float:
+    """The rounding step of a list of written decimals: 10 to the minus the most decimals any value carries."""
+    most = 0
+    for v in values:
+        s = repr(float(v))
+        if "e" not in s and "." in s:
+            most = max(most, len(s.split(".")[1].rstrip("0")))
+    return 10.0 ** (-most) if most else 0.0  # whole numbers only: nothing to allow for, the check stays strict

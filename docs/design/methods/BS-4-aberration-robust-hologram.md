@@ -129,3 +129,7 @@ efficiency. On ideal cases (C01, C02, C07) B4's spread is 0.4 to 1.0 percent whi
 - Robust holograms, https://arxiv.org/abs/2512.15967
 - Nogrette et al. 2014, Phys. Rev. X 4, 021034, https://arxiv.org/abs/1402.5329
 - Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the nominal M07)
+
+## Update after the corrections of 2026-10-29
+
+Re-measured against the corrected M07 (200-sample aberration ensemble, Noll 4 to 11 at 0.02 waves rms, 10x10 task, M07 30 iterations, B4 40 iterations, three seeds): the ratio of M07's 95th-percentile relative standard deviation to B4's is a median of 1.455 times (1.44 to 1.53), at 0.979 of M07's mean efficiency. The aberration claim holds in 3 of 3 seeds; the pointing negative stands.

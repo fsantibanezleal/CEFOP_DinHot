@@ -26,8 +26,9 @@ seeds and metrics, and is compared with the other tiers on the Benchmark page:
 - **State of the art**: the current solutions, replicated or implemented here, among them phase-fixed weighted GS, MRAF, optimal-transport
   starts, conjugate gradient and Wirtinger-Adam descent with a device model, closed-loop feedback, atom rearrangement and the learned
   multi-plane network. The level 3 notebooks run them against slmsuite 0.5.0 or the classical method.
-- **Beyond the state of the art**: six proposals of the product, BS-1 to BS-6, each tested and reported as it came out, including two
-  measured negatives (BS-3, the learned warm start, refuted; BS-4, whose robustness to pointing errors does not follow). Each has a level 4
+- **Beyond the state of the art**: five proposals of the product, BS-1 to BS-5, each tested and reported as it came out, including two
+  measured negatives (BS-3, the learned warm start, refuted; BS-4, whose robustness to pointing errors does not follow) and one
+  measured scope (BS-2 holds for short steps per frame; on long moves linear phase interpolation leads at equal frames). Each has a level 4
   notebook.
 
 ## Technical report and manuscripts

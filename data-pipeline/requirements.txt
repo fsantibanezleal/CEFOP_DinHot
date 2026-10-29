@@ -1,6 +1,6 @@
-# PRECOMPUTE lane, the heavy, research-chosen SOTA engines, in the .venv-pipeline (local-only, never deployed).
-# THIS is where the deep research becomes binding: every engine pinned here is documented in docs/frameworks/<tool>/
-# and actually used by data-pipeline/pipeline/stages/. The EXAMPLE engine (SIR) is numpy-only on purpose so the
-# template installs instantly with no native build; a real product adds e.g. yade / pychrono / ortools / mintpy /
-# torch here, each PINNED to the version it installs+verifies.
+# PRECOMPUTE lane, the research-chosen engines, in the .venv-pipeline (local-only, never deployed). Every engine pinned here
+# is documented in docs/frameworks/ and used by data-pipeline/pipeline/.
+# numpy: the canonical hologram engine (numpy.fft and linear algebra).
 numpy==2.4.6
+# onnxruntime: the released learned model (cgh-net) in the bake of M17, the same ONNX file the web runs.
+onnxruntime==1.31.1
