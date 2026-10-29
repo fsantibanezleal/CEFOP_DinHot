@@ -49,7 +49,7 @@ On the crosstalk device, relative standard deviation at least two times below M0
 |---|---|---|---|
 | Relative standard deviation (percent) | 0.091 | 4.454 (the method module) and 4.504 (in-test copy) | 1 seed, 10 by 10 task on 256 by 256 padded 2 |
 | Efficiency | 0.7423 | 0.7447 and 0.7459 | same |
-| Ratio | 49 times lower spread, 0.997 of the efficiency | | |
+| Ratio | 15.9 times lower spread on this seed, 0.997 of the efficiency; a median of 25.8 times (15.9 to 33.3) over five seeds, re-measured 2026-10-29 after the rule corrections (49 times on this seed before) | | |
 
 More iterations do not help the baseline (spread 4.504 with 30 iterations and 4.525 with 100). The criterion is exceeded by a wide margin; the benchmark
 repeats it over 20 seeds on the C08 device.

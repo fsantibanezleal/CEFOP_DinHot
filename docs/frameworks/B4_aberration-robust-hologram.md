@@ -47,7 +47,7 @@ lower; pointing robustness is measured and reported, not claimed:
 
 | Quantity | M07 (nominal) | B4 | Ratio | Conditions |
 |---|---|---|---|---|
-| p95 relative standard deviation (percent), aberration only | 6.268 | 4.045 | 1.55 times | 200-sample ensemble, seed 999, 0.02 waves per mode (rms 0.057 waves, Strehl about 0.88), 10 by 10 task, 256 by 256, 1 seed, 40 CG iterations, level 0.9 |
+| p95 relative standard deviation (percent), aberration only | 6.192 | 3.947 | 1.57 times (median 1.435 over three seeds, re-measured 2026-10-29 after the rule corrections; 6.268, 4.045 and 1.55 before) | 200-sample ensemble, seed 999, 0.02 waves per mode (rms 0.057 waves, Strehl about 0.88), 10 by 10 task, 256 by 256, 1 seed, 40 CG iterations, level 0.9 |
 | Mean efficiency | 0.7169 | 0.7031 | minus 1.9 percent | same |
 | p95 with a 0.15 bin pointing error added | 7.457 | 7.309 | 1.02 times | `"sample"` design (an earlier measurement, before the narrowing) |
 

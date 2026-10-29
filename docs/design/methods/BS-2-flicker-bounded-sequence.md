@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b2_flicker_bounded.py` |
 | Live port | none (lane `baked`; `getMethod('B2')` raises `NotLive`) |
 | Card | [B2](../../frameworks/B2_flicker-bounded-sequence.md) |
-| Outcome | hypothesis confirmed in DinHot's transient model (0.919 to 0.923 against the test's LPI at 0.537 to 0.724); the model is UNVERIFIED |
+| Outcome | hypothesis confirmed in DinHot's transient model on the acceptance task (0.916 to 0.926 against the test's LPI at 0.551 to 0.709 after the 2026-10-29 rule corrections; 0.919 to 0.923 against 0.537 to 0.724 before), with the measured scope of the update below; the model is UNVERIFIED |
 
 ## Tier and role
 
