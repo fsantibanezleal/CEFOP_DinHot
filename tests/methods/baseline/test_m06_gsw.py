@@ -80,3 +80,17 @@ def test_deterministic_and_bad_target(setup256, grid10):
     n = setup256.n_fft
     with pytest.raises(ValueError, match="traps"):
         m.run(setup256, Target.from_field(np.ones((n, n)), np.ones((n, n), bool)), budget=Budget(1), rng=Rng(1))
+
+
+def test_first_iteration_is_plain_gs_because_the_start_field_is_unweighted(setup256, grid10):
+    """The weights start at the design amplitudes and the start hologram's field is projected with them unchanged, so one
+    iteration of M06 is one of M04; the weights act from the second field on, as in slmsuite's WGS-Leonardo
+    (``test_m06_against_slmsuite.py``)."""
+    from pipeline.model.holo.methods.baseline import m04_gs
+    t = Target.from_traps(grid10)
+    a = m.run(setup256, t, budget=Budget(1), rng=Rng(3))
+    b = m04_gs.run(setup256, t, budget=Budget(1), rng=Rng(3))
+    assert np.abs(np.angle(np.exp(1j * (a.phi - b.phi)))).max() < 1e-9
+    a2 = m.run(setup256, t, budget=Budget(2), rng=Rng(3))
+    b2 = m04_gs.run(setup256, t, budget=Budget(2), rng=Rng(3))
+    assert np.abs(np.angle(np.exp(1j * (a2.phi - b2.phi)))).max() > 1e-6

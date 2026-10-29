@@ -163,21 +163,26 @@ def test_the_peak_velocity_constant_is_that_of_the_minimal_jerk_profile():
 
 
 @pytest.mark.parametrize("bins", [12, 20])
-def test_long_moves_meet_the_claim_with_the_frames_of_the_move_and_not_with_the_default(bins):
-    """BS-2 on moves longer than the acceptance task's: the 13 default frames leave a peak step of several Fourier units and the
-    lowest moving trap falls far below 0.9; the frames ``frames_for_move`` names (end phases given) bring it back above."""
+def test_long_moves_meet_the_claim_on_most_seeds_with_the_frames_of_the_move(bins):
+    """BS-2 on moves longer than the acceptance task's, over 8 seeds (end phases from M07 at the destination): the 13 default
+    frames leave every seed's lowest moving trap below 0.7; the frames ``frames_for_move`` names bring the median above 0.9 and
+    at least 6 of the 8 seeds above it. The seeds that stay below do so with twice the frames as well, so their limit is the
+    prescribed phase path and not the frame count (measured 2026-10-29: at 12 bins 0.023 and 0.768, at 20 bins 0.584 and
+    0.847; the method docstring states it)."""
     s = make_setup(64)
     start, dest, moving = long_move(s, bins)
-    end = np.angle(m07_phase_fixed_wgs.run(s, Target.from_traps(dest), budget=Budget(30), rng=Rng(1)).fields)
-    lowest = {}
-    for frames in (B2.DEFAULT_FRAMES, B2.frames_for_move(s, start, dest)):
-        res = B2.run(s, Target.from_traps(start), budget=Budget(30), rng=Rng(1), destination=dest, frames=frames,
-                     end_phases=end, phase_velocity_max=1.0)
-        assert res.meta["n_frames"] == frames
-        lowest[frames] = res.meta["transient_ratio"][moving].min()
-    short, enough = lowest[B2.DEFAULT_FRAMES], lowest[max(lowest)]
-    assert short < 0.7, lowest
-    assert enough >= 0.9, lowest
+    n = B2.frames_for_move(s, start, dest)
+    short, enough = [], []
+    for seed in range(1, 9):
+        end = np.angle(m07_phase_fixed_wgs.run(s, Target.from_traps(dest), budget=Budget(30), rng=Rng(seed)).fields)
+        for frames, out in ((B2.DEFAULT_FRAMES, short), (n, enough)):
+            res = B2.run(s, Target.from_traps(start), budget=Budget(30), rng=Rng(seed), destination=dest, frames=frames,
+                         end_phases=end, phase_velocity_max=1.0)
+            assert res.meta["n_frames"] == frames
+            out.append(float(res.meta["transient_ratio"][moving].min()))
+    assert max(short) < 0.7, short
+    assert float(np.median(enough)) >= 0.9, enough
+    assert sum(x >= 0.9 for x in enough) >= 6, enough
 
 
 def test_the_sort_of_c10_the_limit_stated_in_the_docstring():

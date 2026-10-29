@@ -90,11 +90,13 @@ export const ruleGaa: Rule = (state, v) => {
   return scaleBy(phasor(v), a.map((ai, i) => ai * (1 - alpha + alpha / r[i])));
 };
 
-/** `w_m <- w_m <r> / r_m`, `c_m = w_m V_m/|V_m|` (R2 D3.4, Eq. 18). */
-export const ruleGsw: Rule = (state, v) => {
-  const r = ratio(v, state.a);
-  const m = meanOf(r);
-  state.w = state.w.map((w, i) => w * (m / r[i]));
+/** `w_m <- w_m <r> / r_m`, `c_m = w_m V_m/|V_m|` (R2 D3.4, Eq. 18). The field of the start hologram is projected with the initial weights (k = 1 is plain GS), as the Python rule and slmsuite's WGS-Leonardo do. */
+export const ruleGsw: Rule = (state, v, k) => {
+  if (k > 1) {
+    const r = ratio(v, state.a);
+    const m = meanOf(r);
+    state.w = state.w.map((w, i) => w * (m / r[i]));
+  }
   return scaleBy(phasor(v), state.w);
 };
 

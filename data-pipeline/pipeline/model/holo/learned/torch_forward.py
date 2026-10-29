@@ -97,7 +97,8 @@ def unrolled_wgs(theta, traps, mask, n_pix: int, pad: int, steps: int, n_fix: in
     for k in range(1, steps + 1):
         b = ((v.abs() / a.clamp_min(TINY)).clamp_min(TINY)) * mask + (1 - mask)
         mean_b = (b * mask).sum(-1, keepdim=True) / n
-        g = g * mean_b / b
+        if k > 1:   # g_0 = 1: the field of the start is projected unweighted, as M07 does (``_gs.rule_wgs_fixed``)
+            g = g * mean_b / b
         if k < n_fix:
             ph = torch.angle(v)
         elif k == n_fix:

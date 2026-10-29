@@ -8,7 +8,7 @@
  * axis (rows, then columns), as in the CPU plan of `fft.ts`.
  *
  * The WGS amplitude passes (`rule`) are the three rules the CPU path uses for the FFT form (`methods/gs.ts`): `gs` (mode 0),
- * `gsw` (mode 1, weights `w <- w <r> / r`) and the phase-fixed `wgsFixed` (mode 2: the phase follows the field for the first `nFix`
+ * `gsw` (mode 1, weights `w <- w <r> / r` from the second iteration on) and the phase-fixed `wgsFixed` (mode 2: the phase follows the field for the first `nFix`
  * iterations and is then frozen), evaluated by one workgroup that reduces the mean of `r = |V| / a` in shared memory.
  * `fill`, `gather`, `zero`, `scatter` and `phase` move data between the SLM phase, the padded focal grid and the trap list.
  */
@@ -159,7 +159,7 @@ fn rule(@builtin(local_invocation_id) lid: vec3<u32>) {
     if (r.mode == 0u) {
       c = a[i] * ph;
     } else if (r.mode == 1u) {
-      w[i] = w[i] * mean / rr;
+      if (r.k > 1u) { w[i] = w[i] * mean / rr; }
       c = w[i] * ph;
     } else {
       if (r.k > 1u) { w[i] = w[i] * mean / rr; }

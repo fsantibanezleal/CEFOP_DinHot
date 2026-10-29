@@ -133,3 +133,5 @@ efficiency. On ideal cases (C01, C02, C07) B4's spread is 0.4 to 1.0 percent whi
 ## Update after the corrections of 2026-10-29
 
 Re-measured against the corrected M07 (200-sample aberration ensemble, Noll 4 to 11 at 0.02 waves rms, 10x10 task, M07 30 iterations, B4 40 iterations, three seeds): the ratio of M07's 95th-percentile relative standard deviation to B4's is a median of 1.455 times (1.44 to 1.53), at 0.979 of M07's mean efficiency. The aberration claim holds in 3 of 3 seeds; the pointing negative stands.
+
+Second re-measurement, the same day, after the GS family of the beyond methods was made the ladder methods' own rules (B4's warm start is now M07 itself, `optim/_gs_family.py`): M07's 95th percentile 6.192, 5.983 and 6.068 percent, B4's 3.947, 4.220 and 4.230 percent, a median ratio of 1.435 times (1.418 to 1.569) at 0.982 of M07's mean efficiency (0.981 to 0.983). The aberration claim holds on 3 of 3 seeds. These numbers supersede the ones above.
