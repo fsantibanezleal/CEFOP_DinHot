@@ -83,7 +83,7 @@ describe('warmstart input', () => {
 
 describe('the slots agree with the catalog', () => {
   it('names the tensors the catalog row gives and the cards at their documented paths', () => {
-    expect(catalog).toMatch(/in: target float32 \[1, 1, 128, 128\].*out: phase float32 \[1, 1, 128, 128\]/);
+    expect(catalog).toMatch(/in: target float32 \[1, 3, 128, 128\].*out: phase float32 \[1, 1, 128, 128\].*baseline: the volumetric GS \(M19\)/);
     expect(catalog).toMatch(/in: traps float32 \[1, 1024, 4\].*and mask float32 \[1, 1024\]; out: trap_phase float32 \[1, 1024\]/);
     expect(catalog).toContain('models/cgh-net.json, models/cgh-net.onnx');
     expect(catalog).toContain('models/warmstart.json, models/warmstart.onnx');

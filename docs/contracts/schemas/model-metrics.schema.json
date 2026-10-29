@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "model-metrics.schema.json",
   "title": "ModelMetrics",
-  "description": "Contract 2 (artifact), catalog row model-metrics 1.0.0: the held-out metrics of the model slots, written by data-pipeline/pipeline/stages/evaluate.py to data/derived/models/metrics.json. A slot with no released model has no entry.",
+  "description": "Contract 2 (artifact), catalog row model-metrics 1.0.1: the held-out metrics of the model slots, written by data-pipeline/pipeline/stages/evaluate.py to data/derived/models/metrics.json. A slot with no released model has no entry.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -42,7 +42,7 @@
               "$ref": "#/$defs/stat"
             },
             "baseline": {
-              "const": "M04"
+              "const": "M19"
             }
           }
         },

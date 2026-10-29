@@ -9,7 +9,7 @@
 | Gate | `tests/learned/test_m17_cgh_net.py` |
 | Released model | `models/cgh-net.onnx` and its card `models/cgh-net.json`; metrics `data/derived/models/metrics.json`, detail `data/derived/models/evaluation-detail.json` |
 | Live port | no TypeScript method in `frontend/src/engine/holo/` (not in `liveMethodIds`); the inference is `frontend/src/lib/ort.ts` |
-| Card | [M17](../../frameworks/M17_unsupervised-cnn-hologram.md) (written before the model; it still says "pending") |
+| Card | [M17](../../frameworks/M17_unsupervised-cnn-hologram.md) |
 
 ## Tier and role
 
@@ -77,11 +77,10 @@ or in the browser (ADR-0069, ADR-0074). The baseline M19 takes a median 7.35 s a
 
 ## Acceptance criterion and gate
 
-The ladder row of the SDD reads: "on held-out targets, the network start followed by GS refinement inside the same wall-clock budget reaches a higher accuracy than GS
-alone (measured alone, the network matches GS at equal time: median ratio 0.998)". That text describes the superseded single-plane version (record
-`data/derived/models/cgh-net-2d-rejected.json`: ratio 0.9994 hybrid, 0.9983 network alone). The module, the released model and the test are the three-plane form
-(M19 as the baseline); the criterion that the code and the test implement is: on held-out volumes, the accuracy of the hybrid is above that of M19 alone at the same
-wall-clock (median per-volume ratio above 1). Gate `tests/learned/test_m17_cgh_net.py`:
+The ladder row of the SDD reads: "on 162 held-out three-plane volumes, the network start followed by M19 refinement inside the same wall-clock budget
+reaches a higher accuracy than M19 alone". The superseded single-plane version (record `data/derived/models/cgh-net-2d-rejected.json`: ratio 0.9994 hybrid,
+0.9983 network alone) was measured against GS and not released. The criterion the code and the test implement: on held-out volumes, the accuracy of the hybrid is
+above that of M19 alone at the same wall-clock (median per-volume ratio above 1). Gate `tests/learned/test_m17_cgh_net.py`:
 
 - `::test_committed_metrics_meet_the_criterion`: reads `data/derived/models/metrics.json`; `held_out_n` at least 150 and the median `accuracy_vs_gs` above 1;
 - `::test_sampled_held_out_volumes_beat_m19_at_the_same_wall_clock`: needs the released graph, onnxruntime and the held-out file (`DINHOT_LEARNED_DIR`); every eighth
@@ -120,11 +119,7 @@ objective of M19 is not what AC measures. The single-plane record: median ratio 
 
 - The model is specific to its crop and planes (128 by 128, pad 1, three depths); DeepCGH also trains one model per resolution and plane set.
 - The accuracy is DinHot's AC definition (UNVERIFIED against the paper's formula); the advantage is on plane images, not on trap uniformity.
-- The metrics schema keeps the constant `baseline: "M04"` while the baseline is M19 (`models/cgh-net.json` card and `metrics.json`); the schema is outside the unit that
-  trained the model (M1 report).
-- The web encoder is not yet the three-plane one: `frontend/src/lib/ort.ts` (`encodeCghTarget`, line 57; `predictCghPhase`, line 207) builds a single-plane input of shape
-  `[1, 1, 128, 128]` while the released card declares `[1, 3, 128, 128]`. This record states the code of the engine; the web path is not established as working.
-- The framework card [M17](../../frameworks/M17_unsupervised-cnn-hologram.md) predates the model and says "pending".
+- The web encoder `frontend/src/lib/ort.ts` (`encodeCghPlanes`, line 83; `predictCghPhase`, line 252) builds the three-plane input `[1, 3, 128, 128]` the card declares.
 - The phase of a near-zero SLM field is ill-conditioned (`atan2`), hence the parity claim on intensities.
 
 ## References
