@@ -19,11 +19,11 @@ Eight topics, from simple to complex, in two trees:
 1. `01-fourier-optics`: where a phase pattern sends the light, and the numbers that judge a trap array.
 2. `02-analytic-holograms`: the one-step holograms, the classical baselines.
 3. `03-gerchberg-saxton`: the Gerchberg-Saxton family, phase-fixed WGS against slmsuite, and device-aware WGS (BS-1).
-4. `04-shaped-potentials`: MRAF and optimal-transport starts for shaped targets.
+4. `04-shaped-potentials`: what a shaped potential asks, the signal and the noise region, MRAF and optimal-transport starts for shaped targets.
 5. `05-optimization`: conjugate gradient and Wirtinger-Adam on the explicit cost, and the efficiency-uniformity front (BS-5).
 6. `06-device-and-aberrations`: what the device costs, Zernike correction, crosstalk-aware descent and robust holograms (BS-4).
-7. `07-feedback-and-dynamics`: a bead in the computed trap, atom rearrangement, camera feedback, flicker-bounded moves (BS-2, BS-6).
-8. `08-learned-holography`: the released multi-plane network against the volumetric GS, and the refused warm start (BS-3).
+7. `07-feedback-and-dynamics`: a bead in the computed trap, atom rearrangement, camera feedback, flicker-bounded moves (BS-2).
+8. `08-learned-holography`: what the released network takes and returns, how it learns without labels, the network against the volumetric GS, and the refused warm start (BS-3).
 
 Levels: 1 fundamentals, 2 the method in practice, 3 state of the art (the `sota` methods of the SDD's ladder, run against slmsuite
 0.5.0 or the classical method), 4 beyond the state of the art (the `BS-` claims, measured, including the negatives).
@@ -50,7 +50,7 @@ python scripts/check_notebooks.py          # the static check: layout, mirror, l
 
 Only the runner writes a notebook's outputs, and the committed notebooks are the runner's output, so they read as finished material
 on GitHub. A notebook finishes in under three minutes; the learned-holography notebooks read the released ONNX graph through
-onnxruntime and print no wall-clock figure, because the check compares the committed bytes with a fresh run.
+onnxruntime and print no measured wall-clock figure, because the check compares the committed bytes with a fresh run.
 
 `requirements.txt` pins the notebook environment exactly: the packages the notebooks use (numpy, matplotlib, scipy, the pinned
 reference implementation slmsuite, onnxruntime), then the runtime that executes them (nbclient, nbformat, ipykernel).

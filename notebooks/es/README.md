@@ -20,7 +20,7 @@ Cada método de la escalera del producto pertenece a un nivel de método
 - Los métodos del **estado del arte** son los notebooks de nivel 3: cada uno nombra la fila de la escalera que ejecuta en su metadato
   `caos.methods` (M07 en 03, M08 y M18 en 04, M10 y M11 en 05, M13 en 06, M12 y M16 en 07, M17 en 08).
 - Los **más allá del estado del arte** son los notebooks de nivel 4, cada uno con la afirmación `BS-` que prueba en `caos.beyond`
-  (BS-1 en 03, BS-5 en 05, BS-4 en 06, BS-2 y BS-6 en 07, BS-3 en 08, un negativo medido).
+  (BS-1 en 03, BS-5 en 05, BS-4 en 06, BS-2 en 07, BS-3 en 08, un negativo medido).
 
 ## Temas
 
@@ -31,11 +31,11 @@ Un tema sin notebook de nivel 3 dice por qué en su fila.
 | [01-fourier-optics](01-fourier-optics/) | ninguno, es el tema de entrada | Sin nivel 3: el tema enseña el modelo directo y las métricas, que son el propio motor y no tienen un método de estado del arte propio |
 | [02-analytic-holograms](02-analytic-holograms/) | tema 01-fourier-optics | Sin nivel 3: los hologramas de un paso son las líneas base clásicas, y los lazos del estado del arte parten en el tema 03 |
 | [03-gerchberg-saxton](03-gerchberg-saxton/) | tema 02-analytic-holograms | [03-phase-fixed-wgs-against-slmsuite](03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb) (M07) |
-| [04-shaped-potentials](04-shaped-potentials/) | tema 03-gerchberg-saxton | [01-mraf-and-the-signal-region](04-shaped-potentials/01-mraf-and-the-signal-region.ipynb) (M08), [02-optimal-transport-start](04-shaped-potentials/02-optimal-transport-start.ipynb) (M18) |
+| [04-shaped-potentials](04-shaped-potentials/) | tema 03-gerchberg-saxton | [03-mraf-and-the-signal-region](04-shaped-potentials/03-mraf-and-the-signal-region.ipynb) (M08) y [04-optimal-transport-start](04-shaped-potentials/04-optimal-transport-start.ipynb) (M18) |
 | [05-optimization](05-optimization/) | tema 03-gerchberg-saxton | 03 (M10) y 04 (M11) |
 | [06-device-and-aberrations](06-device-and-aberrations/) | tema 05-optimization | 03 (M13) |
 | [07-feedback-and-dynamics](07-feedback-and-dynamics/) | tema 03-gerchberg-saxton | 03 (M12) y 04 (M16) |
-| [08-learned-holography](08-learned-holography/) | temas 01-fourier-optics y 03-gerchberg-saxton | [01-a-network-start-for-volume-holograms](08-learned-holography/01-a-network-start-for-volume-holograms.ipynb) (M17) |
+| [08-learned-holography](08-learned-holography/) | temas 01-fourier-optics y 03-gerchberg-saxton | [03-a-network-start-for-volume-holograms](08-learned-holography/03-a-network-start-for-volume-holograms.ipynb) (M17) |
 
 ## Notebooks
 
@@ -49,8 +49,10 @@ Un tema sin notebook de nivel 3 dice por qué en su fila.
 | [03-gerchberg-saxton/02-weights-for-uniformity.ipynb](03-gerchberg-saxton/02-weights-for-uniformity.ipynb) | 2 | qué ganan el GS ponderado y el adaptativo sobre el GS simple en C12: los primeros pesos, iteraciones hasta 5, 2 y 1 por ciento, el barrido de alfa, la dependencia de la semilla |
 | [03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb](03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb) | 3 | cómo se comparan M06 y M07 con WGS-Leonardo y WGS-Kim de slmsuite 0.5.0 en las 1024 trampas de C03 con un mismo conjunto de métricas |
 | [03-gerchberg-saxton/04-device-aware-wgs.ipynb](03-gerchberg-saxton/04-device-aware-wgs.ipynb) | 4 | BS-1: si el WGS consciente del dispositivo (B1) supera al WGS de fase fija y al gradiente conjugado con diafonía en el dispositivo del caso C08, y con qué intensidad de diafonía |
-| [04-shaped-potentials/01-mraf-and-the-signal-region.ipynb](04-shaped-potentials/01-mraf-and-the-signal-region.ipynb) | 3 | cómo se compara MRAF con GS en un disco y un anillo, el parámetro de mezcla, el inicio y el MRAF de slmsuite sobre los mismos objetivos |
-| [04-shaped-potentials/02-optimal-transport-start.ipynb](04-shaped-potentials/02-optimal-transport-start.ipynb) | 3 | cómo se compara M18 con el MRAF de slmsuite en el disco de C04, con la misma mezcla y el mismo inicio, y qué agrega el inicio de transporte óptimo |
+| [04-shaped-potentials/01-what-a-shaped-potential-asks.ipynb](04-shaped-potentials/01-what-a-shaped-potential-asks.ipynb) | 1 | qué le pide un potencial en forma de disco al holograma que no le piden nueve trampas puntuales, el error calculado a mano y dónde se detiene Gerchberg-Saxton simple en el disco del caso C04 |
+| [04-shaped-potentials/02-the-signal-and-the-noise-region.ipynb](04-shaped-potentials/02-the-signal-and-the-noise-region.ipynb) | 2 | cuánto del plano focal debe ceder un holograma con forma para ser preciso: regiones de señal hechas a mano, el reparto de potencia, MRAF frente a Gerchberg-Saxton simple, el margen oscuro |
+| [04-shaped-potentials/03-mraf-and-the-signal-region.ipynb](04-shaped-potentials/03-mraf-and-the-signal-region.ipynb) | 3 | cómo se compara MRAF con GS en un disco y un anillo, el parámetro de mezcla, el inicio y el MRAF de slmsuite sobre los mismos objetivos |
+| [04-shaped-potentials/04-optimal-transport-start.ipynb](04-shaped-potentials/04-optimal-transport-start.ipynb) | 3 | cómo se compara M18 con el MRAF de slmsuite en el disco de C04, con la misma mezcla y el mismo inicio, y qué agrega el inicio de transporte óptimo |
 | [05-optimization/01-the-cost-and-its-gradient.ipynb](05-optimization/01-the-cost-and-its-gradient.ipynb) | 1 | el costo explícito de un arreglo de trampas y su gradiente comprobado, y un primer descenso de gradiente conjugado contra el GS ponderado en C12 |
 | [05-optimization/02-the-wirtinger-gradient-and-adams-step.ipynb](05-optimization/02-the-wirtinger-gradient-and-adams-step.ipynb) | 2 | el retroceso de Wirtinger por los modelos ideal y con diafonía, qué hace Adam con un gradiente de escala desconocida, el barrido de la tasa de aprendizaje |
 | [05-optimization/03-conjugate-gradient-against-weighted-gs.ipynb](05-optimization/03-conjugate-gradient-against-weighted-gs.ipynb) | 3 | cómo se compara M10 con el lazo clásico M06: el refinamiento que baja el costo y sube la dispersión, y la eficiencia que M10 devuelve exacta |
@@ -65,13 +67,14 @@ Un tema sin notebook de nivel 3 dice por qué en su fila.
 | [07-feedback-and-dynamics/03-closed-loop-feedback.ipynb](07-feedback-and-dynamics/03-closed-loop-feedback.ipynb) | 3 | cómo se comparan las actualizaciones de Nogrette y de Kim de M12 en la cámara emulada de C02, contra el M07 a lazo abierto |
 | [07-feedback-and-dynamics/04-moving-atoms-by-linear-phase-interpolation.ipynb](07-feedback-and-dynamics/04-moving-atoms-by-linear-phase-interpolation.ipynb) | 3 | cómo se compara la secuencia de hologramas de M16 en el ordenamiento de C10 con hologramas independientes y con un paso más fino |
 | [07-feedback-and-dynamics/05-flicker-bounded-moves.ipynb](07-feedback-and-dynamics/05-flicker-bounded-moves.ipynb) | 4 | BS-2: B2 contra LPI en su tarea de aceptación, y los movimientos largos de C10 donde B2 necesita las fases finales |
-| [07-feedback-and-dynamics/06-the-emulator-against-the-published-curves.ipynb](07-feedback-and-dynamics/06-the-emulator-against-the-published-curves.ipynb) | 4 | BS-6: los lazos de Nogrette y de Kim en tres sorteos de la cámara contra los puntos finales publicados |
-| [08-learned-holography/01-a-network-start-for-volume-holograms.ipynb](08-learned-holography/01-a-network-start-for-volume-holograms.ipynb) | 3 | si la red publicada supera al GS volumétrico clásico (M17 contra M19) en la exactitud del volumen y en los números propios de las trampas |
-| [08-learned-holography/02-is-a-learned-warm-start-worth-it.ipynb](08-learned-holography/02-is-a-learned-warm-start-worth-it.ipynb) | 4 | BS-3: si una red que predice fases de trampas acelera el WGS de fase fija, o un congelado sin red explica toda la ganancia (un negativo medido) |
+| [08-learned-holography/01-what-a-network-sees-of-a-hologram.ipynb](08-learned-holography/01-what-a-network-sees-of-a-hologram.ipynb) | 1 | qué entra a la red publicada y qué sale de ella para un objetivo de tres planos, la exactitud con que se la evalúa y una fase plana y una aleatoria en la misma escala (óptica de C05) |
+| [08-learned-holography/02-training-without-labels.ipynb](08-learned-holography/02-training-without-labels.ipynb) | 2 | cómo aprende la red sin hologramas de ejemplo: la pérdida a mano en volúmenes nuevos, su cuenco suave alrededor de la fase de la red, lo que no ve en las trampas y el registro con datos reservados de 162 volúmenes |
+| [08-learned-holography/03-a-network-start-for-volume-holograms.ipynb](08-learned-holography/03-a-network-start-for-volume-holograms.ipynb) | 3 | si la red publicada supera al GS volumétrico clásico (M17 contra M19) en la exactitud del volumen y en los números propios de las trampas |
+| [08-learned-holography/04-is-a-learned-warm-start-worth-it.ipynb](08-learned-holography/04-is-a-learned-warm-start-worth-it.ipynb) | 4 | BS-3: si una red que predice fases de trampas acelera el WGS de fase fija, o un congelado sin red explica toda la ganancia (un negativo medido) |
 
 ## Más allá del estado del arte
 
-Seis afirmaciones del SDD del producto, cada una con un notebook de nivel 4 en ambos idiomas: BS-1 WGS consciente del dispositivo
-(03-04), BS-2 secuencias acotadas en parpadeo (07-05), BS-3 el inicio aprendido, probado y refutado (08-02), BS-4 el holograma robusto
-(06-04), BS-5 el frente eficiencia-uniformidad (05-05) y BS-6 el emulador abierto de cámara en el lazo (07-06). Dos de ellas, BS-3 y la
-parte de puntería de BS-4, son negativos medidos y los notebooks lo dicen.
+Cinco afirmaciones del SDD del producto, cada una con un notebook de nivel 4 en ambos idiomas: BS-1 WGS consciente del dispositivo
+(03-04), BS-2 secuencias acotadas en parpadeo (07-05), BS-3 el inicio aprendido, probado y refutado (08-04), BS-4 el holograma robusto
+(06-04) y BS-5 el frente eficiencia-uniformidad (05-05). Dos de ellas, BS-3 y la parte de puntería de BS-4, son negativos medidos y
+los notebooks lo dicen.
