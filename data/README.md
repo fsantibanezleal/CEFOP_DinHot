@@ -9,7 +9,7 @@ one schema file per row in `docs/contracts/schemas/`). Everything here is synthe
 | Path | What | Git |
 |---|---|---|
 | `raw/` | private or large source inputs (none today) | git-ignored |
-| `examples/cases.json` | the source document of contract 1: the twelve cases C01 to C12 as params records | committed |
+| `examples/cases.json` | the source document of contract 1: the fourteen cases C01 to C14 as params records (C11 refused by contract 1 by design) | committed |
 | `derived/manifests/index.json` | the flat inventory of every case, baked or refused, with bilingual titles and categories | committed |
 | `derived/manifests/<case>.json` | the manifest of one baked case (contract 2) | committed |
 | `derived/<case>/trace.json` | the replay trace of that case, at most 256 KiB (contract 2) | committed |

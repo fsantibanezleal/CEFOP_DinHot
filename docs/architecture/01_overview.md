@@ -21,7 +21,7 @@ The base (the layout, the contracts, the stage names, the lanes, the guards and 
 
 | Lane | Where | What runs |
 |---|---|---|
-| Offline | `data-pipeline/`, in `.venv-pipeline` | the staged pipeline bakes and checks the twelve cases and runs the benchmark protocol; training of the two learned models runs locally on the GPU, never in CI |
+| Offline | `data-pipeline/`, in `.venv-pipeline` | the staged pipeline bakes and checks the fourteen cases and runs the benchmark protocol; training of the two learned models runs locally on the GPU, never in CI |
 | Replay | `data/derived/`, copied into the site | the committed artifacts (index, manifests, traces, benchmark results, model cards and metrics), read as they are |
 | Live | the TypeScript engine of the frontend | the live methods re-run with the reader's values in a Web Worker, held to the Python engine by parity tests |
 | API | `app/` | dormant: a read-only layer over `data/derived`, answering 503 with the declared state while nothing is baked |

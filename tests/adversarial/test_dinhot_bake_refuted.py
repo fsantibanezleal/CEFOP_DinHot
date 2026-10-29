@@ -1,4 +1,4 @@
-"""Bake requirements BK-001 to BK-016 (docs/design/features/bake/): each planted row wraps a defect around the product's code and runs the requirement's own gate in a child pytest (plant_run.py); the others name a test that plants the defect in its input."""
+"""Bake requirements BK-001 to BK-017 (docs/design/features/bake/): each planted row wraps a defect around the product's code and runs the requirement's own gate in a child pytest (plant_run.py); the others name a test that plants the defect in its input."""
 from __future__ import annotations
 
 import pytest
@@ -21,6 +21,9 @@ TABLE = {
     ]),
     'BK-005': ('tests/bake/test_c13.py::test_c13_is_819_traps_on_bins_at_least_five_bins_apart', [
         {"target": 'pipeline.cases.library:CASES', "wrap": "[dataclasses.replace(c, record=dict(c.record, target=dict(c.record['target'], traps=c.record['target']['traps'][:-1]))) if c.id.startswith('C13') else c for c in orig]"},
+    ]),
+    'BK-017': ('tests/bake/test_c14.py::test_c14_is_the_geometry_of_the_released_model_card', [
+        {"target": 'pipeline.cases.library:CASES', "wrap": "[dataclasses.replace(c, record=dict(c.record, setup=dict(c.record['setup'], pad=2))) if c.id.startswith('C14') else c for c in orig]"},
     ]),
     'BK-006': ('tests/test_expect.py::test_a_value_outside_its_range_is_named', [
         {"target": 'pipeline.core.expect:check', "wrap": 'lambda *a, **k: {}'},
@@ -125,3 +128,8 @@ def test_a_form_selector_that_never_picks_the_fft_form_fails_the_form_gate(cases
 def test_a_score_that_ignores_the_shape_fails_the_signal_region_gate(cases):
     """BK-016: the signal error is scaled by one half: the agreement with the method's own history fails"""
     cases.refuted('BK-016')
+
+
+def test_a_c14_off_the_model_geometry_fails_the_c14_gate(cases):
+    """BK-017: the registry's C14 record is given padding 2: the card-geometry assertion fails"""
+    cases.refuted('BK-017')

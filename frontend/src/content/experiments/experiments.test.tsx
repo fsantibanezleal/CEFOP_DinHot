@@ -147,7 +147,10 @@ describe.skipIf(!present)('the Experiments page reads the committed bake', () =>
   });
 
   it('names the methods the bake could not register from the flags', () => {
-    expect(unregisteredMethods(views)).toEqual(expect.arrayContaining(['B3']));
+    const planted = { ...views[0], manifest: { ...views[0].manifest, flags: [...views[0].manifest.flags, { case_id: views[0].manifest.case_id, flag: 'methods not registered in this build: B3, M17' }] } };
+    expect(unregisteredMethods([planted, ...views.slice(1)])).toEqual(expect.arrayContaining(['B3', 'M17']));
+    // the committed bake names only ladder ids, if any
+    for (const id of unregisteredMethods(views)) expect(id).toMatch(/^(M(0[1-9]|1[0-9])|B[1-5])$/);
   });
 
   for (const lang of ['en', 'es'] as const) {

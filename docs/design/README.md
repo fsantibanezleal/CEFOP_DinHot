@@ -76,7 +76,7 @@ Research, then the executive brief, then sizing, contracts and the units.
 | `engine` | the physics engine of the Python reference | `tests/adversarial/test_dinhot_engine_refuted.py` |
 | `methods` | the acceptance test of every method of the ladder | `tests/adversarial/test_dinhot_methods_refuted.py` |
 | `learned` | the two model slots, the release rule, the ONNX graphs | `tests/adversarial/test_dinhot_learned_refuted.py` |
-| `bake` | contract 1, the thirteen cases, the ranges, the lane and units gates | `tests/adversarial/test_dinhot_bake_refuted.py` |
+| `bake` | contract 1, the fourteen cases, the ranges, the lane and units gates | `tests/adversarial/test_dinhot_bake_refuted.py` |
 | `benchmark` | the protocol, fairness, skipped cells | `tests/adversarial/test_dinhot_benchmark_refuted.py` |
 | `contracts` | the catalog, versions, readiness states | `tests/adversarial/test_dinhot_contracts_refuted.py` |
 | `live-engine` | the TypeScript port, the worker, WebGPU | `tests/adversarial/test_dinhot_live_engine_refuted.py` |

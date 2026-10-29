@@ -10,7 +10,7 @@ Holographic optical trap arrays computed, corrected and tested in the browser
 *Arreglos de trampas opticas holograficas calculados, corregidos y probados en el navegador*
 
 Live site: https://dinhot.fasl-work.com. DinHot is a holography studio for optical trap arrays and shaped light fields. A reader picks
-one of thirteen cases (a trap geometry or a target potential, on a stated optical setup and phase-only SLM), computes the phase
+one of fourteen cases (a trap geometry or a target potential, on a stated optical setup and phase-only SLM), computes the phase
 hologram with any of 24 methods, and sees where the light goes, how uniform and efficient the traps are, what the device and the
 aberrations cost, what a camera feedback loop recovers and what a trapped bead or atom does in the computed potential. It was born at
 CEFOP (Universidad de Concepcion) as DinHotSys, a C++ desktop tool, and is rebuilt here on the CAOS product template and shell. The
@@ -47,10 +47,10 @@ The repository by area: its folder, whether the area is active or dormant, and w
 |---|---|---|---|
 | Web | [`frontend/`](frontend/) | active | The workbench (`/app`) and the five documentation routes (`/introduction`, `/methodology`, `/implementation`, `/experiments`, `/benchmark`) on the shared shell 0.19.6, with the engine ported to the browser. Build and test: `cd frontend && npm ci && npm run build && npm test`. |
 | API | [`app/`](app/) | dormant: this solution does not require it at the moment | Ships dormant, the site is static; activation is [guide 04](docs/guides/04_run-the-api.md). |
-| Core pipelines | [`data-pipeline/`](data-pipeline/) | active | The engine (`pipeline/model/holo/`: forward model, 24 methods in four families, the learned slots), the named stages (bake, evaluate, benchmark, train) and the canonical bake of the thirteen cases: `./scripts/precompute.sh`. See [data-pipeline/README.md](data-pipeline/README.md). |
+| Core pipelines | [`data-pipeline/`](data-pipeline/) | active | The engine (`pipeline/model/holo/`: forward model, 24 methods in four families, the learned slots), the named stages (bake, evaluate, benchmark, train) and the canonical bake of the fourteen cases: `./scripts/precompute.sh`. See [data-pipeline/README.md](data-pipeline/README.md). |
 | Packages | (PyPI) [numpy](https://pypi.org/project/numpy/) | active: consumes numpy, and in the notebooks matplotlib, scipy, [slmsuite](https://pypi.org/project/slmsuite/) 0.5.0 and [onnxruntime](https://pypi.org/project/onnxruntime/) 1.31.1 | DinHot publishes no package of its own; the methods live in the pipeline and are imported by path. |
 | Notebooks | [`notebooks/`](notebooks/) | active | Eight topics of didactic notebooks in English and Spanish, from the Fourier optics of a hologram to the learned methods, with level 3 notebooks for the state-of-the-art methods and level 4 for the five claims beyond it. Run: `./scripts/setup.sh --notebooks`, then `python scripts/run_notebooks.py`. Index: [notebooks/README.md](notebooks/README.md); guide: [guide 08](docs/guides/08_notebooks.md). |
-| Data | [`data/`](data/) | active | The thirteen cases (`data/examples/cases.json`), the committed derived artifacts of the bake and the evidence of the two learned models, with the sources and their licence classes in [data/README.md](data/README.md). |
+| Data | [`data/`](data/) | active | The fourteen cases (`data/examples/cases.json`), the committed derived artifacts of the bake and the evidence of the two learned models, with the sources and their licence classes in [data/README.md](data/README.md). |
 | Contracts | [`docs/contracts/`](docs/contracts/) | active | The contract catalog, the JSON schemas (params record, trace, manifest, model card and metrics) and the OpenAPI document. |
 | Documentation | [`docs/`](docs/) | active | The SDD ([docs/design/SDD.md](docs/design/SDD.md)), the [guides](docs/guides.md), the [case pages](docs/cases.md) and the [framework cards](docs/frameworks.md) of every method. |
 | Tests and gates | [`tests/`](tests/), [`scripts/`](scripts/) | active | `python -m pytest` for the engine, the methods, the contracts and the notebooks' row tests, and the checks (`scripts/check_*.py`, `run_notebooks.py`). See [scripts/README.md](scripts/README.md). |

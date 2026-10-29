@@ -34,7 +34,7 @@ readiness document).
 
 ## Resources
 
-The bake runs on the workstation, never in CI: at most 4 GB peak, at most 3 MB of artifacts, at most 20 minutes for the twelve cases; the benchmark at most 6 hours, resumable by cell. These are bounds from the design; the
+The bake runs on the workstation, never in CI: at most 4 GB peak, at most 3 MB of artifacts, at most 20 minutes for the fourteen cases; the benchmark at most 6 hours, resumable by cell. These are bounds from the design; the
 measured values replace them in [`design/measured-resources.md`](../design/measured-resources.md) before a release.
 
 ## Where a method plugs in

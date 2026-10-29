@@ -1,6 +1,6 @@
 # Guide: bring your own case
 
-DinHot applies to a reader's own task, not only to its twelve cases: a trap geometry or a shaped potential on an optical setup and an SLM that the reader states. The door is contract 1
+DinHot applies to a reader's own task, not only to its fourteen cases: a trap geometry or a shaped potential on an optical setup and an SLM that the reader states. The door is contract 1
 (`data-pipeline/pipeline/io/contract.py`), which validates a params record against `docs/contracts/schemas/params-record.schema.json`. A complete example record is
 [`docs/contracts/examples/params-record.json`](../contracts/examples/params-record.json); the twelve built-in records are in `data/examples/cases.json`.
 
