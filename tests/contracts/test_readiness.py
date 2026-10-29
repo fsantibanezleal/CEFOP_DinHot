@@ -19,9 +19,9 @@ CATALOG = ROOT / "docs" / "contracts" / "catalog.md"
 VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 OLDER = VERSION.rsplit(".", 1)[0] + ".999"
 REAL_ROWS = ("params-record", "case-index", "case-manifest", "trace", "benchmark-results", "cgh-net", "warmstart-model",
-             "model-metrics", "engine-reference")
+             "model-metrics", "model-evidence", "engine-reference")
 ROW_IDS = ["params-record", "case-index", "case-manifest", "trace", "benchmark-results", "cgh-net", "warmstart-model",
-           "model-metrics", "engine-reference", "readiness", "api"]
+           "model-metrics", "model-evidence", "engine-reference", "readiness", "api"]
 
 
 def _table(section: str) -> list[list[str]]:
