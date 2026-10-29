@@ -108,7 +108,7 @@ case has its own optics and aberration, listed in `data/derived/manifests/`):
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
-| C09 | 4 | 0.799 (0.786 to 0.805) | 0.994 (0.987 to 0.999) | 0.344 (0.0818 to 0.722) |
+| C09 | 4 | 0.799 (0.787 to 0.805) | 0.994 (0.989 to 0.999) | 0.33 (0.0773 to 0.68) |
 
 ## Limits and failure modes
 

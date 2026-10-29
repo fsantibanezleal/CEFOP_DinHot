@@ -99,7 +99,7 @@ the table shows B2's final hologram as the bake scores it):
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
-| C10 | 13 | 0.797 (0.793 to 0.8) | 1 (0.999 to 1) | 0.0103 (5.95e-14 to 0.0309) |
+| C10 | 13 | 0.793 (0.791 to 0.798) | 1 (0.999 to 1) | 0.0204 (8.16e-14 to 0.0612) |
 
 The case driver (`data-pipeline/pipeline/stages/rearrangement.py`) records a case-level `min_transient` of 0.958 to 0.985 over the 3 seeds, the lowest moving-trap intensity relative to the mean over the moving
 frames; the measured file does not name the method of that driver, so it is not claimed for B2.

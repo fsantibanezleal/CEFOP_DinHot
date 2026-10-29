@@ -47,19 +47,39 @@ A thousand and twenty-four equal traps. Phase-fixed weighted GS plus three adapt
 
 ### Expected ranges (checked by the bake)
 
-Basis of the bands: **provisional: set from the physical limits of the case, to be replaced by a measured band with its margin at the first bake of the real methods**. A key is a metric of the reference method, or `<method>.<metric>` for another method of the case. The bake fails when a result is outside its range
-(`data-pipeline/pipeline/core/expect.py`).
+Basis of the bands: **measured**, 3 seeds (the case seed and the next ones), range = mean plus or minus the wider of
+10 percent of the mean and the seed spread, clipped to the domain.
+The values are in `data-pipeline/pipeline/cases/measured_ranges.json` (`data-pipeline/pipeline/ranges.py`); every method range is keyed `<method>.<metric>`,
+so it is never applied to another method. The bake fails when a result is outside its range (`data-pipeline/pipeline/core/expect.py`).
+This section is written by `scripts/write_case_ranges.py`.
+The seeds of M01 give the same value (the method does not depend on the seed here), so the band is the 10 percent floor.
 
-| Key | Range | Meaning |
-|---|---|---|
-| `efficiency` | 0.4 to 1 | efficiency, the fraction of the input power in the trap peaks (traps) or in the signal region (shaped fields), 0 to 1 |
-| `rel_std_pct` | 0 to 15 | relative standard deviation of the trap intensities, in percent |
-| `feedback_initial_rel_std_pct` | 10 to 35 | measured spread before the camera loop, in percent |
-| `feedback_final_rel_std_pct` | 0 to 4 | measured spread after the camera loop, in percent |
-| `fc_ratio` | 0.8 to 1.2 | fitted corner frequency over the expected one (bead), or fitted over expected trap frequency (atom) |
-
-No canonical bake of the twelve cases is committed yet: the measured values of the real methods on this case are shown by the Experiments page when the bake has run for the build, and this card
-does not quote a number the bake has not produced.
+| Key | Range | Measured on the 3 seeds | Meaning |
+|---|---|---|---|
+| `B3.efficiency` | 0.7147 to 0.8736 | 0.794122, 0.79376, 0.794539 | fraction of the input power in the trap peaks |
+| `B3.rel_std_pct` | 0 to 0.8925 | 0.199007, 0.669813, 0.396127 | relative standard deviation of the trap intensities, in percent |
+| `B3.uniformity` | 0.8895 to 1 | 0.994788, 0.982785, 0.987564 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M01.efficiency` | 0.1694 to 0.207 | 0.18822, 0.18822, 0.18822 | fraction of the input power in the trap peaks |
+| `M01.rel_std_pct` | 832.5 to 1018 | 925.014, 925.014, 925.014 | relative standard deviation of the trap intensities, in percent |
+| `M01.uniformity` | 9.464e-08 to 1.157e-07 | 1.05155e-07, 1.05155e-07, 1.05155e-07 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M02.efficiency` | 0.6684 to 0.817 | 0.74231, 0.743693, 0.742106 | fraction of the input power in the trap peaks |
+| `M02.rel_std_pct` | 34.76 to 42.49 | 39.1338, 39.1088, 37.6284 | relative standard deviation of the trap intensities, in percent |
+| `M02.uniformity` | 0.01722 to 0.1625 | 0.0789683, 0.058961, 0.13158 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M04.efficiency` | 0.7359 to 0.8995 | 0.816674, 0.817046, 0.819415 | fraction of the input power in the trap peaks |
+| `M04.rel_std_pct` | 16.03 to 19.59 | 18.6828, 17.6689, 17.0756 | relative standard deviation of the trap intensities, in percent |
+| `M04.uniformity` | 0.4268 to 0.5568 | 0.454922, 0.500563, 0.519907 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M06.efficiency` | 0.7247 to 0.8858 | 0.806281, 0.804689, 0.804761 | fraction of the input power in the trap peaks |
+| `M06.rel_std_pct` | 0.8581 to 1.434 | 1.27682, 1.17164, 0.989044 | relative standard deviation of the trap intensities, in percent |
+| `M06.uniformity` | 0.8647 to 1 | 0.958116, 0.960653, 0.963624 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M07.efficiency` | 0.7147 to 0.8736 | 0.794122, 0.793758, 0.79454 | fraction of the input power in the trap peaks |
+| `M07.rel_std_pct` | 0 to 0.8831 | 0.198701, 0.662816, 0.395529 | relative standard deviation of the trap intensities, in percent |
+| `M07.uniformity` | 0.8896 to 1 | 0.994818, 0.982945, 0.987554 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M12.efficiency` | 0.7285 to 0.8903 | 0.809228, 0.810427, 0.808553 | fraction of the input power in the trap peaks |
+| `M12.rel_std_pct` | 17.8 to 21.76 | 20.307, 19.8325, 19.198 | relative standard deviation of the trap intensities, in percent |
+| `M12.uniformity` | 0.3422 to 0.539 | 0.376503, 0.474908, 0.470433 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `fc_ratio` | 0.8746 to 1.069 | 0.982652, 0.96439, 0.968395 | fitted corner frequency over the expected one (bead), or fitted over expected trap frequency (atom) |
+| `feedback_final_rel_std_pct` | 0.9545 to 2.037 | 1.4434, 1.7924, 1.2512 | measured spread after the camera loop, in percent |
+| `feedback_initial_rel_std_pct` | 20.08 to 24.54 | 22.3086, 22.2245, 22.4033 | measured spread before the camera loop, in percent |
 
 ## Validation anchor
 

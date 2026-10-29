@@ -44,16 +44,33 @@ A uniform disc of 15 um radius on a device with pixel crosstalk (sigma 1.24, q 1
 
 ### Expected ranges (checked by the bake)
 
-Basis of the bands: **provisional: set from the physical limits of the case, to be replaced by a measured band with its margin at the first bake of the real methods**. A key is a metric of the reference method, or `<method>.<metric>` for another method of the case. The bake fails when a result is outside its range
-(`data-pipeline/pipeline/core/expect.py`).
+Basis of the bands: **measured**, 3 seeds (the case seed and the next ones), range = mean plus or minus the wider of
+10 percent of the mean and the seed spread, clipped to the domain.
+The values are in `data-pipeline/pipeline/cases/measured_ranges.json` (`data-pipeline/pipeline/ranges.py`); every method range is keyed `<method>.<metric>`,
+so it is never applied to another method. The bake fails when a result is outside its range (`data-pipeline/pipeline/core/expect.py`).
+This section is written by `scripts/write_case_ranges.py`.
+The seeds of M04, M08, M18 give the same value (the method does not depend on the seed here), so the band is the 10 percent floor.
 
-| Key | Range | Meaning |
-|---|---|---|
-| `efficiency` | 0.05 to 0.9 | efficiency, the fraction of the input power in the trap peaks (traps) or in the signal region (shaped fields), 0 to 1 |
-| `rel_std_pct` | 0 to 30 | relative standard deviation of the trap intensities, in percent |
-
-No canonical bake of the twelve cases is committed yet: the measured values of the real methods on this case are shown by the Experiments page when the bake has run for the build, and this card
-does not quote a number the bake has not produced.
+| Key | Range | Measured on the 3 seeds | Meaning |
+|---|---|---|---|
+| `M04.efficiency` | 0.8257 to 1 | 0.917482, 0.917482, 0.917482 | fraction of the input power in the trap peaks |
+| `M04.signal_efficiency` | 0.8331 to 1 | 0.925714, 0.925714, 0.925714 | fraction of the input power in the signal region of the shaped field |
+| `M04.signal_rms_error_pct` | 40.42 to 49.4 | 44.9081, 44.9081, 44.9081 | RMS fractional error of the shaped field over its measure region after the scale fit, in percent |
+| `M08.efficiency` | 0.1668 to 0.2039 | 0.185377, 0.185377, 0.185377 | fraction of the input power in the trap peaks |
+| `M08.signal_efficiency` | 0.1676 to 0.2049 | 0.18625, 0.18625, 0.18625 | fraction of the input power in the signal region of the shaped field |
+| `M08.signal_rms_error_pct` | 184.2 to 225.1 | 204.624, 204.624, 204.624 | RMS fractional error of the shaped field over its measure region after the scale fit, in percent |
+| `M10.efficiency` | 0.3445 to 0.421 | 0.376011, 0.380187, 0.392107 | fraction of the input power in the trap peaks |
+| `M10.signal_efficiency` | 0.3508 to 0.4287 | 0.383003, 0.387391, 0.398843 | fraction of the input power in the signal region of the shaped field |
+| `M10.signal_rms_error_pct` | 66.58 to 196.2 | 105.314, 118.713, 170.118 | RMS fractional error of the shaped field over its measure region after the scale fit, in percent |
+| `M11.efficiency` | 0.1489 to 0.1894 | 0.177778, 0.172032, 0.15754 | fraction of the input power in the trap peaks |
+| `M11.signal_efficiency` | 0.1521 to 0.1922 | 0.180857, 0.174871, 0.160797 | fraction of the input power in the signal region of the shaped field |
+| `M11.signal_rms_error_pct` | 62.72 to 76.66 | 68.5996, 68.4706, 71.9978 | RMS fractional error of the shaped field over its measure region after the scale fit, in percent |
+| `M13.efficiency` | 0.3364 to 0.4111 | 0.373336, 0.373179, 0.374709 | fraction of the input power in the trap peaks |
+| `M13.signal_efficiency` | 0.3428 to 0.4189 | 0.380649, 0.380241, 0.381671 | fraction of the input power in the signal region of the shaped field |
+| `M13.signal_rms_error_pct` | 24.19 to 29.57 | 27.7419, 27.2436, 25.6635 | RMS fractional error of the shaped field over its measure region after the scale fit, in percent |
+| `M18.efficiency` | 0.3781 to 0.4622 | 0.420149, 0.420149, 0.420149 | fraction of the input power in the trap peaks |
+| `M18.signal_efficiency` | 0.3802 to 0.4647 | 0.422476, 0.422476, 0.422476 | fraction of the input power in the signal region of the shaped field |
+| `M18.signal_rms_error_pct` | 23.96 to 29.28 | 26.6199, 26.6199, 26.6199 | RMS fractional error of the shaped field over its measure region after the scale fit, in percent |
 
 ## Validation anchor
 

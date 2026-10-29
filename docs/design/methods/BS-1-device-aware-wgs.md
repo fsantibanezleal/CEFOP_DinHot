@@ -101,10 +101,10 @@ Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, m
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
-| C08 | 30 | 0.65 (0.639 to 0.662) | 0.872 (0.841 to 0.904) | 6.05 (5.49 to 6.71) |
+| C08 | 30 | 0.655 (0.651 to 0.662) | 0.863 (0.847 to 0.886) | 6.49 (5.92 to 7.05) |
 
-On C08 the mean relative standard deviation is 6.05 percent for B1 against 13.2 for M07 (ratio 2.2, computed from the committed file) at 0.96 of M07's efficiency (0.650 against 0.676):
-the factor of two holds on the harder device, which has the 4-bit quantizer and the flicker that the optimizer models only as straight-through or drops; the factor is 2.2 there against 49 in the acceptance test.
+On C08 the mean relative standard deviation is 6.49 percent for B1 against 13.2 for M07 (ratio 2.0, computed from the committed file, 2026-10-29) at 0.97 of M07's efficiency (0.655 against 0.678):
+the factor of two holds on the harder device, which has the 4-bit quantizer and the flicker that the optimizer models only as straight-through or drops; the factor is 2.0 there (2.2 in notebook 03-04 over two seeds and four flicker draws) against 15.9 in the acceptance test on its seed.
 
 ## Limits and failure modes
 

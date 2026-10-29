@@ -36,7 +36,7 @@ export const LADDER: LadderRow[] = [
   { id: 'M12', tier: 'sota', engine: 'M12', name: { en: 'Closed-loop WGS on an emulated camera', es: 'WGS de lazo cerrado sobre una cámara emulada' }, record: 'M12-closed-loop-wgs.md' },
   { id: 'M13', tier: 'sota', engine: 'M13', name: { en: 'Device-aware CG with pixel crosstalk', es: 'CG consciente del dispositivo con diafonía de píxeles' }, record: 'M13-crosstalk-aware-cg.md' },
   { id: 'M16', tier: 'sota', engine: 'M16', name: { en: 'Hungarian assignment and linear phase interpolation', es: 'Asignación húngara e interpolación lineal de fase' }, record: 'M16-rearrangement.md' },
-  { id: 'M17', tier: 'sota', engine: 'M17', name: { en: 'Multi-plane CNN start refined by the volumetric GS (DeepCGH-style)', es: 'Arranque con CNN multiplano refinado por el GS volumétrico (estilo DeepCGH)' }, record: 'M17-unsupervised-cnn-hologram.md' },
+  { id: 'M17', tier: 'sota', engine: 'M17', name: { en: 'Multi-plane CNN hologram with an optional volumetric GS refinement (DeepCGH-style)', es: 'Holograma de CNN multiplano con un refinamiento opcional por el GS volumétrico (estilo DeepCGH)' }, record: 'M17-unsupervised-cnn-hologram.md' },
   { id: 'M18', tier: 'sota', engine: 'M18', name: { en: 'Optimal-transport initialized MRAF', es: 'MRAF inicializado por transporte óptimo' }, record: 'M18-ot-initialized-mraf.md' },
   { id: 'BS-1', tier: 'beyond', engine: 'B1', name: { en: 'Device-aware weighted GS', es: 'GS ponderado consciente del dispositivo' }, record: 'BS-1-device-aware-wgs.md' },
   { id: 'BS-2', tier: 'beyond', engine: 'B2', name: { en: 'Flicker-bounded phase-continuous sequence', es: 'Secuencia de fase continua acotada en parpadeo' }, record: 'BS-2-flicker-bounded-sequence.md' },

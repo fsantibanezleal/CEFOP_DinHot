@@ -108,6 +108,7 @@ three-plane array with vortices, with its own optics in `data/derived/manifests/
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
 | C05 | 30 | 0.526 (0.512 to 0.538) | 0.0153 (0.00121 to 0.0273) | 62.4 (62.1 to 62.6) |
+| C14 | 30 | 0.749 (0.748 to 0.752) | 0.694 (0.674 to 0.713) | 15.8 (14.7 to 17.6) |
 
 ## Limits and failure modes
 

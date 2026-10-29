@@ -43,17 +43,26 @@ A 10 by 10 site array loaded at 55 percent (52 sites are loaded at the case seed
 
 ### Expected ranges (checked by the bake)
 
-Basis of the bands: **provisional: set from the physical limits of the case, to be replaced by a measured band with its margin at the first bake of the real methods**. A key is a metric of the reference method, or `<method>.<metric>` for another method of the case. The bake fails when a result is outside its range
-(`data-pipeline/pipeline/core/expect.py`).
+Basis of the bands: **measured**, 3 seeds (the case seed and the next ones), range = mean plus or minus the wider of
+10 percent of the mean and the seed spread, clipped to the domain.
+The values are in `data-pipeline/pipeline/cases/measured_ranges.json` (`data-pipeline/pipeline/ranges.py`); every method range is keyed `<method>.<metric>`,
+so it is never applied to another method. The bake fails when a result is outside its range (`data-pipeline/pipeline/core/expect.py`).
+This section is written by `scripts/write_case_ranges.py`.
 
-| Key | Range | Meaning |
-|---|---|---|
-| `efficiency` | 0.3 to 1 | efficiency, the fraction of the input power in the trap peaks (traps) or in the signal region (shaped fields), 0 to 1 |
-| `min_transient` | 0.1 to 1.5 | lowest intensity of a moving trap relative to its mean |
-| `final_filling` | 0.9 to 1 | filling of the target pattern after the last move, 0 to 1 |
-
-No canonical bake of the twelve cases is committed yet: the measured values of the real methods on this case are shown by the Experiments page when the bake has run for the build, and this card
-does not quote a number the bake has not produced.
+| Key | Range | Measured on the 3 seeds | Meaning |
+|---|---|---|---|
+| `B2.efficiency` | 0.7141 to 0.8728 | 0.79825, 0.790868, 0.791195 | fraction of the input power in the trap peaks |
+| `B2.rel_std_pct` | 0 to 0.08159 | 8.15731e-14, 0.0611935, 3.85724e-13 | relative standard deviation of the trap intensities, in percent |
+| `B2.uniformity` | 0.8997 to 1 | 1, 0.999112, 1 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M06.efficiency` | 0.7225 to 0.8831 | 0.805592, 0.801876, 0.800878 | fraction of the input power in the trap peaks |
+| `M06.rel_std_pct` | 0.8111 to 1.149 | 0.923721, 1.09287, 0.924172 | relative standard deviation of the trap intensities, in percent |
+| `M06.uniformity` | 0.8783 to 1 | 0.977946, 0.973097, 0.976615 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M07.efficiency` | 0.7129 to 0.8713 | 0.797153, 0.78952, 0.789723 | fraction of the input power in the trap peaks |
+| `M07.rel_std_pct` | 0 to 0.05331 | 0.0116927, 0.0427627, 0.0122543 | relative standard deviation of the trap intensities, in percent |
+| `M07.uniformity` | 0.8995 to 1 | 0.999648, 0.999269, 0.999513 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `M16.efficiency` | 0.7415 to 0.9062 | 0.823226, 0.825055, 0.8233 | fraction of the input power in the trap peaks |
+| `final_filling` | 0.9 to 1.1 | 1, 1, 1 | fraction of the target sites filled after the rearrangement |
+| `min_transient` | 0.8849 to 1.081 | 0.989672, 0.980201, 0.979635 | lowest intensity of a moving trap over the sequence, over the mean trap intensity |
 
 ## Validation anchor
 

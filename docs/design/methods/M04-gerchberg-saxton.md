@@ -121,6 +121,7 @@ own optics, listed in `data/derived/manifests/`; the C04 row is the shaped disc 
 | C09 | 30 | 0.457 (0.455 to 0.458) | 0.734 (0.727 to 0.739) | 15.3 (15 to 15.7) |
 | C12 | 30 | 0.817 (0.812 to 0.821) | 0.575 (0.506 to 0.64) | 18.5 (16.4 to 20) |
 | C13 | 30 | 0.742 (0.74 to 0.743) | 0.645 (0.64 to 0.652) | 11 (10.6 to 11.2) |
+| C14 | 30 | 0.797 (0.795 to 0.799) | 0.656 (0.608 to 0.701) | 16.9 (15.3 to 18.4) |
 
 | Case | Iterations | Signal-region power fraction | Signal rms error (percent) |
 |---|---|---|---|

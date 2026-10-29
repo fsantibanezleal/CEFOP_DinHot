@@ -40,15 +40,12 @@ One trap at 200 um against a half field of 127.5 um. Contract 1 rejects the reco
 
 ### Expected ranges (checked by the bake)
 
-Basis of the bands: **provisional: set from the physical limits of the case, to be replaced by a measured band with its margin at the first bake of the real methods**. A key is a metric of the reference method, or `<method>.<metric>` for another method of the case. The bake fails when a result is outside its range
-(`data-pipeline/pipeline/core/expect.py`).
+Basis of the bands: **provisional**, declared in the case library. The case is refused by contract 1 and never computed,
+so these bands are never checked; they state what a valid record of this kind would be held to.
 
 | Key | Range | Meaning |
 |---|---|---|
-| `efficiency` | 0 to 1 | efficiency, the fraction of the input power in the trap peaks (traps) or in the signal region (shaped fields), 0 to 1 |
-
-No canonical bake of the twelve cases is committed yet: the measured values of the real methods on this case are shown by the Experiments page when the bake has run for the build, and this card
-does not quote a number the bake has not produced.
+| `efficiency` | 0 to 1 | fraction of the input power in the trap peaks |
 
 ## Validation anchor
 

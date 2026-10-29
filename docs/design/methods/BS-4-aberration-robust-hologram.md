@@ -105,14 +105,14 @@ estimate, I1 report F5):
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
-| C01 | 30 | 0.788 (0.758 to 0.806) | 0.992 (0.989 to 0.994) | 0.533 (0.408 to 0.765) |
-| C02 | 30 | 0.78 (0.775 to 0.785) | 0.979 (0.977 to 0.981) | 0.841 (0.806 to 0.87) |
-| C07 | 30 | 0.77 (0.766 to 0.775) | 0.981 (0.98 to 0.982) | 0.922 (0.879 to 0.992) |
-| C08 | 30 | 0.669 (0.666 to 0.671) | 0.739 (0.721 to 0.773) | 13.2 (12.7 to 14.3) |
-| C09 | 30 | 0.443 (0.434 to 0.449) | 0.912 (0.904 to 0.922) | 5.36 (4.51 to 5.87) |
+| C01 | 30 | 0.777 (0.758 to 0.805) | 0.991 (0.989 to 0.994) | 0.586 (0.422 to 0.765) |
+| C02 | 30 | 0.778 (0.774 to 0.783) | 0.978 (0.976 to 0.981) | 0.852 (0.835 to 0.867) |
+| C07 | 30 | 0.766 (0.758 to 0.773) | 0.981 (0.979 to 0.983) | 0.983 (0.941 to 1.02) |
+| C08 | 30 | 0.67 (0.666 to 0.672) | 0.717 (0.706 to 0.73) | 12.9 (12.5 to 13.6) |
+| C09 | 30 | 0.443 (0.434 to 0.448) | 0.914 (0.909 to 0.925) | 5.31 (4.59 to 5.83) |
 
-In the aberrated case C09 the mean relative standard deviation is 5.36 percent for B4 against 6.23 for M07 (1.16 times, computed from the committed file; one realization per seed, not the p95 of an ensemble) at 0.99 of its
-efficiency. On ideal cases (C01, C02, C07) B4's spread is 0.4 to 1.0 percent while M07's is below 0.01 percent in 6 of the 9 seeds (the largest is 0.78): the price of robustness is a small nominal spread.
+In the aberrated case C09 the mean relative standard deviation is 5.31 percent for B4 against 6.16 for M07 (1.16 times, computed from the committed file; one realization per seed, not the p95 of an ensemble) at 0.99 of its
+efficiency. On ideal cases (C01, C02, C07) B4's spread is 0.4 to 1.0 percent while M07's is below 0.01 percent in 6 of the 9 seeds (the largest is 0.85): the price of robustness is a small nominal spread.
 
 ## Limits and failure modes
 

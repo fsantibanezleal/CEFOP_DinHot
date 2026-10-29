@@ -109,7 +109,7 @@ wall-clock budget $T$ = 7354.6 ms (the median of M19 at 30 iterations on those v
 | Refinement | never kept: the hybrid AC equals the network alone, so the network (34.9 ms) answers, about 200 times faster than the budget |
 | ONNX parity with torch | reconstructed plane intensities, max $|\Delta I|/\max I$ = 8.42e-6 (inside 1e-5); the phase differs up to 4.2e-3 (99.9th percentile 3.9e-4), reported, not claimed |
 
-The committed canonical bake has no M17 rows: its manifests flag "methods not registered in this build: M17" (for example `data/derived/manifests/C04_disc_crosstalk.json`), because that bake (I1 report) was run before the learned package was registered.
+The committed canonical bake runs M17 on C14, the case at the network's geometry, with the released graph (`data/derived/manifests/C14_volume_learned.json`, `models`: `cgh-net: real`); the other cases are outside the geometry the graph was trained for and do not list M17.
 
 Caveat stated in the report: M19 is a point-voxel method scored here on full plane images (ghosts and blur count), which is what the network optimizes; the trap-uniformity
 objective of M19 is not what AC measures. The single-plane record: median ratio 0.9994 (hybrid) and 0.9983 (network alone) on 219 held-out targets, network 35.8 ms; GS at
