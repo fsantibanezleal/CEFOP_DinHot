@@ -17,10 +17,9 @@ Sources, all committed with the product:
   * ``content/executive.json``: the published figures of the executive view, with their source ids.
   * ``data/derived/readiness.json``: what is real in the build.
 
-``UNIT_ACCEPTANCE`` below quotes the measured acceptance values of the method unit tests from the unit reports kept with
-the coordination records (``wip/dinhot/e2-methods-classical-2026-10-28.md`` D5, ``e3-methods-advanced-2026-10-28.md`` D5,
-``m1-learned-2026-10-28.md`` and the Update 2 section); each entry names its source. The values of BS-1 and BS-2 in the
-companion manuscript are measured again by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` and are not quoted.
+``UNIT_ACCEPTANCE`` below is read from ``acceptance.json``, written by ``acceptance.py`` (run it first, same folder), which measures
+the acceptance quantity of each method M01 to M19, BS-4 and BS-5 as its gate test computes it, on the current engine. The values
+of BS-1 and BS-2 in the companion manuscript are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py``.
 """
 from __future__ import annotations
 
@@ -38,31 +37,17 @@ DERIVED = ROOT / "data" / "derived"
 PUBLISHED_ANCHORS = {"M01": (0.29, 0.01), "M02": (0.69, 0.01), "M03": (0.01, 0.58), "M04": (0.94, 0.60),
                      "M05": (0.93, 0.79), "M06": (0.93, 0.99)}
 
-# Measured acceptance values of the unit tests, quoted from the unit reports (source tag in the last field).
-# (id, measured acceptance text, seeds, source)
-UNIT_ACCEPTANCE = [
-    ("M01", "efficiency 0.281, uniformity 0.0003 (deterministic)", "1", "E2 D5"),
-    ("M02", "efficiency 0.750 [0.738, 0.752], uniformity 0.252 [0.106, 0.272]", "6", "E2 D5"),
-    ("M03", "256 squared: efficiency 0.010, uniformity 0.057 [0.031, 0.072]; 768 squared: efficiency 0.008, uniformity 0.566 [0.543, 0.590]", "5 and 2", "E2 D5"),
-    ("M04", "flat beam: efficiency 0.939 [0.933, 0.939], uniformity 0.604 [0.557, 0.626]; Gaussian beam: efficiency 0.815", "5", "E2 D5"),
-    ("M05", "uniformity 0.688 [0.638, 0.709] against 0.615 [0.550, 0.637] for GS at equal iterations", "5", "E2 D5"),
-    ("M06", "efficiency and uniformity both at 0.9 after 10 to 13 iterations (flat and Gaussian beams); 3 x 3 x 3 lattice reaches 0.9 and 0.98", "3", "E2 D5"),
-    ("M07", "50 x 30 array to 0.5 percent in 63 and 64 iterations against 121 and 147 for M06 (phase fixed after 60); with the source value of 12 it stalls at 2.88 percent", "2", "E2 D5"),
-    ("M08", "signal-region error 14.5 (disc), 7.9 (ring) and 12.1 (bar) times below GS; efficiency 0.18 against 0.97 to 0.99", "3", "E2 D5"),
-    ("M09", "uniformity 0.9994 and 0.9992 (efficiency 0.66 and 0.65); 119 quasi-periodic traps at 0.023 percent rms", "2 and 1", "E3 D5"),
-    ("M10", "analytic gradient within 1.8e-7 of finite differences; square lattice error 0.55 and 0.51 percent", "2", "E3 D5"),
-    ("M11", "relative standard deviation 2.54, 2.46 and 2.26 percent against 17.79, 17.98 and 18.82 for GS at 30 iterations", "3", "E3 D5"),
-    ("M12", "emulated camera loop: open-loop 20.9 and 20.1 percent to 1.47 and 1.08 percent in 20 iterations; 24.3 and 23.4 percent to 0.77 and 0.53 percent in three phase-fixed steps", "2", "E2 D5"),
-    ("M13", "error 0.241 (efficiency 0.535) against 1.38 (0.507) for M10 without the device model, large disc on the crosstalk device", "1", "E3 D5"),
-    ("M14", "worst per-mode relative error 0.002 [0.001, 0.002] over Noll modes 4 to 11", "3", "E2 D5"),
-    ("M15", "ring phase winds by 2 pi l with a maximum error of 0.033 rad [0.028, 0.060] (isolated vortex)", "3", "E2 D5"),
-    ("M16", "0 path crossings in 60 loadings; moving traps keep 0.870 [0.748, 0.963] of their mean intensity", "60 loadings", "E2 D5"),
-    ("M17", "three-plane network refined by M19: median accuracy ratio 1.140 [1.102, 1.160] on 162 held-out volumes", "162 volumes", "M1 Update 2"),
-    ("M18", "signal-region error 0.0204 (disc), 0.0179 (ring) and 0.0221 (line) against 0.250, 0.192 and 0.250 for MRAF from a random start", "1", "E3 D5"),
-    ("M19", "plane means over overall mean 0.938, 0.987, 1.075 and 0.926, 1.034, 1.039 on three planes", "2", "E2 D5"),
-    ("BS-4", "95th percentile of the relative standard deviation 4.045 against 6.268 for M07 (1.55 times) over a 200-sample aberration ensemble; efficiency 0.7031 against 0.7169; pointing errors 1.02 times", "1", "E3 D5"),
-    ("BS-5", "hypervolume 0.8201 against 0.8033 for the union of the GS-family points; one front point dominates M04 and M05", "1", "E3 D5"),
-]
+# Measured acceptance of every ladder method (M01 to M19, BS-4, BS-5), read from acceptance.json, which acceptance.py writes by
+# computing each method's gate quantity on the current engine; nothing of the table is typed here.
+# (id, measured acceptance text, seeds, source: the gate test the row mirrors)
+def load_acceptance() -> list[tuple[str, str, str, str]]:
+    path = HERE / "acceptance.json"
+    if not path.is_file():
+        raise SystemExit(f"{path} is missing: run manuscripts/holographic-trap-studio/data/acceptance.py first")
+    return [(r["id"], r["text"], r["seeds"], r["source"]) for r in json.loads(path.read_text(encoding="utf-8"))["rows"]]
+
+
+UNIT_ACCEPTANCE = load_acceptance()
 
 # Live-engine measurements quoted from the T1 unit report (wip/dinhot/t1-live-engine-2026-10-28.md, Summary and D4) and the
 # lane budget of the design document (SDD, section Lanes). Source tag in the last field of each entry.
