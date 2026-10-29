@@ -67,3 +67,19 @@ def test_10x10_uniform_and_deterministic(setup256, ceiling, grid10, evaluate):
     e, u, _ = evaluate(r.phi, grid10)
     assert e > 0.9 * ceiling and u > 0.95
     assert np.array_equal(r.phi, m.run(setup256, t, budget=Budget(30), rng=Rng(6)).phi)
+
+
+def test_first_iteration_is_plain_gs_because_g0_is_one(setup256, grid10):
+    """Kim's recursion has g_0 = 1: the start hologram's field is projected unweighted, so one iteration of M07 is one of M04.
+
+    The weights act from the second field on (slmsuite's WGS-Kim does the same); applying them at the first field was the
+    defect behind the gap to slmsuite found in review A of notebook 03-03 (see ``test_m07_against_slmsuite.py``).
+    """
+    from pipeline.model.holo.methods.baseline import m04_gs
+    t = Target.from_traps(grid10)
+    a = m.run(setup256, t, budget=Budget(1), rng=Rng(3))
+    b = m04_gs.run(setup256, t, budget=Budget(1), rng=Rng(3))
+    assert np.abs(np.angle(np.exp(1j * (a.phi - b.phi)))).max() < 1e-9
+    a2 = m.run(setup256, t, budget=Budget(2), rng=Rng(3))
+    b2 = m04_gs.run(setup256, t, budget=Budget(2), rng=Rng(3))
+    assert np.abs(np.angle(np.exp(1j * (a2.phi - b2.phi)))).max() > 1e-6   # the weights do act from the second field on
