@@ -18,7 +18,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { loadCase, loadIndex, useArtifact, type CaseData } from '../api/artifacts';
 import type { Text, Trap } from '../lib/contract.types';
-import { baselineName } from '../lib/ort';
+import { baselineName, cghApplies } from '../lib/ort';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { caseAbsent } from '../readiness/readiness';
 import { useReadiness } from '../readiness/useReadiness';
@@ -29,10 +29,10 @@ import { laneOf } from './engine';
 import { FocalGroup } from './FocalGroup';
 import { HologramGroup } from './HologramGroup';
 import { isShaped, methodLabel, replayMaps, replayResult, trapsOf, UnavailableContext, ViewContext, type DeviceChoice, type Region, type Selection } from './model';
-import { useEngine, useLiveRun, useSlots } from './run';
+import { paramsFor, useEngine, useGpuProbe, useLiveRun, useSlots, type GpuProbe } from './run';
 import { addTrap, deleteTrap, moveTrap } from './traps';
 import { TrapsGroup } from './TrapsGroup';
-import { ActionsContext, CASE_ROWS, LOADING, Pending, type Actions, type EditMode } from './ui';
+import { ActionsContext, CASE_ROWS, LOADING, localizeDecimals, Pending, type Actions, type EditMode } from './ui';
 import { coeffArray, J_MAX } from './zernike';
 import './workbench.css';
 
@@ -51,6 +51,8 @@ interface Rail {
   fbStep: number;
   zmode: number;
   corrected: boolean;
+  plane: 'xz' | 'yz';
+  volThreshold: number;
   overrides: Record<number, number>;
   traps: Trap[] | null;
   region: Region | null;
@@ -74,6 +76,8 @@ function railOf(data: CaseData): Rail {
     fbStep: data.trace.feedback?.steps[0]?.step ?? 0,
     zmode: 4,
     corrected: false,
+    plane: 'xz',
+    volThreshold: 0.2,
     overrides: {},
     traps: null,
     region: null,
@@ -83,11 +87,32 @@ function railOf(data: CaseData): Rail {
 
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
+
+/** The first clause of an engine message, for a rail line a few words wide; the full text stays in the title and the backend hint. */
+function shortReason(reason: string): string {
+  const head = reason.split(/[:(]/)[0].trim();
+  return head.length > 48 ? `${head.slice(0, 45).trim()}...` : head;
+}
+const backendReason = (reason: string | null): string | undefined => reason ?? undefined;
+
+/** One line in the rail: which backend computed the picture on screen, or what the browser offers when nothing has run yet. */
+function backendLine(lang: 'en' | 'es', used: 'cpu' | 'gpu' | null, gpu: GpuProbe | null, fallback: string | null): string {
+  const es = lang === 'es';
+  const name = used === 'gpu' ? 'WebGPU' : 'CPU';
+  if (used) {
+    if (fallback) return es ? `Calculado con ${name}. WebGPU no disponible: ${shortReason(fallback)}.` : `Computed on ${name}. WebGPU unavailable: ${shortReason(fallback)}.`;
+    return es ? `Calculado con ${name}.` : `Computed on ${name}.`;
+  }
+  if (!gpu) return es ? 'Consultando WebGPU.' : 'Asking the browser for WebGPU.';
+  if (gpu.ok) return es ? 'WebGPU disponible; el cálculo corre en CPU salvo que lo elija.' : 'WebGPU is available; the run uses it when it can.';
+  return es ? `WebGPU no disponible: ${shortReason(gpu.reason)}. Se usa CPU.` : `WebGPU unavailable: ${shortReason(gpu.reason)}. CPU is used.`;
+}
+
 export function Workbench() {
   const lang = useShellLang();
   const readiness = useReadiness();
   const engine = useEngine();
-  const slots = useSlots();
+  const gpu = useGpuProbe(engine);
   const index = useArtifact((s) => loadIndex(s), []);
   const [caseId, setCaseId] = useState<string | null>(null);
   const selected = caseId ?? (index.state === 'ready' ? index.data.default_case : null);
@@ -106,6 +131,7 @@ export function Workbench() {
       setEditError(null);
     }
   }, [data]);
+  const slots = useSlots(!!data && cghApplies(data.manifest.params.setup, trapsOf(data.manifest, data.trace), null).ok);
   const r = rail && data && rail.caseId === data.manifest.case_id ? rail : null;
   const method = data && methodId && data.manifest.params.methods.includes(methodId) ? methodId : (data?.manifest.params.reference_method ?? '');
   const patch = useCallback((p: Partial<Rail>) => setRail((cur) => (cur ? { ...cur, ...p } : cur)), []);
@@ -173,14 +199,19 @@ export function Workbench() {
       fbStep: r.fbStep,
       zmode: r.zmode,
       corrected: r.corrected,
+      coeffKey: coeffs.join(','),
+      plane: r.plane,
+      volThreshold: r.volThreshold,
       slot: live.slot,
       running: live.running,
       progress: live.progress,
       liveError: live.error,
+      cancelled: live.cancelled,
+      runParams: paramsFor(data, { device: r.device, iterations: r.iterations, traps, edited, aberration: aberrationEdited ? noll : null, aberrationEdited }),
       engineAvailable: !!engine?.available,
       liveMethods,
     };
-  }, [data, r, params, replay, replayRes, live, method, traps, edited, coeffs, aberrationEdited, engine, liveMethods]);
+  }, [data, r, params, replay, replayRes, live, method, traps, edited, coeffs, aberrationEdited, noll, engine, liveMethods]);
 
   const actions: Actions = useMemo(
     () => ({
@@ -208,6 +239,8 @@ export function Workbench() {
       zmode: r?.zmode ?? 4,
       setCorrected: (on) => patch({ corrected: on, overrides: {} }),
       setCoeff: (j, v) => patch({ overrides: { ...(r?.overrides ?? {}), [j]: v } }),
+      setPlane: (plane) => patch({ plane }),
+      setVolThreshold: (volThreshold) => patch({ volThreshold }),
     }),
     [r?.mode, r?.zmode, r?.trapId, r?.overrides, traps, halfField, editError, patch],
   );
@@ -235,12 +268,12 @@ export function Workbench() {
 
   const rails: RailSection[] = [];
   if (unavailable && !data) {
-    rails.push({ id: 'unavailable', label: { en: 'Case', es: 'Caso' }, content: <p className="caos-pending" data-state="unavailable">{unavailable[lang]}</p> });
+    rails.push({ id: 'unavailable', label: { en: 'Case', es: 'Caso' }, content: <p className="caos-pending" data-state="unavailable">{localizeDecimals(unavailable[lang], lang)}</p> });
   } else if (r && sel && data && params) {
     const n = traps.length;
     rails.push({
       id: 'run',
-      label: { en: 'Run', es: 'Corrida' },
+      label: { en: 'Run', es: 'Motor' },
       content: (
         <>
           {params.device ? (
@@ -276,20 +309,69 @@ export function Workbench() {
               value={r.backend}
               onChange={(v) => patch({ backend: v as Rail['backend'] })}
               options={[
-                { id: 'auto', label: { en: 'Auto', es: 'Auto' } },
+                { id: 'auto', label: { en: 'Auto', es: 'Auto' }, hint: { en: 'WebGPU when the browser offers it, else CPU.', es: 'WebGPU cuando el navegador lo ofrece, si no CPU.' } },
                 { id: 'cpu', label: { en: 'CPU', es: 'CPU' } },
-                { id: 'gpu', label: { en: 'WebGPU', es: 'WebGPU' } },
+                { id: 'gpu', label: { en: 'WebGPU', es: 'WebGPU' }, hint: gpu ? (gpu.ok ? { en: `Adapter: ${gpu.adapter || 'unnamed'}.`, es: `Adaptador: ${gpu.adapter || 'sin nombre'}.` } : { en: `Not available here: ${gpu.reason}.`, es: `No disponible aquí: ${gpu.reason}.` }) : undefined },
               ]}
             />
           ) : (
             <p className="caos-plot-note">{lang === 'es' ? 'Motor en vivo: no está en esta versión; las vistas se reproducen de la generación.' : 'Live engine: not on this build; the views replay the bake.'}</p>
           )}
-          {sel.maps?.backend && (
-            <p className="caos-plot-note" data-backend={sel.maps.backend}>
-              {lang === 'es' ? 'Calculado con' : 'Computed on'} {sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}
-              {sel.maps.fallbackReason ? (lang === 'es' ? ` (alternativa: ${sel.maps.fallbackReason})` : ` (fallback: ${sel.maps.fallbackReason})`) : ''}.
+          {engine?.available && (live.running ? (
+            // While a run is out the line gives way to the button that stops it, so the rail keeps its height.
+            <button type="button" className="btn" onClick={live.cancel} data-cancel-run="" data-state="loading">
+              {lang === 'es' ? 'Cancelar la corrida' : 'Cancel the run'}
+            </button>
+          ) : (
+            <p className="caos-plot-note" data-backend={sel.maps?.backend ?? 'none'} title={backendReason(sel.maps?.fallbackReason ?? (gpu && !gpu.ok ? gpu.reason : null))}>
+              {backendLine(lang, sel.maps?.lane === 'live' ? sel.maps.backend : null, gpu, sel.maps?.fallbackReason ?? null)}
             </p>
+          ))}
+        </>
+      ),
+    });
+    rails.push({
+      id: 'view',
+      label: { en: 'View', es: 'Vista' },
+      content: (
+        <>
+          {params.device && (
+            <ChipGroup
+              id="stage"
+              label={{ en: 'Mask stage', es: 'Etapa de la máscara' }}
+              value={r.stage}
+              onChange={(v) => patch({ stage: v as DeviceStage })}
+              options={[
+                { id: 'ideal', label: { en: 'Ideal', es: 'Ideal' } },
+                { id: 'quantized', label: { en: 'Quantized', es: 'Cuantizada' }, disabled: !params.device },
+                { id: 'crosstalk', label: { en: 'Crosstalk', es: 'Diafonía' }, disabled: !params.device?.crosstalk },
+              ]}
+            />
           )}
+          <Knob
+            id="db-floor"
+            label={{ en: 'Colour floor', es: 'Piso del color' }}
+            hint={{ en: 'The lowest intensity the focal map shows, in dB against the mean trap. The bake stores down to its own floor.', es: 'La menor intensidad que muestra el mapa focal, en dB respecto de la trampa media. La generación guarda hasta su propio piso.' }}
+            value={r.dbFloor}
+            min={-60}
+            max={-10}
+            step={1}
+            unit="dB"
+            format={{ decimals: 0 }}
+            onChange={(v) => patch({ dbFloor: v })}
+          />
+          <Knob
+            id="band"
+            label={{ en: 'Uniformity band', es: 'Banda de uniformidad' }}
+            hint={{ en: 'A trap within this share of the mean intensity counts as uniform.', es: 'Una trampa dentro de esta fracción de la intensidad media cuenta como uniforme.' }}
+            value={r.bandPct}
+            min={1}
+            max={25}
+            step={1}
+            unit="%"
+            format={{ decimals: 0 }}
+            onChange={(v) => patch({ bandPct: v })}
+          />
           {params.dynamics && (
             <>
               <Knob
@@ -322,51 +404,8 @@ export function Workbench() {
       ),
     });
     rails.push({
-      id: 'view',
-      label: { en: 'View', es: 'Vista' },
-      content: (
-        <>
-          <ChipGroup
-            id="stage"
-            label={{ en: 'Mask stage', es: 'Etapa de la máscara' }}
-            value={r.stage}
-            onChange={(v) => patch({ stage: v as DeviceStage })}
-            options={[
-              { id: 'ideal', label: { en: 'Ideal', es: 'Ideal' } },
-              { id: 'quantized', label: { en: 'Quantized', es: 'Cuantizada' }, disabled: r.device !== 'case' || !params.device },
-              { id: 'crosstalk', label: { en: 'Crosstalk', es: 'Diafonía' }, disabled: r.device !== 'case' || !params.device?.crosstalk },
-            ]}
-          />
-          <Knob
-            id="db-floor"
-            label={{ en: 'Colour floor', es: 'Piso del color' }}
-            hint={{ en: 'The lowest intensity the focal map shows, in dB against the mean trap. The bake stores down to its own floor.', es: 'La menor intensidad que muestra el mapa focal, en dB respecto de la trampa media. La generación guarda hasta su propio piso.' }}
-            value={r.dbFloor}
-            min={-60}
-            max={-10}
-            step={1}
-            unit="dB"
-            format={{ decimals: 0 }}
-            onChange={(v) => patch({ dbFloor: v })}
-          />
-          <Knob
-            id="band"
-            label={{ en: 'Uniformity band', es: 'Banda de uniformidad' }}
-            hint={{ en: 'A trap within this share of the mean intensity counts as uniform.', es: 'Una trampa dentro de esta fracción de la intensidad media cuenta como uniforme.' }}
-            value={r.bandPct}
-            min={1}
-            max={25}
-            step={1}
-            unit="%"
-            format={{ decimals: 0 }}
-            onChange={(v) => patch({ bandPct: v })}
-          />
-        </>
-      ),
-    });
-    rails.push({
       id: 'edit',
-      label: { en: 'Edit', es: 'Edición' },
+      label: { en: 'Edit', es: 'Editar' },
       content: (
         <>
           {shaped ? (
@@ -374,33 +413,30 @@ export function Workbench() {
           ) : (
             <ChipGroup
               id="edit-mode"
-              label={{ en: 'Trap editor', es: 'Editor de trampas' }}
+              label={{ en: `Trap editor: ${n} traps${edited ? ' (edited)' : ''}, field ±${formatNumber(halfField, 'en', { decimals: 1 })} um`, es: `Editor: ${n} trampas${edited ? ' (editadas)' : ''}, campo ±${formatNumber(halfField, 'es', { decimals: 1 })} um` }}
               value={r.mode}
               onChange={(v) => (setEditError(null), patch({ mode: v as EditMode }))}
               options={[
                 { id: 'inspect', label: { en: 'Select', es: 'Elegir' }, hint: { en: 'Click a trap to select it; drag a box to select a region.', es: 'Pulse una trampa para elegirla; arrastre un recuadro para elegir una región.' } },
-                { id: 'add', label: { en: 'Add', es: 'Agregar' }, hint: { en: 'Click the focal map to add a trap on the focal plane.', es: 'Pulse el mapa focal para agregar una trampa en el plano focal.' } },
+                { id: 'add', label: { en: 'Add', es: 'Añadir' }, hint: { en: 'Click the focal map to add a trap on the focal plane.', es: 'Pulse el mapa focal para agregar una trampa en el plano focal.' } },
                 { id: 'move', label: { en: 'Move', es: 'Mover' }, hint: { en: 'Drag a trap on the focal map.', es: 'Arrastre una trampa en el mapa focal.' } },
                 { id: 'delete', label: { en: 'Delete', es: 'Borrar' }, hint: { en: 'Click a trap to remove it.', es: 'Pulse una trampa para quitarla.' } },
               ]}
             />
           )}
-          <p className="caos-plot-note" data-trap-count={n}>
-            {lang === 'es' ? `${n} trampas${edited ? ' (editadas)' : ''}; campo de visión de ±${formatNumber(halfField, 'es', { decimals: 1 })} um.` : `${n} traps${edited ? ' (edited)' : ''}; field of view ±${formatNumber(halfField, 'en', { decimals: 1 })} um.`}
-          </p>
           {n > 0 && (
             <Knob
               id="trap"
-              label={{ en: 'Selected trap', es: 'Trampa elegida' }}
+              label={{ en: 'Selected trap', es: 'Trampa' }}
               hint={{ en: 'The trap the profiles, the axial cut and the 3D view follow; clicking a trap on the map sets it too.', es: 'La trampa que siguen los perfiles, el corte axial y la vista 3D; pulsar una trampa en el mapa también la fija.' }}
-              value={Math.max(0, traps.findIndex((t) => t.id === r.trapId))}
-              min={0}
-              max={Math.max(0, n - 1)}
+              value={Math.max(0, traps.findIndex((t) => t.id === r.trapId)) + 1}
+              min={1}
+              max={Math.max(1, n)}
               step={1}
-              unit={{ en: 'position in the list', es: 'posición en la lista' }}
+              unit={{ en: `of ${n}`, es: `de ${n}` }}
               format={{ decimals: 0 }}
               disabled={n < 2}
-              onChange={(v) => patch({ trapId: traps[Math.round(v)]?.id ?? null })}
+              onChange={(v) => patch({ trapId: traps[Math.round(v) - 1]?.id ?? null })}
             />
           )}
           {data.trace.feedback && (
@@ -422,7 +458,7 @@ export function Workbench() {
     });
     rails.push({
       id: 'values',
-      label: { en: 'Values', es: 'Valores' },
+      label: { en: 'Stats', es: 'Cifras' },
       content: (
         <>
           {index.state === 'error' && <p role="alert">{index.error}</p>}
@@ -444,12 +480,15 @@ export function Workbench() {
     });
   }
 
+  const cghFit = data && slots.cgh?.answered === 'model' ? cghApplies(data.manifest.params.setup, traps, slots.cgh.card) : null;
   const variantOf = (id: string) => {
     const lane1 = laneOf(id, liveMethods);
     const slotNote =
       id === 'M17'
         ? slots.cgh?.answered === 'model'
-          ? { en: 'The released cgh-net answers in your browser.', es: 'El cgh-net publicado responde en su navegador.' }
+          ? cghFit && !cghFit.ok
+            ? { en: `${cghFit.reason.en} The baseline answers.`, es: `${cghFit.reason.es} Responde la línea base.` }
+            : { en: 'The released cgh-net answers in your browser.', es: 'El cgh-net publicado responde en su navegador.' }
           : { en: `No released cgh-net: ${baselineName('cgh-net').en} answers.`, es: `No hay cgh-net publicado: responde ${baselineName('cgh-net').es}.` }
         : id === 'B3'
           ? slots.warm?.answered === 'model'
@@ -458,9 +497,13 @@ export function Workbench() {
           : null;
     return {
       id,
-      label: methodLabel(id),
+      // The chip carries the id so twelve methods fit in a few rows (ADR-0071 rule 6); the note under the group names the active one in full.
+      label: { en: id, es: id },
       lane: lane1,
-      note: slotNote ?? (lane1 === 'live' ? { en: 'Computed live in your browser.', es: 'Calculado en vivo en su navegador.' } : { en: 'Replayed from the bake.', es: 'Reproducido de la generación.' }),
+      note: {
+        en: slotNote ? `${methodLabel(id).en}. ${slotNote.en}` : methodLabel(id).en,
+        es: slotNote ? `${methodLabel(id).es}. ${slotNote.es}` : methodLabel(id).es,
+      },
     };
   };
 
@@ -508,6 +551,8 @@ export function Workbench() {
                     fbStep: r.fbStep,
                     zmode: r.zmode,
                     corrected: r.corrected,
+                    plane: r.plane,
+                    volThreshold: r.volThreshold,
                     coeffs: coeffs.join(','),
                     mode: r.mode,
                     traps: sameJson(traps, baseTraps) ? 'case' : traps.map((t) => `${t.id}:${t.x_um}:${t.y_um}`).join(','),
@@ -515,7 +560,8 @@ export function Workbench() {
                 : {}
             }
             variants={{
-              variants: (params?.methods ?? []).map(variantOf),
+              // M17 is offered only where the three-plane cgh-net applies (128 x 128 SLM, padding 1, traps on its planes)
+              variants: (params?.methods ?? []).filter((id) => id !== 'M17' || !data || cghApplies(data.manifest.params.setup, traps, slots.cgh?.card ?? null).ok).map(variantOf),
               activeId: method,
               onSelect: setMethodId,
               title: { en: 'Method', es: 'Método' },

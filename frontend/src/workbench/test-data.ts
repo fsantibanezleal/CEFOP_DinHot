@@ -150,6 +150,7 @@ export function richCase(o: RichOptions = {}): CaseData {
 
 import { coeffArray } from './zernike';
 import { replayMaps, replayResult, trapsOf, type Selection } from './model';
+import { paramsFor } from './run';
 
 /** A Selection on the replay lane of a case, as the workbench builds it with no live engine; `over` replaces fields. */
 export function selectionFor(data: CaseData, over: Partial<Selection> = {}): Selection {
@@ -177,10 +178,15 @@ export function selectionFor(data: CaseData, over: Partial<Selection> = {}): Sel
     fbStep: 0,
     zmode: 4,
     corrected: false,
+    coeffKey: '',
+    plane: 'xz',
+    volThreshold: 0.2,
     slot: null,
     running: false,
     progress: null,
     liveError: null,
+    cancelled: false,
+    runParams: paramsFor(data, { device: p.device ? 'case' : 'ideal', iterations: p.budget.iterations, traps: trapsOf(data.manifest, data.trace), edited: false, aberration: null, aberrationEdited: false }),
     engineAvailable: false,
     liveMethods: [],
     ...over,

@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import type { ModelCard } from './contract.types';
-import { baselineName, cghApplies, decodeWarmstart, encodeCghTarget, encodeWarmstart, loadSlot, rayleighUm, SLOTS, WARMSTART_MAX_TRAPS } from './ort';
+import { baselineName, cghApplies, decodeWarmstart, encodeCghPlanes, encodeWarmstart, focalBinUm, slmRayleighUm, loadSlot, rayleighUm, SLOTS, WARMSTART_MAX_TRAPS } from './ort';
 
 vi.stubGlobal('__APP_VERSION__', 'test-version');
 
@@ -11,22 +11,49 @@ const T = (id: number, x: number, y: number, weight = 1, z = 0) => ({ id, x_um: 
 const catalog = readFileSync(new URL('../../../docs/contracts/catalog.md', import.meta.url), 'utf8');
 
 describe('cgh-net input', () => {
-  it('puts sqrt(weight) at each trap pixel of the 128 crop, centred at index 64, with unit energy', () => {
-    const { input, dropped } = encodeCghTarget([T(0, 0, 0, 4), T(1, 2, -2, 1)], 1);
-    expect(dropped).toBe(0);
-    expect(input.length).toBe(128 * 128);
-    const energy = input.reduce((a, v) => a + v * v, 0);
-    expect(energy).toBeCloseTo(1, 6);
-    expect(input[64 * 128 + 64]).toBeCloseTo(Math.sqrt(4 / 5), 6);
-    expect(input[62 * 128 + 66]).toBeCloseTo(Math.sqrt(1 / 5), 6);
+  // SLM 128 x 128, pad 1, 12.5 um pitch, 0.85 um, f 250 mm: bin = lambda f / (N p) = 132.8 um, z_R = lambda f^2 / (pi R^2) = 6.5 mm
+  const setup = { wavelength_nm: 850, focal_mm: 250, n_pix: 128, pitch_um: 12.5, pad: 1 };
+  const bin = focalBinUm(setup);
+  const zr = slmRayleighUm(setup);
+  it('is three planes of unit-sum Gaussian spots, as amplitudes, centred at index 64, in the order -8, 0, +8', () => {
+    const { input, error } = encodeCghPlanes([T(0, 0, 0, 1, 0), T(1, 2 * bin, -2 * bin, 3, 8 * zr), T(2, 0, 0, 1, -8 * zr)], setup);
+    expect(error).toBeNull();
+    expect(input.length).toBe(3 * 128 * 128);
+    const plane = (k: number) => input.subarray(k * 16384, (k + 1) * 16384);
+    for (const k of [0, 1, 2]) expect(plane(k).reduce((a, v) => a + v * v, 0)).toBeCloseTo(1, 5); // unit-sum intensity per plane
+    const peak = (k: number) => plane(k).indexOf(Math.max(...plane(k)));
+    expect(peak(0)).toBe(64 * 128 + 64); // plane -8
+    expect(peak(1)).toBe(64 * 128 + 64); // plane 0
+    expect(peak(2)).toBe(62 * 128 + 66); // plane +8, x = +2, y = -2
   });
-  it('drops a trap that falls outside the crop and counts it', () => {
-    const r = encodeCghTarget([T(0, 0, 0), T(1, 500, 0)], 1);
-    expect(r.dropped).toBe(1);
+  it('an empty plane stays zero', () => {
+    const { input } = encodeCghPlanes([T(0, 0, 0)], setup);
+    expect(input.subarray(0, 16384).every((v) => v === 0)).toBe(true);
+    expect(input.subarray(32768).every((v) => v === 0)).toBe(true);
   });
-  it('applies to the card grid only', () => {
-    expect(cghApplies({ n_pix: 128 }, { grid: 128 })).toBe(true);
-    expect(cghApplies({ n_pix: 256 }, { grid: 128 })).toBe(false);
+  it('refuses, with the reason, a vortex, a depth off the planes and a trap beyond 60 bins', () => {
+    expect(encodeCghPlanes([{ ...T(0, 0, 0), charge: 1 }], setup).error?.en).toMatch(/vortex/);
+    expect(encodeCghPlanes([T(0, 0, 0, 1, 3 * zr)], setup).error?.en).toMatch(/planes/);
+    expect(encodeCghPlanes([T(0, 61 * bin, 0)], setup).error?.en).toMatch(/60 bins/);
+  });
+  it('applies to the card grid with padding 1 and traps on the planes, and says why not otherwise', () => {
+    expect(cghApplies(setup, [T(0, 0, 0)], { grid: 128 }).ok).toBe(true);
+    const big = cghApplies({ ...setup, n_pix: 256, pad: 2 }, [T(0, 0, 0)], { grid: 128 });
+    expect(big.ok).toBe(false);
+    expect(!big.ok && big.reason.en).toMatch(/128 x 128 SLM with padding 1/);
+    expect(cghApplies(setup, [T(0, 0, 0, 1, 5 * zr)], { grid: 128 }).ok).toBe(false);
+  });
+});
+
+describe('cgh-net input against the released card', () => {
+  it('has the length of the card input shape, and the planes of the card are the encoder planes', () => {
+    const card = JSON.parse(readFileSync(new URL('../../../models/cgh-net.json', import.meta.url), 'utf8')) as ModelCard;
+    const shape = card.inputs[0].shape;
+    expect(shape).toEqual([1, 3, 128, 128]);
+    const setup = { wavelength_nm: 850, focal_mm: 250, n_pix: 128, pitch_um: 12.5, pad: 1 };
+    const { input } = encodeCghPlanes([T(0, 0, 0)], setup, card.grid ?? 128);
+    expect(input.length).toBe(shape.reduce((a, v) => a * v, 1));
+    expect(card.trained_on.en).toMatch(/planes at -8, 0, \+8/);
   });
 });
 
@@ -62,7 +89,7 @@ describe('the slots agree with the catalog', () => {
     expect(catalog).toContain('models/warmstart.json, models/warmstart.onnx');
     expect(SLOTS['cgh-net']).toEqual({ card: 'models/cgh-net.json', input: ['target'], output: 'phase' });
     expect(SLOTS['warmstart-model'].input).toEqual(['traps', 'mask']);
-    expect(baselineName('cgh-net').en).toMatch(/Gerchberg-Saxton, 30 iterations/);
+    expect(baselineName('cgh-net').en).toMatch(/Gerchberg-Saxton M19, 30 iterations/);
   });
 });
 

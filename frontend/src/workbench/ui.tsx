@@ -25,6 +25,8 @@ export interface Actions {
   zmode: number;
   setCorrected: (on: boolean) => void;
   setCoeff: (j: number, value: number) => void;
+  setPlane: (plane: 'xz' | 'yz') => void;
+  setVolThreshold: (fraction: number) => void;
 }
 export const ActionsContext = createContext<Actions | null>(null);
 export function useActions(): Actions {
@@ -43,6 +45,14 @@ export function useFmt() {
   return (v: number | null | undefined, o: FormatOptions = {}) => formatNumber(v ?? null, lang, o);
 }
 
+/**
+ * A reason written by the pipeline (the index, the readiness document) reaches the screen as it was written: in Spanish its decimals carry a
+ * point. Spanish writes a comma (G11), so a decimal of the text is rewritten here; integers, versions with two dots and words are left alone.
+ */
+export function localizeDecimals(text: string, lang: 'en' | 'es'): string {
+  return lang === 'es' ? text.replace(/(?<![\d.])(\d+)\.(\d+)(?![\d.])/g, '$1,$2') : text;
+}
+
 export function Pending({ label }: { label: BiText }) {
   const lang = useShellLang();
   const reason = useContext(UnavailableContext);
@@ -50,7 +60,7 @@ export function Pending({ label }: { label: BiText }) {
   if (reason) {
     return (
       <p className="caos-pending" data-state="unavailable">
-        {reason[lang]}
+        {localizeDecimals(reason[lang], lang)}
       </p>
     );
   }
@@ -100,11 +110,16 @@ export function Provenance({ sel, mapsOnly }: { sel: Selection; mapsOnly: boolea
     parts.push(
       lane === 'live'
         ? t(`Live: ${sel.maps.method} computed in your browser${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`, `En vivo: ${sel.maps.method} calculado en su navegador${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`)
-        : t(`Replayed from the bake: the maps are those of the reference method ${sel.maps.method}.`, `Reproducido de la generación: los mapas son los del método de referencia ${sel.maps.method}.`),
+        : sel.methodId !== sel.maps.method
+          ? t(
+              `Replayed from the bake: ${sel.methodId} is not run live, so its metrics and per-trap intensities are its own but the maps drawn are those of the reference method ${sel.maps.method}.`,
+              `Reproducido de la generación: ${sel.methodId} no corre en vivo, así que sus métricas e intensidades por trampa son las suyas pero los mapas dibujados son los del método de referencia ${sel.maps.method}.`,
+            )
+          : t(`Replayed from the bake: the maps are those of the reference method ${sel.maps.method}.`, `Reproducido de la generación: los mapas son los del método de referencia ${sel.maps.method}.`),
     );
-    if (sel.maps.fallbackReason) parts.push(t(`WebGPU fell back to CPU: ${sel.maps.fallbackReason}.`, `WebGPU pasó a CPU: ${sel.maps.fallbackReason}.`));
+    // The WebGPU fallback reason is stated once, in the rail's backend line, so a card keeps its height for the drawing.
   }
-  if (!mapsOnly && sel.result && sel.result.method !== sel.maps?.method && sel.result.lane === 'replay') {
+  if (!mapsOnly && sel.result && sel.result.method !== sel.maps?.method && sel.result.lane === 'replay' && lane === 'live') {
     parts.push(t(`Metrics: ${methodLabel(sel.result.method).en}, replayed.`, `Métricas: ${methodLabel(sel.result.method).es}, reproducidas.`));
   }
   if (sel.edited && !sel.engineAvailable) {
@@ -119,10 +134,11 @@ export function Provenance({ sel, mapsOnly }: { sel: Selection; mapsOnly: boolea
         : t('Running. Change any control to cancel.', 'Calculando. Cambie cualquier control para cancelar.'),
     );
   }
+  if (sel.cancelled) parts.push(t('The live run was cancelled; the replay is shown. Change a control to run again.', 'Se canceló la corrida en vivo; se muestra la reproducción. Cambie un control para correr de nuevo.'));
   if (sel.liveError) parts.push(t(`The live run failed: ${sel.liveError}`, `La corrida en vivo falló: ${sel.liveError}`));
   if (!parts.length) return null;
   return (
-    <p className="caos-plot-note dh-lane" role="status" data-lane={lane} data-running={sel.running ? 'true' : 'false'} lang={lang}>
+    <p className="caos-plot-note dh-lane" role="status" data-lane={lane} data-running={sel.running ? 'true' : 'false'} data-state={sel.running ? 'loading' : undefined} lang={lang}>
       {parts.join(' ')}
     </p>
   );

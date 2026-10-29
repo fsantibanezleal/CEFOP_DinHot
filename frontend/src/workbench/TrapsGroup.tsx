@@ -1,15 +1,19 @@
 // Group 3, Traps: are the traps uniform and which are worst (V3), what depth each one holds (V13) and where the optical power goes (V14).
 // A bar is a trap: clicking one selects it (the selection key is the case, the method and the trap id) and the focal-plane map follows.
-// Over 64 traps a bar chart would be unreadable, so the same values are drawn as a sorted curve.
+// Over 12 traps a bar chart would be unreadable, so the same values are drawn as a sorted curve.
+// A shaped target has no traps: its views draw the potential itself, the focal intensity over the mean inside the shape.
 import { BarChart, PlotCard, SubTabs, ViewsRow } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useMemo, useState } from 'react';
+import { INTENSITY_LUT } from './colormaps';
 import { cardOf } from './HologramGroup';
-import { histogram, trapDeviation, useSelection, type Selection } from './model';
+import { Heatmap } from './HeatmapStage';
+import { histogram, isShaped, trapDeviation, useSelection, type Selection } from './model';
 import { umToPixel } from './traps';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 
-const BARS_MAX = 64;
+// More than this many bars put their id labels on top of each other (G10): a sorted-points chart carries the larger arrays.
+const BARS_MAX = 12;
 
 export function TrapsGroup() {
   const { t } = useT();
@@ -18,9 +22,9 @@ export function TrapsGroup() {
     <SubTabs
       ariaLabel={t('Trap views', 'Vistas de las trampas')}
       tabs={[
-        { id: 'uniformity', label: t('Per-trap intensity', 'Intensidad por trampa'), content: sel ? <IntensityView sel={sel} /> : <Pending label={LOADING} /> },
-        { id: 'depth', label: t('Depth', 'Profundidad'), content: sel ? <DepthView sel={sel} /> : <Pending label={LOADING} /> },
-        { id: 'budget', label: t('Power budget', 'Balance de potencia'), content: sel ? <BudgetView sel={sel} /> : <Pending label={LOADING} /> },
+        { id: 'uniformity', label: t('Per-trap intensity', 'Intensidad'), content: sel ? <IntensityView sel={sel} /> : <Pending label={LOADING} /> },
+        { id: 'depth', label: t('Depth', 'Pozo'), content: sel ? <DepthView sel={sel} /> : <Pending label={LOADING} /> },
+        { id: 'budget', label: t('Power budget', 'Potencia'), content: sel ? <BudgetView sel={sel} /> : <Pending label={LOADING} /> },
       ]}
     />
   );
@@ -36,6 +40,40 @@ function inside(sel: Selection, x: number, y: number): boolean {
   return !!r && x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1;
 }
 
+
+/**
+ * The trap views of a shaped target: no trap list, so the potential itself. Depth is proportional to intensity (Grimm et al. Eq. 12), so
+ * the focal intensity over its mean inside the shape is the depth over the mean depth; the same map reads as either.
+ */
+function ShapedPotential({ sel, title, note }: { sel: Selection; title: { en: string; es: string }; note: { en: string; es: string } }) {
+  const { t, pick } = useT();
+  const fmt = useFmt();
+  const stateKey = useStateKey();
+  const c = cardOf(sel);
+  const focal = sel.maps?.focal ?? null;
+  const ratio = useMemo(() => (focal ? Float32Array.from(focal.db, (d) => 10 ** (d / 10)) : null), [focal]);
+  return (
+    <PlotCard fill title={title} {...c} dataKey={stateKey} note={note}>
+      <Fill>
+        {focal && ratio ? (
+          <Heatmap
+            label={{ en: 'Focal intensity over the mean inside the shape', es: 'Intensidad focal sobre la media dentro de la forma' }}
+            data={ratio}
+            cols={focal.size}
+            rows={focal.size}
+            lut={INTENSITY_LUT}
+            range={[0, 2]}
+            describe={(col, row, v) => pick({ en: `bin (${col}, ${row}): ${fmt(v, { decimals: 3 })} of the mean`, es: `bin (${col}, ${row}): ${fmt(v, { decimals: 3 })} de la media` })}
+            summary={t(`Focal intensity over the mean inside the shape, ${focal.size} by ${focal.size} bins, colour scale 0 to 2.`, `Intensidad focal sobre la media dentro de la forma, ${focal.size} por ${focal.size} bins, escala de color de 0 a 2.`)}
+          />
+        ) : (
+          <Unavailable reason={{ en: `No focal map for ${sel.methodId} on this case.`, es: `No hay mapa focal de ${sel.methodId} en este caso.` }} />
+        )}
+      </Fill>
+    </PlotCard>
+  );
+}
+
 export function IntensityView({ sel }: { sel: Selection }) {
   const { t } = useT();
   const fmt = useFmt();
@@ -49,7 +87,17 @@ export function IntensityView({ sel }: { sel: Selection }) {
   const items = useMemo(() => (trapI ? ordered({ ...sel, sortBy }, trapI) : []), [sel, trapI, sortBy]);
   const hist = useMemo(() => (trapI ? histogram(trapI, Math.min(0.5, ...trapI), Math.max(1.5, ...trapI), 21) : null), [trapI]);
   const within = trapI ? trapI.filter((v) => Math.abs(v - 1) <= band).length : 0;
-  if (!trapI || !stats || !hist) {
+  const noTraps = !trapI || trapI.length === 0;
+  if (noTraps && isShaped(sel.data.manifest)) {
+    return (
+      <ShapedPotential
+        sel={sel}
+        title={{ en: 'Intensity of the shaped potential', es: 'Intensidad del potencial con forma' }}
+        note={{ en: 'A shaped target has no trap list: the map is the focal intensity over its mean inside the shape (1 is the mean; a uniform potential is one colour).', es: 'Un objetivo con forma no tiene lista de trampas: el mapa es la intensidad focal sobre su media dentro de la forma (1 es la media; un potencial uniforme es de un solo color).' }}
+      />
+    );
+  }
+  if (noTraps || !stats || !hist) {
     return (
       <PlotCard fill title={{ en: 'Per-trap intensity', es: 'Intensidad por trampa' }} {...c} dataKey={stateKey}>
         <Fill>
@@ -67,17 +115,19 @@ export function IntensityView({ sel }: { sel: Selection }) {
         {...c}
         lane={sel.result?.lane ?? c.lane}
         dataKey={stateKey}
-        actions={
-          <button type="button" className="btn" aria-pressed={sortBy === 'deviation'} onClick={() => setSortBy(sortBy === 'id' ? 'deviation' : 'id')}>
-            {sortBy === 'id' ? t('Sort by deviation', 'Ordenar por desviación') : t('Sort by id', 'Ordenar por id')}
-          </button>
-        }
         note={{
           en: `${within} of ${trapI.length} traps are within plus or minus ${fmt(sel.bandPct, { decimals: 0 })} % of the mean. Weakest ${fmt(stats.min, { decimals: 3 })}, strongest ${fmt(stats.max, { decimals: 3 })}, spread ${fmt(stats.rmsPct, { decimals: 2 })} % rms.`,
           es: `${within} de ${trapI.length} trampas están dentro de más o menos ${fmt(sel.bandPct, { decimals: 0 })} % de la media. Más débil ${fmt(stats.min, { decimals: 3 })}, más fuerte ${fmt(stats.max, { decimals: 3 })}, dispersión ${fmt(stats.rmsPct, { decimals: 2 })} % rms.`,
         }}
       >
         <Fill>
+          <div className="dh-stack">
+          <div className="dh-scrub">
+            <button type="button" className="btn" aria-pressed={sortBy === 'deviation'} onClick={() => setSortBy(sortBy === 'id' ? 'deviation' : 'id')}>
+            {sortBy === 'id' ? t('Sort by deviation', 'Por desviación') : t('Sort by id', 'Por id')}
+          </button>
+          </div>
+          <div className="dh-fill">
           {many ? (
             <UPlotChart
               height="fill"
@@ -96,8 +146,8 @@ export function IntensityView({ sel }: { sel: Selection }) {
           ) : (
             <BarChart
               height="fill"
-              orientation={items.length > 12 ? 'vertical' : 'horizontal'}
-              values={items.length <= 12}
+              orientation="horizontal"
+              values
               title={{ en: 'Intensity of each trap over the mean', es: 'Intensidad de cada trampa sobre la media' }}
               axis={{ label: { en: 'Intensity over the mean', es: 'Intensidad sobre la media' }, unit: { en: 'ratio', es: 'razón' }, format: { decimals: 3 } }}
               onSelect={(id) => act.selectTrap(Number(id))}
@@ -111,6 +161,8 @@ export function IntensityView({ sel }: { sel: Selection }) {
               }))}
             />
           )}
+          </div>
+          </div>
         </Fill>
       </PlotCard>
       <PlotCard fill title={{ en: 'Histogram of trap intensities', es: 'Histograma de intensidades de las trampas' }} {...c} lane={sel.result?.lane ?? c.lane} dataKey={stateKey}>
@@ -144,7 +196,16 @@ export function DepthView({ sel }: { sel: Selection }) {
   const values = trapI ? trapI.map((v) => (scale === null ? v : v * scale)) : null;
   const unit = scale === null ? { en: 'ratio to the mean', es: 'razón a la media' } : { en: dyn!.depth.unit, es: dyn!.depth.unit };
   const items = useMemo(() => (values ? sel.traps.map((tr, i) => ({ id: tr.id, v: values[i] })) : []), [sel.traps, values]);
-  if (!values) {
+  if ((!values || values.length === 0) && isShaped(sel.data.manifest)) {
+    return (
+      <ShapedPotential
+        sel={sel}
+        title={{ en: 'Depth of the shaped potential', es: 'Profundidad del potencial con forma' }}
+        note={{ en: 'Depth is proportional to intensity, so the map of the intensity over its mean inside the shape is the depth over the mean depth.', es: 'La profundidad es proporcional a la intensidad, así que el mapa de la intensidad sobre su media dentro de la forma es la profundidad sobre la profundidad media.' }}
+      />
+    );
+  }
+  if (!values || values.length === 0) {
     return (
       <PlotCard fill title={{ en: 'Trap depth', es: 'Profundidad de las trampas' }} {...c} dataKey={stateKey}>
         <Fill>
@@ -181,8 +242,8 @@ export function DepthView({ sel }: { sel: Selection }) {
         ) : (
           <BarChart
             height="fill"
-            orientation={items.length > 12 ? 'vertical' : 'horizontal'}
-            values={items.length <= 12}
+            orientation="horizontal"
+            values
             title={{ en: 'Depth of each trap', es: 'Profundidad de cada trampa' }}
             axis={{ label: { en: 'Depth', es: 'Profundidad' }, unit, format: { decimals: 3 } }}
             onSelect={(id) => act.selectTrap(Number(id))}

@@ -1,5 +1,5 @@
 // Drawing helpers of the Methodology figures: boxes, arrows and labels coloured only with the shell's theme classes and tokens
-// (`dg-*` classes and `var(--color-*)`), so every figure follows the light and dark themes. The labels are written in the displayed
+// (the `dg-*` classes and the shell colour tokens), so every figure follows the light and dark themes. The labels are written in the displayed
 // language by the caller (`useT`). A figure is placed in a `Figure` that carries its caption.
 import type { ReactNode } from 'react';
 
