@@ -186,21 +186,23 @@ def test_long_moves_meet_the_claim_on_most_seeds_with_the_frames_of_the_move(bin
 
 
 def test_the_sort_of_c10_the_limit_stated_in_the_docstring():
-    """Case C10's sort (17 of 36 traps move, the longest by 29 bins) at the optical setup of the case: the held phases collapse,
-    the end phases at 25 frames leave the lowest moving trap far under 0.9, and ``frames_for_move`` frames meet it."""
+    """Case C10's sort on M16's own plan (16 of 36 traps move, the longest by 29 bins) at the optical setup of the case: the held
+    phases collapse, the end phases at 25 frames leave the lowest moving trap far under 0.9, and ``frames_for_move`` frames meet
+    it on this seed (on 5 of 6 seeds; seed 2 collapses, the limit the docstring states)."""
     from pipeline.cases import build, library
     from pipeline.io.contract import read_cases
-    from pipeline.model.holo.methods.control.m16_rearrangement import assign
+    from pipeline.model.holo.methods.control import m16_rearrangement as M16
     rec = next(c for c in read_cases(ROOT / "data" / "examples" / "cases.json") if c["case_id"].startswith("C10"))
     s = build.setup_of(rec)
     sites = {t["id"]: t for t in rec["target"]["traps"]}
     loaded, wanted = library.random_loading(rec), rec["rearrangement"]["target_ids"]
     atoms = build.trapset_of([sites[i] for i in loaded])
     goal = build.trapset_of([sites[i] for i in wanted])
-    pick = assign(np.c_[goal.x_m, goal.y_m], np.c_[atoms.x_m, atoms.y_m], 1.0)
+    pick = M16.run(s, Target.from_traps(goal), budget=Budget(30), rng=Rng(1), atoms=atoms, alpha=1.0,
+                   max_step_bins=1.25).meta["assignment"]
     origin = TrapSet(replace(t, x_m=atoms.x_m[pick[i]], y_m=atoms.y_m[pick[i]]) for i, t in enumerate(goal))
     moving = np.array([np.hypot(a.x_m - g.x_m, a.y_m - g.y_m) > 0 for a, g in zip(origin, goal)])
-    assert moving.sum() == 17 and B2.move_fourier_units(s, origin, goal) == pytest.approx(14.48, abs=0.01)
+    assert moving.sum() == 16 and B2.move_fourier_units(s, origin, goal) == pytest.approx(14.48, abs=0.01)
     end = np.angle(m07_phase_fixed_wgs.run(s, Target.from_traps(goal), budget=Budget(30), rng=Rng(1)).fields)
 
     def lowest(frames, phases):
@@ -213,11 +215,11 @@ def test_the_sort_of_c10_the_limit_stated_in_the_docstring():
         phis, at = lpi(s, origin, goal, Rng(101), frames)
         return B2.transient_min_ratio(s, phis, at)[moving].min()
 
-    assert lowest(25, None) < 0.1                                  # held phases: the traps go dark
+    assert lowest(25, None) < 0.25                                 # held phases: the traps dim far below 0.9 (measured 0.177)
     b25, l25 = lowest(25, end), lpi_lowest(25)
     assert b25 < 0.5                                               # end phases, peak step 1.1 Fourier units
-    assert l25 > b25, (l25, b25)                                   # at 25 frames LPI leads B2 on this sort (measured 0.531 against 0.379)
+    assert l25 > b25, (l25, b25)                                   # at 25 frames LPI leads B2 on this sort (measured 0.534 against 0.333)
     n = B2.frames_for_move(s, origin, goal)
     assert n == 137
     b137, l137 = lowest(n, end), lpi_lowest(n)
-    assert b137 >= 0.9 and b137 > l137, (b137, l137)               # at 137 frames B2 meets BS-2 and leads LPI (0.904 against 0.691)
+    assert b137 >= 0.9 and b137 > l137, (b137, l137)               # at 137 frames B2 meets BS-2 and leads LPI (0.909 against 0.604)
