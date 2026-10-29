@@ -36,7 +36,6 @@ The ladder rows valid for the case, each checked against the registered method d
 - [M10](../../frameworks/M10_conjugate-gradient.md), Conjugate-gradient minimization
 - [M11](../../frameworks/M11_wirtinger-adam.md), Wirtinger gradient descent with Adam
 - [M13](../../frameworks/M13_crosstalk-aware-cg.md), Device-aware CG with pixel crosstalk
-- [M17](../../frameworks/M17_unsupervised-cnn-hologram.md), Unsupervised CNN hologram
 - [M18](../../frameworks/M18_ot-initialized-mraf.md), Optimal-transport initialized MRAF
 
 ## Expected results
@@ -75,4 +74,4 @@ The App has up to six groups (Hologram, Focal plane, Traps, Convergence, Dynamic
 
 ## Notes
 
-The bands are provisional. The target is a shaped field, so the point-trap methods do not apply; the learned model M17 is a candidate and is listed, with its measurements pending.
+The bands are provisional. The target is a shaped field, so the point-trap methods do not apply; M17 was listed here while the learned model was pending; it is the three-plane volume method and takes point voxels (case C14), not a field, so it is no longer a method of this case.

@@ -1,4 +1,4 @@
-"""DinHot's thirteen cases C01 to C13 (SDD, section Cases), four categories.
+"""DinHot's fourteen cases C01 to C14 (SDD, section Cases), four categories.
 
 Each case is a params record (``docs/contracts/schemas/params-record.schema.json``) plus the reader-facing metadata the
 manifest carries: bilingual title, category and expected band, the real or synthetic flag and the published anchor. The
@@ -7,7 +7,8 @@ records are written to ``data/examples/cases.json`` by ``python data-pipeline/ru
 Optics. Two setups carry the arrays. The atom setup (850 nm, f = 6 mm, SLM 256 x 256 at 20 um in the pupil plane, NA 0.5)
 has a focal bin of 0.498 um and an unaliased half-field of 127.5 um; the bead setup (1064 nm, f = 2.4 mm, 10 um, NA 1.2 in
 water) has 0.499 um and 127.7 um. The pupil (n_pix x pitch) matches 2 f NA, so the diffraction-limited spot (about
-lambda f / (n_pix p), two bins) agrees with the numerical aperture. The published setups differ in detail; the parameters
+lambda f / (n_pix p), two bins) agrees with the numerical aperture. C14 has its own setup (the geometry of the released cgh-net, ``CGH_NET_SETUP``: 128 x 128
+pixels, padding 1, f = 2.56 mm). The published setups differ in detail; the parameters
 that matter for each anchor (trap count, spacing in focal units, device model) are those of the source, stated per case.
 
 Expected ranges (``expect``): a key is a metric of the reference method, or ``<method>.<metric>`` (core/expect.py). Each
@@ -118,6 +119,30 @@ def disordered_set(n: int, half_bins: int, min_bins: int, seed: int, s: dict) ->
 DISORDERED_819 = dict(n=819, half_bins=100, min_bins=5, seed=SEED + 819)   # case C13's target and benchmark G6's odd seeds
 
 
+# case C14: the geometry of the released cgh-net (models/cgh-net.json): a 128 x 128 SLM, padding 1, three planes at -8, 0, +8
+# SLM-limited Rayleigh ranges, point voxels on integer bins (equal counts per plane), the form the network and M19 take; f = 2.56 mm
+# makes the pupil (128 x 20 um) equal 2 f NA, as for the other setups: a bin of 0.85 um, a half-field of 54.4 um, planes at +-8.66 um
+CGH_NET_SETUP = dict(wavelength_nm=850, focal_mm=2.56, na=0.5, n_imm=1.0, n_pix=128, pitch_um=20, pad=1)
+CGH_NET_PLANE_Z = 8.0
+
+
+def _slm_rayleigh_um(s: dict) -> float:
+    """``lambda f^2 / (pi R^2)`` with ``R = n_pix p / 2``, the Rayleigh range of the beam the SLM aperture focuses (um)."""
+    r = s["n_pix"] * s["pitch_um"] * 1e-6 / 2.0
+    return s["wavelength_nm"] * 1e-9 * (s["focal_mm"] * 1e-3) ** 2 / (math.pi * r * r) * 1e6
+
+
+def volume_three_planes(s: dict) -> list[dict]:
+    """Case C14's 48 voxels, 16 on each of the planes -8, 0, +8 Rayleigh ranges: a 4 x 4 lattice at 12 bins shifted by (-6, +6) bins,
+    a ring of 16 voxels at 24 bins, and the lattice shifted by (+6, -6) bins (the families the network was trained on, none of its
+    training draws)."""
+    b, dz = _bin_um(s), CGH_NET_PLANE_Z * _slm_rayleigh_um(s)
+    axis = (-18, -6, 6, 18)
+    ring = [(round(24 * math.cos(2 * math.pi * k / 16)), round(24 * math.sin(2 * math.pi * k / 16))) for k in range(16)]
+    planes = [(-dz, [(x - 6, y + 6) for y in axis for x in axis]), (0.0, ring), (dz, [(x + 6, y - 6) for y in axis for x in axis])]
+    return [_trap(len(planes[0][1]) * i + k, x * b, y * b, z) for i, (z, pts) in enumerate(planes) for k, (x, y) in enumerate(pts)]
+
+
 def _record(case_id: str, setup: dict, target: dict, methods: list[str], reference: str, expect: dict, *,
             device: dict | None = None, aberration: dict | None = None, feedback: dict | None = None,
             dynamics: dict | None = None, rearrangement: dict | None = None, beam: dict = GAUSS,
@@ -130,7 +155,7 @@ def _record(case_id: str, setup: dict, target: dict, methods: list[str], referen
 # method sets by what a case needs (the ladder of the SDD; the bake checks each against the registered MethodSpec)
 POINT_2D = ["M01", "M02", "M03", "M04", "M05", "M06", "M07", "M09", "M10", "M11", "B3", "B4", "B5"]
 POINT_3D = ["M01", "M02", "M04", "M06", "M09", "M10", "M11", "M15", "M19", "B5"]
-FIELD = ["M04", "M08", "M10", "M11", "M13", "M17", "M18"]
+FIELD = ["M04", "M08", "M10", "M11", "M13", "M18"]   # M17 takes point voxels on three planes (C14), not a field: its spec refuses one
 DEVICE = ["M04", "M06", "M07", "M10", "M13", "B1", "B4"]
 
 
@@ -328,6 +353,24 @@ def _build() -> list[Case]:
                     "es": "Polin et al. 2005 muestran control independiente de brillo y topología; no hay banda publicada "
                           "para esta mezcla (solo calculada)"}, "url": "https://doi.org/10.1364/OPEX.13.005831"},
         "provisional")
+
+    add("C14_volume_learned", {"en": "Three-plane volume at the learned model's geometry", "es": "Volumen de tres planos en la geometría del modelo aprendido"},
+        CAT_SHAPED,
+        _record("C14_volume_learned", CGH_NET_SETUP, {"kind": "traps", "traps": volume_three_planes(CGH_NET_SETUP)},
+                ["M01", "M02", "M04", "M06", "M10", "M11", "M19", "M17"], "M17",
+                {"efficiency": [0.05, hi], "rel_std_pct": [lo, 100.0]}),
+        {"en": "Forty-eight point voxels on three planes (a lattice, a ring and a shifted lattice, sixteen each) at -8, 0 and +8 "
+               "Rayleigh ranges of a 128 x 128 SLM with padding 1: the geometry the released cgh-net was trained for, so the "
+               "network answers here. The hybrid starts the volumetric GS from the network's phase.",
+         "es": "Cuarenta y ocho vóxeles puntuales en tres planos (una red, un anillo y una red desplazada, dieciséis cada uno) "
+               "a -8, 0 y +8 rangos de Rayleigh de un SLM de 128 x 128 con relleno 1: la geometría para la que se entrenó el "
+               "cgh-net publicado, de modo que la red responde aquí. El híbrido parte del GS volumétrico con la fase de la red."},
+        "synthetic",
+        {"source": {"en": "Eybposh et al. 2020, Opt. Express 28, 26636 (DeepCGH: a U-Net hologram for volumes; their volumes and "
+                          "SLM differ, the band is computed in this build)",
+                    "es": "Eybposh et al. 2020, Opt. Express 28, 26636 (DeepCGH: un holograma U-Net para volúmenes; sus "
+                          "volúmenes y su SLM difieren, la banda se calcula en esta versión)"},
+         "url": "https://doi.org/10.1364/OE.399624"}, "provisional")
 
     # --- Device and optics --------------------------------------------------------------------------------------
     add("C07_high_na", {"en": "High numerical aperture, 5 x 5", "es": "Apertura numérica alta, 5 x 5"}, CAT_DEVICE,

@@ -25,7 +25,7 @@ EXAMPLE = cs.CONTRACTS / "examples" / "params-record.json"
 
 def test_accepted_records_match_the_schema():
     report = validate_records(read_cases(REPO_CASES))
-    assert len(report.accepted) == 12, report.summary()
+    assert len(report.accepted) == 13, report.summary()
     for rec in report.accepted:
         assert cs.errors("params-record", rec) == [], rec["case_id"]
     assert [r["case_id"] for r in report.rejected] == ["C11_outside_field"]
