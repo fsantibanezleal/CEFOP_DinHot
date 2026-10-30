@@ -145,7 +145,7 @@
    "id": "BS-2",
    "tier": "beyond",
    "method": "Flicker-bounded phase-continuous sequence (engine id B2)",
-   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: holds when the peak step per frame is at most 0.2 Fourier units, on most seeds (acceptance task: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.910; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
+   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: holds when the peak step per frame is at most 0.2 Fourier units, on most seeds (acceptance task: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.911; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
    "gate": "tests/methods/beyond/test_b2_flicker_bounded.py"
   },
   {
