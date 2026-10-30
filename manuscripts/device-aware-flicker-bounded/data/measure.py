@@ -282,7 +282,12 @@ def measure_b2_scope(seeds_long: list[int], seeds_c10: list[int], c10_equal_fram
     64 pixels), end phases from M07 at the destination, at the default frames and at the frames ``frames_for_move`` names; (b)
     case C10's sort on M16's plan (end phases from M07 per seed, LPI on the same assignment) at an equal number of frames and at
     the frames of the move, and the held phases at the equal frames for the first seed."""
-    out = {"claim_step_fu": float(B2.CLAIM_STEP_FU), "default_frames": int(B2.DEFAULT_FRAMES), "long": {}}
+    out = {"claim_step_fu": float(B2.CLAIM_STEP_FU), "default_frames": int(B2.DEFAULT_FRAMES), "long": {},
+           "phase_velocity_max": 1.0, "default_phase_velocity_max": float(B2.DEFAULT_PHASE_VELOCITY_MAX)}
+    s256 = make_setup(256)
+    a_start, a_dest = task_move(s256)
+    out["acceptance_peak_step"] = float(B2.peak_step_fu(s256, a_start, a_dest, B2.DEFAULT_FRAMES))
+    out["acceptance_frames_for_move"] = int(B2.frames_for_move(s256, a_start, a_dest))
     s = make_setup(64)
     for bins in (12, 20):
         start, dest, moving = long_move(s, bins)
@@ -295,15 +300,19 @@ def measure_b2_scope(seeds_long: list[int], seeds_c10: list[int], c10_equal_fram
                 res = B2.run(s, Target.from_traps(start), budget=Budget(30), rng=Rng(seed), destination=dest, frames=frames,
                              end_phases=end, phase_velocity_max=1.0)
                 row[key] = float(res.meta["transient_ratio"][moving].min())
+            if row["enough"] < 0.9:
+                res = B2.run(s, Target.from_traps(start), budget=Budget(30), rng=Rng(seed), destination=dest, frames=2 * n,
+                             end_phases=end, phase_velocity_max=1.0)
+                row["twice"] = float(res.meta["transient_ratio"][moving].min())
             rows.append(row)
             print(f"[B2 scope] {bins} bins seed {seed}: {B2.DEFAULT_FRAMES} frames {row['default']:.3f}, "
-                  f"{n} frames {row['enough']:.3f}", flush=True)
+                  f"{n} frames {row['enough']:.3f}" + (f", {2 * n} frames {row['twice']:.3f}" if "twice" in row else ""), flush=True)
         out["long"][str(bins)] = {"bins": bins, "fourier_units": float(B2.move_fourier_units(s, start, dest)), "frames": int(n),
-                                  "rows": rows}
+                                  "peak_step": float(B2.peak_step_fu(s, start, dest, n)), "rows": rows}
     s, origin, goal, moving = c10_plan()
     n = B2.frames_for_move(s, origin, goal)
     c10 = {"moving": int(moving.sum()), "n_traps": len(goal), "fourier_units": float(B2.move_fourier_units(s, origin, goal)),
-           "frames": int(n), "equal_frames": c10_equal_frames,
+           "frames": int(n), "equal_frames": c10_equal_frames, "peak_step": float(B2.peak_step_fu(s, origin, goal, n)),
            "peak_step_equal": float(B2.peak_step_fu(s, origin, goal, c10_equal_frames)), "rows": []}
     held = B2.run(s, Target.from_traps(origin), budget=Budget(30), rng=Rng(seeds_c10[0]), destination=goal,
                   frames=c10_equal_frames)
@@ -341,6 +350,10 @@ def read_manifests() -> dict:
             "methods": {k: {a: v[a] for a in ("efficiency", "uniformity", "rel_std_pct", "iterations")}
                         for k, v in m["methods"].items()},
         }
+    rng = json.loads((ROOT / "data-pipeline" / "pipeline" / "cases" / "measured_ranges.json").read_text(encoding="utf-8"))
+    mr = rng["measured"]["C08_device_limited"]
+    out["C08_device_limited"]["seeds_ratio"] = [a / b for a, b in zip(mr["M07.rel_std_pct"], mr["B1.rel_std_pct"])]
+    out["C08_device_limited"]["seeds_mean_ratio"] = statistics.mean(mr["M07.rel_std_pct"]) / statistics.mean(mr["B1.rel_std_pct"])
     return out
 
 
@@ -358,7 +371,7 @@ def read_benchmark(budget: int = 100) -> dict:
             if m != "B1" or d != device or ("M07", g, d) not in cells:
                 continue
             m7 = cells[("M07", g, d)]
-            rows.append({"geometry": g, "n_seeds": min(b1["n_seeds"], m7["n_seeds"]),
+            rows.append({"geometry": g, "n_seeds": min(b1["n_seeds"], m7["n_seeds"]), "n_seeds_b1": b1["n_seeds"], "n_seeds_m07": m7["n_seeds"],
                          "sigma_b1": b1["rel_std_pct"]["median"], "sigma_m07": m7["rel_std_pct"]["median"],
                          "factor": m7["rel_std_pct"]["median"] / max(b1["rel_std_pct"]["median"], 1e-6),
                          "eff_ratio": b1["efficiency"]["median"] / m7["efficiency"]["median"]})
@@ -445,6 +458,13 @@ def write_macros(data: dict, path: Path) -> None:
     L.append(macro("bakeCeightIters", str(man["C08_device_limited"]["params"]["budget_iterations"])))
     L.append(macro("bakeCeightTraps", str(man["C08_device_limited"]["params"]["n_traps"])))
     L.append(macro("bakeCeightPix", str(man["C08_device_limited"]["params"]["n_pix"])))
+    c8m = man["C08_device_limited"]
+    L.append(macro("bakeCeightFlicker", f"{c8m['params']['flicker_rad']:g}"))
+    L.append(macro("bakeCeightRatioThree", fmt(c8m["seeds_mean_ratio"], 1)))
+    sr = c8m["seeds_ratio"]
+    L.append(macro("bakeCeightSeedRatios", ", ".join(fmt(x, 2) for x in sr[:-1]) + f" and {fmt(sr[-1], 2)}"))
+    L.append(macro("bakeCeightSeedsTwo", sum(1 for x in sr if x >= 2)))
+    L.append(macro("bakeCeightSeedsN", len(sr)))
     # BS-2
     s13 = b2["13"]
     L.append(macro("nSeedsTwo", str(s13["b2_min"]["n"])))
@@ -457,6 +477,8 @@ def write_macros(data: dict, path: Path) -> None:
     L.append(macro("bTwoSigmaFrame", fmt(s13["b2_sigma_frame_max"]["max"], 2)))
     L.append(macro("lpiSigmaFrameMin", fmt(s13["lpi_sigma_frame_max"]["min"], 0)))
     L.append(macro("lpiSigmaFrameMax", fmt(s13["lpi_sigma_frame_max"]["max"], 0)))
+    L.append(macro("sigmaFrameFactorLo", fmt(s13["lpi_sigma_frame_max"]["min"] / s13["b2_sigma_frame_max"]["max"], 0)))
+    L.append(macro("sigmaFrameFactorHi", fmt(s13["lpi_sigma_frame_max"]["max"] / s13["b2_sigma_frame_max"]["max"], 0)))
     for fr, nm in (("7", "Seven"), ("25", "TwentyFive")):
         if fr in b2:
             L.append(macro(f"bTwoMed{nm}", fmt(b2[fr]["b2_min"]["median"], 3)))
@@ -479,6 +501,23 @@ def write_macros(data: dict, path: Path) -> None:
         L.append(macro(f"long{nm}Met", sum(x >= 0.9 for x in enough)))
         L.append(macro(f"long{nm}Low", fmt(min(enough), 3)))
     L.append(macro("longSeeds", len(sc["long"]["12"]["rows"])))
+    L.append(macro("longAPeak", fmt(sc["long"]["12"]["peak_step"], 3)))
+    L.append(macro("longBPeak", fmt(sc["long"]["20"]["peak_step"], 3)))
+    fails = []
+    for key in ("12", "20"):
+        bad = [r for r in sc["long"][key]["rows"] if r["enough"] < 0.9]
+        if bad:
+            fails.append(" and ".join(f"{r['enough']:.3f}" for r in bad) + f" at {key} bins")
+    twice = []
+    for key in ("12", "20"):
+        bad = [r for r in sc["long"][key]["rows"] if "twice" in r]
+        if bad:
+            twice.append(" and ".join(f"{r['twice']:.3f}" for r in bad) + f" at {key} bins")
+    L.append(macro("longFailList", "; ".join(fails) if fails else "none"))
+    L.append(macro("longTwiceList", "; ".join(twice) if twice else "none"))
+    L.append(macro("accPeakStep", fmt(sc["acceptance_peak_step"], 2)))
+    L.append(macro("accFramesForMove", sc["acceptance_frames_for_move"]))
+    L.append(macro("scopePhaseVel", f"{sc['phase_velocity_max']:g}"))
     L.append(macro("longDefaultMax", fmt(max(shorts), 3)))
     c = sc["c10"]
     rows = c["rows"]
@@ -503,6 +542,9 @@ def write_macros(data: dict, path: Path) -> None:
     L.append(macro("cTenLpiMin", fmt(min(r["lpi_enough"] for r in rows), 3)))
     L.append(macro("cTenLpiMax", fmt(max(r["lpi_enough"] for r in rows), 3)))
     L.append(macro("cTenBLeads", sum(r["b2_enough"] > r["lpi_enough"] for r in rows)))
+    L.append(macro("cTenPeak", fmt(c["peak_step"], 3)))
+    bad = [r for r in rows if r["b2_enough"] < 0.9]
+    L.append(macro("cTenFailList", "; ".join(f"seed {r['seed']} at {r['b2_enough']:.3f} against {r['lpi_enough']:.3f} for LPI" for r in bad) or "none"))
     # BS-1 in the studio's benchmark, on the C08 device
     bb = data["benchmark_bs1"]
     dev = bb["devices"]["device"]
@@ -516,8 +558,14 @@ def write_macros(data: dict, path: Path) -> None:
         L.append(macro("benchOneDevMax", fmt(max(fac), 2)))
         L.append(macro("benchOneDevEff", fmt(statistics.median(eff), 3)))
         L.append(macro("benchOneDevPass", sum(1 for x in dev if x["factor"] >= 2 and x["eff_ratio"] >= 0.9)))
-        lo, hi = min(x["n_seeds"] for x in dev), max(x["n_seeds"] for x in dev)
+        lo, hi = min(x["n_seeds_b1"] for x in dev), max(x["n_seeds_b1"] for x in dev)
         L.append(macro("benchOneDevSeeds", str(lo) if lo == hi else f"{lo} to {hi}"))
+        m7 = sorted({x["n_seeds_m07"] for x in dev})
+        common = max(m7, key=lambda s: sum(1 for x in dev if x["n_seeds_m07"] == s))
+        other = [f"{x['n_seeds_m07']} on {x['geometry']}" for x in dev if x["n_seeds_m07"] != common]
+        L.append(macro("benchOneDevSeedsMseven", f"{common}" + (f" ({', '.join(other)})" if other else "")))
+        items = [f"{x['geometry']} {fmt(x['factor'], 2)}" for x in dev]
+        L.append(macro("benchOneDevList", ", ".join(items[:-1]) + f" and {items[-1]}"))
     path.write_text("".join(L), encoding="utf-8")
 
 

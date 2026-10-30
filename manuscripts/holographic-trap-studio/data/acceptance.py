@@ -524,26 +524,34 @@ def measure_M19() -> dict:
 
 def measure_BS4() -> dict:
     """test_b4_robust.py: 10x10 task, 200-sample aberration ensemble (seed 999), B4 at 40 iterations against the phase-fixed WGS
-    of the GS family at 30 (p95 of the relative standard deviation and mean efficiency); pointing ensemble of 20 samples at 0.15 bin
-    with B4 at 3 iterations and q = 2 (a finite-ratio check in the test, a measured negative here)."""
+    of the GS family at 30 (p95 of the relative standard deviation and mean efficiency), on seeds 1 to 3 (the SDD row's median);
+    pointing ensemble of 20 samples at 0.15 bin with B4 at 3 iterations and q = 2 on seed 1 (a finite-ratio check in the test, a
+    measured negative here)."""
     s = make_setup(256)
     g = task_10x10(s)
     t = Target.from_traps(g)
-    base, _ = G.weighted_gs(s, g, 30, Rng(1), variant="pfwgs")
-    res = B4.run(s, t, budget=Budget(40), rng=Rng(1), pointing_bins=0.0)
-    nom = B4.ensemble_stats(s, base, g, pointing_bins=0.0)
-    rob = B4.ensemble_stats(s, res.phi, g, pointing_bins=0.0)
+    ratios, effs, sb4, sm7 = [], [], [], []
+    for seed in (1, 2, 3):
+        base, _ = G.weighted_gs(s, g, 30, Rng(seed), variant="pfwgs")
+        res = B4.run(s, t, budget=Budget(40), rng=Rng(seed), pointing_bins=0.0)
+        nom = B4.ensemble_stats(s, base, g, pointing_bins=0.0)
+        rob = B4.ensemble_stats(s, res.phi, g, pointing_bins=0.0)
+        ratios.append(nom["sigma_p95"] / rob["sigma_p95"])
+        effs.append(rob["efficiency_mean"] / nom["efficiency_mean"])
+        sb4.append(rob["sigma_p95"])
+        sm7.append(nom["sigma_p95"])
+        if seed == 1:
+            base1 = base
     res_p = B4.run(s, t, budget=Budget(3), rng=Rng(1), q=2, pointing_bins=0.15)
-    nom_p = B4.ensemble_stats(s, base, g, n=20, pointing_bins=0.15)
+    nom_p = B4.ensemble_stats(s, base1, g, n=20, pointing_bins=0.15)
     rob_p = B4.ensemble_stats(s, res_p.phi, g, n=20, pointing_bins=0.15)
-    ratio = nom["sigma_p95"] / rob["sigma_p95"]
     ratio_p = nom_p["sigma_p95"] / rob_p["sigma_p95"]
-    text = (f"95th percentile of the relative standard deviation {rob['sigma_p95']:.3f} against {nom['sigma_p95']:.3f} for M07 "
-            f"({ratio:.2f} times) over a 200-sample aberration ensemble; efficiency {rob['efficiency_mean']:.4f} against "
-            f"{nom['efficiency_mean']:.4f}; pointing errors {ratio_p:.2f} times")
-    return row("BS-4", text, "1", T_BEYOND + "test_b4_robust.py",
-               {"sigma_p95_b4": rob["sigma_p95"], "sigma_p95_m07": nom["sigma_p95"], "ratio": ratio,
-                "efficiency_b4": rob["efficiency_mean"], "efficiency_m07": nom["efficiency_mean"], "pointing_ratio": ratio_p,
+    med = statistics.median(ratios)
+    text = (f"95th percentile of the relative standard deviation a median {med:.3f} times below M07 ({min(ratios):.2f} to "
+            f"{max(ratios):.2f}) over a 200-sample aberration ensemble, at a median {statistics.median(effs):.3f} of its efficiency; "
+            f"pointing errors {ratio_p:.2f} times (seed 1)")
+    return row("BS-4", text, "3 (pointing 1)", T_BEYOND + "test_b4_robust.py",
+               {"ratio": ratios, "eff_ratio": effs, "sigma_p95_b4": sb4, "sigma_p95_m07": sm7, "pointing_ratio": ratio_p,
                 "pointing_sigma_p95_b4": rob_p["sigma_p95"], "pointing_sigma_p95_m07": nom_p["sigma_p95"]})
 
 
@@ -565,7 +573,7 @@ def measure_BS5() -> dict:
     hv_base = B5.hypervolume(np.array(list(base.values())))
     dom = {n: int(np.sum((front[:, 0] >= base[n][0]) & (front[:, 1] > base[n][1]))) for n in ("M04", "M05")}
     text = (f"hypervolume {res.meta['hypervolume']:.4f} against {hv_base:.4f} for the union of the M04, M05, M06 and M09 points; "
-            f"{dom['M04']} front points dominate M04 and {dom['M05']} dominate M05; front built in {elapsed:.0f} seconds")
+            f"{dom['M04']} front points dominate M04 and {dom['M05']} dominate M05")
     return row("BS-5", text, "1", T_BEYOND + "test_b5_pareto.py",
                {"hypervolume": float(res.meta["hypervolume"]), "hypervolume_base": float(hv_base), "dominating_m04": dom["M04"],
                 "dominating_m05": dom["M05"], "front_seconds": elapsed})

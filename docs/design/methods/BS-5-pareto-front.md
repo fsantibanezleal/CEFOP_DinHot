@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b5_pareto.py` |
 | Live port | none (lane `baked`; `getMethod('B5')` raises `NotLive`) |
 | Card | [B5](../../frameworks/B5_pareto-front.md) |
-| Outcome | hypothesis confirmed on the ladder criterion (hypervolume 0.8190 against 0.8018 after the 2026-10-29 rule corrections, 0.8201 against 0.8033 before; the front dominates M04 and M05, 16.6 s); the margin is small |
+| Outcome | hypothesis confirmed on the ladder criterion (hypervolume 0.8190 against 0.8018 after the 2026-10-29 rule corrections, 0.8201 against 0.8033 before; the front dominates M04 and M05, 16.6 s); the margin is small; in the benchmark at 100 iterations on the ideal device the stored front reaches the hypervolume of the classical points on 3 of the 6 geometries with a front, and not on G1, G4 (by 0.003 and 0.001) nor G6 (0.791 against 0.813), 2026-10-30 |
 
 ## Tier and role
 
