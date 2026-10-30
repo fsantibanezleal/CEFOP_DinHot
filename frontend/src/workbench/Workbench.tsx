@@ -602,9 +602,7 @@ function ContextView({ sel }: { sel: Selection | null }) {
     <>
       <ReadinessNote ids={[...CASE_ROWS, 'cgh-net', 'warmstart-model']} />
       <h2>{m.title[lang]}</h2>
-      <p>
-        {t('Category', 'Categoría')}: {m.category[lang]}. {t('What a reader should see', 'Lo que el lector debería ver')}: {m.expected_band[lang]}
-      </p>
+      {/* the anchor first: its link sits at the top of the panel, clear of the Focus HUD at every size (shell-known-defects entry 46) */}
       <p>
         {t('Anchor', 'Ancla')}: {m.anchor.source[lang]}
         {m.anchor.url && (
@@ -613,6 +611,9 @@ function ContextView({ sel }: { sel: Selection | null }) {
             (<a href={m.anchor.url}>{m.anchor.url}</a>)
           </>
         )}
+      </p>
+      <p>
+        {t('Category', 'Categoría')}: {m.category[lang]}. {t('What a reader should see', 'Lo que el lector debería ver')}: {m.expected_band[lang]}
       </p>
       <table className="caos-table">
         <tbody>
