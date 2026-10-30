@@ -1,0 +1,920 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "case-manifest.schema.json",
+  "title": "CaseManifest",
+  "description": "Contract 2 (artifact), catalog row case-manifest 1.0.0: the authoritative record of one baked case, written by data-pipeline/pipeline/core/manifest.py build_case_manifest to data/derived/manifests/<case>.json. A pure function of (params, seed): no wall-clock time. Rules the schema cannot state, checked by scripts/check_artifacts.py and the tests: artifact.bytes equals the size of the file at artifact.path, lane equals gate.lane, the keys of methods are the params' methods, and params.reference_method is one of them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "case_id",
+    "title",
+    "category",
+    "real_or_synthetic",
+    "expected_band",
+    "engine",
+    "params",
+    "seed",
+    "artifact",
+    "lane",
+    "gate",
+    "flags",
+    "methods",
+    "models",
+    "expect",
+    "anchor"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dinhot.manifest/v1"
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "$ref": "#/$defs/text"
+    },
+    "category": {
+      "$ref": "#/$defs/text"
+    },
+    "real_or_synthetic": {
+      "enum": [
+        "real",
+        "synthetic"
+      ]
+    },
+    "expected_band": {
+      "$ref": "#/$defs/text"
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package",
+        "version",
+        "model"
+      ],
+      "properties": {
+        "package": {
+          "const": "dinhot-holo"
+        },
+        "version": {
+          "$ref": "#/$defs/version"
+        },
+        "model": {
+          "const": "scalar-fourier"
+        }
+      }
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "setup",
+        "device",
+        "target",
+        "aberration",
+        "methods",
+        "reference_method",
+        "budget",
+        "seed",
+        "feedback",
+        "dynamics",
+        "rearrangement",
+        "expect"
+      ],
+      "properties": {
+        "setup": {
+          "$ref": "#/$defs/setup"
+        },
+        "device": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/device"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/target"
+        },
+        "aberration": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/aberration"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/method_id"
+          },
+          "minItems": 1,
+          "maxItems": 24,
+          "uniqueItems": true
+        },
+        "reference_method": {
+          "$ref": "#/$defs/method_id"
+        },
+        "budget": {
+          "$ref": "#/$defs/budget"
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "feedback": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/feedback"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dynamics": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/dynamics"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rearrangement": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/rearrangement"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expect": {
+          "$ref": "#/$defs/expect"
+        }
+      },
+      "description": "The params record exactly as the producer used it, without case_id; trap coordinates are rounded once before the run, never after."
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "format",
+        "trace_schema",
+        "bytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\.\\.)[^\\\\]+\\.json$",
+          "description": "Relative to data/derived; no leading slash, no '..', no backslash."
+        },
+        "format": {
+          "const": "json"
+        },
+        "trace_schema": {
+          "const": "dinhot.trace/v1"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "lane": {
+      "enum": [
+        "live",
+        "precompute"
+      ]
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lane",
+        "pure_python",
+        "wheels",
+        "trace_bytes",
+        "run_ms_budget",
+        "trace_bytes_budget",
+        "reasons"
+      ],
+      "properties": {
+        "lane": {
+          "enum": [
+            "live",
+            "precompute"
+          ]
+        },
+        "pure_python": {
+          "type": "boolean"
+        },
+        "wheels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "trace_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "run_ms_budget": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "trace_bytes_budget": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "flags": {
+      "type": "array",
+      "description": "The records contract 1 accepted with a flag.",
+      "items": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    },
+    "methods": {
+      "type": "object",
+      "description": "Per method id, the verdict of this bake.",
+      "propertyNames": {
+        "pattern": "^(M[0-9]{2}|B[0-9])$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lane",
+          "efficiency",
+          "uniformity",
+          "rel_std_pct",
+          "zero_order",
+          "ghost",
+          "iterations",
+          "converged"
+        ],
+        "properties": {
+          "lane": {
+            "enum": [
+              "live",
+              "baked"
+            ]
+          },
+          "efficiency": {
+            "type": "number"
+          },
+          "uniformity": {
+            "type": "number"
+          },
+          "rel_std_pct": {
+            "type": "number"
+          },
+          "zero_order": {
+            "type": "number"
+          },
+          "ghost": {
+            "type": "number"
+          },
+          "iterations": {
+            "type": "integer"
+          },
+          "converged": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "models": {
+      "type": "object",
+      "description": "Per model slot (catalog row id), what produced this bake's metrics: the released model (real) or the slot's baseline.",
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "enum": [
+          "real",
+          "baseline"
+        ]
+      }
+    },
+    "expect": {
+      "$ref": "#/$defs/expect"
+    },
+    "anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "url"
+      ],
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/text"
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^https://"
+        }
+      },
+      "description": "The published result the case is set against."
+    }
+  },
+  "$defs": {
+    "aberration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "noll"
+      ],
+      "properties": {
+        "noll": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^([2-9]|1[0-9]|2[01])$"
+          },
+          "additionalProperties": {
+            "type": "number",
+            "minimum": -5,
+            "maximum": 5
+          },
+          "description": "Noll index 2 to 21 to coefficient in waves."
+        }
+      },
+      "description": "System aberration in waves."
+    },
+    "beam": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "waist_frac"
+          ],
+          "properties": {
+            "kind": {
+              "const": "gaussian"
+            },
+            "waist_frac": {
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "flat"
+            }
+          }
+        }
+      ],
+      "description": "The input beam; waist_frac belongs to the gaussian beam only."
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "iterations",
+        "time_s"
+      ],
+      "properties": {
+        "iterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "time_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.01,
+          "maximum": 3600
+        }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gain_rms",
+        "noise_rms",
+        "blur_bins"
+      ],
+      "properties": {
+        "gain_rms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.5
+        },
+        "noise_rms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.2
+        },
+        "blur_bins": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5
+        }
+      }
+    },
+    "crosstalk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sigma_per_px",
+        "q"
+      ],
+      "properties": {
+        "sigma_per_px": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 10
+        },
+        "q": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 4
+        }
+      }
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bit_depth",
+        "crosstalk",
+        "upsample",
+        "fill_factor",
+        "flicker_rad",
+        "lut_gamma"
+      ],
+      "properties": {
+        "bit_depth": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 16
+        },
+        "crosstalk": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/crosstalk"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "upsample": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "fill_factor": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1
+        },
+        "flicker_rad": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "lut_gamma": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2
+        }
+      },
+      "description": "The SLM device model; the whole object null means the ideal device."
+    },
+    "dynamics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "particle",
+        "trap_id",
+        "power_mw",
+        "temperature_k",
+        "n_steps",
+        "dt_s"
+      ],
+      "properties": {
+        "particle": {
+          "enum": [
+            "bead",
+            "atom"
+          ]
+        },
+        "trap_id": {
+          "type": "integer"
+        },
+        "power_mw": {
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 5000
+        },
+        "bead_radius_um": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 5
+        },
+        "n_particle": {
+          "type": "number",
+          "minimum": 1.0,
+          "maximum": 2.0
+        },
+        "viscosity_pa_s": {
+          "type": "number",
+          "minimum": 0.0001,
+          "maximum": 0.1
+        },
+        "temperature_k": {
+          "type": "number",
+          "minimum": 1e-06,
+          "maximum": 400
+        },
+        "mass_amu": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "detuning_thz": {
+          "type": "number",
+          "minimum": -1000,
+          "maximum": 1000
+        },
+        "n_steps": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 200000
+        },
+        "dt_s": {
+          "type": "number",
+          "minimum": 1e-09,
+          "maximum": 0.001
+        }
+      },
+      "description": "The trapped-particle simulation; the bead fields belong to a bead, the atom fields to an atom.",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "particle": {
+                "const": "bead"
+              }
+            },
+            "required": [
+              "particle"
+            ]
+          },
+          "then": {
+            "required": [
+              "bead_radius_um",
+              "n_particle",
+              "viscosity_pa_s"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "particle": {
+                "const": "atom"
+              }
+            },
+            "required": [
+              "particle"
+            ]
+          },
+          "then": {
+            "required": [
+              "mass_amu",
+              "detuning_thz"
+            ]
+          }
+        }
+      ]
+    },
+    "expect": {
+      "type": "object",
+      "description": "The checked expectation of the case: [low, high] per result metric.",
+      "additionalProperties": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gain",
+        "steps",
+        "camera"
+      ],
+      "properties": {
+        "gain": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1.5
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "camera": {
+          "$ref": "#/$defs/camera"
+        }
+      },
+      "description": "The camera loop (M12, B6)."
+    },
+    "method_id": {
+      "type": "string",
+      "pattern": "^(M[0-9]{2}|B[0-9])$",
+      "description": "A method id: M01 to M99 or B0 to B9."
+    },
+    "rearrangement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "loading_p",
+        "target_ids",
+        "alpha",
+        "steps_per_move"
+      ],
+      "properties": {
+        "loading_p": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 1
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "alpha": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "steps_per_move": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        }
+      },
+      "description": "The rearrangement case (M16, B2)."
+    },
+    "setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wavelength_nm",
+        "focal_mm",
+        "na",
+        "n_imm",
+        "n_pix",
+        "pitch_um",
+        "pad",
+        "beam"
+      ],
+      "properties": {
+        "wavelength_nm": {
+          "type": "number",
+          "minimum": 300,
+          "maximum": 2000
+        },
+        "focal_mm": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1000
+        },
+        "na": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 1.5
+        },
+        "n_imm": {
+          "type": "number",
+          "minimum": 1.0,
+          "maximum": 1.6
+        },
+        "n_pix": {
+          "type": "integer",
+          "enum": [
+            64,
+            128,
+            256,
+            512,
+            1024
+          ],
+          "description": "SLM side in pixels (square)."
+        },
+        "pitch_um": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "pad": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "beam": {
+          "$ref": "#/$defs/beam"
+        }
+      }
+    },
+    "target": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "traps"
+          ],
+          "properties": {
+            "kind": {
+              "const": "traps"
+            },
+            "traps": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/trap"
+              },
+              "minItems": 1,
+              "maxItems": 4096
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "shape",
+            "signal_margin_bins"
+          ],
+          "properties": {
+            "kind": {
+              "const": "shaped"
+            },
+            "shape": {
+              "enum": [
+                "ring",
+                "disc",
+                "line",
+                "top_hat",
+                "lg_ring"
+              ]
+            },
+            "radius_um": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5000
+            },
+            "width_um": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5000
+            },
+            "length_um": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5000
+            },
+            "signal_margin_bins": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 32
+            }
+          }
+        }
+      ],
+      "description": "What to make: a trap list or a shaped potential."
+    },
+    "text": {
+      "type": "object",
+      "description": "Every reader-facing string is bilingual at the source.",
+      "additionalProperties": false,
+      "required": [
+        "en",
+        "es"
+      ],
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "trap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "x_um",
+        "y_um",
+        "z_um",
+        "weight",
+        "charge"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4095
+        },
+        "x_um": {
+          "type": "number",
+          "minimum": -100000.0,
+          "maximum": 100000.0
+        },
+        "y_um": {
+          "type": "number",
+          "minimum": -100000.0,
+          "maximum": 100000.0
+        },
+        "z_um": {
+          "type": "number",
+          "minimum": -100000.0,
+          "maximum": 100000.0
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 100
+        },
+        "charge": {
+          "type": "integer",
+          "minimum": -20,
+          "maximum": 20
+        }
+      },
+      "description": "One trap; ids are unique within a target (a rule the schema cannot state)."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d{2}\\.\\d{3}$",
+      "description": "The product version format X.XX.XXX."
+    }
+  }
+}

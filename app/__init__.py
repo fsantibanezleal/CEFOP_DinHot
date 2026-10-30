@@ -1,11 +1,7 @@
-"""
-CEFOP DinHot - Dynamic Holographic Optical Tweezers.
+"""DORMANT FastAPI backend (ADR-0057). Present but inactive: most products are static deterministic-replay and
+never run this. Activate only on an ADR-0002 trigger. A thin read-only layer over data/derived, never a
+re-implementation of the engine."""
 
-A modern Python/FastAPI web application for real-time generation and
-visualization of holographic phase masks for optical tweezers.
+from .config import VERSION as __version__  # VERSION is the single source (T4)
 
-This package reimplements the original C++/.NET DinHotSys application
-using NumPy for computation and HTML5 Canvas for visualization.
-"""
-
-__version__ = "2.1.0"
+__all__ = ["__version__"]

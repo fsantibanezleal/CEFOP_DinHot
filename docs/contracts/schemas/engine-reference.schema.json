@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "engine-reference.schema.json",
+  "title": "EngineReference",
+  "description": "Contract 2 (artifact), catalog row engine-reference 1.0.0: reference values of one engine function, written by data-pipeline/pipeline/stages/engine_reference.py from the Python engine to tests/fixtures/engine/*.json and read by the TypeScript parity tests. Arrays of complex numbers are interleaved [re, im] number arrays; large arrays are base64 of little-endian float64.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "engine_version",
+    "function",
+    "tolerance",
+    "cases"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dinhot.engine-ref/v1"
+    },
+    "engine_version": {
+      "$ref": "#/$defs/version"
+    },
+    "function": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tolerance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "abs",
+        "rel"
+      ],
+      "properties": {
+        "abs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rel": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "inputs",
+          "outputs"
+        ],
+        "properties": {
+          "inputs": {
+            "type": "object"
+          },
+          "outputs": {
+            "type": "object"
+          }
+        }
+      },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d{2}\\.\\d{3}$",
+      "description": "The product version format X.XX.XXX."
+    }
+  }
+}

@@ -1,0 +1,7 @@
+# Third-party text kept verbatim, exempt from scripts/check_content_standards.py (ADR-0067: no em-dash, no emoji in the product's own content).
+# One entry per line: <path> <sha256> <source URL>   (a path relative to the repository root, no spaces)
+#   sha256: the digest of the file's content with line endings normalised to LF (so Windows and Linux CI agree), for example
+#           python -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read().replace(b'\r\n',b'\n')).hexdigest())" <path>
+#   source URL: where the unmodified text comes from (a licence notice file of a pinned package).
+# The file is skipped only while its digest matches. A listed file that changed fails; so does a listed path that does not exist.
+# The template lists nothing. An instantiated product lists only what it copies unmodified from upstream, never its own text.
