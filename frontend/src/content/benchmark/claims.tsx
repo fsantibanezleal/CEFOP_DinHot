@@ -179,7 +179,7 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
     {
       id: 'BS-3',
       baseline: es ? 'Arranque aleatorio de M07' : 'M07 random start',
-      matrix: b3skipped.length ? (es ? `${b3skipped.length} celdas de B3 no corridas: ${b3skipped[0].reason.es}` : `${b3skipped.length} B3 cells not run: ${b3skipped[0].reason.en}`) : es ? 'sin celdas de B3 listadas como no corridas' : 'no B3 cell listed as not run',
+      matrix: b3skipped.length ? (es ? `${b3skipped.length} ${b3skipped.length === 1 ? 'celda de B3 no corrida' : 'celdas de B3 no corridas'}: ${b3skipped[0].reason.es}` : `${b3skipped.length} B3 ${b3skipped.length === 1 ? 'cell' : 'cells'} not run: ${b3skipped[0].reason.en}`) : es ? 'sin celdas de B3 listadas como no corridas' : 'no B3 cell listed as not run',
       recorded: warm
         ? es
           ? `mediana de ${n(warm.metrics.iterations_to_1pct.model.median)} iteraciones contra ${n(warm.metrics.iterations_to_1pct.random.median)} del arranque aleatorio (${n(ratio3)} veces, el criterio pide ${CRITERIA.bs3.iterationFactor}); el control sin red gana lo mismo`

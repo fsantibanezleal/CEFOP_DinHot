@@ -1,13 +1,13 @@
 // Robustness and degradation (area `robustness`): what the device costs each method (the same hologram scored against the ideal device and the C08
 // device) and how fast each method converges with its budget (the relative standard deviation against the iteration budget). Both are read from
 // the benchmark document; a method with a row on one side only is left out of the pair, never paired with another budget.
-import { ChipGroup, Cite, DocSection, formatNumber, PlotCard, useFormat, useShellLang } from '@fasl-work/caos-app-shell';
+import { ChipGroup, Cite, DocSection, PlotCard, useFormat, useShellLang } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useState } from 'react';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
 import { budgetText, budgetsOf, geometryOf, nameOf, orderMethods, pickRows, shownId, tierOf, TIER_NAME, type Budget, type Lang } from './data';
-import { Note, Ready, TableWrap, useBench, useNum, useResolved, CellControls } from './shared';
+import { Note, Ready, TableWrap, useBench, useNum, useResolved, CellControls, spreadText } from './shared';
 
 const FLOOR = 1e-3;
 
@@ -72,7 +72,7 @@ function DeviceBody({ res }: { res: BenchmarkResults }) {
               solo
               readout={(i) => {
                 const p = pairs[i];
-                return p ? `${shownId(p.method)} ${nameOf(p.method, lang)}: ${es ? 'ideal' : 'ideal'} ${formatNumber(p.a.row.rel_std_pct.median, lang, { digits: 3 })} %, C08 ${formatNumber(p.b.row.rel_std_pct.median, lang, { digits: 3 })} %` : '';
+                return p ? `${shownId(p.method)} ${nameOf(p.method, lang)}: ${es ? 'ideal' : 'ideal'} ${spreadText(p.a.row.rel_std_pct.median, lang)}, C08 ${spreadText(p.b.row.rel_std_pct.median, lang)}` : '';
               }}
             />
           </PlotCard>
