@@ -112,7 +112,7 @@ Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, m
 |---|---|---|---|---|
 | C08 | 30 | 0.655 (0.651 to 0.662) | 0.862 (0.847 to 0.887) | 6.5 (5.91 to 7.04) |
 
-On C08 the mean relative standard deviation is 6.50 percent for B1 against 13.2 for M07 (a ratio of the means of 2.0; per seed 1.91, 2.00 and 2.23, so two times or more on two of three seeds; computed from the committed file, 2026-10-30, after the safeguard) at 0.97 of M07's efficiency (0.655 against 0.678):
+On C08 the mean relative standard deviation is 6.50 percent for B1 against 13.2 for M07 (a ratio of the means of 2.0; per seed 1.906, 1.997 and 2.228, so two times or more on one of three seeds; computed from the committed file, 2026-10-30, after the safeguard) at 0.97 of M07's efficiency (0.655 against 0.678):
 the factor of two holds on the harder device, which has the 4-bit quantizer and the flicker that the optimizer models only as straight-through or drops; the factor is 2.0 there (2.2 in notebook 03-04 over two seeds and four flicker draws) against 15.9 in the acceptance test on its seed.
 
 ## Limits and failure modes

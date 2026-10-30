@@ -62,8 +62,9 @@ recomputed when traps move. DinHot is an open studio that runs \nLadder{} ladder
 Python as the reference and in a TypeScript port that runs live in a browser. We describe the optical and device model,
 the methods with the measured acceptance of each, \nCases{} cases from a $3\times3$ array to a disordered
 \nDisordered-trap array and shaped potentials, the benchmark protocol, two learned models, and the \nBeyond{} proposals past the
-published state of the art, three of which meet their criteria (a device-aware weighted Gerchberg--Saxton update, a
-flicker-bounded phase-continuous sequence and an efficiency--uniformity front), one of which meets a narrowed criterion
+published state of the art, three of which meet their ladder criteria on their acceptance tasks, each within a scope that the
+benchmark narrows (a device-aware weighted Gerchberg--Saxton update, a flicker-bounded phase-continuous sequence and an
+efficiency--uniformity front), one of which meets a narrowed criterion
 (an aberration-robust hologram) and one of which is refuted by measurement (a learned warm start for phase-fixed
 weighted GS). A network trained on three-plane volumes beats its baseline at equal wall-clock on all \cghN{} held-out
 volumes (median accuracy ratio \cghMed), whereas its two-dimensional counterpart ties with Gerchberg--Saxton (ratio
@@ -146,7 +147,7 @@ A real SLM quantizes the phase, couples neighbouring pixels, covers only part of
 applies, in order, wrapping, quantization to $2^b$ levels, a nonlinear response, Gaussian flicker of stated rms and wrapping, and
 blurs the upsampled phase with the crosstalk kernel
 \begin{equation}
-K=\mathcal F^{-1}\Big\{\exp\Big[-\frac{|k_x|^q+|k_y|^q}{\sigma^q}\Big]\Big\},\qquad \sigma=1.24,\ q=1.80,
+K=\mathcal F^{-1}\Big\{\exp\Big[-\frac{|k_x|^q+|k_y|^q}{\sigma^q}\Big]\Big\},\qquad \sigma=\devcXtSigma,\ q=\devcXtQ,
 \end{equation}
 the fitted parameters of Schroff et al.~\cite{schroff} on $3\times3$ sub-pixels (error below 2 percent in that work). A square
 pixel of fill factor $\mathrm{fill}$ multiplies the focal field by a product of cardinal sines, so the intensity falls to about
@@ -172,7 +173,7 @@ C14 & \voluLambda & \voluFocal & \voluNa & $\voluNpix^2$ & \voluPitch & \voluPad
 \end{tabular}
 
 \smallskip
-\footnotesize The bead setup is in water of index \beadNimm; C14 is the volume of the released learned model. C08 device: \devcBits-bit phase, crosstalk $\sigma=1.24$, $q=1.80$ on $3\times3$ sub-pixels, fill factor \devcFill, flicker \devcFlicker{} rad.
+\footnotesize The bead setup is in water of index \beadNimm; C14 is the volume of the released learned model. C08 device: \devcBits-bit phase, crosstalk $\sigma=\devcXtSigma$, $q=\devcXtQ$ on $3\times3$ sub-pixels, fill factor \devcFill, flicker \devcFlicker{} rad.
 \end{table}
 
 \section{The three tiers of methods}\label{sec:tiers}
@@ -379,28 +380,31 @@ succeeds.
 \textbf{BS-1, device-aware weighted GS.} The weights of weighted GS are kept and the phase update is replaced by conjugate-gradient steps through
 the crosstalk kernel and the quantizer. The gap is that the crosstalk model has only been used with conjugate gradient on shaped potentials~\cite{schroff},
 or inside a weighted GS that replaces amplitudes only~\cite{persson}. On the crosstalk device, the relative standard deviation is lower than
-that of phase-fixed WGS by the factor reported in the companion manuscript; on the small C08 grid the baked factor is \bakeCeightRatio{} at an
-efficiency ratio of \bakeCeightEffRatio. In the benchmark on the C08 device it meets both thresholds on \benchOnePass{} of
-\benchOneN{} geometries (\benchOnePassList; the companion manuscript gives each geometry), and it returns its best iterate that keeps 0.9 of
-its warm start's efficiency, so its weight update cannot wind up. \textbf{BS-2, flicker-bounded phase-continuous sequences.} Each intermediate hologram of a moving-trap
+that of phase-fixed WGS by the factor reported in the companion manuscript; on the small C08 grid the baked factor is \bakeCeightRatio{} on the bake's own seed, at an
+efficiency ratio of \bakeCeightEffRatio, and \bakeCeightRatioThree{} on the ratio of the means of the \bakeCeightSeedsN{} seeds of its expected ranges. In the benchmark on the C08 device it meets both thresholds on \benchOnePass{} of
+\benchOneN{} geometries (\benchOnePassList; the companion manuscript gives the factor on each). B1 returns its best iterate that keeps \bOneFloor{} of
+its warm start's efficiency, so a run whose weights wind up never returns worse than its start. \textbf{BS-2, flicker-bounded phase-continuous sequences.} Each intermediate hologram of a moving-trap
 sequence is optimized with the trap phases locked to a smooth trajectory; the gap is that linear phase interpolation does not
-optimize its intermediate frames~\cite{lpi}. The moving traps keep a higher minimum intensity than under linear phase
-interpolation, as quantified in the companion manuscript. \textbf{BS-3, learned warm start:} refuted (Section~\ref{sec:learned}).
+optimize its intermediate frames~\cite{lpi}. On the acceptance task, and on most seeds of the longer moves with the frames that keep the peak step per frame at most \bTwoStep{}
+Fourier units, the moving traps keep a higher minimum intensity than under linear phase interpolation; at an equal number of frames on the long
+sort of case C10 linear phase interpolation leads (the companion manuscript quantifies both). \textbf{BS-3, learned warm start:} refuted (Section~\ref{sec:learned}).
 \textbf{BS-4, aberration-robust hologram:} the expected cost over residual aberrations is minimized; over a 200-sample ensemble of residual Noll modes 4 to 11
-the 95th percentile of the relative standard deviation is \accBFourRatio{} times below that of M07 on the seed of its test, with an efficiency \accBFourEffDrop{}
-percent lower (Table~\ref{tab:acceptance}); robustness to pointing errors does not follow (\accBFourPointing{} times), because the spot width bounds
+the 95th percentile of the relative standard deviation is a median of \accBFourRatio{} times below that of M07 (\accBFourRatioLo{} to \accBFourRatioHi{} over
+\accBFourSeeds{} seeds), with a median efficiency \accBFourEffDrop{} percent lower (Table~\ref{tab:acceptance}); robustness to pointing errors does not follow (\accBFourPointing{} times), because the spot width bounds
 it, and is reported as a negative result. The gap is that corrections are
 global or per site, never robust~\cite{machu}. \textbf{BS-5, efficiency--uniformity Pareto front} by continuation of a weighted cost: the front's hypervolume (\accBFiveHv) exceeds
 that of the points of the GS family and direct search (\accBFiveHvBase), and \accBFiveDomFour{} front points dominate M04 and \accBFiveDomFive{} dominate M05
-(Table~\ref{tab:acceptance}), where published methods report single trade-off points~\cite{dileonardo}.
+(Table~\ref{tab:acceptance}), where published methods report single trade-off points~\cite{dileonardo}. In the benchmark the stored front reaches at least
+the hypervolume of those classical points on \benchFivePass{} of the \benchFiveN{} geometries with a front, at 100 iterations on the ideal device, and not on
+\benchFiveLost.
 
 \section{The live engine and the product}\label{sec:live}
 
 The site is static; every computation runs in the browser or was baked offline and is replayed. The live engine is a TypeScript port of the forward
 models, the device model and the live methods, running in a Web Worker so the interface does not block, with the FFT in Float64 (fft.js). An optional WebGPU backend
 runs the FFT-form iterations on the GPU and falls back to the CPU path when the browser offers none; an agreement check inside every GPU run compares the trap fields
-with the CPU result. At the live grid ($256^2$ padded to $512^2$) a weighted GS iteration measured about \liveIterMs{} ms, so a 30-iteration run fits the lane budget of
-\liveBudgetMs{} ms. The Python engine writes \liveFixtures{} reference documents and \liveTests{} parity tests compare the TypeScript engine with them, each quantity within
+with the CPU result. At the live grid ($256^2$ padded to $512^2$) a weighted GS iteration took about \liveIterMs{} ms in Node 24, and in the browser's worker 30 iterations
+on C02 took \liveWorkerS{} s, inside the lane budget of \liveBudgetMs{} ms. The Python engine writes \liveFixtures{} reference documents and \liveTests{} parity tests compare the TypeScript engine with them, each quantity within
 the tolerance its document states (at most $\liveTol$ absolute). On \liveAdapter{}, 30 iterations of M07 took \liveGpuS{} s with the GPU
 backend against \liveCpuS{} s on the CPU path in the same browser. The methods that are baked and replayed are labelled as such in the interface. Of the \nContracts{} data
 contracts of the build, \nContractsAvailable{} are fully available, and the build declares the state of the others: \readinessOthers. The refused record is the case outside the field, and the

@@ -60,6 +60,11 @@ by the same function. The paper reports above 0.70 for LPI on hardware; the test
 
 The transient model is DinHot's (UNVERIFIED); the comparison is against DinHot's implementation of LPI, not the authors' code.
 
+Measured scope (design record, Measured scope): the acceptance task runs at 0.31 Fourier units per frame; with the frames that keep the peak step
+at most 0.2 Fourier units, a bound set on C10's sort, the claim holds on 6 of 8 seeds of each longer lattice move and on 5 of 6 seeds of C10, and
+the seeds that miss it miss it on the phase path their end phases prescribe (twice the frames do not recover them); at an equal number of frames
+on C10's sort LPI leads on every seed.
+
 ## References
 
 - Linear phase interpolation, https://arxiv.org/abs/2501.01391

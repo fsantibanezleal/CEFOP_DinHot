@@ -73,7 +73,8 @@ QUOTED_LIVE = {
     "liveTests": ("92", "MR, Live engine parity"),
     "liveGpuS": ("0.31 to 0.32", "MR, The live engine"), "liveCpuS": ("1.5 to 1.6", "MR, The live engine"),
     "liveAdapter": ("an integrated Intel gen-12lp adapter", "MR, The live engine"),
-    "liveIterMs": ("24", "MR, The live engine"), "liveBudgetMs": ("1500", "SDD Lanes"), "liveTraceKiB": ("256", "SDD Lanes"),
+    "liveIterMs": ("24", "MR, The live engine"), "liveWorkerS": ("0.49 to 0.80", "MR, The live engine"),
+    "liveBudgetMs": ("1500", "SDD Lanes"), "liveTraceKiB": ("256", "SDD Lanes"),
 }
 
 TIER_LABEL = {"classical": "Classical", "sota": "State of the art", "beyond": "Beyond"}
@@ -151,12 +152,15 @@ def bench_cells(rows: list[dict], kind: str, budget: float, params: str = "defau
 
 def best_of(cells: dict, geometry: str, device: str, methods: set[str]) -> dict | None:
     """The method with the lowest median relative standard deviation among those of ``methods`` that reach at least half of the
-    best median efficiency of the cell (the rule of the results table), or None when none of them ran there."""
+    best median efficiency of the whole cell (every method, the rule of the results table), or None when none of them qualifies."""
+    cell = [x for (m, g, d), x in cells.items() if g == geometry and d == device]
     cand = [(m, x) for (m, g, d), x in cells.items() if g == geometry and d == device and m in methods]
     if not cand:
         return None
-    top = max(x["efficiency"]["median"] for _, x in cand)
+    top = max(x["efficiency"]["median"] for x in cell)
     ok = [(m, x) for m, x in cand if x["efficiency"]["median"] >= 0.5 * top]
+    if not ok:
+        return None
     m, x = min(ok, key=lambda p: (p[1]["rel_std_pct"]["median"], p[0]))
     return {"method": m, "sigma": x["rel_std_pct"]["median"], "eff": x["efficiency"]["median"], "n_seeds": x["n_seeds"]}
 
@@ -463,8 +467,11 @@ def main() -> int:
     m4, b4, b5 = acc["M04"], acc["BS-4"], acc["BS-5"]
     L.append(macro("accFourFlatEff", f(statistics.median(m4["flat_efficiency"]), 3)))
     L.append(macro("accFourFlatUni", f(statistics.median(m4["flat_uniformity"]), 3)))
-    L.append(macro("accBFourRatio", f(b4["ratio"], 2)))
-    L.append(macro("accBFourEffDrop", f"{100 * (1 - b4['efficiency_b4'] / b4['efficiency_m07']):.1f}"))
+    L.append(macro("accBFourRatio", f(statistics.median(b4["ratio"]), 3)))
+    L.append(macro("accBFourRatioLo", f(min(b4["ratio"]), 2)))
+    L.append(macro("accBFourRatioHi", f(max(b4["ratio"]), 2)))
+    L.append(macro("accBFourSeeds", len(b4["ratio"])))
+    L.append(macro("accBFourEffDrop", f"{100 * (1 - statistics.median(b4['eff_ratio'])):.1f}"))
     L.append(macro("accBFourPointing", f(b4["pointing_ratio"], 2)))
     L.append(macro("accBFiveHv", f(b5["hypervolume"], 4)))
     L.append(macro("accBFiveHvBase", f(b5["hypervolume_base"], 4)))
@@ -499,6 +506,40 @@ def main() -> int:
     L.append(macro("benchOneN", len(b1_cells)))
     L.append(macro("benchOnePass", len(b1_pass)))
     L.append(macro("benchOnePassList", " and ".join(b1_pass) if b1_pass else "none"))
+    m8 = load(DERIVED / "manifests" / "C08_device_limited.json")["params"]["device"]
+    L.append(macro("devcXtSigma", f"{m8['crosstalk']['sigma_per_px']:.2f}"))
+    L.append(macro("devcXtQ", f"{m8['crosstalk']['q']:.2f}"))
+    floor = re.search(r"^EFFICIENCY_FLOOR = ([0-9.]+)", (ROOT / "data-pipeline" / "pipeline" / "model" / "holo" / "methods" / "beyond"
+                                                         / "b1_device_wgs.py").read_text(encoding="utf-8"), re.M)
+    L.append(macro("bOneFloor", floor.group(1)))
+    step = re.search(r"^CLAIM_STEP_FU = ([0-9.]+)", (ROOT / "data-pipeline" / "pipeline" / "model" / "holo" / "methods" / "beyond"
+                                                     / "b2_flicker_bounded.py").read_text(encoding="utf-8"), re.M)
+    L.append(macro("bTwoStep", step.group(1)))
+    mr8 = load(ROOT / "data-pipeline" / "pipeline" / "cases" / "measured_ranges.json")["measured"]["C08_device_limited"]
+    L.append(macro("bakeCeightRatioThree", f(statistics.mean(mr8["M07.rel_std_pct"]) / statistics.mean(mr8["B1.rel_std_pct"]), 1)))
+    L.append(macro("bakeCeightSeedsN", len(mr8["B1.rel_std_pct"])))
+    # BS-5 in the benchmark: the stored front against the union of the classical points of its criterion, ideal device, 100 iterations
+    def hv(pts):
+        pts = [p for p in pts if not any(q[0] >= p[0] and q[1] >= p[1] and (q[0] > p[0] or q[1] > p[1]) for q in pts)]
+        pts.sort()
+        area, prev = 0.0, 0.0
+        for i, (e, _) in enumerate(pts):
+            area += (e - prev) * max(u for _, u in pts[i:])
+            prev = e
+        return area
+    rb = load(DERIVED / "benchmark" / "results.json")
+    c5 = {(x["method"], x["geometry"]): x for x in rb["rows"] if x["budget_kind"] == "iterations" and x["budget"] == 100
+          and x["params"] == "default" and x["device"] == "ideal"}
+    five = []
+    for f5 in rb.get("pareto") or []:
+        g = f5["geometry"]
+        pts = [(c5[(m, g)]["efficiency"]["median"], c5[(m, g)]["uniformity"]["median"]) for m in ("M04", "M05", "M06", "M09") if (m, g) in c5]
+        if pts:
+            five.append((g, hv([(p["efficiency"], p["uniformity"]) for p in f5["points"]]), hv(pts)))
+    lost = [f"{g} ({a:.3f} against {b:.3f})" for g, a, b in sorted(five) if a < b]
+    L.append(macro("benchFiveN", len(five)))
+    L.append(macro("benchFivePass", sum(1 for _, a, b in five if a >= b)))
+    L.append(macro("benchFiveLost", ", ".join(lost) if lost else "none"))
     no_rows = [m for m in bench["methods_in_protocol"] if m not in bench["methods_measured"]]
     # main.tex names the reasons of these three methods (a vortex charge, a rearrangement block, the learned model's geometry)
     if bench["rows"] > 100 and set(no_rows) != {"M15", "M16", "M17"}:
@@ -588,8 +629,10 @@ def main() -> int:
     L.append(macro("nContracts", len(ready["contracts"])))
     L.append(macro("nContractsAvailable", real))
     others = [c for c in ready["contracts"] if c["state"] != "available"]
+    state_words = {"partial": "partial", "training": "answered by its baseline, with no released model", "missing": "missing"}
     L.append(macro("readinessOthers", "; ".join(
-        f"\\texttt{{{tex_escape(c['id'])}}} is {c['state']}" + (f" ({tex_escape(c['reason'].rstrip('.'))})" if c["reason"] else "")
+        f"\\texttt{{{tex_escape(c['id'])}}} is {state_words.get(c['state'], c['state'])}"
+        + (f" ({tex_escape(c['reason'].rstrip('.'))})" if c["reason"] else "")
         for c in others)))
     (HERE / "studio_numbers.tex").write_text("".join(L), encoding="utf-8")
 

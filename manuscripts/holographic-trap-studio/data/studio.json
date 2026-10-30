@@ -47,7 +47,7 @@
    "id": "M07",
    "tier": "sota",
    "method": "Phase-fixed weighted GS",
-   "criterion": "fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations in the acceptance run (the code default `n_fix` is 12, as in Kim et al. 2019; at 12 it stalls at 2.9 percent on DinHot's grid); from the same start M07 matches slmsuite 0.5.0's WGS-Kim to 1e-4 percent (the first field is not reweighted, g_0 = 1)",
+   "criterion": "fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations in the acceptance run (the code default `n_fix` is 12, as in Kim et al. 2019; at 12 it stalls at 3.58 percent on DinHot's grid, re-measured 2026-10-30); from the same start M07 matches slmsuite 0.5.0's WGS-Kim to 1e-4 percent (the first field is not reweighted, g_0 = 1)",
    "gate": "tests/methods/baseline/test_m07_phase_fixed_wgs.py"
   },
   {
@@ -82,7 +82,7 @@
    "id": "M12",
    "tier": "sota",
    "method": "Closed-loop WGS on an emulated camera",
-   "criterion": "from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7; the acceptance runs on the emulated camera (`core/camera.py`), which reproduces the published feedback curves (Nogrette 2014: 19 percent to under 2.1; Kim 2019: 22 percent to under 1.8 in three phase-fixed steps)",
+   "criterion": "from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7; the acceptance runs on the emulated camera (`core/camera.py`), which reproduces the published feedback curves (Nogrette 2014: 19 to 1.4 percent in 20 iterations; Kim 2019: 22 to 1.4 percent in three phase-fixed steps; the bounds 2.1 and 1.8 are set above them)",
    "gate": "tests/methods/control/test_m12_closed_loop.py"
   },
   {
@@ -145,7 +145,7 @@
    "id": "BS-2",
    "tier": "beyond",
    "method": "Flicker-bounded phase-continuous sequence (engine id B2)",
-   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: holds when the peak step per frame is at most 0.2 Fourier units, on most seeds (acceptance task: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.911; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
+   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: with the frames that keep the peak step per frame at most 0.2 Fourier units (a bound set on C10's sort) it holds on most seeds (acceptance task, 13 frames at 0.31 Fourier units per frame, seeds 1 to 3: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.911; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
    "gate": "tests/methods/beyond/test_b2_flicker_bounded.py"
   },
   {
@@ -2310,12 +2310,7 @@
      "eff": 0.929967,
      "n_seeds": 20
     },
-    "sota": {
-     "method": "M18",
-     "sigma": 5.576381,
-     "eff": 0.430713,
-     "n_seeds": 10
-    },
+    "sota": null,
     "beyond": null
    },
    "G7/device": {
@@ -2337,12 +2332,7 @@
      "eff": 0.790285,
      "n_seeds": 20
     },
-    "sota": {
-     "method": "M11",
-     "sigma": 30.48124,
-     "eff": 0.373135,
-     "n_seeds": 15
-    },
+    "sota": null,
     "beyond": null
    }
   },
@@ -3308,13 +3298,13 @@
   ],
   [
    "BS-4",
-   "95th percentile of the relative standard deviation 3.947 against 6.192 for M07 (1.57 times) over a 200-sample aberration ensemble; efficiency 0.7047 against 0.7181; pointing errors 1.04 times",
-   "1",
+   "95th percentile of the relative standard deviation a median 1.435 times below M07 (1.42 to 1.57) over a 200-sample aberration ensemble, at a median 0.982 of its efficiency; pointing errors 1.04 times (seed 1)",
+   "3 (pointing 1)",
    "tests/methods/beyond/test_b4_robust.py"
   ],
   [
    "BS-5",
-   "hypervolume 0.8190 against 0.8018 for the union of the M04, M05, M06 and M09 points; 7 front points dominate M04 and 8 dominate M05; front built in 48 seconds",
+   "hypervolume 0.8190 against 0.8018 for the union of the M04, M05, M06 and M09 points; 7 front points dominate M04 and 8 dominate M05",
    "1",
    "tests/methods/beyond/test_b5_pareto.py"
   ]
