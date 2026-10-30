@@ -3,7 +3,7 @@
 All notable changes to this product. Versions are X.XX.XXX (VERSION is the single source); every release is
 tagged.
 
-## [0.02.000], unreleased
+## [0.02.000], 2026-10-30
 
 ### Changed
 
