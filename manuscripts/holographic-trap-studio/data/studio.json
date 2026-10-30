@@ -82,7 +82,7 @@
    "id": "M12",
    "tier": "sota",
    "method": "Closed-loop WGS on an emulated camera",
-   "criterion": "from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7; the acceptance runs on the emulated camera (`core/camera.py`), which reproduces the published feedback curves (Nogrette 2014: 19 to 1.4 percent in 20 iterations; Kim 2019: 22 to 1.4 percent in three phase-fixed steps; the bounds 2.1 and 1.8 are set above them)",
+   "criterion": "from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7; the acceptance runs on the emulated camera (`core/camera.py`), which reproduces the published feedback curves (Nogrette 2014: 19 to 1.4 percent in 20 iterations; Kim 2019: 22 percent to 1.59 plus or minus 0.18 percent in three phase-fixed steps over 8 ensembles, 1.4 in the histogram of one run; the bounds 2.1 and 1.8 are set above them)",
    "gate": "tests/methods/control/test_m12_closed_loop.py"
   },
   {
@@ -145,7 +145,7 @@
    "id": "BS-2",
    "tier": "beyond",
    "method": "Flicker-bounded phase-continuous sequence (engine id B2)",
-   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: with the frames that keep the peak step per frame at most 0.2 Fourier units (a bound set on C10's sort) it holds on most seeds (acceptance task, 13 frames at 0.31 Fourier units per frame, seeds 1 to 3: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.911; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
+   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: with the frames that keep the peak step per frame at most 0.2 Fourier units (a bound set on C10's sort) it holds on most seeds (acceptance task, 13 frames at 0.31 Fourier units per frame, seeds 1 to 3: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds, and B2 above LPI on 7 of 8 seeds of each); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.911; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
    "gate": "tests/methods/beyond/test_b2_flicker_bounded.py"
   },
   {
@@ -166,7 +166,7 @@
    "id": "BS-5",
    "tier": "beyond",
    "method": "Efficiency-uniformity Pareto front (engine id B5)",
-   "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured: 0.8190 against 0.8018); in the benchmark at 100 iterations on the ideal device the stored front reaches that hypervolume on 3 of the 6 geometries with a front, and not on G1, G4 (by 0.003 and 0.001) nor G6 (0.791 against 0.813)",
+   "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured: 0.8190 against 0.8018); in the benchmark the stored front (B5's converged run of the first seed) reaches that hypervolume on 3 of the 6 geometries with a front against the medians at 100 iterations on the ideal device, 5 of 6 against those at 30, and not on G1, G4 (by 0.003 and 0.001) nor G6 (0.791 against 0.813)",
    "gate": "tests/methods/beyond/test_b5_pareto.py"
   }
  ],

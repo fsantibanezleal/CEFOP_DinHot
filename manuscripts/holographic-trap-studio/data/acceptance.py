@@ -241,11 +241,17 @@ def measure_M07() -> dict:
         eff.append(a.history[-1]["efficiency"])
     kim = m07_phase_fixed_wgs.run(s, t, budget=Budget(40), rng=Rng(1))
     stall = min(h["rel_std"] for h in kim.history)
+    # the sweep of the phase-fixing point on seed 1 with the budget of the comparison (the design record's table)
+    sweep = {}
+    for nf in (12, 20, 30, 40, 60):
+        r = m07_phase_fixed_wgs.run(s, t, budget=Budget(150), rng=Rng(1), n_fix=nf)
+        sweep[str(nf)] = min(h["rel_std"] for h in r.history)
     text = (f"50 x 30 array to 0.5 percent in {join_and([x for x in ia if x], 0)} iterations against "
             f"{join_and([or_never(x, 150) for x in ib], 0)} for M06 (phase fixed after 60; efficiency {join_and(eff, 2)}); "
             f"with the source value of 12 it stalls at {stall:.2f} percent")
     return row("M07", text, "2", T_BASE + "test_m07_phase_fixed_wgs.py (and test_m07_against_slmsuite.py, notebook venv)",
-               {"iterations_m07": ia, "iterations_m06": ib, "efficiency_m07": eff, "kim_stall_percent": stall})
+               {"iterations_m07": ia, "iterations_m06": ib, "efficiency_m07": eff, "kim_stall_percent": stall,
+                "n_fix_sweep_min_rel_std_150": sweep})
 
 
 def measure_M08() -> dict:

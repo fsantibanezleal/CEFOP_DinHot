@@ -486,6 +486,8 @@ def main() -> int:
     # executive
     L.append(macro("execAtoms", f"{ex['atoms']}"))
     L.append(macro("execSpread", f"{ex['spread']}"))
+    tw = re.search(r"about ([0-9][0-9,]*) tweezers", (ROOT / "content" / "executive.json").read_text(encoding="utf-8"))
+    L.append(macro("execTweezers", tw.group(1)))
     # benchmark
     L.append(macro("benchSeeds", bench["seeds"]))
     L.append(macro("benchGrids", ", ".join(str(g) for g in bench["grids"])))
@@ -529,17 +531,21 @@ def main() -> int:
             prev = e
         return area
     rb = load(DERIVED / "benchmark" / "results.json")
-    c5 = {(x["method"], x["geometry"]): x for x in rb["rows"] if x["budget_kind"] == "iterations" and x["budget"] == 100
-          and x["params"] == "default" and x["device"] == "ideal"}
-    five = []
-    for f5 in rb.get("pareto") or []:
-        g = f5["geometry"]
-        pts = [(c5[(m, g)]["efficiency"]["median"], c5[(m, g)]["uniformity"]["median"]) for m in ("M04", "M05", "M06", "M09") if (m, g) in c5]
-        if pts:
-            five.append((g, hv([(p["efficiency"], p["uniformity"]) for p in f5["points"]]), hv(pts)))
+    def five_at(budget):
+        c5 = {(x["method"], x["geometry"]): x for x in rb["rows"] if x["budget_kind"] == "iterations" and x["budget"] == budget
+              and x["params"] == "default" and x["device"] == "ideal"}
+        out5 = []
+        for f5 in rb.get("pareto") or []:
+            g = f5["geometry"]
+            pts = [(c5[(m, g)]["efficiency"]["median"], c5[(m, g)]["uniformity"]["median"]) for m in ("M04", "M05", "M06", "M09") if (m, g) in c5]
+            if pts:
+                out5.append((g, hv([(p["efficiency"], p["uniformity"]) for p in f5["points"]]), hv(pts)))
+        return out5
+    five, five30 = five_at(100), five_at(30)
     lost = [f"{g} ({a:.3f} against {b:.3f})" for g, a, b in sorted(five) if a < b]
     L.append(macro("benchFiveN", len(five)))
     L.append(macro("benchFivePass", sum(1 for _, a, b in five if a >= b)))
+    L.append(macro("benchFivePassThirty", sum(1 for _, a, b in five30 if a >= b)))
     L.append(macro("benchFiveLost", ", ".join(lost) if lost else "none"))
     no_rows = [m for m in bench["methods_in_protocol"] if m not in bench["methods_measured"]]
     # main.tex names the reasons of these three methods (a vortex charge, a rearrangement block, the learned model's geometry)

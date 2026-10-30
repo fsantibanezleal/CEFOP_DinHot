@@ -219,11 +219,13 @@ trajectory of the worst trap. With seven frames the bound of $0.9$ is not met: t
 The task above moves the traps four bins in \parFrames{} frames, a peak step of \accPeakStep{} Fourier units per frame (the method would name \accFramesForMove{} frames
 for it). The method names the fewest frames whose peak step under the minimal-jerk profile is at most \claimStepFu{} Fourier units, a bound set where the lowest
 moving trap of case C10 first reached $0.9$. The scope of the claim is measured on longer moves with the end phases taken from phase-fixed WGS at the destination, and
-with the method's bound on the phase step per frame lifted from \parPhaseVel{} to \scopePhaseVel{} rad, which the end phases need. On the same
+with the method's bound on the phase step per frame lifted from \parPhaseVel{} to \scopePhaseVel{} rad for every run, so that the runs at the default
+frames, whose step the default bound refuses on the longer move, can be compared; at the frames of the move the default bound holds. On the same
 lattice with the two columns moved \longABins{} and \longBBins{} bins (\longAFu{} and \longBFu{} Fourier units, $64^2$ pixels padded by 2), the \scopeDefaultFrames{} default
 frames leave the lowest moving trap at most at \longDefaultMax{} over \longSeeds{} seeds; with the \longAFrames{} and \longBFrames{} frames of the move the medians are
 \longAMed{} and \longBMed{} (peak steps \longAPeak{} and \longBPeak{} Fourier units), and \longAMet{} and \longBMet{} of the \longSeeds{} seeds reach $0.9$. The seeds that
-miss it (\longFailList) miss it on the phase path their end phases prescribe: with twice the frames they reach \longTwiceList.
+miss it (\longFailList) miss it on the phase path their end phases prescribe: with twice the frames they reach \longTwiceList. Linear phase interpolation on the same moves,
+assignment and frames reaches \longALpiMin{} to \longALpiMax{} and \longBLpiMin{} to \longBLpiMax{}, so B2 leads it on \longABLeads{} and \longBBLeads{} of the \longSeeds{} seeds.
 
 On the rearrangement case of the studio (C10: \cTenTraps{} target sites, \cTenMoving{} of them reached by a move on the assignment of the Hungarian method, the longest
 \cTenFu{} Fourier units), held phases dim the moving traps to \cTenHeld{} at \cTenEqual{} frames (first seed). With the end phases at \cTenEqual{} frames, a peak step of

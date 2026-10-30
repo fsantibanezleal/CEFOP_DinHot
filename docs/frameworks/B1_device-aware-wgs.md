@@ -51,8 +51,8 @@ On the crosstalk device, relative standard deviation at least two times below M0
 | Efficiency | 0.7452 | 0.7471 | same |
 | Ratio | 15.9 times lower spread on this seed, 0.997 of the efficiency; a median of 25.8 times (15.9 to 33.3) over five seeds; B1's benchmark cells on the C08 device hold 2 seeds (M07's 20) | | |
 
-More iterations do not help the baseline (spread 4.504 with 30 iterations and 4.525 with 100). The criterion is exceeded by a wide margin; the benchmark
-repeats it over 20 seeds on the C08 device.
+More iterations do not help the baseline (spread 4.745 with 30 iterations and 4.746 with 100, seed 1). The criterion is exceeded by a wide margin; the benchmark
+repeats the comparison on its geometries on the C08 device, where B1's cells hold 2 seeds (M07's 20).
 
 ## Limits
 

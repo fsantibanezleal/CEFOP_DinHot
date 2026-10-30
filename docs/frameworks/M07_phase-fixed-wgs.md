@@ -45,7 +45,7 @@ measured stall of the source default.
 |---|---|---|
 | Iterations to 0.5 percent, `n_fix = 60` | 64 and 64 (M06: 136 and 106) | 2 seeds, 50 by 30 array, 256 by 256 padded 2; re-measured 2026-10-30 |
 | Minimum spread, `n_fix = 12` (Kim default) | stalls at 3.58 percent over 40 iterations | same grid; re-measured 2026-10-30 |
-| Minimum spread against `n_fix` 12 / 20 / 30 / 40 / 60 | 2.9 / 1.6 / 1.5 / 0.8 / 1e-5 percent | same |
+| Minimum spread against `n_fix` 12 / 20 / 30 / 40 / 60 | 3.58 / 2.13 / 0.855 / 0.080 / 0.143 percent (150 iterations, seed 1, re-measured 2026-10-30 by the studio report's `acceptance.py`; 2.9 / 1.6 / 1.5 / 0.8 / 1e-5 before the rule corrections) | same |
 
 Mechanism: on this crowded grid (44 pixels per trap) the phase frozen after 12 iterations belongs to an unconverged hologram and
 the weight update then cannot repair it. The source default of 12 is therefore not the default that meets the acceptance
