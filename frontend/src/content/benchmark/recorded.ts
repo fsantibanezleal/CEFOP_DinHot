@@ -47,13 +47,15 @@ export const RECORDED: Record<string, RecordedClaim> = {
       longMedianB: 0.936,
       longSeedsMet: 6,
       longSeeds: 8,
-      /** C10's long sort: B2 needs the end phases and this many frames; its median over 6 seeds and the LPI range. */
+      /** C10's long sort on M16's own plan: B2 needs the end phases and this many frames; its range and median over the seeds that
+       *  reach the threshold (one seed collapses on its phase path), and the LPI range. */
       c10Frames: 137,
-      c10B2Median: 0.905,
-      c10B2Low: 0.899,
-      c10B2High: 0.919,
-      c10LpiLow: 0.678,
-      c10LpiHigh: 0.756,
+      c10B2Median: 0.910,
+      c10B2Low: 0.902,
+      c10B2High: 0.917,
+      c10LpiLow: 0.360,
+      c10LpiHigh: 0.690,
+      c10SeedsMet: 5,
       c10Seeds: 6,
       /** The equal-frame comparison on C10: the frames at which linear phase interpolation leads in every seed. */
       c10EqualFrames: 25,
