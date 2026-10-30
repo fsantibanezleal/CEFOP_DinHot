@@ -1,0 +1,479 @@
+{
+ "schema": "dinhot.manuscript-acceptance/v1",
+ "note": "Measured by acceptance.py on the engine of this commit; each row mirrors the gate test named in its source.",
+ "rows": [
+  {
+   "id": "M01",
+   "text": "efficiency 0.281, uniformity 0.0003 (deterministic)",
+   "seeds": "1",
+   "source": "tests/methods/baseline/test_m01_superposition.py",
+   "numbers": {
+    "efficiency": 0.2806624604421252,
+    "uniformity": 0.00027939944446220277
+   },
+   "measure_seconds": 0.0
+  },
+  {
+   "id": "M02",
+   "text": "efficiency 0.750 [0.738, 0.752], uniformity 0.252 [0.106, 0.272]",
+   "seeds": "6",
+   "source": "tests/methods/baseline/test_m02_random_superposition.py",
+   "numbers": {
+    "efficiency": [
+     0.7504771932803781,
+     0.7499335332767817,
+     0.7516339232037461,
+     0.7499428752545362,
+     0.7378275964578885,
+     0.7503009574678032
+    ],
+    "uniformity": [
+     0.2633843976770749,
+     0.16311759212487942,
+     0.10589498786804863,
+     0.26634923188132986,
+     0.27248928158764474,
+     0.24062187119395595
+    ]
+   },
+   "measure_seconds": 0.2
+  },
+  {
+   "id": "M03",
+   "text": "256 squared: efficiency 0.010, uniformity 0.057 [0.031, 0.072]; 768 squared: efficiency 0.008, uniformity 0.566 [0.543, 0.590]",
+   "seeds": "5 and 2",
+   "source": "tests/methods/baseline/test_m03_random_mask.py",
+   "numbers": {
+    "e256": [
+     0.009787806158421971,
+     0.00937755309155704,
+     0.008745569547153421,
+     0.009867540195136025,
+     0.009792882831461323
+    ],
+    "u256": [
+     0.06753300435811016,
+     0.0572741796934646,
+     0.07187524290692648,
+     0.056122959546244355,
+     0.030880167748608134
+    ],
+    "e768": [
+     0.008272043846686275,
+     0.008155676527827773
+    ],
+    "u768": [
+     0.5431682529324855,
+     0.5897663823956015
+    ]
+   },
+   "measure_seconds": 24.0
+  },
+  {
+   "id": "M04",
+   "text": "flat beam: efficiency 0.939 [0.933, 0.939], uniformity 0.604 [0.557, 0.626]; Gaussian beam: efficiency 0.815 against its ceiling 0.869",
+   "seeds": "3",
+   "source": "tests/methods/baseline/test_m04_gs.py",
+   "numbers": {
+    "flat_efficiency": [
+     0.9331493814333691,
+     0.9385280082854409,
+     0.9394304766995833
+    ],
+    "flat_uniformity": [
+     0.5569002635146094,
+     0.6261891050167476,
+     0.6035206064037285
+    ],
+    "gauss_efficiency": [
+     0.8114016117811321,
+     0.8163764398992851,
+     0.8149800404206062
+    ],
+    "gauss_uniformity": [
+     0.5503126493523769,
+     0.6214685462811917,
+     0.6150917824507631
+    ],
+    "ceiling": 0.8694892467164173
+   },
+   "measure_seconds": 22.8
+  },
+  {
+   "id": "M05",
+   "text": "uniformity 0.688 [0.638, 0.709] against 0.615 [0.550, 0.637] for GS at equal iterations; efficiency 0.811 against 0.816",
+   "seeds": "5",
+   "source": "tests/methods/baseline/test_m05_gaa.py",
+   "numbers": {
+    "gaa_uniformity": [
+     0.7093142930176418,
+     0.6506609167326282,
+     0.6879287654107449,
+     0.6378997423575821,
+     0.7050871505440619
+    ],
+    "gs_uniformity": [
+     0.5503126493523769,
+     0.6214685462811917,
+     0.6150917824507631,
+     0.5715965705113455,
+     0.6368760839980827
+    ],
+    "gaa_efficiency": [
+     0.8085508348259808,
+     0.8110811497019289,
+     0.8133420824176583,
+     0.811283534367649,
+     0.8128759938183534
+    ],
+    "gs_efficiency": [
+     0.8114016117811321,
+     0.8163764398992851,
+     0.8149800404206062,
+     0.8184704060960949,
+     0.816080338852741
+    ]
+   },
+   "measure_seconds": 37.7
+  },
+  {
+   "id": "M06",
+   "text": "flat beam: efficiency and uniformity both at 0.9 after 12, 15 and 12 iterations (median uniformity 0.857 at 10); Gaussian beam: 12, 15 and 12; 3 x 3 x 3 lattice (0.9 and 0.98): 35, 20 and 27; budgets 15, 20 and 100",
+   "seeds": "3",
+   "source": "tests/methods/baseline/test_m06_gsw.py (and test_m06_against_slmsuite.py, notebook venv)",
+   "numbers": {
+    "first_both_flat": [
+     12,
+     15,
+     12
+    ],
+    "uniformity_at_10_flat": [
+     0.8630567753682354,
+     0.8569206735449099,
+     0.8234518801297128
+    ],
+    "first_both_gaussian": [
+     12,
+     15,
+     12
+    ],
+    "first_both_lattice": [
+     35,
+     20,
+     27
+    ]
+   },
+   "measure_seconds": 22.2
+  },
+  {
+   "id": "M07",
+   "text": "50 x 30 array to 0.5 percent in 64 and 64 iterations against 136 and 106 for M06 (phase fixed after 60; efficiency 0.83 and 0.83); with the source value of 12 it stalls at 3.58 percent",
+   "seeds": "2",
+   "source": "tests/methods/baseline/test_m07_phase_fixed_wgs.py (and test_m07_against_slmsuite.py, notebook venv)",
+   "numbers": {
+    "iterations_m07": [
+     64,
+     64
+    ],
+    "iterations_m06": [
+     136,
+     106
+    ],
+    "efficiency_m07": [
+     0.832431483647786,
+     0.8323007292508913
+    ],
+    "kim_stall_percent": 3.5751706462542923
+   },
+   "measure_seconds": 90.5
+  },
+  {
+   "id": "M08",
+   "text": "signal-region error 12.4 (disc), 7.8 (ring) and 10.4 (bar) times below GS at the worse of two starts; efficiency 0.181 to 0.184 against 0.963 to 0.992",
+   "seeds": "2 starts",
+   "source": "tests/methods/baseline/test_m08_mraf.py",
+   "numbers": {
+    "ratio_disc": [
+     12.392378808565764,
+     16.64747604898823
+    ],
+    "ratio_ring": [
+     8.026057777610227,
+     7.812848546208369
+    ],
+    "ratio_line": [
+     13.884251245326999,
+     10.367801717572272
+    ],
+    "efficiency_mraf": [
+     0.18333689449392898,
+     0.18428005866260905,
+     0.18250262660246058,
+     0.18225074204184336,
+     0.18180648693562268,
+     0.1814540621910467
+    ],
+    "efficiency_gs": [
+     0.9803440222295878,
+     0.9710815941848722,
+     0.9790723262234248,
+     0.963214628856603,
+     0.991800249700138,
+     0.9883139635840629
+    ]
+   },
+   "measure_seconds": 99.9
+  },
+  {
+   "id": "M09",
+   "text": "uniformity 0.9994 and 0.9992 (efficiency 0.66 and 0.65); 119 quasi-periodic traps at 0.023 percent rms",
+   "seeds": "2 and 1",
+   "source": "tests/methods/optim/test_m09_direct_search.py",
+   "numbers": {
+    "uniformity": [
+     0.9994338706203654,
+     0.9992450778680523
+    ],
+    "efficiency": [
+     0.6597808805070793,
+     0.6548795154541531
+    ],
+    "quasi_rel_std_percent": 0.022801463032239903,
+    "quasi_traps": 119
+   },
+   "measure_seconds": 61.9
+  },
+  {
+   "id": "M10",
+   "text": "analytic gradient within 2.5e-06 of finite differences; square lattice error 0.55 and 0.51 percent",
+   "seeds": "2",
+   "source": "tests/methods/optim/test_m10_cg.py",
+   "numbers": {
+    "gradient_worst_rel_error": 2.468867248069335e-06,
+    "gradient_errors": [
+     1.7552376417839628e-07,
+     8.493172314369703e-08,
+     2.0168779635616124e-06,
+     2.468867248069335e-06
+    ],
+    "lattice_error_percent": [
+     0.5522240416025727,
+     0.5142732066276713
+    ]
+   },
+   "measure_seconds": 33.5
+  },
+  {
+   "id": "M11",
+   "text": "relative standard deviation 2.53, 2.46 and 2.26 percent against 17.78, 17.98 and 18.82 for GS at 30 iterations",
+   "seeds": "3",
+   "source": "tests/methods/optim/test_m11_wirtinger_adam.py",
+   "numbers": {
+    "adam_rel_std": [
+     2.5348163860667414,
+     2.461254070579573,
+     2.261894501875281
+    ],
+    "gs_rel_std": [
+     17.784699138022706,
+     17.983047728198652,
+     18.824024954392623
+    ]
+   },
+   "measure_seconds": 8.6
+  },
+  {
+   "id": "M12",
+   "text": "emulated camera loop: open-loop 20.9 and 20.4 percent to 0.84 and 1.07 percent in 20 iterations; 24.3 and 23.6 percent to 1.05 and 0.74 percent in three phase-fixed steps",
+   "seeds": "2",
+   "source": "tests/methods/control/test_m12_closed_loop.py",
+   "numbers": {
+    "nogrette_open_loop": [
+     20.91031372549654,
+     20.366675119980155
+    ],
+    "nogrette_closed": [
+     0.8417270932400824,
+     1.074767341347181
+    ],
+    "kim_open_loop": [
+     24.346523926372438,
+     23.629872242400925
+    ],
+    "kim_closed": [
+     1.0526968027851868,
+     0.7412295193071246
+    ]
+   },
+   "measure_seconds": 24.6
+  },
+  {
+   "id": "M13",
+   "text": "error 0.241 (efficiency 0.535) against 1.382 (0.507) for M10 without the device model, large disc on the crosstalk device",
+   "seeds": "1",
+   "source": "tests/methods/optim/test_m13_crosstalk_cg.py",
+   "numbers": {
+    "m13_error": 0.24052748184427322,
+    "m13_efficiency": 0.5351826590600368,
+    "m10_error": 1.3815438444772867,
+    "m10_efficiency": 0.5068204784800376
+   },
+   "measure_seconds": 39.3
+  },
+  {
+   "id": "M14",
+   "text": "worst per-mode relative error 0.002 [0.001, 0.002] over Noll modes 4 to 11",
+   "seeds": "3",
+   "source": "tests/methods/control/test_m14_zernike.py",
+   "numbers": {
+    "worst_relative_error": [
+     0.0019311178712927135,
+     0.0018793851595074883,
+     0.0012487462283712928
+    ]
+   },
+   "measure_seconds": 40.7
+  },
+  {
+   "id": "M15",
+   "text": "ring phase winds by 2 pi l (winding error below the 1e-9 rad of the arithmetic) with a maximum error of 0.033 [0.028, 0.060] rad (isolated vortices of charge 1, 2, 3 and -2)",
+   "seeds": "2 per charge",
+   "source": "tests/methods/control/test_m15_vortex.py",
+   "numbers": {
+    "max_error": [
+     0.03888840360426903,
+     0.03888840360426893,
+     0.027970417912011047,
+     0.027970417912011047,
+     0.05971090696997283,
+     0.059710906969973054,
+     0.027970417912011047,
+     0.027970417912011047
+    ],
+    "winding_error": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "measure_seconds": 3.1
+  },
+  {
+   "id": "M16",
+   "text": "0 path crossings in 60 loadings; moving traps keep 0.767 [0.747, 0.792] of their mean intensity (worst moving trap of each of 5 loadings)",
+   "seeds": "60 loadings",
+   "source": "tests/methods/control/test_m16_rearrangement.py",
+   "numbers": {
+    "crossings": 0,
+    "worst_ratio": [
+     0.7668961200276834,
+     0.7474184097006978,
+     0.7664062894989587,
+     0.7916354573764218,
+     0.7799308101923471
+    ]
+   },
+   "measure_seconds": 48.2
+  },
+  {
+   "id": "M17",
+   "text": "three-plane network refined by M19: median accuracy ratio 1.140 (quartiles 1.102 and 1.160) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
+   "seeds": "162 volumes",
+   "source": "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json",
+   "numbers": {
+    "median": 1.140030806202326,
+    "q1": 1.1021964864718425,
+    "q3": 1.1603704751445811,
+    "held_out_n": 162
+   },
+   "measure_seconds": 0.0
+  },
+  {
+   "id": "M18",
+   "text": "signal-region error 0.0204 (disc), 0.0179 (ring) and 0.0221 (line) against 0.250, 0.188 and 0.223 for MRAF from a random start (the better of two); baked size: 0.0259 (disc) and 0.0171 (ring) against 0.266 and 0.228",
+   "seeds": "2 and 1",
+   "source": "tests/methods/optim/test_m18_ot_mraf.py",
+   "numbers": {
+    "live_disc_ot": 0.02039334484324671,
+    "live_ring_ot": 0.01785516116600377,
+    "live_line_ot": 0.022139847764830467,
+    "live_disc_random": [
+     0.24980241323691935,
+     0.2730069938450899
+    ],
+    "live_ring_random": [
+     0.19181199266187596,
+     0.18753752845817273
+    ],
+    "live_line_random": [
+     0.25010895001068495,
+     0.222513687384101
+    ],
+    "baked_disc_ot": 0.025932431354748348,
+    "baked_ring_ot": 0.01713845173592529,
+    "baked_disc_random": [
+     0.26555504851047224
+    ],
+    "baked_ring_random": [
+     0.2283186128907963
+    ]
+   },
+   "measure_seconds": 47.2
+  },
+  {
+   "id": "M19",
+   "text": "plane means over overall mean 0.938, 0.987 and 1.075 and 0.926, 1.034 and 1.039 on three planes",
+   "seeds": "2",
+   "source": "tests/methods/baseline/test_m19_multiplane.py",
+   "numbers": {
+    "plane_ratios": [
+     [
+      0.9383536890274592,
+      0.9868420397556136,
+      1.074804271216927
+     ],
+     [
+      0.9264399611251415,
+      1.034203953512404,
+      1.039356085362454
+     ]
+    ]
+   },
+   "measure_seconds": 47.3
+  },
+  {
+   "id": "BS-4",
+   "text": "95th percentile of the relative standard deviation 3.947 against 6.192 for M07 (1.57 times) over a 200-sample aberration ensemble; efficiency 0.7047 against 0.7181; pointing errors 1.04 times",
+   "seeds": "1",
+   "source": "tests/methods/beyond/test_b4_robust.py",
+   "numbers": {
+    "sigma_p95_b4": 3.9468413317411395,
+    "sigma_p95_m07": 6.19173729842025,
+    "ratio": 1.5687829274071121,
+    "efficiency_b4": 0.704693392540388,
+    "efficiency_m07": 0.7181309369122018,
+    "pointing_ratio": 1.0416727093360496
+   },
+   "measure_seconds": 76.3
+  },
+  {
+   "id": "BS-5",
+   "text": "hypervolume 0.8190 against 0.8018 for the union of the M04, M05, M06 and M09 points; 7 front points dominate M04 and 8 dominate M05; front built in 17 seconds",
+   "seeds": "1",
+   "source": "tests/methods/beyond/test_b5_pareto.py",
+   "numbers": {
+    "hypervolume": 0.8190009055161342,
+    "hypervolume_base": 0.8017842240161852,
+    "dominating_m04": 7,
+    "dominating_m05": 8,
+    "front_seconds": 17.473678599999403
+   },
+   "measure_seconds": 40.1
+  }
+ ]
+}
