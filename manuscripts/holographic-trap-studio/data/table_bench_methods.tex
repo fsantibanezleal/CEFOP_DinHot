@@ -1,5 +1,25 @@
 \begin{table}[p]\centering\footnotesize
 \caption{Benchmark, per method: medians over the point-trap geometries the method ran on (of 6) at 100 iterations with the default parameters, on the ideal device and on the C08 device. $\sigma$ relative standard deviation (\%), $e$ efficiency, time wall-clock seconds under shared load.}\label{tab:benchmethods}
 \begin{tabular}{@{}l l r r r r r r@{}}\toprule Id & Tier & Geometries & $\sigma$ ideal & $e$ ideal & time (s) & $\sigma$ C08 & $e$ C08\\\midrule
-M01 & Classical & 5 & 106 & 0.426 & 0.027 & 87 & 0.326\\
+M01 & Classical & 6 & 136 & 0.399 & 0.0082 & 175 & 0.267\\
+M02 & Classical & 6 & 31 & 0.722 & 0.01 & 49 & 0.478\\
+M03 & Classical & 6 & 78 & 0.016 & 0.098 & 89 & 0.013\\
+M04 & Classical & 6 & 14 & 0.799 & 1.8 & 26 & 0.523\\
+M05 & Classical & 6 & 10 & 0.798 & 1.6 & 24 & 0.514\\
+M06 & Classical & 6 & 0.3 & 0.790 & 1.6 & 26 & 0.518\\
+M07 & State of the art & 5 & 0.012 & 0.751 & 1.2 & 26 & 0.503\\
+M08 & State of the art & 0 & n/a & n/a & n/a & n/a & n/a\\
+M09 & Classical & 6 & 0.059 & 0.642 & 2.6e+02 & 21 & 0.431\\
+M10 & State of the art & 6 & 2.6 & 0.751 & 1.7 & 24 & 0.486\\
+M11 & State of the art & 6 & 1.2 & 0.776 & 1.1 & 13 & 0.511\\
+M12 & State of the art & 2 & 19 & 0.822 & 8.8 & 30 & 0.592\\
+M13 & State of the art & 5 & 2.2 & 0.737 & 2 & 17 & 0.485\\
+M14 & Classical & 6 & 0.94 & 0.742 & 0.89 & 27 & 0.511\\
+M18 & State of the art & 0 & n/a & n/a & n/a & n/a & n/a\\
+M19 & Classical & 1 & 17 & 0.892 & 21 & n/a & n/a\\
+BS-1 & Beyond & 5 & $<$0.001 & 0.751 & 53 & 64 & 0.296\\
+BS-2 & Beyond & 6 & $<$0.001 & 0.756 & 3.5 & 21 & 0.503\\
+BS-3 & Beyond & 6 & 0.006 & 0.754 & 1.6 & 21 & 0.503\\
+BS-4 & Beyond & 5 & 0.4 & 0.744 & 34 & 21 & 0.498\\
+BS-5 & Beyond & 6 & 0.28 & 0.774 & 25 & 21 & 0.512\\
 \bottomrule\end{tabular}\end{table}

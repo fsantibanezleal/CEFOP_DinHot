@@ -315,8 +315,10 @@ their cases measure them. Table~\ref{tab:benchmark} names, per geometry and devi
 Table~\ref{tab:benchmethods} gives the medians of every method over the \benchNPoint{} point-trap geometries, and Fig.~\ref{fig:bench} every cell.
 
 On the ideal device the best method of a geometry is classical on \benchWinsIdealClassical, state of the art on \benchWinsIdealSota{} and beyond on
-\benchWinsIdealBeyond{} of the \benchGeoIdeal{} geometries; on the C08 device the counts are \benchWinsDeviceClassical, \benchWinsDeviceSota{} and
-\benchWinsDeviceBeyond{} of \benchGeoDevice{} (the multi-plane geometry has no device rows). Over the point-trap geometries the lowest median spread
+\benchWinsIdealBeyond{} of the \benchGeoIdeal{} geometries, and on \benchTiesIdeal{} the best methods of two or more tiers tie below the resolution of
+the file (0.001 percent); on the C08 device the counts are \benchWinsDeviceClassical, \benchWinsDeviceSota{} and \benchWinsDeviceBeyond{} of
+\benchGeoDevice{} (the multi-plane geometry has no device rows), with \benchTiesDevice{} ties. B2 enters these cells as its static frame, a
+phase-locked weighted GS, and not as a sequence, which is the quantity of its claim (Section~\ref{sec:beyond}). Over the point-trap geometries the lowest median spread
 on the ideal device is that of \benchBestIdeal{} (\benchBestIdealSigma{} percent at a median efficiency of \benchBestIdealEff), and on the C08 device
 that of \benchBestDevice{} (\benchBestDeviceSigma{} percent at \benchBestDeviceEff). The medians of the \benchSpreadIdealN{} methods that keep at least
 half of the best efficiency span \benchSpreadIdealLow{} to \benchSpreadIdealHigh{} percent on the ideal device and \benchSpreadDeviceLow{} to
