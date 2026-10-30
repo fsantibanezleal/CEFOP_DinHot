@@ -11,7 +11,8 @@ package of its own. They run in `.venv-pipeline` (`scripts/setup.sh` or `scripts
 - `pipeline/io/`: `contract.py` (contract 1), `formats.py` (readers and writers), `schema.py` (types)
 - `pipeline/core/`: `rng.py` (seeded determinism), `trace.py` and `manifest.py` (contract 2), `gate.py` (the lane
   gate), `expect.py` (the expected ranges every result is checked against)
-- `pipeline/model/`: the engine (the example is SIR)
+- `pipeline/model/`: the holography engine (`holo/`: the forward models, the device model, the methods of the ladder and the
+  learned slots)
 - `pipeline/stages/`: preprocess, feature extraction, train, infer, evaluate, export
 - `pipeline/cases/`: the cases, each with its bilingual title, category, expected band and expected ranges
 

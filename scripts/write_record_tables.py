@@ -89,7 +89,9 @@ def existing_rows(text: str) -> list[str]:
 
 def merge(generated: list[str], existing: list[str]) -> list[str]:
     """The generated rows, plus any stated row of a case the measured values cannot rebuild (kept as written), by case."""
-    case = lambda line: line.strip("|").split("|")[0].strip()
+    def case(line: str) -> str:
+        return line.strip("|").split("|")[0].strip()
+
     have = {case(r) for r in generated}
     return sorted(generated + [r for r in existing if case(r) not in have], key=case)
 
