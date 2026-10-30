@@ -81,3 +81,29 @@ def test_acceptance_two_times_lower_rel_std_than_phase_fixed_wgs_on_the_crosstal
     e, sig = on_device(res.phi, s, traps)
     assert sig <= sig_ref / 2.0, (sig, base)
     assert e >= 0.9 * e_ref, (e, base)
+
+
+def test_adversarial_a_run_that_winds_up_returns_its_best_admissible_iterate():
+    """Must refute: B1 returning a runaway. On the benchmark's square lattice on the C08 device, seed 1 winds up (its own
+    history shows the loss rising and the efficiency falling to a few percent, measured 2026-10-30); the safeguard returns the
+    best iterate that keeps EFFICIENCY_FLOOR of the warm start's efficiency, so the result is never worse than the start."""
+    from pipeline.benchmark import protocol
+    from pipeline.stages import infer
+
+    rec = protocol._record("G1", True, 1, False)
+    rec = {**rec, "device": {**rec["device"], "flicker_rad": 0.0}}
+    out = infer.run_method(rec, "B1", budget=Budget(10))
+    effs = [h["efficiency"] for h in out.history]
+    assert min(effs) < 0.25 * out.meta["start_efficiency"]           # the run did wind up: the planted condition holds
+    assert out.meta["efficiency_floor"] == pytest.approx(B1.EFFICIENCY_FLOOR * out.meta["start_efficiency"])
+    assert out.score["efficiency"] >= 0.95 * out.meta["efficiency_floor"]
+    assert out.score["rel_std_pct"] <= 1.05 * out.meta["start_rel_std"]
+    k = out.meta["best_iteration"]
+    assert k == 0 or out.history[k - 1]["efficiency"] >= out.meta["efficiency_floor"]
+
+
+def test_a_converging_run_returns_an_iterate_of_its_tail():
+    s = make_setup(256)
+    traps = task_10x10(s)
+    res = B1.run(s, Target.from_traps(traps), device=DEVICE, budget=Budget(8), rng=Rng(1))
+    assert res.meta["best_iteration"] >= 6 and res.meta["efficiency_floor"] > 0

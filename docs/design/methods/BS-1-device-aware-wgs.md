@@ -53,6 +53,14 @@ that the few steps per iteration lack (a one-shot fit would need many more steps
 In the code, per outer iteration (`b1_device_wgs.py` lines 77 to 86): the trap fields on the device, the weight update, `cost.target = sum|v|^2 * (w a)^2 / sum (w a)^2`, then
 `C.cg_minimize(cost.value_grad, phi, steps)`. The start is `warm` iterations of ideal-model weighted GS from the SR superposition (lines 64 to 67), or `init`.
 
+Safeguard (added 2026-10-30). The weight update is an integrator, and three CG steps per outer iteration may not follow it on a device whose trap response is quantized and
+blurred. On the benchmark's square lattice on the C08 device one seed in two ran away inside B1's own model: the loss rose from 0.044 to 0.53 between outer iterations 2 and 4, the
+weights spread to a max-to-min ratio of about 1000 and the efficiency fell from 0.50 to 0.03. B1 now returns its best iterate, the warm start included: the phase of lowest relative standard
+deviation on its device model among the iterates that keep at least `EFFICIENCY_FLOOR` (0.9) of the warm start's efficiency, the ten percent of the ladder criterion. The history still holds
+every iterate, and `meta` names the returned one (`best_iteration`), the floor and the start's spread and efficiency. A run that converges returns its last iterate or one of its tail
+(`test_a_converging_run_returns_an_iterate_of_its_tail`); a run that winds up returns an admissible iterate no worse than its start
+(`test_adversarial_a_run_that_winds_up_returns_its_best_admissible_iterate`).
+
 ## Defaults
 
 | Parameter | Default | Where | Source of the value |
@@ -61,6 +69,7 @@ In the code, per outer iteration (`b1_device_wgs.py` lines 77 to 86): the trap f
 | `warm` | 12 ideal-model GSW iterations | line 48 | Kim's $N$ = 12 (the number of WGS iterations before the phase freeze) |
 | `DEFAULT_OUTER` | 4 | line 49 | the budget of the acceptance test (`Budget(B1.DEFAULT_OUTER)`); `run` itself takes the number of outer iterations from `budget.iterations` and does not read the constant |
 | initial efficiency level of `TrapCost` | 0.9 | line 68 | overwritten at each iteration by the current efficiency (line 81), so it has no effect |
+| `EFFICIENCY_FLOOR` | 0.9 of the warm start's efficiency | `b1_device_wgs.py` | the ladder criterion's bound (efficiency at most 10 percent lower): an iterate below it is never returned |
 
 ## Complexity and lane
 
@@ -101,9 +110,9 @@ Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, m
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
-| C08 | 30 | 0.655 (0.651 to 0.662) | 0.863 (0.847 to 0.886) | 6.49 (5.92 to 7.05) |
+| C08 | 30 | 0.655 (0.651 to 0.662) | 0.862 (0.847 to 0.887) | 6.5 (5.91 to 7.04) |
 
-On C08 the mean relative standard deviation is 6.49 percent for B1 against 13.2 for M07 (ratio 2.0, computed from the committed file, 2026-10-29) at 0.97 of M07's efficiency (0.655 against 0.678):
+On C08 the mean relative standard deviation is 6.50 percent for B1 against 13.2 for M07 (ratio 2.0, computed from the committed file, 2026-10-30, after the safeguard) at 0.97 of M07's efficiency (0.655 against 0.678):
 the factor of two holds on the harder device, which has the 4-bit quantizer and the flicker that the optimizer models only as straight-through or drops; the factor is 2.0 there (2.2 in notebook 03-04 over two seeds and four flicker draws) against 15.9 in the acceptance test on its seed.
 
 ## Limits and failure modes

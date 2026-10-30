@@ -27,6 +27,14 @@ Start: ``warm`` (default 12, Kim's N) iterations of ideal-model weighted GS from
 ``budget.iterations`` outer iterations of ``steps`` (default 3) CG steps each. Cost per CG step: one forward and one
 adjoint evaluation of the upsampled model (about 3x3 the pixels of the plain FFT). ``init`` overrides the warm start.
 Reading the traps off the device's focal field uses the nearest FFT bin (traps on bins, z = 0, no vortex).
+
+Safeguard (2026-10-30). The multiplicative weight update is an integrator, and three CG steps per outer iteration may not
+follow it on a device whose trap response is quantized and blurred: on the benchmark's square lattice on the C08 device one
+seed in two ran away (the loss rose from 0.044 to 0.53 between iterations 2 and 4, the weights spread to a ratio of about
+1000 and the efficiency fell from 0.50 to 0.03). B1 therefore returns its best iterate, the warm start included: the phase of
+lowest relative standard deviation on its own device model among the iterates that keep at least ``EFFICIENCY_FLOOR`` of the
+warm start's efficiency, the ten percent of the claim's own criterion. The history keeps every iterate; ``meta`` names the
+returned one (``best_iteration``) and the floor. A run that converges returns its last iterate or one close to it.
 Defaults and measured numbers: tests ``test_b1_device_wgs.py`` and the E3 report.
 """
 from __future__ import annotations
@@ -47,6 +55,7 @@ SPEC = MethodSpec(id="B1", name="Device-aware weighted GS", family="beyond", lan
 DEFAULT_STEPS = 3
 DEFAULT_WARM = 12
 DEFAULT_OUTER = 4
+EFFICIENCY_FLOOR = 0.9  # an iterate below this share of the warm start's efficiency is never returned (BS-1's 10 percent)
 
 
 def run(setup: Setup, target: Target, *, device: Device | None = None, budget: Budget, rng: Rng,
@@ -70,7 +79,10 @@ def run(setup: Setup, target: Target, *, device: Device | None = None, budget: B
     w = np.ones(len(traps))
     history: list = []
     evals = 0
-    v = None
+    v, _ = cost.fwd.fields(phi)
+    start = C.trap_history(0, v, traps.weight, t0)
+    floor = EFFICIENCY_FLOOR * start["efficiency"]
+    best = (phi.copy(), v, 0, start["rel_std"])
     for it in range(1, budget.iterations + 1):
         if C.expired(deadline):
             break
@@ -83,9 +95,12 @@ def run(setup: Setup, target: Target, *, device: Device | None = None, budget: B
         phi = res.x
         evals += res.evaluations
         v, _ = cost.fwd.fields(phi)
-        history.append(C.trap_history(it, v, traps.weight, t0, loss=res.f))
-    if v is None:
-        v, _ = cost.fwd.fields(phi)
+        entry = C.trap_history(it, v, traps.weight, t0, loss=res.f)
+        history.append(entry)
+        if entry["efficiency"] >= floor and entry["rel_std"] < best[3]:
+            best = (phi.copy(), v, it, entry["rel_std"])
+    phi, v, best_it, _ = best
     return Result(phi=np.mod(phi, 2.0 * np.pi), history=history, fields=v,
                   meta={"steps": steps, "warm": warm, "evaluations": evals, "weights": w.tolist(),
-                        "device_aware": device is not None})
+                        "device_aware": device is not None, "best_iteration": best_it, "efficiency_floor": floor,
+                        "start_rel_std": start["rel_std"], "start_efficiency": start["efficiency"]})
