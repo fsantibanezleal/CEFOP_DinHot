@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="The eleven contracts of the catalog, who produces and who consumes each">
+  <!-- Hand-authored; shell tokens only; both languages in one file (ADR-0058). -->
+  <style>
+    .arch-svg text { font-family: var(--font-sans); }
+    .arch-svg .mono { font-family: var(--font-mono); }
+    .arch-svg .pn { fill: var(--color-surface); stroke: var(--color-border); stroke-width: 1.2; }
+    .arch-svg .bx { fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1; }
+    .arch-svg .on { fill: var(--color-accent-soft); stroke: var(--color-accent); stroke-width: 1.2; }
+    .arch-svg .ok { fill: var(--color-surface-2); stroke: var(--color-good); stroke-width: 1.2; }
+    .arch-svg .wn { fill: var(--color-surface-2); stroke: var(--color-warn); stroke-width: 1.2; }
+    .arch-svg .mg { fill: var(--color-surface-2); stroke: var(--color-magenta); stroke-width: 1.2; }
+    .arch-svg .ln-off { fill: none; stroke: var(--color-magenta); stroke-width: 1.4; }
+    .arch-svg .ln-rep { fill: none; stroke: var(--color-good); stroke-width: 1.4; }
+    .arch-svg .ln-live { fill: none; stroke: var(--color-accent); stroke-width: 1.4; }
+    .arch-svg .ttl { fill: var(--color-fg); font-size: 15px; font-weight: 700; }
+    .arch-svg .h { fill: var(--color-fg); font-size: 12px; font-weight: 700; }
+    .arch-svg .it { fill: var(--color-fg); font-size: 11px; }
+    .arch-svg .itb { fill: var(--color-fg); font-size: 11px; font-weight: 600; }
+    .arch-svg .sub { fill: var(--color-fg-subtle); font-size: 10.5px; }
+    .arch-svg .cd { fill: var(--color-fg-subtle); font-size: 10px; }
+    .arch-svg .acc { fill: var(--color-accent); font-size: 11px; font-weight: 600; }
+    .arch-svg .t-off { fill: var(--color-magenta); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .t-rep { fill: var(--color-good); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .t-live { fill: var(--color-accent); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .flow { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.4; }
+    .arch-svg .dash { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.4; stroke-dasharray: 5 4; }
+  </style>
+  <defs>
+    <marker id="dh5-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 z" fill="var(--color-fg-faint)"/>
+    </marker>
+  </defs>
+  <text class="ttl l-en" x="20" y="28">The data contracts: eleven catalog rows, who writes each and who reads it</text>
+  <text class="ttl l-es" x="20" y="28">Los contratos de datos: once filas del catálogo, quién escribe cada una y quién la lee</text>
+  <text class="t-off l-en" x="330" y="50" text-anchor="end">PRODUCER</text>
+  <text class="t-off l-es" x="330" y="50" text-anchor="end">PRODUCTOR</text>
+  <text class="t-rep l-en" x="450" y="50" text-anchor="middle">DOCUMENT</text>
+  <text class="t-rep l-es" x="450" y="50" text-anchor="middle">DOCUMENTO</text>
+  <text class="t-live l-en" x="572" y="50">CONSUMER</text>
+  <text class="t-live l-es" x="572" y="50">CONSUMIDOR</text>
+  <text class="it l-en" x="330" y="77" text-anchor="end">cases.json, checked by io/contract.py</text>
+  <text class="it l-es" x="330" y="77" text-anchor="end">cases.json, validado por io/contract.py</text>
+  <path class="flow" d="M338,72 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="mg" x="355" y="60" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="77" text-anchor="middle">params-record</text>
+  <path class="flow" d="M547,72 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it l-en" x="572" y="77">stages/preprocess.py · engine client</text>
+  <text class="it l-es" x="572" y="77">stages/preprocess.py · cliente del motor</text>
+  <text class="it" x="330" y="108" text-anchor="end">core/manifest.py</text>
+  <path class="flow" d="M338,103 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="ok" x="355" y="91" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="108" text-anchor="middle">case-index</text>
+  <path class="flow" d="M547,103 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it" x="572" y="108">api/artifacts.ts · copy-data.mjs</text>
+  <text class="it" x="330" y="139" text-anchor="end">core/manifest.py</text>
+  <path class="flow" d="M338,134 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="ok" x="355" y="122" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="139" text-anchor="middle">case-manifest</text>
+  <path class="flow" d="M547,134 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it l-en" x="572" y="139">api/artifacts.ts · the workbench</text>
+  <text class="it l-es" x="572" y="139">api/artifacts.ts · la mesa de trabajo</text>
+  <text class="it l-en" x="330" y="170" text-anchor="end">core/trace.py, at most 256 KiB</text>
+  <text class="it l-es" x="330" y="170" text-anchor="end">core/trace.py, a lo más 256 KiB</text>
+  <path class="flow" d="M338,165 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="ok" x="355" y="153" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="170" text-anchor="middle">trace</text>
+  <path class="flow" d="M547,165 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it l-en" x="572" y="170">the workbench views, replay lane</text>
+  <text class="it l-es" x="572" y="170">las vistas de la mesa, carril de reproducción</text>
+  <text class="it" x="330" y="201" text-anchor="end">stages/benchmark.py</text>
+  <path class="flow" d="M338,196 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="ok" x="355" y="184" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="201" text-anchor="middle">benchmark-results</text>
+  <path class="flow" d="M547,196 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it l-en" x="572" y="201">the Benchmark page · Pareto view</text>
+  <text class="it l-es" x="572" y="201">la página Benchmark · vista de Pareto</text>
+  <text class="it l-en" x="330" y="232" text-anchor="end">stages/train.py (in progress)</text>
+  <text class="it l-es" x="330" y="232" text-anchor="end">stages/train.py (en curso)</text>
+  <path class="flow" d="M338,227 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="on" x="355" y="215" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="232" text-anchor="middle">cgh-net</text>
+  <path class="flow" d="M547,227 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it l-en" x="572" y="232">lib/ort.ts, in the browser</text>
+  <text class="it l-es" x="572" y="232">lib/ort.ts, en el navegador</text>
+  <text class="it l-en" x="330" y="263" text-anchor="end">stages/train.py (in progress)</text>
+  <text class="it l-es" x="330" y="263" text-anchor="end">stages/train.py (en curso)</text>
+  <path class="flow" d="M338,258 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="on" x="355" y="246" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="263" text-anchor="middle">warmstart-model</text>
+  <path class="flow" d="M547,258 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it l-en" x="572" y="263">lib/ort.ts · starts the live M07 run</text>
+  <text class="it l-es" x="572" y="263">lib/ort.ts · inicia la corrida M07 en vivo</text>
+  <text class="it l-en" x="330" y="294" text-anchor="end">stages/evaluate.py (in progress)</text>
+  <text class="it l-es" x="330" y="294" text-anchor="end">stages/evaluate.py (en curso)</text>
+  <path class="flow" d="M338,289 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="on" x="355" y="277" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="294" text-anchor="middle">model-metrics</text>
+  <path class="flow" d="M547,289 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it l-en" x="572" y="294">the Benchmark page</text>
+  <text class="it l-es" x="572" y="294">la página Benchmark</text>
+  <text class="it" x="330" y="325" text-anchor="end">stages/engine_reference.py</text>
+  <path class="flow" d="M338,320 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="wn" x="355" y="308" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="325" text-anchor="middle">engine-reference</text>
+  <path class="flow" d="M547,320 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it" x="572" y="325">engine/holo/*.parity.test.ts</text>
+  <text class="it" x="330" y="356" text-anchor="end">core/readiness.py</text>
+  <path class="flow" d="M338,351 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="ok" x="355" y="339" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="356" text-anchor="middle">readiness</text>
+  <path class="flow" d="M547,351 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it" x="572" y="356">readiness/ · copy-data.mjs</text>
+  <text class="it l-en" x="330" y="387" text-anchor="end">app/ (dormant)</text>
+  <text class="it l-es" x="330" y="387" text-anchor="end">app/ (inactiva)</text>
+  <path class="flow" d="M338,382 H352" marker-end="url(#dh5-arrow)"/>
+  <rect class="bx" x="355" y="370" width="190" height="25" rx="6"/>
+  <text class="itb mono" x="450" y="387" text-anchor="middle">api</text>
+  <path class="flow" d="M547,382 H561" marker-end="url(#dh5-arrow)"/>
+  <text class="it l-en" x="572" y="387">nothing at run time</text>
+  <text class="it l-es" x="572" y="387">nadie en tiempo de ejecución</text>
+  <rect class="mg" x="20" y="410" width="14" height="12" rx="3"/>
+  <text class="sub l-en" x="40" y="420">contract 1: what enters the pipeline</text>
+  <text class="sub l-es" x="40" y="420">contrato 1: lo que entra al pipeline</text>
+  <rect class="ok" x="250" y="410" width="14" height="12" rx="3"/>
+  <text class="sub l-en" x="270" y="420">contract 2: committed for the web</text>
+  <text class="sub l-es" x="270" y="420">contrato 2: versionado para la web</text>
+  <rect class="on" x="460" y="410" width="14" height="12" rx="3"/>
+  <text class="sub l-en" x="480" y="420">the two learned model slots</text>
+  <text class="sub l-es" x="480" y="420">los dos modelos aprendidos</text>
+  <rect class="wn" x="670" y="410" width="14" height="12" rx="3"/>
+  <text class="sub l-en" x="690" y="420">a test input, not a run-time document</text>
+  <text class="sub l-es" x="690" y="420">entrada de pruebas, no documento</text>
+  <text class="sub l-en" x="20" y="444">every row has one schema file, an example, a producer test, a consumer test and a missing-data behavior</text>
+  <text class="sub l-es" x="20" y="444">cada fila tiene un archivo de esquema, un ejemplo, una prueba de productor, una de consumidor y un comportamiento ante datos ausentes</text>
+</svg>

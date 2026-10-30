@@ -1,0 +1,62 @@
+{
+  "params-record": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/params-record.schema.json",
+    "sha256": "f55595ef2f7233d4717a8839f635da061a22e491488e1de599e40fe4ff170086"
+  },
+  "case-index": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/case-index.schema.json",
+    "sha256": "6e06c0ed4a7b0a8681de87213202f0dc3e32ab6c9b4051febd4d55800ffca97e"
+  },
+  "case-manifest": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/case-manifest.schema.json",
+    "sha256": "135a704e07e6cd58bf283691c5cdb4b1304628455867ced2c4a7aa66cb25d1e3"
+  },
+  "trace": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/trace.schema.json",
+    "sha256": "4cbf13625708994211c5fc5b3701351cad3fc3cc1013975220c144fd64c69701"
+  },
+  "benchmark-results": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/benchmark-results.schema.json",
+    "sha256": "1aad5fa721fb25a6c04c4d0ea2c84fa79eb569b53f9526d4687ed12362659c5e"
+  },
+  "cgh-net": {
+    "version": "1.0.1",
+    "schema": "docs/contracts/schemas/model-card.schema.json",
+    "sha256": "fbf5bb1cfce76201e3ba2cd41e13facdf990bf413f4d9b5695744c45c144cc34"
+  },
+  "warmstart-model": {
+    "version": "1.0.1",
+    "schema": "docs/contracts/schemas/model-card.schema.json",
+    "sha256": "fbf5bb1cfce76201e3ba2cd41e13facdf990bf413f4d9b5695744c45c144cc34"
+  },
+  "model-metrics": {
+    "version": "1.0.1",
+    "schema": "docs/contracts/schemas/model-metrics.schema.json",
+    "sha256": "b611aaae257d6f22ca9960911a9307a5c77184c174607204c365141cad0d4b48"
+  },
+  "model-evidence": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/model-evidence.schema.json",
+    "sha256": "c6f97b2a1432ccffc47f7e51b5298eb053111aa4beeeff30e4dcb0a1086000e1"
+  },
+  "engine-reference": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/engine-reference.schema.json",
+    "sha256": "c02fc6503ecda3da702d76c4168d0f219fd31c5e172430b7c126ea297fe37b6f"
+  },
+  "readiness": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/readiness.schema.json",
+    "sha256": "de86ae161c0f333c11b95884ef07fd3e7f59b54f74d513cb823a093889f76d5a"
+  },
+  "api": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/api.openapi.json",
+    "sha256": "6b15af5a61833cf759c5129f7af64354c407f847bb327c6db72bbd94f63f8a47"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "model-evidence.schema.json",
+  "title": "ModelEvidence",
+  "description": "Catalog row model-evidence 1.0.0: the evidence behind model-metrics, written by data-pipeline/pipeline/stages/train.py and evaluate.py under data/derived/models/: a training record (<slot>-training.json), a rejected-candidate record (<slot>-rejected.json, <slot>-2d-rejected.json) or the per-target evaluation detail (evaluation-detail.json, keyed by slot). The records are free-form beyond these keys: they hold the configuration, the held-out hash and the measured values a reader re-checks.",
+  "type": "object",
+  "minProperties": 1,
+  "anyOf": [
+    {
+      "required": [
+        "slot"
+      ],
+      "properties": {
+        "slot": {
+          "enum": [
+            "cgh-net",
+            "warmstart-model"
+          ]
+        },
+        "status": {
+          "type": "string"
+        },
+        "heldout_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    {
+      "properties": {
+        "cgh-net": {
+          "type": "object"
+        },
+        "warmstart-model": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    }
+  ]
+}

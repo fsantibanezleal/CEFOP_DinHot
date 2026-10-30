@@ -1,0 +1,972 @@
+{
+  "title": {
+    "en": "Scaling programmable light fields for optical trapping",
+    "es": "Escalar los campos de luz programables para el atrapamiento óptico"
+  },
+  "key_statement": {
+    "en": "Tweezer arrays now set how many qubits, the units of quantum information, a neutral-atom machine can hold, but their light is hard to keep uniform as they grow. The direction proposed is to compute, calibrate and verify that light as one measured product.",
+    "es": "Los arreglos de pinzas determinan cuántos cúbits, las unidades de información cuántica, puede sostener una máquina de átomos neutros, pero su luz es difícil de mantener uniforme al crecer. La dirección propuesta es calcular, calibrar y verificar esa luz como un solo producto medido."
+  },
+  "headline_figures": [
+    {
+      "heading": {
+        "en": "Largest published tweezer array",
+        "es": "Mayor arreglo de pinzas publicado"
+      },
+      "value": {
+        "en": "6,100",
+        "es": "6.100"
+      },
+      "unit": {
+        "en": "atoms held in about 12,000 tweezers, published in 2025",
+        "es": "átomos sostenidos en unas 12.000 pinzas, publicado en 2025"
+      },
+      "source": "tweezer-6100"
+    },
+    {
+      "heading": {
+        "en": "Trap-depth spread at that scale",
+        "es": "Dispersión de profundidad de trampa a esa escala"
+      },
+      "value": {
+        "en": "11.4",
+        "es": "11,4"
+      },
+      "unit": {
+        "en": "percent standard deviation of trap depth across the sites of that array, 2025",
+        "es": "por ciento de desviación estándar de la profundidad de trampa entre los sitios de ese arreglo, 2025"
+      },
+      "source": "tweezer-6100-full"
+    },
+    {
+      "heading": {
+        "en": "Public quantum funding in five years",
+        "es": "Financiamiento público cuántico en cinco años"
+      },
+      "value": {
+        "en": "more than 11 billion",
+        "es": "más de 11 mil millones"
+      },
+      "unit": {
+        "en": "euro committed by the European Union and its Member States over five years, 2025",
+        "es": "euros comprometidos por la Unión Europea y sus Estados miembros en cinco años, 2025"
+      },
+      "source": "eu-quantum"
+    }
+  ],
+  "pain": {
+    "key_message": {
+      "en": "As tweezer arrays grow, the light that forms them becomes harder to keep uniform and efficient, so fewer traps are usable and experiments run slower.",
+      "es": "Al crecer los arreglos de pinzas, su luz es más difícil de mantener uniforme y eficiente, así que hay menos trampas útiles y los experimentos son más lentos."
+    },
+    "paragraphs": [
+      {
+        "en": "Optical tweezers hold single atoms, molecules or cells with focused light. To hold thousands at once, a spatial light modulator shapes one laser beam into a pattern of many traps, called a phase hologram. The modulator is a liquid-crystal chip that sets the phase of light pixel by pixel. When that pattern is computed or realised poorly, some traps are deeper than others and light is lost into unwanted spots.",
+        "es": "Las pinzas ópticas sostienen átomos, moléculas o células individuales con luz enfocada. Para sostener miles a la vez, un modulador espacial de luz da a un rayo láser la forma de muchas trampas, llamada holograma de fase. El modulador es un chip de cristal líquido que fija la fase de la luz píxel por píxel. Si ese patrón se calcula o se realiza mal, algunas trampas quedan más profundas que otras y se pierde luz en puntos no deseados."
+      },
+      {
+        "en": "The clearest case is neutral-atom quantum computing. The largest published array holds over 6,100 atoms, yet trap depth varies by 11.4 percent across its sites, while a small calibrated array reached 0.3 percent. The spread therefore grows with array size, and the same papers name the light field as a limit.",
+        "es": "El caso más claro es la computación cuántica con átomos neutros. El mayor arreglo publicado sostiene más de 6.100 átomos, pero la profundidad de trampa varía 11,4 por ciento entre sus sitios, mientras un arreglo pequeño calibrado alcanzó 0,3 por ciento. La dispersión crece con el tamaño del arreglo, y los mismos artículos señalan el campo de luz como un límite."
+      }
+    ],
+    "bearers": [
+      {
+        "who": {
+          "en": "Quantum computing and simulation programs",
+          "es": "Programas de computación y simulación cuántica"
+        },
+        "cost": {
+          "en": "Sites differ in gates and imaging when trap depths differ, and only 51.2 percent of the traps of the largest array hold an atom at once.",
+          "es": "Los sitios difieren en operaciones y en imagen cuando las profundidades difieren, y solo 51,2 por ciento de las trampas del mayor arreglo tiene un átomo a la vez."
+        },
+        "measure": {
+          "en": "Atoms per array, loading probability, trap-depth spread, rearrangement time.",
+          "es": "Átomos por arreglo, probabilidad de carga, dispersión de profundidad, tiempo de reordenamiento."
+        }
+      },
+      {
+        "who": {
+          "en": "Experimental physicists running tweezer set-ups",
+          "es": "Físicos experimentales que operan montajes de pinzas"
+        },
+        "cost": {
+          "en": "Time goes into calibrating and re-optimising before each campaign; no public source measures how much.",
+          "es": "Se gasta tiempo en calibrar y reoptimizar antes de cada campaña; ninguna fuente pública mide cuánto."
+        },
+        "measure": {
+          "en": "Homogeneity of the array and position error of each trap.",
+          "es": "Homogeneidad del arreglo y error de posición de cada trampa."
+        }
+      },
+      {
+        "who": {
+          "en": "Single-molecule biophysics laboratories",
+          "es": "Laboratorios de biofísica de molécula individual"
+        },
+        "cost": {
+          "en": "Experiments are low throughput, needing tens to hundreds of replicates, and parallel traps need power that grows with their number.",
+          "es": "Los experimentos tienen bajo rendimiento y exigen decenas a cientos de réplicas, y las trampas en paralelo requieren potencia que crece con su número."
+        },
+        "measure": {
+          "en": "Data per day, replicate count, comparability across laboratories.",
+          "es": "Datos por día, número de réplicas, comparabilidad entre laboratorios."
+        }
+      },
+      {
+        "who": {
+          "en": "Neuroscience groups stimulating neuron ensembles",
+          "es": "Grupos de neurociencia que estimulan conjuntos de neuronas"
+        },
+        "cost": {
+          "en": "Heating bounds the light: two degrees after one second at full power, and intensity falls far from the bright zero-order spot.",
+          "es": "El calentamiento limita la luz: dos grados tras un segundo a plena potencia, y la intensidad cae lejos del punto brillante de orden cero."
+        },
+        "measure": {
+          "en": "Targets per hologram, off-target activation, heating.",
+          "es": "Blancos por holograma, activación fuera del blanco, calentamiento."
+        }
+      },
+      {
+        "who": {
+          "en": "Laser micro-processing groups",
+          "es": "Grupos de microprocesamiento láser"
+        },
+        "cost": {
+          "en": "A 2008 study reached about half the light in the useful beams; the missing half is energy and heat.",
+          "es": "Un estudio de 2008 llevó cerca de la mitad de la luz a los haces útiles; la mitad faltante es energía y calor."
+        },
+        "measure": {
+          "en": "Diffraction efficiency and throughput.",
+          "es": "Eficiencia de difracción y rendimiento."
+        }
+      }
+    ],
+    "figures": [
+      {
+        "heading": {
+          "en": "Spread across 12,000 sites",
+          "es": "Dispersión entre 12.000 sitios"
+        },
+        "value": {
+          "en": "11.4",
+          "es": "11,4"
+        },
+        "unit": {
+          "en": "percent standard deviation of trap depth across the sites of the largest array, 2025",
+          "es": "por ciento de desviación estándar de la profundidad de trampa entre los sitios del mayor arreglo, 2025"
+        },
+        "source": "tweezer-6100-full"
+      },
+      {
+        "heading": {
+          "en": "Spread in a small array",
+          "es": "Dispersión en un arreglo pequeño"
+        },
+        "value": {
+          "en": "0.3",
+          "es": "0,3"
+        },
+        "unit": {
+          "en": "percent relative standard deviation of intensity in a small calibrated array, 2024",
+          "es": "por ciento de desviación estándar relativa de intensidad en un arreglo pequeño calibrado, 2024"
+        },
+        "source": "ultra-precise"
+      },
+      {
+        "heading": {
+          "en": "Light budget in neuroscience",
+          "es": "Presupuesto de luz en neurociencia"
+        },
+        "value": {
+          "en": "40",
+          "es": "40"
+        },
+        "unit": {
+          "en": "milliwatts per target to stimulate 50 neurons at once, with 2 degrees Celsius of heating after one second at full power, 2018",
+          "es": "milivatios por blanco para estimular 50 neuronas a la vez, con 2 grados Celsius de calentamiento tras un segundo a plena potencia, 2018"
+        },
+        "source": "neural-ensemble"
+      },
+      {
+        "heading": {
+          "en": "Light lost in machining",
+          "es": "Luz perdida en maquinado"
+        },
+        "value": {
+          "en": "50",
+          "es": "50"
+        },
+        "unit": {
+          "en": "percent of the light reached the first-order beams in a multi-beam laser study, so the rest was lost, 2008",
+          "es": "por ciento de la luz llegó a los haces de primer orden en un estudio láser multihaz, así que el resto se perdió, 2008"
+        },
+        "source": "machining"
+      }
+    ],
+    "causes": [
+      {
+        "cause": {
+          "en": "Device non-idealities and uncorrected aberrations: phase-response error, pixel crosstalk and the bright zero-order spot",
+          "es": "Imperfecciones del dispositivo y aberraciones sin corregir: error de respuesta de fase, diafonía entre píxeles y el punto brillante de orden cero"
+        },
+        "weight": 30
+      },
+      {
+        "cause": {
+          "en": "Hologram algorithms that trade fidelity, uniformity and ghost traps against each other",
+          "es": "Algoritmos de holograma que sacrifican fidelidad, uniformidad o trampas fantasma unas contra otras"
+        },
+        "weight": 25
+      },
+      {
+        "cause": {
+          "en": "Compute and display time too long for dynamic patterns such as atom rearrangement",
+          "es": "Tiempo de cálculo y de despliegue demasiado largo para patrones dinámicos como el reordenamiento de átomos"
+        },
+        "weight": 20
+      },
+      {
+        "cause": {
+          "en": "Laser power and damage limits that cap how many traps a device can feed",
+          "es": "Límites de potencia láser y de daño que acotan cuántas trampas puede alimentar un dispositivo"
+        },
+        "weight": 15
+      },
+      {
+        "cause": {
+          "en": "No shared calibration and reporting practice, so each laboratory differs",
+          "es": "Sin una práctica común de calibración y reporte, así que cada laboratorio difiere"
+        },
+        "weight": 10
+      }
+    ]
+  },
+  "context": {
+    "key_message": {
+      "en": "Public programs pull array size up while the limits of light, devices and calibration practice push back.",
+      "es": "Los programas públicos empujan el tamaño de los arreglos hacia arriba mientras los límites de la luz, los dispositivos y la práctica de calibración empujan en contra."
+    },
+    "paragraphs": [
+      {
+        "en": "Atomic-physics teams, quantum-computing companies and their optical suppliers, biophysics and microscopy laboratories, neuroscience optics groups and ultrafast-laser machining teams all build these systems. They share a small set of devices: liquid-crystal light modulators, digital micromirror devices, acousto-optic deflectors, microlens arrays and, as an emerging option, metasurfaces.",
+        "es": "Equipos de física atómica, empresas de computación cuántica y sus proveedores, laboratorios de biofísica, grupos de neurociencia y equipos de maquinado láser construyen estos sistemas. Comparten un conjunto pequeño de dispositivos: moduladores de luz de cristal líquido, dispositivos de microespejos digitales, deflectores acusto-ópticos, arreglos de microlentes y, como opción emergente, metasuperficies."
+      },
+      {
+        "en": "Each device trades speed, efficiency, trap count and accuracy. Liquid-crystal modulators are efficient but slow, deflectors are fast but limited in trap count, and microlens arrays are massively parallel but static and limited by laser power.",
+        "es": "Cada dispositivo intercambia velocidad, eficiencia, número de trampas y exactitud. Los moduladores de cristal líquido son eficientes pero lentos, y los deflectores son rápidos pero con pocas trampas. Los arreglos de microlentes son masivamente paralelos, pero estáticos y limitados por la potencia del láser."
+      }
+    ],
+    "setting": {
+      "en": "Atomic-physics, biophysics, neuroscience and laser-machining laboratories and the companies that supply them, working with phase-only light modulators, deflectors, micromirror devices and microlens arrays.",
+      "es": "Laboratorios de física atómica, biofísica, neurociencia y maquinado láser y las empresas que los abastecen, con moduladores de luz de solo fase, deflectores, microespejos y arreglos de microlentes."
+    },
+    "forces": [
+      {
+        "force": {
+          "en": "Public quantum programs pull array size up",
+          "es": "Los programas cuánticos públicos empujan el tamaño de los arreglos hacia arriba"
+        },
+        "direction": "rising"
+      },
+      {
+        "force": {
+          "en": "Error correction needs more physical atoms for each logical qubit",
+          "es": "La corrección de errores necesita más átomos físicos por cada cúbit lógico"
+        },
+        "direction": "rising"
+      },
+      {
+        "force": {
+          "en": "Laser power and device damage limits cap scaling with light modulators",
+          "es": "Los límites de potencia láser y de daño del dispositivo frenan el escalamiento con moduladores de luz"
+        },
+        "direction": "steady"
+      },
+      {
+        "force": {
+          "en": "Calibration tooling is becoming an automated, model-based step",
+          "es": "Las herramientas de calibración se vuelven un paso automatizado y basado en modelos"
+        },
+        "direction": "easing"
+      }
+    ],
+    "evidence": [
+      {
+        "statement": {
+          "en": "The European Union and its Member States committed more than 11 billion euro in public quantum funding over five years, nearly 2 billion from the Union alone.",
+          "es": "La Unión Europea y sus Estados miembros comprometieron más de 11 mil millones de euros en financiamiento público cuántico en cinco años, casi 2 mil millones solo de la Unión."
+        },
+        "source": "eu-quantum"
+      },
+      {
+        "statement": {
+          "en": "A logical quantum processor was demonstrated on up to 280 physical qubits of reconfigurable atom arrays.",
+          "es": "Se demostró un procesador cuántico lógico sobre hasta 280 cúbits físicos de arreglos reconfigurables de átomos."
+        },
+        "source": "logical-processor"
+      },
+      {
+        "statement": {
+          "en": "The largest array needed a 130 watt laser, giving about 1.4 milliwatts per trap at the atoms.",
+          "es": "El mayor arreglo necesitó un láser de 130 vatios, que da unos 1,4 milivatios por trampa en los átomos."
+        },
+        "source": "tweezer-6100-full"
+      },
+      {
+        "statement": {
+          "en": "A calibration of the wavefront of a light modulator to about one 170th of a wavelength took about five minutes with ten patterns.",
+          "es": "Una calibración del frente de onda de un modulador de luz a cerca de una 170ava parte de la longitud de onda tomó unos cinco minutos con diez patrones."
+        },
+        "source": "slm-calibration"
+      }
+    ]
+  },
+  "situation": {
+    "key_message": {
+      "en": "Each role holds one part of the light-field problem, and the best methods are strong at one thing and weak at another.",
+      "es": "Cada rol tiene una parte del problema del campo de luz, y los mejores métodos son fuertes en una cosa y débiles en otra."
+    },
+    "roles": [
+      {
+        "role": {
+          "en": "Experimental physicists",
+          "es": "Físicos experimentales"
+        },
+        "decides": {
+          "en": "Array geometry, atom number, sequence and when a run is valid.",
+          "es": "Geometría del arreglo, número de átomos, secuencia y cuándo una corrida es válida."
+        },
+        "needs": {
+          "en": "A uniform, stable pattern now, and a new geometry between shots.",
+          "es": "Un patrón uniforme y estable ahora, y una geometría nueva entre disparos."
+        }
+      },
+      {
+        "role": {
+          "en": "Optical engineers",
+          "es": "Ingenieros ópticos"
+        },
+        "decides": {
+          "en": "Device, relay optics, calibration method and aberration correction.",
+          "es": "Dispositivo, óptica de relevo, método de calibración y corrección de aberraciones."
+        },
+        "needs": {
+          "en": "A reliable model of the device response and a measured wavefront.",
+          "es": "Un modelo confiable de la respuesta del dispositivo y un frente de onda medido."
+        }
+      },
+      {
+        "role": {
+          "en": "Control and software engineers",
+          "es": "Ingenieros de control y software"
+        },
+        "decides": {
+          "en": "Hologram algorithm, timing, rearrangement planning and use of graphics processors.",
+          "es": "Algoritmo de holograma, temporización, planificación del reordenamiento y uso de procesadores gráficos."
+        },
+        "needs": {
+          "en": "A hologram in milliseconds and camera feedback.",
+          "es": "Un holograma en milisegundos y retroalimentación de la cámara."
+        }
+      },
+      {
+        "role": {
+          "en": "Laboratory and program managers",
+          "es": "Jefes de laboratorio y de programa"
+        },
+        "decides": {
+          "en": "Funding, the scale-up plan, and which platform and device to procure.",
+          "es": "Financiamiento, el plan de escalamiento y qué plataforma y dispositivo adquirir."
+        },
+        "needs": {
+          "en": "A credible array-size roadmap and reproducible results.",
+          "es": "Una hoja de ruta creíble del tamaño del arreglo y resultados reproducibles."
+        }
+      },
+      {
+        "role": {
+          "en": "Biophysicists and neuroscientists",
+          "es": "Biofísicos y neurocientíficos"
+        },
+        "decides": {
+          "en": "Number of traps or targets, force range and heating limit.",
+          "es": "Número de trampas o blancos, rango de fuerza y límite de calentamiento."
+        },
+        "needs": {
+          "en": "Many traps with equal force and known heating.",
+          "es": "Muchas trampas con igual fuerza y calentamiento conocido."
+        }
+      }
+    ],
+    "interaction": {
+      "en": "The optical engineer hands a calibrated device to the experimenter, the control engineer sits between each request and the device, and every drift reopens the hand-off.",
+      "es": "El ingeniero óptico entrega un dispositivo calibrado al experimentador, el ingeniero de control queda entre cada pedido y el dispositivo, y cada deriva reabre la entrega."
+    },
+    "state_of_the_art": [
+      {
+        "approach": {
+          "en": "Weighted Gerchberg-Saxton with aberration correction",
+          "es": "Gerchberg-Saxton ponderado con corrección de aberraciones"
+        },
+        "achieves": {
+          "en": "Drives the 12,000-trap array and is the standard method.",
+          "es": "Maneja el arreglo de 12.000 trampas y es el método estándar."
+        },
+        "falls_short": {
+          "en": "Depth spread of 11.4 percent at full scale.",
+          "es": "Dispersión de profundidad de 11,4 por ciento a escala completa."
+        },
+        "source": "tweezer-6100-full"
+      },
+      {
+        "approach": {
+          "en": "Camera-in-the-loop feedback on the hologram",
+          "es": "Retroalimentación con cámara en el lazo sobre el holograma"
+        },
+        "achieves": {
+          "en": "Non-uniformity below 1.1 percent in arrays above 1,000 spots.",
+          "es": "No uniformidad bajo 1,1 por ciento en arreglos de más de 1.000 puntos."
+        },
+        "falls_short": {
+          "en": "Needs a camera path and iterations for each array; the authors say better optics are needed to go further.",
+          "es": "Requiere una vía de cámara e iteraciones para cada arreglo; los autores dicen que se necesita mejor óptica para ir más lejos."
+        },
+        "source": "feedback-equalisation"
+      },
+      {
+        "approach": {
+          "en": "Learned, constant-time holography for rearrangement",
+          "es": "Holografía aprendida de tiempo constante para reordenar"
+        },
+        "achieves": {
+          "en": "An artificial-intelligence model assembled defect-free arrays of up to 2,024 atoms in a constant 60 milliseconds.",
+          "es": "Un modelo de inteligencia artificial armó arreglos sin defectos de hasta 2.024 átomos en 60 milisegundos constantes."
+        },
+        "falls_short": {
+          "en": "Shown at about 2,000 atoms; tens of thousands is a projection by the authors, not a result.",
+          "es": "Mostrado con unos 2.000 átomos; decenas de miles es una proyección de los autores, no un resultado."
+        },
+        "source": "ai-rearrangement"
+      },
+      {
+        "approach": {
+          "en": "Fast deflectors, alone or with a modulator array",
+          "es": "Deflectores rápidos, solos o con un arreglo modulador"
+        },
+        "achieves": {
+          "en": "Fast rearrangement and continuous reloading: over 3,000 atoms held for more than two hours.",
+          "es": "Reordenamiento rápido y recarga continua: más de 3.000 átomos sostenidos por más de dos horas."
+        },
+        "falls_short": {
+          "en": "The dynamic part holds few sites, and handing atoms between the two arrays costs time.",
+          "es": "La parte dinámica tiene pocos sitios, y pasar átomos entre los dos arreglos cuesta tiempo."
+        },
+        "source": "continuous-3000"
+      },
+      {
+        "approach": {
+          "en": "Learned light-path model from display holography",
+          "es": "Modelo aprendido de la vía de luz de pantallas"
+        },
+        "achieves": {
+          "en": "Corrects model mismatch: on a display, 19.0 decibels against 16.1 for Gerchberg-Saxton.",
+          "es": "Corrige el desajuste del modelo: en una pantalla, 19,0 decibeles contra 16,1 de Gerchberg-Saxton."
+        },
+        "falls_short": {
+          "en": "Shown on displays, not tweezer arrays; transfer to trap uniformity is unproven.",
+          "es": "Mostrado en pantallas, no en arreglos de pinzas; su paso a la uniformidad de trampas no está probado."
+        },
+        "source": "neural-holography"
+      }
+    ],
+    "status": {
+      "heading": {
+        "en": "Largest published tweezer array",
+        "es": "Mayor arreglo de pinzas publicado"
+      },
+      "value": {
+        "en": "6,100",
+        "es": "6.100"
+      },
+      "unit": {
+        "en": "atoms held in about 12,000 tweezers",
+        "es": "átomos sostenidos en unas 12.000 pinzas"
+      },
+      "date": {
+        "en": "2025",
+        "es": "2025"
+      },
+      "source": "tweezer-6100"
+    }
+  },
+  "trends": {
+    "key_message": {
+      "en": "Arrays are growing, computation is moving into the control loop and calibration is being automated, so uniformity at scale becomes the shared test within years.",
+      "es": "Los arreglos crecen, el cálculo pasa al lazo de control y la calibración se automatiza, así que la uniformidad a escala será la prueba común en pocos años."
+    },
+    "items": [
+      {
+        "trend": {
+          "en": "Atom arrays grow toward ten thousand sites",
+          "es": "Los arreglos de átomos crecen hacia diez mil sitios"
+        },
+        "kind": "technological",
+        "direction": "rising",
+        "horizon": "two_years",
+        "signal": {
+          "statement": {
+            "en": "The 2025 record holds over 6,100 atoms in about 12,000 tweezers.",
+            "es": "El récord de 2025 sostiene más de 6.100 átomos en unas 12.000 pinzas."
+          },
+          "source": "tweezer-6100"
+        },
+        "effect": {
+          "en": "Experimental physicists and control engineers must hold uniformity at scale, and optical engineers carry a larger aberration budget.",
+          "es": "Los físicos experimentales y los ingenieros de control deben sostener la uniformidad a escala, y los ingenieros ópticos cargan con un presupuesto de aberraciones mayor."
+        },
+        "confidence": "medium"
+      },
+      {
+        "trend": {
+          "en": "Hologram computation moves from offline to real time",
+          "es": "El cálculo del holograma pasa de fuera de línea a tiempo real"
+        },
+        "kind": "technological",
+        "direction": "rising",
+        "horizon": "now",
+        "signal": {
+          "statement": {
+            "en": "An artificial-intelligence model assembled arrays of up to 2,024 atoms in a constant 60 milliseconds.",
+            "es": "Un modelo de inteligencia artificial armó arreglos de hasta 2.024 átomos en 60 milisegundos constantes."
+          },
+          "source": "ai-rearrangement"
+        },
+        "effect": {
+          "en": "Control and software engineers own the loop, and experimental physicists get new patterns between shots.",
+          "es": "Los ingenieros de control y software son dueños del lazo, y los físicos experimentales reciben patrones nuevos entre disparos."
+        },
+        "confidence": "medium"
+      },
+      {
+        "trend": {
+          "en": "Device calibration becomes automated and model-based",
+          "es": "La calibración del dispositivo se vuelve automática y basada en modelos"
+        },
+        "kind": "practice",
+        "direction": "rising",
+        "horizon": "now",
+        "signal": {
+          "statement": {
+            "en": "A calibration reached about one 170th of a wavelength in about five minutes with ten patterns.",
+            "es": "Una calibración llegó a cerca de una 170ava parte de la longitud de onda en unos cinco minutos con diez patrones."
+          },
+          "source": "slm-calibration"
+        },
+        "effect": {
+          "en": "Optical engineers move from manual alignment to maintaining a model, which shortens the hand-off to experimental physicists.",
+          "es": "Los ingenieros ópticos pasan del alineamiento manual a mantener un modelo, lo que acorta la entrega a los físicos experimentales."
+        },
+        "confidence": "medium"
+      },
+      {
+        "trend": {
+          "en": "Public quantum programs set dates for useful machines",
+          "es": "Los programas cuánticos públicos fijan fechas para máquinas útiles"
+        },
+        "kind": "market",
+        "direction": "rising",
+        "horizon": "ten_years",
+        "signal": {
+          "statement": {
+            "en": "The Defense Advanced Research Projects Agency program aims to determine whether an industrially useful quantum computer can be built by 2033.",
+            "es": "El programa de la agencia de proyectos de investigación avanzada de defensa de Estados Unidos busca determinar si puede construirse un computador cuántico industrialmente útil antes de 2033."
+          },
+          "source": "qbi"
+        },
+        "effect": {
+          "en": "Laboratory and program managers favour platforms that scale, and funding flows to the optics that enable them.",
+          "es": "Los jefes de laboratorio y de programa favorecen plataformas que escalan, y el financiamiento fluye hacia la óptica que las habilita."
+        },
+        "confidence": "medium"
+      },
+      {
+        "trend": {
+          "en": "Shared standards for tweezer measurements",
+          "es": "Estándares comunes para las mediciones con pinzas"
+        },
+        "kind": "practice",
+        "direction": "rising",
+        "horizon": "two_years",
+        "signal": {
+          "statement": {
+            "en": "A 2021 review notes that instrument configurations differ between laboratories, making comparison difficult, and calls for field standards.",
+            "es": "Una revisión de 2021 señala que las configuraciones de los instrumentos difieren entre laboratorios, lo que dificulta comparar, y pide estándares del campo."
+          },
+          "source": "tweezer-biophysics"
+        },
+        "effect": {
+          "en": "Biophysicists and laboratory managers must agree shared practice before results can be compared.",
+          "es": "Los biofísicos y los jefes de laboratorio deben acordar una práctica común antes de poder comparar resultados."
+        },
+        "confidence": "low"
+      }
+    ]
+  },
+  "proposal": {
+    "key_message": {
+      "en": "Treat the light field as a calibrated and verified product, starting with optical engineers publishing a device calibration record with each array.",
+      "es": "Tratar el campo de luz como un producto calibrado y verificado, empezando porque los ingenieros ópticos publiquen un registro de calibración del dispositivo con cada arreglo."
+    },
+    "paragraphs": [
+      {
+        "en": "The approach treats the light field as three coupled parts: a model of the real device, a hologram method matched to the target, and a camera feedback loop. This replaces a one-off optimisation for each set-up.",
+        "es": "El enfoque trata el campo de luz como tres partes acopladas: un modelo del dispositivo real, un método de holograma adecuado al objetivo y un lazo de retroalimentación con cámara. Esto reemplaza una optimización única para cada montaje."
+      },
+      {
+        "en": "It follows the causes. Model the device, choose the method by the uniformity and speed the target needs, budget laser power, and make calibration a shared and recorded procedure.",
+        "es": "Sigue las causas. Modelar el dispositivo, elegir el método según la uniformidad y la velocidad del objetivo, presupuestar la potencia láser y hacer de la calibración un procedimiento común y registrado."
+      }
+    ],
+    "four_cs": [
+      {
+        "c": {
+          "en": "Choice",
+          "es": "Elección"
+        },
+        "applies": {
+          "en": "Keep several hologram algorithms and devices comparable on the same target, so the method follows the need.",
+          "es": "Mantener varios algoritmos de holograma y dispositivos comparables sobre el mismo objetivo, para que el método siga a la necesidad."
+        }
+      },
+      {
+        "c": {
+          "en": "Context",
+          "es": "Contexto"
+        },
+        "applies": {
+          "en": "Ground every pattern in the real optics, the measured wavefront and the device response, not in an ideal model of propagation.",
+          "es": "Basar cada patrón en la óptica real, el frente de onda medido y la respuesta del dispositivo, no en un modelo ideal de propagación."
+        }
+      },
+      {
+        "c": {
+          "en": "Cost",
+          "es": "Costo"
+        },
+        "applies": {
+          "en": "Make visible the compute time and laser power each pattern spends, including the share of light lost to unwanted orders.",
+          "es": "Hacer visible el tiempo de cálculo y la potencia láser que gasta cada patrón, incluida la parte de luz perdida en órdenes no deseados."
+        }
+      },
+      {
+        "c": {
+          "en": "Control",
+          "es": "Control"
+        },
+        "applies": {
+          "en": "Keep calibration records, versions of device models and results reproducible, so a run can be repeated and compared between laboratories.",
+          "es": "Mantener reproducibles los registros de calibración, las versiones de los modelos del dispositivo y los resultados, para repetir una corrida y compararla entre laboratorios."
+        }
+      }
+    ],
+    "actions": [
+      {
+        "action": {
+          "en": "Publish a device calibration record of wavefront, phase response and crosstalk with each array.",
+          "es": "Publicar con cada arreglo un registro de calibración del dispositivo con frente de onda, respuesta de fase y diafonía."
+        },
+        "owner": {
+          "en": "Optical engineers",
+          "es": "Ingenieros ópticos"
+        },
+        "horizon": {
+          "en": "Now",
+          "es": "Ahora"
+        },
+        "check": {
+          "en": "A second laboratory reproduces the trap-depth spread within the published value.",
+          "es": "Un segundo laboratorio reproduce la dispersión de profundidad de trampa dentro del valor publicado."
+        }
+      },
+      {
+        "action": {
+          "en": "Report uniformity, efficiency and zero-order fraction with every array.",
+          "es": "Reportar uniformidad, eficiencia y fracción de orden cero con cada arreglo."
+        },
+        "owner": {
+          "en": "Experimental physicists",
+          "es": "Físicos experimentales"
+        },
+        "horizon": {
+          "en": "Now",
+          "es": "Ahora"
+        },
+        "check": {
+          "en": "All three figures appear in each report.",
+          "es": "Las tres cifras aparecen en cada reporte."
+        }
+      },
+      {
+        "action": {
+          "en": "Move hologram computation into the control loop with a stated latency budget.",
+          "es": "Llevar el cálculo del holograma al lazo de control con un presupuesto de latencia declarado."
+        },
+        "owner": {
+          "en": "Control and software engineers",
+          "es": "Ingenieros de control y software"
+        },
+        "horizon": {
+          "en": "Within two years",
+          "es": "En dos años"
+        },
+        "check": {
+          "en": "The whole array updates within the time budget of the sequence, compared with the published 60 milliseconds.",
+          "es": "El arreglo completo se actualiza dentro del presupuesto de tiempo de la secuencia, comparado con los 60 milisegundos publicados."
+        }
+      },
+      {
+        "action": {
+          "en": "Compare hologram algorithms on one target and one device model.",
+          "es": "Comparar algoritmos de holograma sobre un mismo objetivo y un mismo modelo de dispositivo."
+        },
+        "owner": {
+          "en": "Control and software engineers",
+          "es": "Ingenieros de control y software"
+        },
+        "horizon": {
+          "en": "Within two years",
+          "es": "En dos años"
+        },
+        "check": {
+          "en": "Ranked results are published with the spread and efficiency of each method.",
+          "es": "Se publican resultados ordenados con la dispersión y la eficiencia de cada método."
+        }
+      },
+      {
+        "action": {
+          "en": "Set a laser power and heating budget per trap before scaling an array.",
+          "es": "Fijar un presupuesto de potencia láser y de calentamiento por trampa antes de escalar un arreglo."
+        },
+        "owner": {
+          "en": "Laboratory and program managers",
+          "es": "Jefes de laboratorio y de programa"
+        },
+        "horizon": {
+          "en": "Within two years",
+          "es": "En dos años"
+        },
+        "check": {
+          "en": "Power per tweezer and temperature rise are stated and stay within the device limit.",
+          "es": "La potencia por pinza y el aumento de temperatura se declaran y quedan dentro del límite del dispositivo."
+        }
+      },
+      {
+        "action": {
+          "en": "Agree shared practice for calibration data and results across laboratories.",
+          "es": "Acordar una práctica común para los datos y resultados de calibración entre laboratorios."
+        },
+        "owner": {
+          "en": "Laboratory and program managers",
+          "es": "Jefes de laboratorio y de programa"
+        },
+        "horizon": {
+          "en": "Within ten years",
+          "es": "En diez años"
+        },
+        "check": {
+          "en": "A cross-laboratory comparison is published.",
+          "es": "Se publica una comparación entre laboratorios."
+        }
+      }
+    ],
+    "risks": [
+      {
+        "en": "An algorithm tuned to a model that does not match the device gives low quality, as seen in display holography.",
+        "es": "Un algoritmo ajustado a un modelo que no coincide con el dispositivo da baja calidad, como se vio en la holografía de pantallas."
+      },
+      {
+        "en": "Gains shown at small scale may not carry to ten thousand sites, as the gap between 0.3 and 11.4 percent suggests.",
+        "es": "Las mejoras mostradas a escala pequeña podrían no llegar a diez mil sitios, como sugiere la brecha entre 0,3 y 11,4 por ciento."
+      },
+      {
+        "en": "Learned methods are opaque and hard to verify.",
+        "es": "Los métodos aprendidos son opacos y difíciles de verificar."
+      },
+      {
+        "en": "Device drift between calibrations can undo a good pattern.",
+        "es": "La deriva del dispositivo entre calibraciones puede deshacer un buen patrón."
+      }
+    ],
+    "unknowns": [
+      {
+        "en": "No public source measures the share of laboratory time spent on calibration.",
+        "es": "Ninguna fuente pública mide la parte del tiempo de laboratorio que se gasta en calibración."
+      },
+      {
+        "en": "Whether learned holography improves trap uniformity at ten thousand sites is not yet shown.",
+        "es": "Aún no se muestra si la holografía aprendida mejora la uniformidad de trampas con diez mil sitios."
+      },
+      {
+        "en": "The mix of deflectors, light modulators and metasurfaces at scale is open.",
+        "es": "La mezcla de deflectores, moduladores de luz y metasuperficies a escala está abierta."
+      },
+      {
+        "en": "The weights of the causes are the judgement of the author about relative size, not measured values.",
+        "es": "Los pesos de las causas son el juicio del autor sobre el tamaño relativo, no valores medidos."
+      }
+    ],
+    "handoff": {
+      "en": "One part of this problem, a browser studio to design trap arrays and compare hologram algorithms on a device model, is explored in the technical view.",
+      "es": "Una parte de este problema, un estudio web para diseñar arreglos de trampas y comparar algoritmos de holograma sobre un modelo de dispositivo, se explora en la vista técnica."
+    }
+  },
+  "illustrations": {
+    "pain": {
+      "file": "executive/pain.svg",
+      "caption": {
+        "en": "As the trap array grows, some spots fade, a ghost spot appears and the scientist waits on an uncorrected device.",
+        "es": "A medida que crece el arreglo de trampas, algunos puntos se apagan, aparece un punto fantasma y el científico espera con un dispositivo sin corregir."
+      }
+    },
+    "situation": {
+      "file": "executive/situation.svg",
+      "caption": {
+        "en": "Four roles share one bench, and the hand-offs of calibration and of timing are where the light field falls short.",
+        "es": "Cuatro roles comparten un mismo banco, y las entregas de calibración y de tiempo son donde el campo de luz se queda corto."
+      }
+    },
+    "proposal": {
+      "file": "executive/proposal.svg",
+      "caption": {
+        "en": "With a device model, a camera feedback loop and a power meter, the same bench makes uniform spots in a short update.",
+        "es": "Con un modelo del dispositivo, un lazo de retroalimentación con cámara y un medidor de potencia, el mismo banco forma puntos uniformes en una actualización corta."
+      }
+    }
+  },
+  "sources": [
+    {
+      "id": "tweezer-6100",
+      "title": {
+        "en": "A tweezer array with 6100 highly coherent atomic qubits, Nature 647, 2025 (abstract)",
+        "es": "Un arreglo de pinzas con 6100 cúbits atómicos altamente coherentes, Nature 647, 2025 (resumen)"
+      },
+      "url": "https://arxiv.org/abs/2403.12021",
+      "note": {
+        "en": "Abstract of the paper; first posted in March 2024.",
+        "es": "Resumen del artículo; publicado por primera vez en marzo de 2024."
+      }
+    },
+    {
+      "id": "tweezer-6100-full",
+      "title": {
+        "en": "A tweezer array with 6100 highly coherent atomic qubits, full text",
+        "es": "Un arreglo de pinzas con 6100 cúbits atómicos altamente coherentes, texto completo"
+      },
+      "url": "https://arxiv.org/html/2403.12021v4",
+      "note": {
+        "en": "Trap-depth spread, laser power and loading probability are in the sections on large-scale tweezer generation and on loading and imaging.",
+        "es": "La dispersión de profundidad, la potencia láser y la probabilidad de carga están en las secciones sobre generación de pinzas a gran escala y sobre carga e imagen."
+      }
+    },
+    {
+      "id": "ultra-precise",
+      "title": {
+        "en": "Ultra-precise holographic optical tweezers array, Physical Review A 110, 2024",
+        "es": "Arreglo de pinzas ópticas holográficas de ultraprecisión, Physical Review A 110, 2024"
+      },
+      "url": "https://arxiv.org/abs/2407.20699",
+      "note": {
+        "en": "The number of tweezers of the small array is not stated on the abstract page.",
+        "es": "El número de pinzas del arreglo pequeño no figura en la página del resumen."
+      }
+    },
+    {
+      "id": "feedback-equalisation",
+      "title": {
+        "en": "Feedback intensity equalization algorithm for multi-spots holographic tweezer",
+        "es": "Algoritmo de ecualización de intensidad por retroalimentación para pinzas holográficas multipunto"
+      },
+      "url": "https://arxiv.org/abs/2407.17049"
+    },
+    {
+      "id": "ai-rearrangement",
+      "title": {
+        "en": "Artificial intelligence enabled rapid assembly of thousands of defect-free neutral atom arrays, Physical Review Letters 135, 2025",
+        "es": "Armado rápido con inteligencia artificial de miles de arreglos de átomos neutros sin defectos, Physical Review Letters 135, 2025"
+      },
+      "url": "https://arxiv.org/abs/2412.14647"
+    },
+    {
+      "id": "continuous-3000",
+      "title": {
+        "en": "Continuous operation of a coherent 3,000-qubit system, Nature 646, 2025",
+        "es": "Operación continua de un sistema coherente de 3.000 cúbits, Nature 646, 2025"
+      },
+      "url": "https://arxiv.org/abs/2506.20660"
+    },
+    {
+      "id": "logical-processor",
+      "title": {
+        "en": "Logical quantum processor based on reconfigurable atom arrays",
+        "es": "Procesador cuántico lógico basado en arreglos reconfigurables de átomos"
+      },
+      "url": "https://arxiv.org/abs/2312.03982"
+    },
+    {
+      "id": "eu-quantum",
+      "title": {
+        "en": "European Commission, Quantum Europe Strategy: questions and answers, July 2025",
+        "es": "Comisión Europea, Estrategia Cuántica de Europa: preguntas y respuestas, julio de 2025"
+      },
+      "url": "https://ec.europa.eu/commission/presscorner/api/files/document/print/en/qanda_25_1683/QANDA_25_1683_EN.pdf"
+    },
+    {
+      "id": "qbi",
+      "title": {
+        "en": "Defense Advanced Research Projects Agency, Quantum Benchmarking Initiative",
+        "es": "Agencia de proyectos de investigación avanzada de defensa de Estados Unidos, Iniciativa de Evaluación Cuántica"
+      },
+      "url": "https://www.darpa.mil/research/programs/quantum-benchmarking-initiative"
+    },
+    {
+      "id": "slm-calibration",
+      "title": {
+        "en": "Rapid stochastic spatial light modulator calibration and pixel crosstalk optimisation, 2024",
+        "es": "Calibración estocástica rápida de un modulador espacial de luz y optimización de la diafonía entre píxeles, 2024"
+      },
+      "url": "https://arxiv.org/abs/2408.07672"
+    },
+    {
+      "id": "neural-holography",
+      "title": {
+        "en": "Neural holography with camera-in-the-loop training, 2020",
+        "es": "Holografía neuronal con entrenamiento con cámara en el lazo, 2020"
+      },
+      "url": "https://www.computationalimaging.org/wp-content/uploads/2020/08/NeuralHolography_SIGAsia2020.pdf"
+    },
+    {
+      "id": "tweezer-biophysics",
+      "title": {
+        "en": "Optical tweezers in single-molecule biophysics, 2021",
+        "es": "Pinzas ópticas en biofísica de molécula individual, 2021"
+      },
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8629167/"
+    },
+    {
+      "id": "neural-ensemble",
+      "title": {
+        "en": "Precise multimodal optical control of neural ensemble activity, 2018",
+        "es": "Control óptico multimodal preciso de la actividad de conjuntos neuronales, 2018"
+      },
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5970968"
+    },
+    {
+      "id": "machining",
+      "title": {
+        "en": "High throughput diffractive multi-beam femtosecond laser processing using a spatial light modulator, 2008",
+        "es": "Procesamiento láser difractivo multihaz de femtosegundos de alto rendimiento con un modulador espacial de luz, 2008"
+      },
+      "url": "https://researchportal.hw.ac.uk/en/publications/high-throughput-diffractive-multi-beam-femtosecond-laser-processi/"
+    }
+  ]
+}
