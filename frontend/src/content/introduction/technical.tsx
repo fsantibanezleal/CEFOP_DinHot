@@ -29,12 +29,12 @@ function manuscriptItem(m: ManuscriptEntry): { en: ReactNode; es: ReactNode } {
   const claims = m.covers.join(', ');
   return m.kind === 'technical-report'
     ? {
-        en: <>Technical report, version {m.version}: <em>{m.title}</em>, covering {claims}. Concept DOI {link}.</>,
-        es: <>Informe técnico, versión {m.version}: <em>{m.title}</em>, que cubre {claims}. DOI de concepto {link}.</>,
+        en: <>Technical report, version <span data-version>{m.version}</span>: <em>{m.title}</em>, covering {claims}. Concept DOI {link}.</>,
+        es: <>Informe técnico, versión <span data-version>{m.version}</span>: <em>{m.title}</em>, que cubre {claims}. DOI de concepto {link}.</>,
       }
     : {
-        en: <>Manuscript of {claims}, version {m.version}: <em>{m.title}</em>. Concept DOI {link}.</>,
-        es: <>Manuscrito de {claims}, versión {m.version}: <em>{m.title}</em>. DOI de concepto {link}.</>,
+        en: <>Manuscript of {claims}, version <span data-version>{m.version}</span>: <em>{m.title}</em>. Concept DOI {link}.</>,
+        es: <>Manuscrito de {claims}, versión <span data-version>{m.version}</span>: <em>{m.title}</em>. DOI de concepto {link}.</>,
       };
 }
 
@@ -221,8 +221,8 @@ export function TechnicalView() {
         noRefsReason={{ en: 'Lists the Zenodo records of this product; each entry is its own reference.', es: 'Lista los registros de Zenodo de este producto; cada entrada es su propia referencia.' }}
       >
         <P
-          en={<>The product's results are published on Zenodo under CC BY 4.0, each record under a concept DOI that always resolves to its latest version: the technical report follows the releases, and the claims beyond the state of the art have a manuscript of their own. The numbers of both are generated from the committed artifacts of this repository.</>}
-          es={<>Los resultados del producto se publican en Zenodo bajo CC BY 4.0, cada registro con un DOI de concepto que siempre lleva a su última versión: el informe técnico sigue a las versiones del producto, y las afirmaciones más allá del estado del arte tienen un manuscrito propio. Los números de ambos se generan desde los artefactos versionados de este repositorio.</>}
+          en={<>The product's results are published on Zenodo under <span translate="no">CC BY 4.0</span>, each record under a concept DOI that always resolves to its latest version: the technical report follows the releases, and the claims beyond the state of the art have a manuscript of their own. The numbers of both are generated from the committed artifacts of this repository.</>}
+          es={<>Los resultados del producto se publican en Zenodo bajo <span translate="no">CC BY 4.0</span>, cada registro con un DOI de concepto que siempre lleva a su última versión: el informe técnico sigue a las versiones del producto, y las afirmaciones más allá del estado del arte tienen un manuscrito propio. Los números de ambos se generan desde los artefactos versionados de este repositorio.</>}
         />
         {MANUSCRIPTS.length > 0 && <L items={MANUSCRIPTS.map(manuscriptItem)} />}
       </DocSection>
