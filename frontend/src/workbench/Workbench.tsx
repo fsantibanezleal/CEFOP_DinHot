@@ -602,7 +602,7 @@ function ContextView({ sel }: { sel: Selection | null }) {
     <>
       <ReadinessNote ids={[...CASE_ROWS, 'cgh-net', 'warmstart-model']} />
       <h2>{m.title[lang]}</h2>
-      {/* the anchor first: its link sits at the top of the panel, clear of the Focus HUD at every size (shell-known-defects entry 46) */}
+      {/* the anchor first: its link sits at the top of the panel, clear of the Focus HUD at every size (CAOS_MANAGE shell-known-defects entry 50) */}
       <p>
         {t('Anchor', 'Ancla')}: {m.anchor.source[lang]}
         {m.anchor.url && (
