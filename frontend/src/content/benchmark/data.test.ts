@@ -253,3 +253,13 @@ describe('the words of a budget', () => {
     expect(budgetText({ kind: 'converged', value: 60 })).toEqual({ en: 'converged (cap 60 s)', es: 'convergido (tope 60 s)' });
   });
 });
+
+describe('a spread below the resolution of the document', () => {
+  it('reads as a bound, never as zero, in both languages', async () => {
+    const { spreadText, SPREAD_RESOLUTION_PCT } = await import('./shared');
+    expect(SPREAD_RESOLUTION_PCT).toBe(0.001);
+    expect(spreadText(0, 'en')).toBe('<\u00a00.001\u00a0%');
+    expect(spreadText(0.0004, 'es')).toBe('<\u00a00,001\u00a0%');
+    expect(spreadText(0.0657, 'en')).toBe('0.0657\u00a0%');
+  });
+});

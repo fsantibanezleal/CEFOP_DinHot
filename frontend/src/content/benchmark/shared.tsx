@@ -1,7 +1,7 @@
 // What the sections of the Benchmark page share: the documents they read, loaded once for the page (the benchmark results, the model metrics,
 // the manifests of the cases the claims are also read from and the case index), the reader's selection of device, parameter set and budget,
 // and the states a section shows while a document is not there (the reason from the readiness document, never an empty chart).
-import { ChipGroup, pick, useFormat, useShellLang, type BiText, type BarDatum } from '@fasl-work/caos-app-shell';
+import { ChipGroup, formatNumber, pick, useFormat, useShellLang, type BiText, type BarDatum } from '@fasl-work/caos-app-shell';
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { loadBenchmark, loadIndex, loadManifest, loadModelMetrics, useArtifact, type Loaded } from '../../api/artifacts';
 import type { BenchmarkResults, CaseIndex, CaseManifest, ModelMetrics } from '../../lib/contract.types';
@@ -172,13 +172,25 @@ export function barLabel(p: Picked, id: string, view: ParamsView): BiText {
   return tag ? { en: `${id} (${tag.en})`, es: `${id} (${tag.es})` } : { en: id, es: id };
 }
 
-/** Number formatting of the page: significant digits, the shell's decimal sign for the language. */
+/** The smallest spread the benchmark document resolves, in percent: it stores six decimals, so a smaller value is a bound. */
+export const SPREAD_RESOLUTION_PCT = 1e-3;
+
+/** A spread in percent for a string built outside a component (a chart tooltip), with the same bound as `useNum().pct`. */
+export function spreadText(v: number, lang: Lang, digits = 3): string {
+  return v < SPREAD_RESOLUTION_PCT
+    ? `< ${formatNumber(SPREAD_RESOLUTION_PCT, lang, { digits: 1 })} %`
+    : `${formatNumber(v, lang, { digits })} %`;
+}
+
+/** Number formatting of the page: significant digits, the shell's decimal sign for the language; a spread below the
+ *  document's resolution reads as a bound, never as zero. */
 export function useNum() {
   const f = useFormat();
   return {
     n: (v: number | null | undefined, digits = 3) => f(v, { digits }),
     d: (v: number | null | undefined, decimals: number) => f(v, { decimals }),
-    pct: (v: number | null | undefined, digits = 3) => (v === null || v === undefined ? f(v) : `${f(v, { digits })} %`),
+    pct: (v: number | null | undefined, digits = 3) =>
+      v === null || v === undefined ? f(v) : v < SPREAD_RESOLUTION_PCT ? `< ${f(SPREAD_RESOLUTION_PCT, { digits: 1 })} %` : `${f(v, { digits })} %`,
   };
 }
 
