@@ -163,6 +163,16 @@ def refusal_reason(message: str) -> dict:
                  f"El método rechaza esta geometría (motivo que da el método, en inglés): {msg}.")
 
 
+def pareto_points(meta: dict) -> list[dict] | None:
+    """B5's non-dominated points from its ``meta``: ``pareto`` holds the indices into ``front`` (rows of efficiency, uniformity,
+    relative std) and ``lambdas`` the weight of each row. None when the result carries no front."""
+    idx, front, lambdas = meta.get("pareto"), meta.get("front"), meta.get("lambdas")
+    if idx is None or front is None or lambdas is None or len(idx) == 0:
+        return None
+    return [{"lambda": float(lambdas[i]), "efficiency": round(float(front[i][0]), 6), "uniformity": round(float(front[i][1]), 6)}
+            for i in sorted(int(i) for i in idx)]
+
+
 def run_group(task: dict) -> dict:
     """One (method, geometry, device, parameter set) group over all seeds: its rows, and B5's Pareto points if any.
     Runs in a worker process; ``task`` is plain data. A ``ValueError`` of the method (it refuses the geometry) returns no rows
@@ -200,11 +210,8 @@ def _run_group(task: dict) -> dict:
         for bk, b, budget in runs:
             out = infer.run_method(rec, mid, budget=budget, extra=extra, ctx=ctx)
             per.setdefault((bk, b), []).append(out)
-            if bk == "converged":
-                front = out.meta.get("pareto")
-                if seed == 0 and mid == "B5" and not device and isinstance(front, list) and front:
-                    pareto = [{"lambda": float(p["lambda"]), "efficiency": round(float(p["efficiency"]), 6),
-                               "uniformity": round(float(p["uniformity"]), 6)} for p in front]
+            if bk == "converged" and seed == 0 and mid == "B5" and not device:
+                pareto = pareto_points(out.meta)
     rows = [_row(mid, geometry, device, bk, b, kind, outs) for (bk, b), outs in per.items()]
     return {"rows": rows, "pareto": pareto, "geometry": geometry}
 
