@@ -53,7 +53,7 @@ test module's two independent phase-fixed WGS endpoints, interpolated linearly) 
     C10 sort on M16's plan (16 moving traps), seeds 1 to 6
                                  25 frames        137 frames
     LPI                          0.320 to 0.594   0.360 to 0.690
-    B2 (end phases given)        0.205 to 0.391   0.902 to 0.917 on 5 of 6 seeds (median 0.910); seed 2 collapses to 0.155
+    B2 (end phases given)        0.205 to 0.391   0.902 to 0.917 on 5 of 6 seeds (median 0.911); seed 2 collapses to 0.155
     acceptance task (13 frames, seeds 1 to 3): B2 0.916 to 0.926, LPI 0.551 to 0.709.
 
 So B2 leads LPI on the acceptance task and on the long sort only with enough frames (about 137); at 25 frames LPI leads B2

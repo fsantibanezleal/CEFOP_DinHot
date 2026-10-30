@@ -50,7 +50,7 @@ export const RECORDED: Record<string, RecordedClaim> = {
       /** C10's long sort on M16's own plan: B2 needs the end phases and this many frames; its range and median over the seeds that
        *  reach the threshold (one seed collapses on its phase path), and the LPI range. */
       c10Frames: 137,
-      c10B2Median: 0.910,
+      c10B2Median: 0.911,
       c10B2Low: 0.902,
       c10B2High: 0.917,
       c10LpiLow: 0.360,

@@ -64,7 +64,9 @@ WGS at 30 iterations (\sigmaMsevenHundred{} percent at 100) to \sigmaBOne{} perc
 phase and a fill factor of \parFill{} added, and \bakeCeightRatio{} on a smaller $8\times8$ grid with a fixed \bakeCeightIters{}-iteration budget. A control that removes the device model from the loop gains nothing
 (\sigmaNoModel{} percent), so the gain comes from the model. Second, optimizing every intermediate hologram of a moving-trap sequence with the trap phases locked to a smooth
 trajectory (flicker-bounded sequence) keeps the minimum transient intensity of the moving traps at a median \bTwoMed{} of their mean (range \bTwoMin{} to \bTwoMax) over \nSeedsTwo{} seeds at thirteen frames (below $0.9$ at seven frames),
-against \lpiMed{} (\lpiMin{} to \lpiMax) for linear phase interpolation. Both results hold in a model of a simulated device and in a transient model that we define; neither is a
+against \lpiMed{} (\lpiMin{} to \lpiMax) for linear phase interpolation. The bound holds while the peak step per frame is at most \claimStepFu{} Fourier units: on longer
+lattice moves it is met on \longAMet{} and \longBMet{} of \longSeeds{} seeds with the frames that step implies, and on the long sort of a rearrangement case linear phase
+interpolation leads at an equal number of frames. Both results hold in a model of a simulated device and in a transient model that we define; neither is a
 hardware measurement.
 \end{abstract}
 
@@ -206,6 +208,21 @@ With \parFrames{} frames the minimum transient ratio of the moving traps is a me
 per-frame uniformity differs by two orders: the largest per-frame relative standard deviation is at most \bTwoSigmaFrame{} percent for the flicker-bounded sequence and between \lpiSigmaFrameMin{} and \lpiSigmaFrameMax{} percent for LPI, because the intermediate frames of LPI are not optimized. Fig.~\ref{fig:b2}a shows the
 trajectory of the worst trap. With seven frames the bound of $0.9$ is not met: the medians are \bTwoMedSeven{} (B2, smallest \bTwoMinSeven) and \lpiMedSeven{} (LPI, largest \lpiMaxSeven), so B2 stays above LPI but the hypothesis as stated is refuted at that length, where each frame moves the traps farther. With twenty-five frames the medians are \bTwoMedTwentyFive{} (B2) and \lpiMedTwentyFive{} (LPI); the smallest value of B2 is \bTwoMinTwentyFive{} and the largest value of LPI \lpiMaxTwentyFive{} (Fig.~\ref{fig:b2}b).
 
+\subsection{Scope: long moves}\label{sec:b2scope}
+
+The task above moves the traps four bins in thirteen frames. The method names the fewest frames whose peak step under the minimal-jerk profile is at most
+\claimStepFu{} Fourier units, and the scope of the claim is measured on longer moves with the end phases taken from phase-fixed WGS at the destination. On the same
+lattice with the two columns moved \longABins{} and \longBBins{} bins (\longAFu{} and \longBFu{} Fourier units, $64^2$ pixels padded by 2), the \scopeDefaultFrames{} default
+frames leave the lowest moving trap at most at \longDefaultMax{} over \longSeeds{} seeds; with the \longAFrames{} and \longBFrames{} frames of the move the medians are
+\longAMed{} and \longBMed{}, and \longAMet{} and \longBMet{} of the \longSeeds{} seeds reach $0.9$ (the lowest \longALow{} and \longBLow).
+
+On the rearrangement case of the studio (C10: \cTenTraps{} target sites, \cTenMoving{} of them reached by a move on the assignment of the Hungarian method, the longest
+\cTenFu{} Fourier units), held phases dim the moving traps to \cTenHeld{} at \cTenEqual{} frames (first seed). With the end phases at \cTenEqual{} frames, a peak step of
+\cTenPeakEqual{} Fourier units, LPI on the same assignment leads on \cTenLpiLeads{} of \cTenSeeds{} seeds (B2 at most \cTenBEqualMax, LPI \cTenLEqualMin{} to \cTenLEqualMax).
+With the \cTenFrames{} frames of the move, B2 reaches \cTenMetMin{} to \cTenMetMax{} (median \cTenMetMed) on \cTenMet{} of the \cTenSeeds{} seeds and leads LPI
+(\cTenLpiMin{} to \cTenLpiMax) on \cTenBLeads; its lowest seed is at \cTenLowest. The claim therefore holds in the short-step regime and with the frames that regime
+implies, not at an equal number of frames on long moves.
+
 \section{Limits}\label{sec:limits}
 
 \textbf{Model, not instrument.} Both results are computed on a scalar Fourier model with the device effects stated above. The crosstalk parameters come from a published fit on another device; the \parBits{}-bit, fill-factor and flicker effects have no published source in this model, and random flicker is not applied in the scoring. The frequency unit of the kernel is
@@ -215,14 +232,16 @@ carried over from the model and is not verified against the source. An instrumen
 B1 is built for traps on FFT bins at the focal plane without vortices, and is more expensive than the baseline by about the square of the upsampling factor per step; it is a baked method, not a live one.
 
 \textbf{BS-2 transient model.} The ratio of BS-2 is defined by our blend model of the SLM field between frames. It omits the temporal response and the refresh of the device, and the LPI baseline is our implementation of a published description, not the authors' code. In the source of the baseline, LPI on hardware stays above $0.70$ of its intensity, whereas it scores lower here
-under our model, so the absolute values are not comparable between the two. The result establishes the ordering of the two methods under one model and one task, a $4\times4$ lattice with eight moving traps; it does not show that atoms are rearranged with fewer losses.
+under our model, so the absolute values are not comparable between the two. The result establishes the ordering of the two methods under one model, on the acceptance task and, within the step bound, on the longer moves of Section~\ref{sec:b2scope};
+at an equal number of frames on a long sort, LPI leads. It does not show that atoms are rearranged with fewer losses.
 
 \textbf{What is not claimed.} Neither method is shown to improve a camera-corrected experiment. B1 is not compared with conjugate gradient on the same point-trap task, whose gradient-based shaped-potential variant needs ten minutes per hologram in its source~\cite{schroff}.
 
 \section{Conclusion}
 
 Putting the pixel-crosstalk kernel and the phase quantizer inside the weighted GS loop lowers the trap-intensity spread on the device by a median factor of \ratioOneMed{} on a $10\times10$ lattice at \effRatioOne{} of the baseline efficiency, and the gain disappears when the device model is removed from the loop. Optimizing each intermediate frame with locked, smoothly varying trap phases keeps moving traps above \bTwoMin{} of their mean
-intensity at thirteen frames or more (but not at seven) where linear phase interpolation falls to \lpiMed{}. Both are demonstrated in simulation with the limits above; the experiments that would confirm or refute them need the camera-in-the-loop measurement on an SLM with a fitted device model.
+intensity at thirteen frames or more (but not at seven) where linear phase interpolation falls to \lpiMed{}, as long as the peak step per frame is at most
+\claimStepFu{} Fourier units; a long move needs the frames that bound implies, and at an equal number of frames on a long sort LPI leads. Both are demonstrated in simulation with the limits above; the experiments that would confirm or refute them need the camera-in-the-loop measurement on an SLM with a fitted device model.
 
 \section*{Data and code availability}
 
