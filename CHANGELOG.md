@@ -27,6 +27,12 @@ tagged.
   (`docs/design/measured-resources.md`).
 - The three method tiers: classical, state of the art and five proposals beyond it (BS-1 to BS-5; BS-3 refuted, BS-4 negative on pointing).
 - Sixty didactic notebooks, thirty per language, by topic from simple to complex, reviewed against the notebook bar and re-executed.
+- The Benchmark page: the protocol, one tab per geometry with its device, parameter set and budget, the three-tier comparison, the Pareto
+  fronts, the five beyond claims with their verdicts, the learned models, the device and budget curves and an in-browser timing, read from
+  the committed results at run time.
+- The technical report and the manuscript of BS-1 and BS-2 are generated from the committed artifacts and from scripts that measure what a
+  table states: the acceptance table by `manuscripts/holographic-trap-studio/data/acceptance.py`, BS-1, BS-2 and BS-2's scope on long moves
+  and on C10 by `manuscripts/device-aware-flicker-bounded/data/measure.py`.
 
 ### Fixed
 
@@ -34,7 +40,9 @@ tagged.
   WGS-Leonardo and WGS-Kim at feedback exponent 1 to four digits (`tests/methods/baseline/test_m06_against_slmsuite.py`,
   `test_m07_against_slmsuite.py`), in Python, TypeScript and WGSL; the beyond methods' GS family runs those rules instead of a copy, and the
   claims that rest on them were re-measured (BS-1, BS-2 over 8 and 6 seeds, BS-4, BS-5).
-- The benchmark lists a cell whose method refuses the geometry as skipped with the method's reason, instead of stopping the run.
+- The benchmark lists a cell whose method refuses the geometry as skipped with the method's reason, instead of stopping the run, and
+  stores B5's Pareto front from the indices of its non-dominated points (the release run stopped on it).
+- BS-4's robustness to pointing errors re-measured on the corrected engine: 1.04 times (1.02 before), still a reported negative.
 - A released model without onnxruntime refuses to run instead of answering with its baseline under the learned method's id.
 - The cgh-net, warmstart-model and model-metrics contracts (1.0.1) state the released slot: three focal planes in, the volumetric GS (M19)
   as its baseline.
