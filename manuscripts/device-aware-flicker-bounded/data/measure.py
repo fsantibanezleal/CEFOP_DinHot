@@ -300,13 +300,15 @@ def measure_b2_scope(seeds_long: list[int], seeds_c10: list[int], c10_equal_fram
                 res = B2.run(s, Target.from_traps(start), budget=Budget(30), rng=Rng(seed), destination=dest, frames=frames,
                              end_phases=end, phase_velocity_max=1.0)
                 row[key] = float(res.meta["transient_ratio"][moving].min())
+            phis, at = lpi(s, start, dest, Rng(100 + seed), n)
+            row["lpi_enough"] = float(B2.transient_min_ratio(s, phis, at)[moving].min())
             if row["enough"] < 0.9:
                 res = B2.run(s, Target.from_traps(start), budget=Budget(30), rng=Rng(seed), destination=dest, frames=2 * n,
                              end_phases=end, phase_velocity_max=1.0)
                 row["twice"] = float(res.meta["transient_ratio"][moving].min())
             rows.append(row)
             print(f"[B2 scope] {bins} bins seed {seed}: {B2.DEFAULT_FRAMES} frames {row['default']:.3f}, "
-                  f"{n} frames {row['enough']:.3f}" + (f", {2 * n} frames {row['twice']:.3f}" if "twice" in row else ""), flush=True)
+                  f"{n} frames {row['enough']:.3f} (LPI {row['lpi_enough']:.3f})" + (f", {2 * n} frames {row['twice']:.3f}" if "twice" in row else ""), flush=True)
         out["long"][str(bins)] = {"bins": bins, "fourier_units": float(B2.move_fourier_units(s, start, dest)), "frames": int(n),
                                   "peak_step": float(B2.peak_step_fu(s, start, dest, n)), "rows": rows}
     s, origin, goal, moving = c10_plan()
@@ -462,7 +464,7 @@ def write_macros(data: dict, path: Path) -> None:
     L.append(macro("bakeCeightFlicker", f"{c8m['params']['flicker_rad']:g}"))
     L.append(macro("bakeCeightRatioThree", fmt(c8m["seeds_mean_ratio"], 1)))
     sr = c8m["seeds_ratio"]
-    L.append(macro("bakeCeightSeedRatios", ", ".join(fmt(x, 2) for x in sr[:-1]) + f" and {fmt(sr[-1], 2)}"))
+    L.append(macro("bakeCeightSeedRatios", ", ".join(fmt(x, 3) for x in sr[:-1]) + f" and {fmt(sr[-1], 3)}"))
     L.append(macro("bakeCeightSeedsTwo", sum(1 for x in sr if x >= 2)))
     L.append(macro("bakeCeightSeedsN", len(sr)))
     # BS-2
@@ -500,6 +502,10 @@ def write_macros(data: dict, path: Path) -> None:
         L.append(macro(f"long{nm}Med", fmt(statistics.median(enough), 3)))
         L.append(macro(f"long{nm}Met", sum(x >= 0.9 for x in enough)))
         L.append(macro(f"long{nm}Low", fmt(min(enough), 3)))
+        lp = [r["lpi_enough"] for r in lg["rows"]]
+        L.append(macro(f"long{nm}BLeads", sum(1 for r in lg["rows"] if r["enough"] > r["lpi_enough"])))
+        L.append(macro(f"long{nm}LpiMin", fmt(min(lp), 3)))
+        L.append(macro(f"long{nm}LpiMax", fmt(max(lp), 3)))
     L.append(macro("longSeeds", len(sc["long"]["12"]["rows"])))
     L.append(macro("longAPeak", fmt(sc["long"]["12"]["peak_step"], 3)))
     L.append(macro("longBPeak", fmt(sc["long"]["20"]["peak_step"], 3)))

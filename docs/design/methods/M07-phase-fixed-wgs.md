@@ -98,7 +98,7 @@ um), 2 seeds:
 |---|---|---|
 | Iterations to 0.5 percent, `n_fix = 60` | 64 and 64 (M06: 136 and 106), re-measured 2026-10-30 (63 and 64 against 121 and 147 before the rule corrections) | FFT form |
 | Minimum spread, `n_fix = 12` | stalls at 3.58 percent over 40 iterations (2.88 before the rule corrections) | seed 1 |
-| Minimum spread against `n_fix` 12 / 20 / 30 / 40 / 60 | 2.9 / 1.6 / 1.5 / 0.8 / 1e-5 percent | same grid |
+| Minimum spread against `n_fix` 12 / 20 / 30 / 40 / 60 | 3.58 / 2.13 / 0.855 / 0.080 / 0.143 percent (150 iterations, seed 1, re-measured 2026-10-30 by the studio report's `acceptance.py`; 2.9 / 1.6 / 1.5 / 0.8 / 1e-5 before the rule corrections) | same grid |
 | 10x10 task, flat beam, family trend (E3 in-test copy) | efficiency 0.91, uniformity 1.00 | against Di Leonardo's GSW 0.93 / 0.99 |
 
 Mechanism (E2): on this crowded grid the phase frozen after 12 iterations belongs to an unconverged hologram and the weight update then

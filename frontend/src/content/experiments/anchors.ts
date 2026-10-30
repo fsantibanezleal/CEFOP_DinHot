@@ -34,8 +34,8 @@ export const KIM_FEEDBACK = {
   finalPct: 1.4,
   steps: 3,
   conditions: {
-    en: 'Kim et al. 2019, Optics Letters 44, 3178: 22 percent before and 1.4 percent after three steps; the array size reference is Ebadi et al. 2021',
-    es: 'Kim et al. 2019, Optics Letters 44, 3178: 22 por ciento antes y 1,4 por ciento después de tres pasos; la referencia del tamaño de la matriz es Ebadi et al. 2021',
+    en: 'Kim et al. 2019, Optics Letters 44, 3178: 22 percent before and 1.4 percent after three steps in the histogram of one run (1.59 plus or minus 0.18 percent over 8 ensembles); the array size reference is Ebadi et al. 2021',
+    es: 'Kim et al. 2019, Optics Letters 44, 3178: 22 por ciento antes y 1,4 por ciento después de tres pasos en el histograma de una corrida (1,59 más o menos 0,18 por ciento sobre 8 conjuntos); la referencia del tamaño de la matriz es Ebadi et al. 2021',
   },
 } as const;
 
