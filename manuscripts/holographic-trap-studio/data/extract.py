@@ -386,7 +386,7 @@ def table_benchmark(bench: dict) -> str:
 
 def table_bench_methods(bench: dict) -> str:
     n = len(bench["point_geometries"])
-    out = ["\\begin{table}[p]\\centering\\footnotesize\n",
+    out = ["\\begin{table}[t]\\centering\\footnotesize\n",
            f"\\caption{{Benchmark, per method: medians over the point-trap geometries the method ran on (of {n}) at 100 iterations with "
            "the default parameters, on the ideal device and on the C08 device. $\\sigma$ relative standard deviation (\\%), $e$ efficiency, "
            "time wall-clock seconds under shared load.}\\label{tab:benchmethods}\n",
@@ -396,7 +396,8 @@ def table_bench_methods(bench: dict) -> str:
     for m in order:
         v = bench["by_method"][m]
         i, d = v["ideal"], v["device"]
-        ideal = (f"{i['n']} & {sig(i['sigma'])} & {f(i['eff'], 3)} & {i['time_s']:.2g}" if i else "0 & n/a & n/a & n/a")
+        secs = (f"{i['time_s']:.0f}" if i["time_s"] >= 100 else f"{i['time_s']:.2g}") if i else ""
+        ideal = (f"{i['n']} & {sig(i['sigma'])} & {f(i['eff'], 3)} & {secs}" if i else "0 & n/a & n/a & n/a")
         dev = f"{sig(d['sigma'])} & {f(d['eff'], 3)}" if d else "n/a & n/a"
         out.append(f"{tex_escape(ladder_id(m))} & {TIER_LABEL.get(v['tier'], '')} & {ideal} & {dev}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
@@ -632,7 +633,7 @@ def main() -> int:
     state_words = {"partial": "partial", "training": "answered by its baseline, with no released model", "missing": "missing"}
     L.append(macro("readinessOthers", "; ".join(
         f"\\texttt{{{tex_escape(c['id'])}}} is {state_words.get(c['state'], c['state'])}"
-        + (f" ({tex_escape(c['reason'].rstrip('.'))})" if c["reason"] else "")
+        + (f" ({tex_escape(c['reason'].rstrip('.'))})" if c["reason"] and c["state"] != "training" else "")
         for c in others)))
     (HERE / "studio_numbers.tex").write_text("".join(L), encoding="utf-8")
 
