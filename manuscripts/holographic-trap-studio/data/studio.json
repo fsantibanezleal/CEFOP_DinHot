@@ -1845,6 +1845,14 @@
     "dims": 2
    }
   ],
+  "point_geometries": [
+   "G1",
+   "G2",
+   "G3",
+   "G4",
+   "G5",
+   "G6"
+  ],
   "rows": 63,
   "methods_measured": [
    "M01"
@@ -1904,70 +1912,236 @@
    "Method M18 does not accept a traps target (spec targets: ['field']).": 6,
    "Method M19 does not accept a field target (spec targets: ['traps']).": 1
   },
-  "cells_100": {
-   "M01/G1/device": {
-    "eff": 0.192551,
-    "sigma": 264.599686,
-    "sigma_q1": 263.922172,
-    "sigma_q3": 265.028349,
-    "n_seeds": 20
+  "seeds_min": 20,
+  "seeds_max": 20,
+  "by_geometry": {
+   "G1/ideal": {
+    "best": {
+     "method": "M01",
+     "sigma": 268.787921,
+     "eff": 0.328019,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 268.787921,
+     "eff": 0.328019,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 268.787921,
+     "eff": 0.328019,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
    },
-   "M01/G1/ideal": {
-    "eff": 0.328019,
-    "sigma": 268.787921,
-    "sigma_q1": 268.787921,
-    "sigma_q3": 268.787921,
-    "n_seeds": 20
+   "G1/device": {
+    "best": {
+     "method": "M01",
+     "sigma": 264.599686,
+     "eff": 0.192551,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 264.599686,
+     "eff": 0.192551,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 264.599686,
+     "eff": 0.192551,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
    },
-   "M01/G2/device": {
-    "eff": 0.339232,
-    "sigma": 3.690531,
-    "sigma_q1": 3.509094,
-    "sigma_q3": 3.793186,
-    "n_seeds": 20
+   "G2/ideal": {
+    "best": {
+     "method": "M01",
+     "sigma": 2.12341,
+     "eff": 0.567721,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 2.12341,
+     "eff": 0.567721,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 2.12341,
+     "eff": 0.567721,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
    },
-   "M01/G2/ideal": {
-    "eff": 0.567721,
-    "sigma": 2.12341,
-    "sigma_q1": 2.12341,
-    "sigma_q3": 2.12341,
-    "n_seeds": 20
+   "G2/device": {
+    "best": {
+     "method": "M01",
+     "sigma": 3.690531,
+     "eff": 0.339232,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 3.690531,
+     "eff": 0.339232,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 3.690531,
+     "eff": 0.339232,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
    },
-   "M01/G3/device": {
-    "eff": 0.511947,
-    "sigma": 13.220152,
-    "sigma_q1": 13.117681,
-    "sigma_q3": 13.277653,
-    "n_seeds": 20
+   "G3/ideal": {
+    "best": {
+     "method": "M01",
+     "sigma": 7.844569,
+     "eff": 0.672262,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 7.844569,
+     "eff": 0.672262,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 7.844569,
+     "eff": 0.672262,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
    },
-   "M01/G3/ideal": {
-    "eff": 0.672262,
-    "sigma": 7.844569,
-    "sigma_q1": 7.844569,
-    "sigma_q3": 7.844569,
-    "n_seeds": 20
+   "G3/device": {
+    "best": {
+     "method": "M01",
+     "sigma": 13.220152,
+     "eff": 0.511947,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 13.220152,
+     "eff": 0.511947,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 13.220152,
+     "eff": 0.511947,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
    },
-   "M01/G4/device": {
-    "eff": 0.312759,
-    "sigma": 160.550317,
-    "sigma_q1": 160.224944,
-    "sigma_q3": 160.989209,
-    "n_seeds": 20
+   "G4/ideal": {
+    "best": {
+     "method": "M01",
+     "sigma": 106.340368,
+     "eff": 0.426141,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 106.340368,
+     "eff": 0.426141,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 106.340368,
+     "eff": 0.426141,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
    },
-   "M01/G4/ideal": {
-    "eff": 0.426141,
-    "sigma": 106.340368,
-    "sigma_q1": 106.340368,
-    "sigma_q3": 106.340368,
-    "n_seeds": 20
+   "G4/device": {
+    "best": {
+     "method": "M01",
+     "sigma": 160.550317,
+     "eff": 0.312759,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 160.550317,
+     "eff": 0.312759,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 160.550317,
+     "eff": 0.312759,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
    },
-   "M01/G5/ideal": {
-    "eff": 0.327606,
-    "sigma": 143.531741,
-    "sigma_q1": 143.531741,
-    "sigma_q3": 143.531741,
-    "n_seeds": 20
+   "G5/ideal": {
+    "best": {
+     "method": "M01",
+     "sigma": 143.531741,
+     "eff": 0.327606,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 143.531741,
+     "eff": 0.327606,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 143.531741,
+     "eff": 0.327606,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
    }
+  },
+  "by_method": {
+   "M01": {
+    "tier": "classical",
+    "ideal": {
+     "n": 5,
+     "sigma": 106.340368,
+     "eff": 0.426141,
+     "time_s": 0.02652
+    },
+    "device": {
+     "n": 4,
+     "sigma": 86.88523450000001,
+     "eff": 0.3259955,
+     "time_s": 0.027256
+    }
+   }
+  },
+  "pareto": [],
+  "grid_100": {
+   "M01/G1/device": 264.599686,
+   "M01/G1/ideal": 268.787921,
+   "M01/G2/device": 3.690531,
+   "M01/G2/ideal": 2.12341,
+   "M01/G3/device": 13.220152,
+   "M01/G3/ideal": 7.844569,
+   "M01/G4/device": 160.550317,
+   "M01/G4/ideal": 106.340368,
+   "M01/G5/ideal": 143.531741
   }
  },
  "models": {
@@ -2062,57 +2236,68 @@
    {
     "id": "params-record",
     "state": "partial",
-    "provenance": "real"
+    "provenance": "real",
+    "reason": "1 of 14 records rejected by contract 1."
    },
    {
     "id": "case-index",
     "state": "available",
-    "provenance": "real"
+    "provenance": "real",
+    "reason": null
    },
    {
     "id": "case-manifest",
     "state": "available",
-    "provenance": "real"
+    "provenance": "real",
+    "reason": null
    },
    {
     "id": "trace",
     "state": "available",
-    "provenance": "real"
+    "provenance": "real",
+    "reason": null
    },
    {
     "id": "benchmark-results",
     "state": "partial",
-    "provenance": "real"
+    "provenance": "real",
+    "reason": "62 of 67 benchmark cells were not run."
    },
    {
     "id": "cgh-net",
     "state": "available",
-    "provenance": "real"
+    "provenance": "real",
+    "reason": null
    },
    {
     "id": "warmstart-model",
     "state": "training",
-    "provenance": "baseline"
+    "provenance": "baseline",
+    "reason": "No released model; the slot's baseline answers (GS for cgh-net, random trap phases for warmstart-model)."
    },
    {
     "id": "model-metrics",
     "state": "available",
-    "provenance": "real"
+    "provenance": "real",
+    "reason": null
    },
    {
     "id": "model-evidence",
     "state": "available",
-    "provenance": "real"
+    "provenance": "real",
+    "reason": null
    },
    {
     "id": "engine-reference",
     "state": "available",
-    "provenance": "real"
+    "provenance": "real",
+    "reason": null
    },
    {
     "id": "api",
     "state": "missing",
-    "provenance": null
+    "provenance": null,
+    "reason": "The API lane is dormant; the site reads the committed documents."
    }
   ]
  },

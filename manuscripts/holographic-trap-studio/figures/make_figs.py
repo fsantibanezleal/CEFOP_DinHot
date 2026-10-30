@@ -6,6 +6,7 @@
   fig-maps.pdf      phase mask and focal intensity of the phase-fixed WGS on C02, and of B1 on the device-limited C08.
   fig-feedback.pdf  emulated camera feedback: relative standard deviation against step, four cases.
   fig-learned.pdf   the learned models: cgh-net ratio by target kind, and the warm-start control.
+  fig-bench.pdf     the benchmark: relative standard deviation at 100 iterations, every method on every geometry, ideal and C08.
 
 Run from the repository root after ``data/extract.py``:  python manuscripts/holographic-trap-studio/figures/make_figs.py
 Deps: matplotlib, numpy (the notebook environment has both; the pipeline environment has no matplotlib).
@@ -150,7 +151,8 @@ def fig_learned() -> None:
     axs[0].bar(x[-2], d["cgh_net"]["ratio"]["median"], color=GREEN)
     axs[0].bar(x[-1], d["cgh_net_2d"]["ratio"]["median"], color=RED)
     axs[0].axhline(1.0, color=INK, lw=0.8, ls="--")
-    axs[0].set_xticks(x, labels + ["all 162\n(3 planes)", "2D run\n(219)"], fontsize=6.6)
+    axs[0].set_xticks(x, labels + [f"all {d['cgh_net']['held_out_n']}\n(3 planes)", f"2D run\n({d['cgh_net_2d']['held_out_n']})"],
+                      fontsize=6.6)
     axs[0].set_ylim(0.9, 1.22)
     axs[0].set_ylabel("accuracy ratio, network / baseline\nat equal wall-clock")
     axs[0].set_title("(a) cgh-net: volume (blue, green) and plane (red)", fontsize=8)
@@ -170,12 +172,45 @@ def fig_learned() -> None:
     plt.close(fig)
 
 
+def fig_bench() -> None:
+    b = studio()["benchmark"]
+    grid = b["grid_100"]
+    geos = [g["id"] for g in b["geometries"]]
+    methods = sorted({k.split("/")[0] for k in grid}, key=lambda m: (m.startswith("B"), m))
+    label = {m: (f"BS-{m[1:]}" if m.startswith("B") else m) for m in methods}
+    fig, axs = plt.subplots(1, 2, figsize=(7.2, 5.4), sharey=True)
+    for ax, device, title in ((axs[0], "ideal", "(a) ideal device"), (axs[1], "device", "(b) C08 device")):
+        z = np.full((len(methods), len(geos)), np.nan)
+        for i, m in enumerate(methods):
+            for j, g in enumerate(geos):
+                v = grid.get(f"{m}/{g}/{device}")
+                if v is not None:
+                    z[i, j] = max(v, 1e-3)
+        im = ax.imshow(np.ma.masked_invalid(z), aspect="auto", cmap="viridis_r", norm=LogNorm(vmin=1e-3, vmax=1e3))
+        ax.set_xticks(range(len(geos)), geos)
+        ax.set_title(title, fontsize=8)
+        for i in range(len(methods)):
+            for j in range(len(geos)):
+                v = z[i, j]
+                if np.isfinite(v):
+                    txt = "<.001" if v <= 1e-3 else (f"{v:.0f}" if v >= 100 else f"{v:.2g}")
+                    ax.text(j, i, txt, ha="center", va="center", fontsize=5.2,
+                            color="white" if v > 5 else INK)
+    axs[0].set_yticks(range(len(methods)), [label[m] for m in methods])
+    cb = fig.colorbar(im, ax=axs, fraction=0.03, pad=0.02)
+    cb.set_label("relative standard deviation at 100 iterations (%), median over the seeds")
+    fig.text(0.42, 0.02, "geometry (blank: the method does not run there, or no device row)", ha="center", fontsize=7.4)
+    fig.savefig(HERE / "fig-bench.pdf", bbox_inches="tight")
+    plt.close(fig)
+
+
 def main() -> int:
     fig_pipeline()
     fig_cases()
     fig_maps()
     fig_feedback()
     fig_learned()
+    fig_bench()
     print("figures written to", HERE)
     return 0
 
