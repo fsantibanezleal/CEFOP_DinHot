@@ -516,8 +516,8 @@ def write_macros(data: dict, path: Path) -> None:
         L.append(macro("benchOneDevMax", fmt(max(fac), 2)))
         L.append(macro("benchOneDevEff", fmt(statistics.median(eff), 3)))
         L.append(macro("benchOneDevPass", sum(1 for x in dev if x["factor"] >= 2 and x["eff_ratio"] >= 0.9)))
-        L.append(macro("benchOneDevSeedsMin", min(x["n_seeds"] for x in dev)))
-        L.append(macro("benchOneDevSeedsMax", max(x["n_seeds"] for x in dev)))
+        lo, hi = min(x["n_seeds"] for x in dev), max(x["n_seeds"] for x in dev)
+        L.append(macro("benchOneDevSeeds", str(lo) if lo == hi else f"{lo} to {hi}"))
     path.write_text("".join(L), encoding="utf-8")
 
 

@@ -233,7 +233,7 @@ implies, not at an equal number of frames on long moves.
 carried over from the model and is not verified against the source. An instrument with a different kernel would give a different factor, and the sensitivity of B1 to a mismatched kernel was not tested.
 
 \textbf{Variation.} The BS-1 factor ranges over the seeds from \ratioOneMin{} to \ratioOneMax{} on one task, and falls to \ratioOneFullMed{} on the full device and to \bakeCeightRatio{} on the smaller grid with a fixed budget. The result is a large improvement on this task, not a constant. The number of seeds is \nSeedsOne{} for the crosstalk device and \nSeedsOneFull{} for the full device; on the \benchOneDevN{} geometries of the studio's benchmark, on its C08 device (which adds flicker) at \benchOneBudget{} iterations with the
-default parameters and \benchOneDevSeedsMin{} to \benchOneDevSeedsMax{} seeds per cell, the factor over phase-fixed WGS has a median of \benchOneDevMed{}
+default parameters and \benchOneDevSeeds{} seeds per cell, the factor over phase-fixed WGS has a median of \benchOneDevMed{}
 (\benchOneDevMin{} to \benchOneDevMax) at a median efficiency ratio of \benchOneDevEff, and \benchOneDevPass{} of them meet both thresholds of the hypothesis:
 the gain is that of the task and devices above, and it does not carry to every geometry.
 B1 is built for traps on FFT bins at the focal plane without vortices, and is more expensive than the baseline by about the square of the upsampling factor per step; it is a baked method, not a live one.
