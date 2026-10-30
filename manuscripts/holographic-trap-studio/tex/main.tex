@@ -300,7 +300,8 @@ whose corner frequency is the stiffness over $2\pi\gamma$~\cite{tolic}, which th
 The benchmark compares the tiers on one protocol. Its geometries are (\benchGeometries{}) a $10\times10$ square, a ring of 36 traps, 100 random
 traps, a quasi-periodic set of 119, a $5\times5\times3$ lattice, a large array ($32\times32$ and the disordered 819 set) and shaped fields;
 the grids are \benchGrids{} pixels, the iteration budgets are \benchIters{} and the time budgets are \benchTimes{} s (the last is
-the converged row). Every cell runs on \benchSeeds{} seeds and reports the median and the inter-quartile range of efficiency,
+the converged row). A group runs up to \benchSeeds{} seeds, at least two, until a bound on its wall clock, and every cell reports the
+median and the inter-quartile range of efficiency,
 uniformity, relative standard deviation, time and iterations, on the ideal device and on the C08 device (every hologram scored
 against its device). The Pareto fronts are stored with the cells.
 
