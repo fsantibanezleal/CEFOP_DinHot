@@ -58,6 +58,10 @@ repeats it over 20 seeds on the C08 device.
 
 - UNVERIFIED: the unit of $k$ in the crosstalk kernel ([P02](P02_device-model.md)); the claim is relative to the model of the device, not to a measured instrument.
 - Cost per CG step is about 3 by 3 times the pixels of the plain FFT; baked.
+- B1 returns its best iterate that keeps 0.9 of its warm start's efficiency (2026-10-30): its weight update can wind up on a device the
+  few gradient steps cannot fit, and without the safeguard one seed in two did on the benchmark's square lattice on the C08 device.
+- Scope measured by the benchmark on the C08 device (design record, update of 2026-10-30): the claim holds on the ring and the random set,
+  B1 lowers the spread by less than two times on the large set, and keeps its start on the square and quasi-periodic lattices.
 
 ## References
 
