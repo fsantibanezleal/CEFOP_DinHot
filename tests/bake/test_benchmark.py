@@ -165,8 +165,16 @@ def test_b5_front_is_stored_as_its_non_dominated_points():
 
 
 def test_the_real_b5_runs_through_the_protocol_and_its_front_validates(tmp_path):
-    """Must refute: a B5 group that stops the run (the release run of 2026-10-29 stopped on it after four hours)."""
-    doc = protocol.run(tmp_path / "out", seeds=2, workers=1, reduced=True, geometries=["G1"], methods=["B5"])
+    """Must refute: a B5 group that stops the run (the release run of 2026-10-29 stopped on it after four hours). The module's
+    fixture keeps a planted registry active, so the product's own registry is loaded for this test and the previous one restored."""
+    from pipeline.model.holo import methods
+
+    previous = methods._base
+    methods.reload(None)
+    try:
+        doc = protocol.run(tmp_path / "out", seeds=2, workers=1, reduced=True, geometries=["G1"], methods=["B5"])
+    finally:
+        methods.reload(None if previous == methods.__name__ else previous)
     assert cs.errors("benchmark-results", doc) == []
     assert [r for r in doc["rows"] if r["method"] == "B5" and r["geometry"] == "G1"]
     front = doc["pareto"]
