@@ -250,6 +250,80 @@ def measure_b2(seeds: list[int], frames_list: list[int]) -> dict:
     }
 
 
+def long_move(setup: Setup, bins: int):
+    """The acceptance lattice with its two right columns moved ``bins`` focal bins in x, and the moving mask (B2 test)."""
+    start = bin_grid(setup, 4, 4, 8)
+    b = focal_bin_m(setup)
+    dest = TrapSet(replace(t, x_m=t.x_m + (bins * b if (i % 4) >= 2 else 0.0)) for i, t in enumerate(start))
+    return start, dest, np.array([(i % 4) >= 2 for i in range(16)])
+
+
+def c10_plan():
+    """Case C10's sort on M16's own plan (the B2 test): the setup, the origin and goal trap sets and the moving mask."""
+    from pipeline.cases import build, library  # noqa: PLC0415
+    from pipeline.io.contract import read_cases  # noqa: PLC0415
+    from pipeline.model.holo.methods.control import m16_rearrangement as M16  # noqa: PLC0415
+
+    rec = next(c for c in read_cases(ROOT / "data" / "examples" / "cases.json") if c["case_id"].startswith("C10"))
+    s = build.setup_of(rec)
+    sites = {t["id"]: t for t in rec["target"]["traps"]}
+    loaded, wanted = library.random_loading(rec), rec["rearrangement"]["target_ids"]
+    atoms = build.trapset_of([sites[i] for i in loaded])
+    goal = build.trapset_of([sites[i] for i in wanted])
+    pick = M16.run(s, Target.from_traps(goal), budget=Budget(30), rng=Rng(1), atoms=atoms, alpha=1.0,
+                   max_step_bins=1.25).meta["assignment"]
+    origin = TrapSet(replace(t, x_m=atoms.x_m[pick[i]], y_m=atoms.y_m[pick[i]]) for i, t in enumerate(goal))
+    moving = np.array([np.hypot(a.x_m - g.x_m, a.y_m - g.y_m) > 0 for a, g in zip(origin, goal)])
+    return s, origin, goal, moving
+
+
+def measure_b2_scope(seeds_long: list[int], seeds_c10: list[int], c10_equal_frames: int = 25) -> dict:
+    """The measured limit of BS-2, as its test runs it on more seeds: (a) longer moves of the acceptance lattice (12 and 20 bins,
+    64 pixels), end phases from M07 at the destination, at the default frames and at the frames ``frames_for_move`` names; (b)
+    case C10's sort on M16's plan (end phases from M07 per seed, LPI on the same assignment) at an equal number of frames and at
+    the frames of the move, and the held phases at the equal frames for the first seed."""
+    out = {"claim_step_fu": float(B2.CLAIM_STEP_FU), "default_frames": int(B2.DEFAULT_FRAMES), "long": {}}
+    s = make_setup(64)
+    for bins in (12, 20):
+        start, dest, moving = long_move(s, bins)
+        n = B2.frames_for_move(s, start, dest)
+        rows = []
+        for seed in seeds_long:
+            end = np.angle(m07_phase_fixed_wgs.run(s, Target.from_traps(dest), budget=Budget(30), rng=Rng(seed)).fields)
+            row = {"seed": seed}
+            for key, frames in (("default", B2.DEFAULT_FRAMES), ("enough", n)):
+                res = B2.run(s, Target.from_traps(start), budget=Budget(30), rng=Rng(seed), destination=dest, frames=frames,
+                             end_phases=end, phase_velocity_max=1.0)
+                row[key] = float(res.meta["transient_ratio"][moving].min())
+            rows.append(row)
+            print(f"[B2 scope] {bins} bins seed {seed}: {B2.DEFAULT_FRAMES} frames {row['default']:.3f}, "
+                  f"{n} frames {row['enough']:.3f}", flush=True)
+        out["long"][str(bins)] = {"bins": bins, "fourier_units": float(B2.move_fourier_units(s, start, dest)), "frames": int(n),
+                                  "rows": rows}
+    s, origin, goal, moving = c10_plan()
+    n = B2.frames_for_move(s, origin, goal)
+    c10 = {"moving": int(moving.sum()), "n_traps": len(goal), "fourier_units": float(B2.move_fourier_units(s, origin, goal)),
+           "frames": int(n), "equal_frames": c10_equal_frames,
+           "peak_step_equal": float(B2.peak_step_fu(s, origin, goal, c10_equal_frames)), "rows": []}
+    held = B2.run(s, Target.from_traps(origin), budget=Budget(30), rng=Rng(seeds_c10[0]), destination=goal,
+                  frames=c10_equal_frames)
+    c10["held_equal_first_seed"] = float(held.meta["transient_ratio"][moving].min())
+    for seed in seeds_c10:
+        end = np.angle(m07_phase_fixed_wgs.run(s, Target.from_traps(goal), budget=Budget(30), rng=Rng(seed)).fields)
+        row = {"seed": seed}
+        for key, frames in (("equal", c10_equal_frames), ("enough", n)):
+            res = B2.run(s, Target.from_traps(origin), budget=Budget(30), rng=Rng(seed), destination=goal, frames=frames,
+                         end_phases=end, phase_velocity_max=1.0)
+            phis, at = lpi(s, origin, goal, Rng(100 + seed), frames)
+            row[f"b2_{key}"] = float(res.meta["transient_ratio"][moving].min())
+            row[f"lpi_{key}"] = float(B2.transient_min_ratio(s, phis, at)[moving].min())
+        c10["rows"].append(row)
+        print(f"[B2 scope] C10 seed {seed}: {c10_equal_frames} frames B2 {row['b2_equal']:.3f} LPI {row['lpi_equal']:.3f}; "
+              f"{n} frames B2 {row['b2_enough']:.3f} LPI {row['lpi_enough']:.3f}", flush=True)
+    out["c10"] = c10
+    return out
+
+
 # ---------------------------------------------------------------- committed artifacts
 
 def read_manifests() -> dict:
@@ -366,6 +440,46 @@ def write_macros(data: dict, path: Path) -> None:
             L.append(macro(f"bTwoMin{nm}", fmt(b2[fr]["b2_min"]["min"], 3)))
             L.append(macro(f"lpiMed{nm}", fmt(b2[fr]["lpi_min"]["median"], 3)))
             L.append(macro(f"lpiMax{nm}", fmt(b2[fr]["lpi_min"]["max"], 3)))
+    # BS-2, the measured scope
+    sc = data["bs2_scope"]
+    L.append(macro("claimStepFu", f"{sc['claim_step_fu']:g}"))
+    L.append(macro("scopeDefaultFrames", sc["default_frames"]))
+    shorts = []
+    for key, nm in (("12", "A"), ("20", "B")):
+        lg = sc["long"][key]
+        enough = [r["enough"] for r in lg["rows"]]
+        shorts += [r["default"] for r in lg["rows"]]
+        L.append(macro(f"long{nm}Bins", lg["bins"]))
+        L.append(macro(f"long{nm}Fu", f"{lg['fourier_units']:g}"))
+        L.append(macro(f"long{nm}Frames", lg["frames"]))
+        L.append(macro(f"long{nm}Med", fmt(statistics.median(enough), 3)))
+        L.append(macro(f"long{nm}Met", sum(x >= 0.9 for x in enough)))
+        L.append(macro(f"long{nm}Low", fmt(min(enough), 3)))
+    L.append(macro("longSeeds", len(sc["long"]["12"]["rows"])))
+    L.append(macro("longDefaultMax", fmt(max(shorts), 3)))
+    c = sc["c10"]
+    rows = c["rows"]
+    met = [r["b2_enough"] for r in rows if r["b2_enough"] >= 0.9]
+    L.append(macro("cTenMoving", c["moving"]))
+    L.append(macro("cTenTraps", c["n_traps"]))
+    L.append(macro("cTenFu", fmt(c["fourier_units"], 1)))
+    L.append(macro("cTenFrames", c["frames"]))
+    L.append(macro("cTenEqual", c["equal_frames"]))
+    L.append(macro("cTenPeakEqual", fmt(c["peak_step_equal"], 2)))
+    L.append(macro("cTenHeld", fmt(c["held_equal_first_seed"], 3)))
+    L.append(macro("cTenSeeds", len(rows)))
+    L.append(macro("cTenLpiLeads", sum(r["lpi_equal"] > r["b2_equal"] for r in rows)))
+    L.append(macro("cTenBEqualMax", fmt(max(r["b2_equal"] for r in rows), 3)))
+    L.append(macro("cTenLEqualMin", fmt(min(r["lpi_equal"] for r in rows), 3)))
+    L.append(macro("cTenLEqualMax", fmt(max(r["lpi_equal"] for r in rows), 3)))
+    L.append(macro("cTenMet", len(met)))
+    L.append(macro("cTenMetMin", fmt(min(met), 3) if met else "n/a"))
+    L.append(macro("cTenMetMax", fmt(max(met), 3) if met else "n/a"))
+    L.append(macro("cTenMetMed", fmt(statistics.median(met), 3) if met else "n/a"))
+    L.append(macro("cTenLowest", fmt(min(r["b2_enough"] for r in rows), 3)))
+    L.append(macro("cTenLpiMin", fmt(min(r["lpi_enough"] for r in rows), 3)))
+    L.append(macro("cTenLpiMax", fmt(max(r["lpi_enough"] for r in rows), 3)))
+    L.append(macro("cTenBLeads", sum(r["b2_enough"] > r["lpi_enough"] for r in rows)))
     path.write_text("".join(L), encoding="utf-8")
 
 
@@ -375,6 +489,10 @@ def main() -> int:
     ap.add_argument("--seeds-b1-full", type=int, default=3)
     ap.add_argument("--seeds-b2", type=int, default=5)
     ap.add_argument("--frames", type=int, nargs="+", default=[13, 7, 25])
+    ap.add_argument("--seeds-long", type=int, default=8, help="seeds of the long lattice moves (BS-2 scope)")
+    ap.add_argument("--seeds-c10", type=int, default=6, help="seeds of C10's sort on M16's plan (BS-2 scope)")
+    ap.add_argument("--parts", default="bs1,bs1_full,bs2,bs2_scope",
+                    help="comma-separated parts to measure; the others are kept from the existing beyond.json")
     ap.add_argument("--out", default=str(HERE))
     ap.add_argument("--macros-only", action="store_true", help="rewrite the macro file from an existing beyond.json")
     a = ap.parse_args()
@@ -383,13 +501,21 @@ def main() -> int:
         write_macros(json.loads((out / "beyond.json").read_text(encoding="utf-8")), out / "beyond_numbers.tex")
         print("rewrote", out / "beyond_numbers.tex")
         return 0
-    data = {
-        "engine_version": (ROOT / "VERSION").read_text(encoding="utf-8").strip(),
-        "bs1_crosstalk": measure_b1(list(range(1, a.seeds_b1 + 1)), CROSSTALK_DEVICE, "crosstalk device", True),
-        "bs1_full_device": measure_b1(list(range(1, a.seeds_b1_full + 1)), FULL_DEVICE, "4-bit, crosstalk, fill 0.85", False),
-        "bs2": measure_b2(list(range(1, a.seeds_b2 + 1)), a.frames),
-        "bake": read_manifests(),
-    }
+    parts = set(a.parts.split(","))
+    known = {"bs1", "bs1_full", "bs2", "bs2_scope"}
+    if parts - known:
+        ap.error(f"unknown parts {sorted(parts - known)}; known: {sorted(known)}")
+    data = {} if parts == known else json.loads((out / "beyond.json").read_text(encoding="utf-8"))
+    data["engine_version"] = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    if "bs1" in parts:
+        data["bs1_crosstalk"] = measure_b1(list(range(1, a.seeds_b1 + 1)), CROSSTALK_DEVICE, "crosstalk device", True)
+    if "bs1_full" in parts:
+        data["bs1_full_device"] = measure_b1(list(range(1, a.seeds_b1_full + 1)), FULL_DEVICE, "4-bit, crosstalk, fill 0.85", False)
+    if "bs2" in parts:
+        data["bs2"] = measure_b2(list(range(1, a.seeds_b2 + 1)), a.frames)
+    if "bs2_scope" in parts:
+        data["bs2_scope"] = measure_b2_scope(list(range(1, a.seeds_long + 1)), list(range(1, a.seeds_c10 + 1)))
+    data["bake"] = read_manifests()
     (out / "beyond.json").write_text(json.dumps(data, indent=1), encoding="utf-8")
     write_macros(data, out / "beyond_numbers.tex")
     print("wrote", out / "beyond.json", out / "beyond_numbers.tex")
