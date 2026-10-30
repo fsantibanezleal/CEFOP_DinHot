@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-label="The same bench with a device model and a camera feedback loop: uniform spots, a short update and a power meter">
+<title>The same bench with a device model and a camera feedback loop: uniform spots, a short update and a power meter</title>
+<rect x="1" y="1" width="798" height="478" rx="12" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="2" y="338" width="796" height="12" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="2" y="350" width="796" height="128" rx="0" fill="var(--color-surface-2)" stroke="none" stroke-width="0" opacity="0.5"/>
+<path d="M 100 230 L 150 230" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 175 230 L 450 230" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="20" y="204" width="80" height="52" rx="6" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="86" cy="230" r="7" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.5"/>
+<path d="M 36 218 L 62 218 M 36 230 L 62 230 M 36 242 L 62 242" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 60 256 L 60 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="150" y="186" width="26" height="88" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 156 196 L 156 264 M 163 196 L 163 264 M 170 196 L 170 264" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 163 274 L 163 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="255" cy="230" rx="11" ry="40" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 255 270 L 255 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="335" cy="230" rx="11" ry="40" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 335 270 L 335 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 392 198 L 446 214 L 446 246 L 392 262 Z" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M 410 262 L 410 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="452" y="158" width="188" height="144" rx="14" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2.5"/>
+<rect x="468" y="172" width="156" height="116" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<path d="M 546 302 L 546 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="498" cy="196" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="523" cy="196" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="548" cy="196" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="573" cy="196" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="598" cy="196" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="498" cy="230" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="523" cy="230" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="573" cy="230" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="598" cy="230" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="498" cy="264" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="523" cy="264" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="548" cy="264" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="573" cy="264" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="598" cy="264" r="9" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1"/>
+<circle cx="548" cy="230" r="9" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 543 225 L 553 235 M 553 225 L 543 235" fill="none" stroke="var(--color-fg-subtle)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="690" y="196" width="86" height="68" rx="8" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="690" cy="230" r="20" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="690" cy="230" r="8" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 733 264 L 733 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 640 230 L 670 230" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 6"/>
+<rect x="13" y="34" width="94" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="60" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Laser</text>
+<text data-lang="es" x="60" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Láser</text>
+<rect x="170" y="34" width="239" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="290" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Relay optics</text>
+<text data-lang="es" x="290" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Óptica de relevo</text>
+<rect x="412" y="34" width="266" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="545" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Trap array</text>
+<text data-lang="es" x="545" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Arreglo de trampas</text>
+<rect x="681" y="34" width="107" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="735" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Camera</text>
+<text data-lang="es" x="735" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Cámara</text>
+<rect x="30" y="80" width="239" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="150" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Light modulator</text>
+<text data-lang="es" x="150" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Modulador de luz</text>
+<rect x="322" y="80" width="147" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="395" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Objective</text>
+<text data-lang="es" x="395" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Objetivo</text>
+<rect x="467" y="80" width="226" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="580" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Vacuum chamber</text>
+<text data-lang="es" x="580" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Cámara de vacío</text>
+<path d="M 60 68 L 60 204" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 290 68 L 290 80 M 290 114 L 262 196" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 545 68 L 545 80 M 545 114 L 545 190" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 735 68 L 735 196" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 150 114 L 160 186" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 395 114 L 410 198" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<circle cx="80" cy="284" r="20" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2.5"/>
+<path d="M 80 284 L 92 274" fill="none" stroke="var(--color-good)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 80 256 L 80 264" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 4"/>
+<rect x="13" y="304" width="134" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-good)" stroke-width="2"/>
+<text data-lang="en" x="80" y="329" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Power</text>
+<text data-lang="es" x="80" y="329" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Potencia</text>
+<path d="M 733 264 L 733 344 L 118 344 L 118 362" fill="none" stroke="var(--color-accent-2)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5"/>
+<path d="M 156 362 L 156 344 L 156 276" fill="none" stroke="var(--color-accent-2)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5"/>
+<rect x="36" y="362" width="136" height="64" rx="6" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="64" cy="394" r="5" fill="var(--color-good)"/><circle cx="84" cy="394" r="5" fill="var(--color-good)"/><circle cx="104" cy="394" r="5" fill="var(--color-good)"/><circle cx="124" cy="394" r="5" fill="var(--color-good)"/><circle cx="144" cy="394" r="5" fill="var(--color-good)"/>
+<path d="M 50 412 L 158 412" fill="none" stroke="var(--color-good)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 104 426 L 104 436 M 78 438 L 130 438" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<g><circle cx="330" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="312" y="386" width="36" height="46" rx="12" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<circle cx="462" cy="404" r="26" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2.5"/>
+<path d="M 462 404 L 462 388" fill="none" stroke="var(--color-fg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 462 404 L 476 404" fill="none" stroke="var(--color-good)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 462 404 L 462 388 A 16 16 0 0 1 476 404 Z" fill="var(--color-good)" stroke="none" stroke-width="0" opacity="0.5"/>
+<rect x="590" y="362" width="120" height="70" rx="6" fill="var(--color-accent-soft)" stroke="var(--color-accent-2)" stroke-width="2"/>
+<path d="M 604 380 L 696 380" fill="none" stroke="var(--color-accent-2)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 604 396 L 680 396 M 604 410 L 660 410" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 676 412 L 684 420 L 698 404" fill="none" stroke="var(--color-good)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="24" y="438" width="160" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="104" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Computer</text>
+<text data-lang="es" x="104" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Computador</text>
+<rect x="250" y="438" width="160" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="330" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Scientist</text>
+<text data-lang="es" x="330" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Científico</text>
+<rect x="416" y="438" width="107" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="470" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Fast</text>
+<text data-lang="es" x="470" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Rápido</text>
+<rect x="539" y="438" width="252" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="665" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Device model</text>
+<text data-lang="es" x="665" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Modelo del equipo</text>
+<rect x="285" y="296" width="239" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-good)" stroke-width="2"/>
+<text data-lang="en" x="405" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Uniform spots</text>
+<text data-lang="es" x="405" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Puntos uniformes</text>
+<path d="M 480 296 L 505 280" fill="none" stroke="var(--color-good)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="539" y="296" width="252" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-good)" stroke-width="2"/>
+<text data-lang="en" x="665" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Feedback</text>
+<text data-lang="es" x="665" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Retroalimentación</text>
+<path d="M 700 330 L 700 342" fill="none" stroke="var(--color-good)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

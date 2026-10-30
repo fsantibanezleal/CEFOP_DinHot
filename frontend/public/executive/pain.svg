@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-label="The trap array grows uneven: some spots dim or missing, a ghost spot, and a scientist waiting at an uncorrected device">
+<title>The trap array grows uneven: some spots dim or missing, a ghost spot, and a scientist waiting at an uncorrected device</title>
+<style>
+/* An animated scene (shell 0.14.0): the trap spots appear unevenly, one is missed, a ghost spot and a bright centre spot show, and the clock runs.
+   The labels never move. A single 8 s loop. The static drawing below is the final frame and is what prefers-reduced-motion shows. */
+.b1 { animation: b1 8s ease-out infinite; }
+.b2 { animation: b2 8s ease-out infinite; }
+.dim { animation: dim 8s ease-out infinite; }
+.miss { animation: miss 8s ease-in-out infinite; }
+.zero { animation: zero 8s ease-out infinite; }
+.ghost { animation: ghost 8s ease-in-out infinite; }
+.hand { animation: turn 8s linear infinite; transform-origin: 462px 404px; }
+.wait { animation: wait 8s ease-in-out infinite; }
+@keyframes b1 { 0%, 8% { opacity: 0; } 24%, 100% { opacity: 1; } }
+@keyframes b2 { 0%, 22% { opacity: 0; } 40%, 100% { opacity: 1; } }
+@keyframes dim { 0%, 38% { opacity: 0; } 54%, 100% { opacity: 1; } }
+@keyframes miss { 0%, 52% { opacity: 0; } 64%, 100% { opacity: 1; } }
+@keyframes zero { 0%, 60% { opacity: 0; } 72%, 100% { opacity: 1; } }
+@keyframes ghost { 0%, 70% { opacity: 0; } 84%, 100% { opacity: 1; } }
+@keyframes turn { to { transform: rotate(360deg); } }
+@keyframes wait { 0%, 50% { opacity: 0; } 70%, 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .b1, .b2, .dim, .miss, .zero, .ghost, .hand, .wait { animation: none; opacity: 1; transform: none; }
+}
+</style>
+<rect x="1" y="1" width="798" height="478" rx="12" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="2" y="338" width="796" height="12" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="2" y="350" width="796" height="128" rx="0" fill="var(--color-surface-2)" stroke="none" stroke-width="0" opacity="0.5"/>
+<path d="M 100 230 L 150 230" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 175 230 L 450 230" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="20" y="204" width="80" height="52" rx="6" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="86" cy="230" r="7" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.5"/>
+<path d="M 36 218 L 62 218 M 36 230 L 62 230 M 36 242 L 62 242" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 60 256 L 60 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="150" y="186" width="26" height="88" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 156 196 L 156 264 M 163 196 L 163 264 M 170 196 L 170 264" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 163 274 L 163 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="255" cy="230" rx="11" ry="40" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 255 270 L 255 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="335" cy="230" rx="11" ry="40" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 335 270 L 335 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 392 198 L 446 214 L 446 246 L 392 262 Z" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M 410 262 L 410 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="452" y="158" width="188" height="144" rx="14" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2.5"/>
+<rect x="468" y="172" width="156" height="116" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<path d="M 546 302 L 546 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle class="b1" cx="498" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="dim" cx="523" cy="196" r="7" fill="var(--color-fg-faint)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="548" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b2" cx="573" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="598" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b2" cx="498" cy="230" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="523" cy="230" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="573" cy="230" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="dim" cx="598" cy="230" r="7" fill="var(--color-fg-faint)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="miss" cx="498" cy="264" r="7" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-dasharray="3 3"/>
+<circle class="b2" cx="523" cy="264" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="548" cy="264" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="dim" cx="573" cy="264" r="7" fill="var(--color-fg-faint)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="598" cy="264" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="zero" cx="548" cy="230" r="14" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1.5"/>
+<circle class="ghost" cx="610" cy="180" r="8" fill="none" stroke="var(--color-warn)" stroke-width="2.5" stroke-dasharray="4 3"/>
+<rect x="690" y="196" width="86" height="68" rx="8" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="690" cy="230" r="20" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="690" cy="230" r="8" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 733 264 L 733 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 640 230 L 670 230" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 6"/>
+<rect x="13" y="34" width="94" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="60" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Laser</text>
+<text data-lang="es" x="60" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Láser</text>
+<rect x="170" y="34" width="239" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="290" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Relay optics</text>
+<text data-lang="es" x="290" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Óptica de relevo</text>
+<rect x="412" y="34" width="266" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="545" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Trap array</text>
+<text data-lang="es" x="545" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Arreglo de trampas</text>
+<rect x="681" y="34" width="107" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="735" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Camera</text>
+<text data-lang="es" x="735" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Cámara</text>
+<rect x="30" y="80" width="239" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="150" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Light modulator</text>
+<text data-lang="es" x="150" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Modulador de luz</text>
+<rect x="322" y="80" width="147" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="395" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Objective</text>
+<text data-lang="es" x="395" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Objetivo</text>
+<rect x="467" y="80" width="226" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="580" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Vacuum chamber</text>
+<text data-lang="es" x="580" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Cámara de vacío</text>
+<path d="M 60 68 L 60 204" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 290 68 L 290 80 M 290 114 L 262 196" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 545 68 L 545 80 M 545 114 L 545 190" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 735 68 L 735 196" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 150 114 L 160 186" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 395 114 L 410 198" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<rect x="36" y="362" width="136" height="64" rx="6" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="64" cy="394" r="5" fill="var(--color-fg-faint)"/><circle cx="84" cy="394" r="5" fill="var(--color-accent)"/><circle cx="104" cy="394" r="5" fill="var(--color-fg-faint)"/><circle cx="124" cy="394" r="5" fill="var(--color-accent)"/><circle cx="144" cy="394" r="5" fill="var(--color-fg-faint)"/>
+<path d="M 50 412 L 158 412" fill="none" stroke="var(--color-bad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 104 426 L 104 436 M 78 438 L 130 438" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="122" y="296" width="186" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="215" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Uncorrected</text>
+<text data-lang="es" x="215" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Sin corregir</text>
+<path d="M 163 296 L 163 274" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="319" y="296" width="252" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="445" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Uneven spots</text>
+<text data-lang="es" x="445" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Puntos desiguales</text>
+<path d="M 495 296 L 510 280" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="584" y="296" width="213" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="690" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Ghost spot</text>
+<text data-lang="es" x="690" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Punto fantasma</text>
+<path d="M 640 296 L 614 188" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<g><circle cx="330" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="312" y="386" width="36" height="46" rx="12" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<circle cx="462" cy="404" r="26" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2.5"/>
+<path d="M 462 404 L 462 388" fill="none" stroke="var(--color-fg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="hand"><path d="M 462 404 L 476 404" fill="none" stroke="var(--color-bad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</g><g class="wait"><circle cx="372" cy="360" r="3" fill="var(--color-fg-subtle)"/><circle cx="384" cy="352" r="4" fill="var(--color-fg-subtle)"/><circle cx="398" cy="344" r="5" fill="var(--color-fg-subtle)"/></g>
+<rect x="590" y="362" width="120" height="70" rx="4" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 604 380 L 696 380 M 604 394 L 680 394 M 604 408 L 696 408 M 604 422 L 660 422" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 676 418 L 684 426 L 698 410" fill="none" stroke="var(--color-bad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="24" y="438" width="160" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="104" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Computer</text>
+<text data-lang="es" x="104" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Computador</text>
+<rect x="250" y="438" width="160" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="330" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Scientist</text>
+<text data-lang="es" x="330" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Científico</text>
+<rect x="410" y="438" width="120" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="470" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Waiting</text>
+<text data-lang="es" x="470" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Espera</text>
+<rect x="563" y="438" width="173" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="650" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Calibration</text>
+<text data-lang="es" x="650" y="463" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Calibración</text>
+</svg>

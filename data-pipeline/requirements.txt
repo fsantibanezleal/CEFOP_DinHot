@@ -1,0 +1,6 @@
+# PRECOMPUTE lane, the research-chosen engines, in the .venv-pipeline (local-only, never deployed). Every engine pinned here
+# is documented in docs/frameworks/ and used by data-pipeline/pipeline/.
+# numpy: the canonical hologram engine (numpy.fft and linear algebra).
+numpy==2.4.6
+# onnxruntime: the released learned model (cgh-net) in the bake of M17, the same ONNX file the web runs.
+onnxruntime==1.31.1

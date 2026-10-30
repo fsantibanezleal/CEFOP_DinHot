@@ -1,0 +1,3338 @@
+{
+ "product_version": "0.02.000",
+ "ladder": [
+  {
+   "id": "M01",
+   "tier": "classical",
+   "method": "Superposition of prisms and lenses",
+   "criterion": "on the 10x10 task with a flat beam, efficiency within 0.10 of 0.29 and uniformity below 0.05",
+   "gate": "tests/methods/baseline/test_m01_superposition.py"
+  },
+  {
+   "id": "M02",
+   "tier": "classical",
+   "method": "Random superposition",
+   "criterion": "on the 10x10 task with a flat beam, efficiency above M01 and at least 0.65; uniformity below 0.35 (DinHot measured 0.25 at 256 squared against 0.01 at 768 squared in the source; the ordering, not the value, transfers)",
+   "gate": "tests/methods/baseline/test_m02_random_superposition.py"
+  },
+  {
+   "id": "M03",
+   "tier": "classical",
+   "method": "Random mask",
+   "criterion": "efficiency about 1/M; at the source's 768 squared grid, uniformity within the spread of 0.58",
+   "gate": "tests/methods/baseline/test_m03_random_mask.py"
+  },
+  {
+   "id": "M04",
+   "tier": "classical",
+   "method": "Gerchberg-Saxton, point-trap and FFT forms",
+   "criterion": "the two forms agree to 1e-9 rad; 30 iterations on the 10x10 task with a flat beam reach efficiency at least 0.9 and uniformity near 0.6",
+   "gate": "tests/methods/baseline/test_m04_gs.py"
+  },
+  {
+   "id": "M05",
+   "tier": "classical",
+   "method": "Generalized adaptive additive",
+   "criterion": "uniformity above GS at equal iterations on the 10x10 task",
+   "gate": "tests/methods/baseline/test_m05_gaa.py"
+  },
+  {
+   "id": "M06",
+   "tier": "classical",
+   "method": "Weighted GS",
+   "criterion": "efficiency and uniformity at least 0.9 within a median of 15 iterations on the 10x10 task with a flat beam (the source reports about 10); the 3x3x3 lattice above 0.9 and 0.98",
+   "gate": "tests/methods/baseline/test_m06_gsw.py"
+  },
+  {
+   "id": "M07",
+   "tier": "sota",
+   "method": "Phase-fixed weighted GS",
+   "criterion": "fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations in the acceptance run (the code default `n_fix` is 12, as in Kim et al. 2019; at 12 it stalls at 3.58 percent on DinHot's grid, re-measured 2026-10-30); from the same start M07 matches slmsuite 0.5.0's WGS-Kim to 1e-4 percent (the first field is not reweighted, g_0 = 1)",
+   "gate": "tests/methods/baseline/test_m07_phase_fixed_wgs.py"
+  },
+  {
+   "id": "M08",
+   "tier": "sota",
+   "method": "MRAF",
+   "criterion": "on disc, ring and bar targets, signal-region error at least five times below GS at the cost of efficiency",
+   "gate": "tests/methods/baseline/test_m08_mraf.py"
+  },
+  {
+   "id": "M09",
+   "tier": "classical",
+   "method": "Direct search",
+   "criterion": "uniformity at least 0.98 on the 10x10 task; under 5 percent rms variation on a quasi-periodic set",
+   "gate": "tests/methods/optim/test_m09_direct_search.py"
+  },
+  {
+   "id": "M10",
+   "tier": "sota",
+   "method": "Conjugate-gradient minimization",
+   "criterion": "the analytic gradient matches finite differences; a square lattice below 1 percent error",
+   "gate": "tests/methods/optim/test_m10_cg.py"
+  },
+  {
+   "id": "M11",
+   "tier": "sota",
+   "method": "Wirtinger gradient descent with Adam",
+   "criterion": "lower trap-intensity error than M04 at equal iterations on the 10x10 task",
+   "gate": "tests/methods/optim/test_m11_wirtinger_adam.py"
+  },
+  {
+   "id": "M12",
+   "tier": "sota",
+   "method": "Closed-loop WGS on an emulated camera",
+   "criterion": "from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7; the acceptance runs on the emulated camera (`core/camera.py`), which reproduces the published feedback curves (Nogrette 2014: 19 to 1.4 percent in 20 iterations; Kim 2019: 22 percent to 1.59 plus or minus 0.18 percent in three phase-fixed steps over 8 ensembles, 1.4 in the histogram of one run; the bounds 2.1 and 1.8 are set above them)",
+   "gate": "tests/methods/control/test_m12_closed_loop.py"
+  },
+  {
+   "id": "M13",
+   "tier": "sota",
+   "method": "Device-aware CG with pixel crosstalk",
+   "criterion": "on the crosstalk device, lower error than M10 without the model on a large disc; a staircase line search lets it run its budget on a quantizing device, where its scored spread does not improve systematically (a measured negative)",
+   "gate": "tests/methods/optim/test_m13_crosstalk_cg.py"
+  },
+  {
+   "id": "M14",
+   "tier": "classical",
+   "method": "Zernike correction and sensorless modal recovery",
+   "criterion": "recovers an injected set of Noll modes 4 to 11 within 5 percent of their amplitude",
+   "gate": "tests/methods/control/test_m14_zernike.py"
+  },
+  {
+   "id": "M15",
+   "tier": "classical",
+   "method": "Laguerre-Gaussian vortex traps",
+   "criterion": "the ring phase winds by 2 pi l with an error under 0.1 rad",
+   "gate": "tests/methods/control/test_m15_vortex.py"
+  },
+  {
+   "id": "M16",
+   "tier": "sota",
+   "method": "Hungarian assignment and linear phase interpolation",
+   "criterion": "no crossing moves for alpha 1.5 on a 7x7 to 3x3 sort; a moving trap above 70 percent of its mean intensity on the frames themselves (the minimum over the frames of the sequence over their mean; between frames, under the blend model of B2's transient, it is not: notebook 07-04)",
+   "gate": "tests/methods/control/test_m16_rearrangement.py"
+  },
+  {
+   "id": "M17",
+   "tier": "sota",
+   "method": "Multi-plane CNN hologram with an optional volumetric GS refinement (DeepCGH-style)",
+   "criterion": "on 162 held-out three-plane volumes, the hybrid (the network's phase, refined by M19 inside the same wall-clock budget only when that raises the volume accuracy) reaches a higher accuracy than M19 alone at that budget (measured median ratio 1.140); the refinement was kept on none of the volumes, so the measured method is the network alone",
+   "gate": "tests/learned/test_m17_cgh_net.py"
+  },
+  {
+   "id": "M18",
+   "tier": "sota",
+   "method": "Optimal-transport initialized MRAF",
+   "criterion": "lower error than MRAF from a random start on the shaped targets",
+   "gate": "tests/methods/optim/test_m18_ot_mraf.py"
+  },
+  {
+   "id": "M19",
+   "tier": "classical",
+   "method": "Multi-plane GS",
+   "criterion": "on a three-plane target, every plane mean within 25 percent of the overall mean (volumetric 3D GS of Whyte and Courtial)",
+   "gate": "tests/methods/baseline/test_m19_multiplane.py"
+  },
+  {
+   "id": "BS-1",
+   "tier": "beyond",
+   "method": "Device-aware weighted GS (engine id B1)",
+   "criterion": "on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; measured against the corrected M07 and against slmsuite's WGS-Kim alike: a median of 25.8 times (15.9 to 33.3 over five seeds) at 0.995 of the efficiency, and 2.0 times on the full C08 device (the bake, three seeds; 2.2 in notebook 03-04) with 4-bit phase and flicker; in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.061); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds",
+   "gate": "tests/methods/beyond/test_b1_device_wgs.py"
+  },
+  {
+   "id": "BS-2",
+   "tier": "beyond",
+   "method": "Flicker-bounded phase-continuous sequence (engine id B2)",
+   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: with the frames that keep the peak step per frame at most 0.2 Fourier units (a bound set on C10's sort) it holds on most seeds (acceptance task, 13 frames at 0.31 Fourier units per frame, seeds 1 to 3: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds, and B2 above LPI on 7 of 8 seeds of each); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.911; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
+   "gate": "tests/methods/beyond/test_b2_flicker_bounded.py"
+  },
+  {
+   "id": "BS-3",
+   "tier": "beyond",
+   "method": "Learned warm start for phase-fixed WGS (refuted) (engine id B3)",
+   "criterion": "measured negative: on held-out geometries the network start needs a median 8 iterations to 1 percent against 14 from a random start (1.75 times, below the 2 times claimed), and a control with the same early phase fix and no network gains as much; the model is not released and the claim BS-3 is reported as refuted",
+   "gate": "tests/learned/test_b3_warm_start.py"
+  },
+  {
+   "id": "BS-4",
+   "tier": "beyond",
+   "method": "Aberration-robust hologram (engine id B4)",
+   "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.04 times)",
+   "gate": "tests/methods/beyond/test_b4_robust.py"
+  },
+  {
+   "id": "BS-5",
+   "tier": "beyond",
+   "method": "Efficiency-uniformity Pareto front (engine id B5)",
+   "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured: 0.8190 against 0.8018); in the benchmark the stored front (B5's converged run of the first seed) reaches that hypervolume on 3 of the 6 geometries with a front against the medians at 100 iterations on the ideal device, 5 of 6 against those at 30, and not on G1, G4 (by 0.003 and 0.001) nor G6 (0.791 against 0.813)",
+   "gate": "tests/methods/beyond/test_b5_pareto.py"
+  }
+ ],
+ "tiers": {
+  "classical": 10,
+  "sota": 9,
+  "beyond": 5
+ },
+ "cases": [
+  {
+   "case_id": "C01_square_grid",
+   "short": "C01",
+   "title": "Small square grid, 3 x 3",
+   "category": "Arrays",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 6,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 256,
+    "pitch_um": 20,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.498047,
+    "half_field_um": 127.5
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 9,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.453725,
+     "uniformity": 0.163409,
+     "rel_std_pct": 63.846975,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.744199,
+     "uniformity": 0.644418,
+     "rel_std_pct": 25.51313,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M03": {
+     "efficiency": 0.093022,
+     "uniformity": 0.909127,
+     "rel_std_pct": 5.716079,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.819262,
+     "uniformity": 0.879438,
+     "rel_std_pct": 7.34144,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M05": {
+     "efficiency": 0.818674,
+     "uniformity": 0.91118,
+     "rel_std_pct": 5.318352,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M06": {
+     "efficiency": 0.816828,
+     "uniformity": 0.999965,
+     "rel_std_pct": 0.00233,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M07": {
+     "efficiency": 0.816826,
+     "uniformity": 0.999988,
+     "rel_std_pct": 0.000691,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M09": {
+     "efficiency": 0.685333,
+     "uniformity": 0.999989,
+     "rel_std_pct": 0.000742,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M10": {
+     "efficiency": 0.152016,
+     "uniformity": 0.175326,
+     "rel_std_pct": 63.13741,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M11": {
+     "efficiency": 0.786206,
+     "uniformity": 0.976025,
+     "rel_std_pct": 1.33637,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "B3": {
+     "efficiency": 0.816826,
+     "uniformity": 1.0,
+     "rel_std_pct": 4e-06,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B4": {
+     "efficiency": 0.805461,
+     "uniformity": 0.993906,
+     "rel_std_pct": 0.421908,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B5": {
+     "efficiency": 0.816826,
+     "uniformity": 1.0,
+     "rel_std_pct": 0.0,
+     "iterations": 20,
+     "lane": "baked"
+    },
+    "M12": {
+     "efficiency": 0.81117,
+     "uniformity": 0.7493,
+     "rel_std_pct": 17.711675,
+     "iterations": 30,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M06",
+   "best_method": "B5",
+   "lane": "precompute",
+   "trace_bytes": 183980,
+   "seed": 20261028,
+   "feedback": [
+    {
+     "step": 0,
+     "sigma": 9.1161,
+     "eff": 0.81683
+    },
+    {
+     "step": 1,
+     "sigma": 2.8392,
+     "eff": 0.81632
+    },
+    {
+     "step": 2,
+     "sigma": 0.8717,
+     "eff": 0.81599
+    },
+    {
+     "step": 3,
+     "sigma": 0.263,
+     "eff": 0.81587
+    },
+    {
+     "step": 4,
+     "sigma": 0.0789,
+     "eff": 0.81584
+    },
+    {
+     "step": 5,
+     "sigma": 0.0236,
+     "eff": 0.81583
+    }
+   ],
+   "dynamics": {
+    "particle": "bead",
+    "fc_hz": 69.992,
+    "kappa_pn_per_um": 4.01009,
+    "depth": {
+     "value": 198.971,
+     "unit": "kBT"
+    }
+   }
+  },
+  {
+   "case_id": "C02_grid_feedback",
+   "short": "C02",
+   "title": "Grid with camera feedback, 10 x 10",
+   "category": "Arrays",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 6,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 256,
+    "pitch_um": 20,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.498047,
+    "half_field_um": 127.5
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 100,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.280665,
+     "uniformity": 0.000279,
+     "rel_std_pct": 274.407745,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.747508,
+     "uniformity": 0.221772,
+     "rel_std_pct": 35.917579,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M03": {
+     "efficiency": 0.009036,
+     "uniformity": 0.043831,
+     "rel_std_pct": 53.610399,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.818428,
+     "uniformity": 0.488107,
+     "rel_std_pct": 19.482806,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M05": {
+     "efficiency": 0.817815,
+     "uniformity": 0.741704,
+     "rel_std_pct": 11.932589,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M06": {
+     "efficiency": 0.805825,
+     "uniformity": 0.977388,
+     "rel_std_pct": 0.858898,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M07": {
+     "efficiency": 0.797684,
+     "uniformity": 0.999613,
+     "rel_std_pct": 0.013921,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M09": {
+     "efficiency": 0.657677,
+     "uniformity": 0.999661,
+     "rel_std_pct": 0.013176,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M10": {
+     "efficiency": 0.259251,
+     "uniformity": 0.018984,
+     "rel_std_pct": 44.419062,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M11": {
+     "efficiency": 0.76265,
+     "uniformity": 0.921112,
+     "rel_std_pct": 2.604196,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "B3": {
+     "efficiency": 0.797685,
+     "uniformity": 0.999616,
+     "rel_std_pct": 0.013772,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B4": {
+     "efficiency": 0.782997,
+     "uniformity": 0.975742,
+     "rel_std_pct": 0.867379,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B5": {
+     "efficiency": 0.797685,
+     "uniformity": 1.0,
+     "rel_std_pct": 0.0,
+     "iterations": 20,
+     "lane": "baked"
+    },
+    "M12": {
+     "efficiency": 0.813791,
+     "uniformity": 0.6109,
+     "rel_std_pct": 19.20957,
+     "iterations": 30,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M07",
+   "best_method": "B5",
+   "lane": "precompute",
+   "trace_bytes": 149096,
+   "seed": 20261028,
+   "feedback": [
+    {
+     "step": 0,
+     "sigma": 20.1121,
+     "eff": 0.79768
+    },
+    {
+     "step": 1,
+     "sigma": 6.1105,
+     "eff": 0.80147
+    },
+    {
+     "step": 2,
+     "sigma": 2.169,
+     "eff": 0.80289
+    },
+    {
+     "step": 3,
+     "sigma": 1.2241,
+     "eff": 0.80437
+    },
+    {
+     "step": 4,
+     "sigma": 0.8774,
+     "eff": 0.80523
+    },
+    {
+     "step": 5,
+     "sigma": 0.6702,
+     "eff": 0.80608
+    },
+    {
+     "step": 6,
+     "sigma": 0.8045,
+     "eff": 0.80706
+    },
+    {
+     "step": 7,
+     "sigma": 0.6901,
+     "eff": 0.80766
+    },
+    {
+     "step": 8,
+     "sigma": 0.4644,
+     "eff": 0.80803
+    },
+    {
+     "step": 9,
+     "sigma": 0.2614,
+     "eff": 0.80824
+    },
+    {
+     "step": 10,
+     "sigma": 0.1914,
+     "eff": 0.80843
+    },
+    {
+     "step": 11,
+     "sigma": 0.2391,
+     "eff": 0.80857
+    },
+    {
+     "step": 12,
+     "sigma": 0.2656,
+     "eff": 0.8088
+    },
+    {
+     "step": 13,
+     "sigma": 0.3435,
+     "eff": 0.80914
+    },
+    {
+     "step": 14,
+     "sigma": 0.3887,
+     "eff": 0.80961
+    },
+    {
+     "step": 15,
+     "sigma": 0.4217,
+     "eff": 0.81006
+    },
+    {
+     "step": 16,
+     "sigma": 0.3904,
+     "eff": 0.8104
+    },
+    {
+     "step": 17,
+     "sigma": 0.3042,
+     "eff": 0.81073
+    },
+    {
+     "step": 18,
+     "sigma": 0.5832,
+     "eff": 0.81126
+    },
+    {
+     "step": 19,
+     "sigma": 1.0097,
+     "eff": 0.8133
+    },
+    {
+     "step": 20,
+     "sigma": 1.3371,
+     "eff": 0.81581
+    }
+   ],
+   "dynamics": null
+  },
+  {
+   "case_id": "C03_large_array",
+   "short": "C03",
+   "title": "Large array, 32 x 32 = 1024 traps",
+   "category": "Arrays",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 6,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 256,
+    "pitch_um": 20,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.498047,
+    "half_field_um": 127.5
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 1024,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.18822,
+     "uniformity": 0.0,
+     "rel_std_pct": 925.014296,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.74231,
+     "uniformity": 0.078968,
+     "rel_std_pct": 39.133826,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.816674,
+     "uniformity": 0.454922,
+     "rel_std_pct": 18.682756,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M06": {
+     "efficiency": 0.806281,
+     "uniformity": 0.958116,
+     "rel_std_pct": 1.276819,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M07": {
+     "efficiency": 0.794122,
+     "uniformity": 0.994818,
+     "rel_std_pct": 0.198701,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M12": {
+     "efficiency": 0.809228,
+     "uniformity": 0.376503,
+     "rel_std_pct": 20.307043,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B3": {
+     "efficiency": 0.794122,
+     "uniformity": 0.994788,
+     "rel_std_pct": 0.199007,
+     "iterations": 30,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M07",
+   "best_method": "M07",
+   "lane": "precompute",
+   "trace_bytes": 233458,
+   "seed": 20261028,
+   "feedback": [
+    {
+     "step": 0,
+     "sigma": 22.3086,
+     "eff": 0.79412
+    },
+    {
+     "step": 1,
+     "sigma": 2.9181,
+     "eff": 0.8014
+    },
+    {
+     "step": 2,
+     "sigma": 2.1935,
+     "eff": 0.8049
+    },
+    {
+     "step": 3,
+     "sigma": 1.4434,
+     "eff": 0.80766
+    }
+   ],
+   "dynamics": {
+    "particle": "atom",
+    "fc_hz": 107200.0,
+    "omega_r_hz": 109092.0,
+    "depth": {
+     "value": 994.424,
+     "unit": "uK"
+    }
+   }
+  },
+  {
+   "case_id": "C04_disc_crosstalk",
+   "short": "C04",
+   "title": "Disc potential with the crosstalk model",
+   "category": "Shaped and 3D",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 6,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 256,
+    "pitch_um": 20,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.498047,
+    "half_field_um": 127.5
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 256,
+   "target_kind": "shaped",
+   "n_traps": null,
+   "shape": "disc",
+   "device": {
+    "bit_depth": 8,
+    "fill_factor": 1.0,
+    "flicker_rad": 0.0
+   },
+   "aberration": null,
+   "methods": {
+    "M04": {
+     "efficiency": 0.917482,
+     "uniformity": 0.550919,
+     "rel_std_pct": 44.908085,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M08": {
+     "efficiency": 0.185377,
+     "uniformity": 0.0,
+     "rel_std_pct": 204.623991,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M10": {
+     "efficiency": 0.376011,
+     "uniformity": 0.0,
+     "rel_std_pct": 105.313744,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M11": {
+     "efficiency": 0.177778,
+     "uniformity": 0.314004,
+     "rel_std_pct": 68.599645,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M13": {
+     "efficiency": 0.373336,
+     "uniformity": 0.722581,
+     "rel_std_pct": 27.741864,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M18": {
+     "efficiency": 0.420149,
+     "uniformity": 0.733801,
+     "rel_std_pct": 26.619943,
+     "iterations": 30,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M13",
+   "best_method": "M04",
+   "lane": "precompute",
+   "trace_bytes": 111090,
+   "seed": 20261028,
+   "feedback": null,
+   "dynamics": null
+  },
+  {
+   "case_id": "C05_multiplane_vortices",
+   "short": "C05",
+   "title": "Three-plane array with vortices",
+   "category": "Shaped and 3D",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 1064,
+    "focal_mm": 2.4,
+    "na": 1.2,
+    "n_imm": 1.33,
+    "n_pix": 256,
+    "pitch_um": 10,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.49875,
+    "half_field_um": 127.68
+   },
+   "wavelength_nm": 1064,
+   "na": 1.2,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 51,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.452161,
+     "uniformity": 0.0748,
+     "rel_std_pct": 79.405667,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.781129,
+     "uniformity": 0.249648,
+     "rel_std_pct": 44.24067,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.910685,
+     "uniformity": 0.575155,
+     "rel_std_pct": 22.370644,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M06": {
+     "efficiency": 0.890626,
+     "uniformity": 0.989372,
+     "rel_std_pct": 0.495676,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M09": {
+     "efficiency": 0.698864,
+     "uniformity": 0.999862,
+     "rel_std_pct": 0.006089,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M10": {
+     "efficiency": 0.21463,
+     "uniformity": 0.091105,
+     "rel_std_pct": 50.676561,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M11": {
+     "efficiency": 0.829609,
+     "uniformity": 0.953493,
+     "rel_std_pct": 1.792217,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M15": {
+     "efficiency": 0.890626,
+     "uniformity": 0.989372,
+     "rel_std_pct": 0.495676,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M19": {
+     "efficiency": 0.537797,
+     "uniformity": 0.027266,
+     "rel_std_pct": 62.092725,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B5": {
+     "efficiency": 0.8889,
+     "uniformity": 0.988599,
+     "rel_std_pct": 0.507178,
+     "iterations": 20,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M09",
+   "best_method": "M09",
+   "lane": "precompute",
+   "trace_bytes": 128388,
+   "seed": 20261028,
+   "feedback": null,
+   "dynamics": null
+  },
+  {
+   "case_id": "C06_vortex_ring_line",
+   "short": "C06",
+   "title": "Vortex ring plus a line of traps",
+   "category": "Shaped and 3D",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 1064,
+    "focal_mm": 2.4,
+    "na": 1.2,
+    "n_imm": 1.33,
+    "n_pix": 256,
+    "pitch_um": 10,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.49875,
+    "half_field_um": 127.68
+   },
+   "wavelength_nm": 1064,
+   "na": 1.2,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 25,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.593632,
+     "uniformity": 0.5516,
+     "rel_std_pct": 27.248677,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.69519,
+     "uniformity": 0.801369,
+     "rel_std_pct": 12.08255,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.710088,
+     "uniformity": 0.856235,
+     "rel_std_pct": 7.331489,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M06": {
+     "efficiency": 0.708163,
+     "uniformity": 0.996815,
+     "rel_std_pct": 0.168413,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M07": {
+     "efficiency": 0.704284,
+     "uniformity": 1.0,
+     "rel_std_pct": 0.0,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M09": {
+     "efficiency": 0.640127,
+     "uniformity": 0.999947,
+     "rel_std_pct": 0.002622,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M10": {
+     "efficiency": 0.1672,
+     "uniformity": 0.030058,
+     "rel_std_pct": 48.508979,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M15": {
+     "efficiency": 0.708163,
+     "uniformity": 0.996815,
+     "rel_std_pct": 0.168413,
+     "iterations": 30,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M07",
+   "best_method": "M07",
+   "lane": "precompute",
+   "trace_bytes": 117039,
+   "seed": 20261028,
+   "feedback": null,
+   "dynamics": null
+  },
+  {
+   "case_id": "C07_high_na",
+   "short": "C07",
+   "title": "High numerical aperture, 5 x 5",
+   "category": "Device and optics",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 1064,
+    "focal_mm": 2.4,
+    "na": 1.2,
+    "n_imm": 1.33,
+    "n_pix": 256,
+    "pitch_um": 10,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.49875,
+    "half_field_um": 127.68
+   },
+   "wavelength_nm": 1064,
+   "na": 1.2,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 25,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.350047,
+     "uniformity": 0.057609,
+     "rel_std_pct": 116.22269,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.721231,
+     "uniformity": 0.3046,
+     "rel_std_pct": 33.466393,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M03": {
+     "efficiency": 0.037446,
+     "uniformity": 0.684989,
+     "rel_std_pct": 15.947101,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.807314,
+     "uniformity": 0.614498,
+     "rel_std_pct": 18.712866,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M05": {
+     "efficiency": 0.804274,
+     "uniformity": 0.742202,
+     "rel_std_pct": 12.780386,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M06": {
+     "efficiency": 0.801937,
+     "uniformity": 0.988432,
+     "rel_std_pct": 0.574757,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M07": {
+     "efficiency": 0.791194,
+     "uniformity": 0.999815,
+     "rel_std_pct": 0.00891,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M09": {
+     "efficiency": 0.637759,
+     "uniformity": 0.999956,
+     "rel_std_pct": 0.002634,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M10": {
+     "efficiency": 0.196344,
+     "uniformity": 0.157069,
+     "rel_std_pct": 55.63728,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M11": {
+     "efficiency": 0.767005,
+     "uniformity": 0.958417,
+     "rel_std_pct": 2.001474,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "B3": {
+     "efficiency": 0.791194,
+     "uniformity": 0.999815,
+     "rel_std_pct": 0.00891,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B4": {
+     "efficiency": 0.773295,
+     "uniformity": 0.978878,
+     "rel_std_pct": 0.940948,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B5": {
+     "efficiency": 0.798461,
+     "uniformity": 0.994751,
+     "rel_std_pct": 0.245685,
+     "iterations": 20,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M07",
+   "best_method": "M09",
+   "lane": "live",
+   "trace_bytes": 121672,
+   "seed": 20261028,
+   "feedback": null,
+   "dynamics": null
+  },
+  {
+   "case_id": "C08_device_limited",
+   "short": "C08",
+   "title": "Device-limited array, 4-bit phase and crosstalk",
+   "category": "Device and optics",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 3,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 128,
+    "pitch_um": 20,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 128,
+    "pad": 2,
+    "bin_um": 0.498047,
+    "half_field_um": 63.75
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 128,
+   "target_kind": "traps",
+   "n_traps": 64,
+   "shape": null,
+   "device": {
+    "bit_depth": 4,
+    "fill_factor": 0.85,
+    "flicker_rad": 0.05
+   },
+   "aberration": null,
+   "methods": {
+    "M04": {
+     "efficiency": 0.69205,
+     "uniformity": 0.538766,
+     "rel_std_pct": 21.618314,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M06": {
+     "efficiency": 0.682286,
+     "uniformity": 0.74533,
+     "rel_std_pct": 14.344323,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M07": {
+     "efficiency": 0.674921,
+     "uniformity": 0.684915,
+     "rel_std_pct": 13.423807,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M10": {
+     "efficiency": 0.316147,
+     "uniformity": 0.272599,
+     "rel_std_pct": 29.686036,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M13": {
+     "efficiency": 0.455512,
+     "uniformity": 0.349082,
+     "rel_std_pct": 23.676643,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B1": {
+     "efficiency": 0.651959,
+     "uniformity": 0.847098,
+     "rel_std_pct": 7.043659,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B4": {
+     "efficiency": 0.666374,
+     "uniformity": 0.73047,
+     "rel_std_pct": 13.556412,
+     "iterations": 30,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "B1",
+   "best_method": "B1",
+   "lane": "precompute",
+   "trace_bytes": 62737,
+   "seed": 20261028,
+   "feedback": null,
+   "dynamics": null
+  },
+  {
+   "case_id": "C09_aberrated",
+   "short": "C09",
+   "title": "Aberrated array, with and without correction",
+   "category": "Device and optics",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 6,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 256,
+    "pitch_um": 20,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.498047,
+    "half_field_um": 127.5
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 16,
+   "shape": null,
+   "device": null,
+   "aberration": {
+    "noll": {
+     "4": 0.08,
+     "5": 0.07,
+     "6": 0.05,
+     "7": 0.06,
+     "8": -0.05,
+     "11": 0.04
+    }
+   },
+   "methods": {
+    "M01": {
+     "efficiency": 0.207777,
+     "uniformity": 0.153904,
+     "rel_std_pct": 78.36425,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.457634,
+     "uniformity": 0.739057,
+     "rel_std_pct": 14.975838,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M06": {
+     "efficiency": 0.453299,
+     "uniformity": 0.886746,
+     "rel_std_pct": 7.307628,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M07": {
+     "efficiency": 0.452637,
+     "uniformity": 0.889167,
+     "rel_std_pct": 7.093031,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M14": {
+     "efficiency": 0.805082,
+     "uniformity": 0.998793,
+     "rel_std_pct": 0.077318,
+     "iterations": 4,
+     "lane": "baked"
+    },
+    "B4": {
+     "efficiency": 0.448389,
+     "uniformity": 0.90901,
+     "rel_std_pct": 5.501109,
+     "iterations": 30,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M14",
+   "best_method": "M14",
+   "lane": "precompute",
+   "trace_bytes": 106157,
+   "seed": 20261028,
+   "feedback": null,
+   "dynamics": null
+  },
+  {
+   "case_id": "C10_rearrangement",
+   "short": "C10",
+   "title": "Rearrangement sequence, 100 sites",
+   "category": "Dynamics and controls",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 6,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 256,
+    "pitch_um": 20,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.498047,
+    "half_field_um": 127.5
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 100,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M06": {
+     "efficiency": 0.805592,
+     "uniformity": 0.977946,
+     "rel_std_pct": 0.923721,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M07": {
+     "efficiency": 0.797153,
+     "uniformity": 0.999648,
+     "rel_std_pct": 0.011693,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M16": {
+     "efficiency": 0.823226,
+     "uniformity": 0.000349,
+     "rel_std_pct": 129.780303,
+     "iterations": 10,
+     "lane": "baked"
+    },
+    "B2": {
+     "efficiency": 0.79825,
+     "uniformity": 1.0,
+     "rel_std_pct": 0.0,
+     "iterations": 13,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M16",
+   "best_method": "B2",
+   "lane": "precompute",
+   "trace_bytes": 128669,
+   "seed": 20261028,
+   "feedback": null,
+   "dynamics": null
+  },
+  {
+   "case_id": "C11_outside_field",
+   "short": "C11",
+   "title": "A trap outside the field of view (refused)",
+   "category": "Dynamics and controls",
+   "status": "refused",
+   "reason": {
+    "en": "trap 0 has x_um=200 um, outside the unaliased field of view (abs must be below 127.5 um = lambda f / (2 p))",
+    "es": "la trampa 0 tiene x_um=200 um, fuera del campo de visión sin solapamiento (abs debe ser menor que 127.5 um = lambda f / (2 p))"
+   }
+  },
+  {
+   "case_id": "C12_calibration",
+   "short": "C12",
+   "title": "Calibration: the 10 x 10 task of the baselines",
+   "category": "Arrays",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 6,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 256,
+    "pitch_um": 20,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.498047,
+    "half_field_um": 127.5
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 100,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.328038,
+     "uniformity": 0.000275,
+     "rel_std_pct": 268.793352,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.748511,
+     "uniformity": 0.199351,
+     "rel_std_pct": 37.400139,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M03": {
+     "efficiency": 0.009941,
+     "uniformity": 0.076802,
+     "rel_std_pct": 54.252484,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.817436,
+     "uniformity": 0.50641,
+     "rel_std_pct": 19.971491,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M05": {
+     "efficiency": 0.818234,
+     "uniformity": 0.737876,
+     "rel_std_pct": 11.809141,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M06": {
+     "efficiency": 0.804899,
+     "uniformity": 0.970475,
+     "rel_std_pct": 1.019181,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M07": {
+     "efficiency": 0.79743,
+     "uniformity": 0.999629,
+     "rel_std_pct": 0.012753,
+     "iterations": 30,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M06",
+   "best_method": "M07",
+   "lane": "precompute",
+   "trace_bytes": 124663,
+   "seed": 20261028,
+   "feedback": null,
+   "dynamics": null
+  },
+  {
+   "case_id": "C13_disordered_array",
+   "short": "C13",
+   "title": "Disordered array, 819 traps",
+   "category": "Arrays",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 6,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 256,
+    "pitch_um": 20,
+    "pad": 2,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 256,
+    "pad": 2,
+    "bin_um": 0.498047,
+    "half_field_um": 127.5
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 256,
+   "target_kind": "traps",
+   "n_traps": 819,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.595988,
+     "uniformity": 0.35661,
+     "rel_std_pct": 24.784475,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.689413,
+     "uniformity": 0.58437,
+     "rel_std_pct": 13.483949,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.7404,
+     "uniformity": 0.642473,
+     "rel_std_pct": 11.16774,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M06": {
+     "efficiency": 0.735956,
+     "uniformity": 0.973611,
+     "rel_std_pct": 0.739155,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M07": {
+     "efficiency": 0.722975,
+     "uniformity": 0.992333,
+     "rel_std_pct": 0.300401,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M12": {
+     "efficiency": 0.742994,
+     "uniformity": 0.381499,
+     "rel_std_pct": 20.158853,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B3": {
+     "efficiency": 0.722975,
+     "uniformity": 0.992314,
+     "rel_std_pct": 0.30232,
+     "iterations": 30,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M07",
+   "best_method": "M07",
+   "lane": "precompute",
+   "trace_bytes": 225664,
+   "seed": 20261028,
+   "feedback": [
+    {
+     "step": 0,
+     "sigma": 21.9947,
+     "eff": 0.72298
+    },
+    {
+     "step": 1,
+     "sigma": 2.3743,
+     "eff": 0.73208
+    },
+    {
+     "step": 2,
+     "sigma": 1.0681,
+     "eff": 0.73674
+    },
+    {
+     "step": 3,
+     "sigma": 0.7812,
+     "eff": 0.74037
+    },
+    {
+     "step": 4,
+     "sigma": 0.5568,
+     "eff": 0.74248
+    },
+    {
+     "step": 5,
+     "sigma": 0.4433,
+     "eff": 0.74372
+    }
+   ],
+   "dynamics": null
+  },
+  {
+   "case_id": "C14_volume_learned",
+   "short": "C14",
+   "title": "Three-plane volume at the learned model's geometry",
+   "category": "Shaped and 3D",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 2.56,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 128,
+    "pitch_um": 20,
+    "pad": 1,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 128,
+    "pad": 1,
+    "bin_um": 0.85,
+    "half_field_um": 54.4
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 128,
+   "target_kind": "traps",
+   "n_traps": 48,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.49969,
+     "uniformity": 0.196123,
+     "rel_std_pct": 68.88281,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.699423,
+     "uniformity": 0.407475,
+     "rel_std_pct": 27.747972,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.795099,
+     "uniformity": 0.701345,
+     "rel_std_pct": 15.25594,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M06": {
+     "efficiency": 0.785107,
+     "uniformity": 0.992467,
+     "rel_std_pct": 0.315173,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M10": {
+     "efficiency": 0.341177,
+     "uniformity": 0.339586,
+     "rel_std_pct": 26.092385,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M11": {
+     "efficiency": 0.755456,
+     "uniformity": 0.959287,
+     "rel_std_pct": 2.048906,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M19": {
+     "efficiency": 0.751541,
+     "uniformity": 0.71348,
+     "rel_std_pct": 15.250606,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M17": {
+     "efficiency": 0.396124,
+     "uniformity": 0.374653,
+     "rel_std_pct": 36.399737,
+     "iterations": 0,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M17",
+   "best_method": "M06",
+   "lane": "precompute",
+   "trace_bytes": 50763,
+   "seed": 20261028,
+   "feedback": null,
+   "dynamics": null
+  }
+ ],
+ "benchmark": {
+  "schema": "dinhot.benchmark/v1",
+  "engine_version": "0.02.000",
+  "grids": [
+   128,
+   256
+  ],
+  "seeds": 20,
+  "budgets": {
+   "iterations": [
+    10,
+    30,
+    100
+   ],
+   "time_s": [
+    0.05,
+    1.0
+   ]
+  },
+  "geometries": [
+   {
+    "id": "G1",
+    "name": {
+     "en": "Square 10 x 10",
+     "es": "Cuadrada 10 x 10"
+    },
+    "n_traps": 100,
+    "dims": 2
+   },
+   {
+    "id": "G2",
+    "name": {
+     "en": "Ring of 36 traps",
+     "es": "Anillo de 36 trampas"
+    },
+    "n_traps": 36,
+    "dims": 2
+   },
+   {
+    "id": "G3",
+    "name": {
+     "en": "Random 100 traps",
+     "es": "100 trampas aleatorias"
+    },
+    "n_traps": 100,
+    "dims": 2
+   },
+   {
+    "id": "G4",
+    "name": {
+     "en": "Quasi-periodic 119",
+     "es": "Cuasiperiódica 119"
+    },
+    "n_traps": 119,
+    "dims": 2
+   },
+   {
+    "id": "G5",
+    "name": {
+     "en": "3D lattice 5 x 5 x 3",
+     "es": "Red 3D 5 x 5 x 3"
+    },
+    "n_traps": 75,
+    "dims": 3
+   },
+   {
+    "id": "G6",
+    "name": {
+     "en": "Large: 32 x 32 and disordered 819",
+     "es": "Grande: 32 x 32 y desordenada de 819"
+    },
+    "n_traps": 1024,
+    "dims": 2
+   },
+   {
+    "id": "G7",
+    "name": {
+     "en": "Shaped fields (ring, disc, line, LG ring)",
+     "es": "Campos con forma (anillo, disco, línea, anillo LG)"
+    },
+    "n_traps": 0,
+    "dims": 2
+   }
+  ],
+  "point_geometries": [
+   "G1",
+   "G2",
+   "G3",
+   "G4",
+   "G5",
+   "G6"
+  ],
+  "rows": 1326,
+  "methods_measured": [
+   "B1",
+   "B2",
+   "B3",
+   "B4",
+   "B5",
+   "M01",
+   "M02",
+   "M03",
+   "M04",
+   "M05",
+   "M06",
+   "M07",
+   "M08",
+   "M09",
+   "M10",
+   "M11",
+   "M12",
+   "M13",
+   "M14",
+   "M18",
+   "M19"
+  ],
+  "methods_in_protocol": [
+   "B1",
+   "B2",
+   "B3",
+   "B4",
+   "B5",
+   "M01",
+   "M02",
+   "M03",
+   "M04",
+   "M05",
+   "M06",
+   "M07",
+   "M08",
+   "M09",
+   "M10",
+   "M11",
+   "M12",
+   "M13",
+   "M14",
+   "M15",
+   "M16",
+   "M17",
+   "M18",
+   "M19"
+  ],
+  "skipped": 61,
+  "skipped_reasons": {
+   "Method B1 is 2D only; the case has traps off the focal plane.": 1,
+   "Method B1 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method B2 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method B3 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method B4 is 2D only; the case has traps off the focal plane.": 1,
+   "Method B4 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method B5 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method M01 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method M02 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method M03 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method M05 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method M06 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method M07 is 2D only; the case has traps off the focal plane.": 1,
+   "Method M07 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method M08 does not accept a traps target (spec targets: ['field']).": 6,
+   "Method M09 does not accept a field target (spec targets: ['traps']).": 1,
+   "The method refuses this geometry: the fft form needs traps on FFT bins with z = 0 and no vortex (use form='point' or 'auto').": 3,
+   "Method M12 is 2D only; the case has traps off the focal plane.": 1,
+   "Method M12 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method M13 is 2D only; the case has traps off the focal plane.": 1,
+   "Method M14 does not accept a field target (spec targets: ['traps']).": 1,
+   "The method refuses this geometry: M15 needs at least one trap with a non-zero charge (Trap.charge or the charge keyword).": 6,
+   "Method M15 does not accept a field target (spec targets: ['traps']).": 1,
+   "The method refuses this geometry: method M16 sorts loaded atoms; the case has no rearrangement block.": 5,
+   "Method M16 is 2D only; the case has traps off the focal plane.": 1,
+   "Method M16 does not accept a field target (spec targets: ['traps']).": 1,
+   "The method refuses this geometry: M17 is trained for the 128 x 128 SLM with padding 1 (focal crop 128 x 128), got n_pix=128, pad=2.": 5,
+   "The method refuses this geometry: M17 is trained for the 128 x 128 SLM with padding 1 (focal crop 128 x 128), got n_pix=256, pad=2.": 1,
+   "Method M17 does not accept a field target (spec targets: ['traps']).": 1,
+   "Method M18 does not accept a traps target (spec targets: ['field']).": 6,
+   "The method refuses this geometry: a target on a single depth needs dz_m (the axial voxel pitch in metres).": 5,
+   "Method M19 does not accept a field target (spec targets: ['traps']).": 1
+  },
+  "seeds_min": 2,
+  "seeds_max": 20,
+  "by_geometry": {
+   "G1/ideal": {
+    "best": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.81326,
+     "n_seeds": 7
+    },
+    "best_1s": {
+     "method": "B5",
+     "sigma": 0.00012,
+     "eff": 0.813891,
+     "n_seeds": 9
+    },
+    "classical": {
+     "method": "M09",
+     "sigma": 0.065657,
+     "eff": 0.680624,
+     "n_seeds": 2
+    },
+    "sota": {
+     "method": "M11",
+     "sigma": 1.198389,
+     "eff": 0.829645,
+     "n_seeds": 20
+    },
+    "beyond": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.81326,
+     "n_seeds": 7
+    }
+   },
+   "G1/device": {
+    "best": {
+     "method": "M11",
+     "sigma": 12.968511,
+     "eff": 0.585318,
+     "n_seeds": 14
+    },
+    "best_1s": {
+     "method": "B5",
+     "sigma": 25.18744,
+     "eff": 0.595264,
+     "n_seeds": 8
+    },
+    "classical": {
+     "method": "M09",
+     "sigma": 23.715355,
+     "eff": 0.491246,
+     "n_seeds": 2
+    },
+    "sota": {
+     "method": "M11",
+     "sigma": 12.968511,
+     "eff": 0.585318,
+     "n_seeds": 14
+    },
+    "beyond": {
+     "method": "B4",
+     "sigma": 24.335278,
+     "eff": 0.586705,
+     "n_seeds": 6
+    }
+   },
+   "G2/ideal": {
+    "best": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.692234,
+     "n_seeds": 8
+    },
+    "best_1s": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.692234,
+     "n_seeds": 8
+    },
+    "classical": {
+     "method": "M09",
+     "sigma": 0.014836,
+     "eff": 0.638709,
+     "n_seeds": 2
+    },
+    "sota": {
+     "method": "M07",
+     "sigma": 0.0,
+     "eff": 0.693251,
+     "n_seeds": 20
+    },
+    "beyond": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.692234,
+     "n_seeds": 8
+    }
+   },
+   "G2/device": {
+    "best": {
+     "method": "M01",
+     "sigma": 6.552854,
+     "eff": 0.295953,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M01",
+     "sigma": 6.552854,
+     "eff": 0.295953,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M01",
+     "sigma": 6.552854,
+     "eff": 0.295953,
+     "n_seeds": 20
+    },
+    "sota": {
+     "method": "M13",
+     "sigma": 8.899558,
+     "eff": 0.48509,
+     "n_seeds": 3
+    },
+    "beyond": {
+     "method": "B1",
+     "sigma": 7.453088,
+     "eff": 0.456423,
+     "n_seeds": 2
+    }
+   },
+   "G3/ideal": {
+    "best": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.695336,
+     "n_seeds": 6
+    },
+    "best_1s": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.695336,
+     "n_seeds": 6
+    },
+    "classical": {
+     "method": "M09",
+     "sigma": 0.05211,
+     "eff": 0.637185,
+     "n_seeds": 2
+    },
+    "sota": {
+     "method": "M07",
+     "sigma": 0.0,
+     "eff": 0.696829,
+     "n_seeds": 20
+    },
+    "beyond": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.695336,
+     "n_seeds": 6
+    }
+   },
+   "G3/device": {
+    "best": {
+     "method": "B1",
+     "sigma": 4.408473,
+     "eff": 0.399626,
+     "n_seeds": 2
+    },
+    "best_1s": {
+     "method": "B4",
+     "sigma": 20.362568,
+     "eff": 0.423126,
+     "n_seeds": 9
+    },
+    "classical": {
+     "method": "M14",
+     "sigma": 20.476435,
+     "eff": 0.431526,
+     "n_seeds": 20
+    },
+    "sota": {
+     "method": "M11",
+     "sigma": 14.589004,
+     "eff": 0.452912,
+     "n_seeds": 15
+    },
+    "beyond": {
+     "method": "B1",
+     "sigma": 4.408473,
+     "eff": 0.399626,
+     "n_seeds": 2
+    }
+   },
+   "G4/ideal": {
+    "best": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.751097,
+     "n_seeds": 6
+    },
+    "best_1s": {
+     "method": "B5",
+     "sigma": 0.0,
+     "eff": 0.751111,
+     "n_seeds": 10
+    },
+    "classical": {
+     "method": "M09",
+     "sigma": 0.071273,
+     "eff": 0.621232,
+     "n_seeds": 2
+    },
+    "sota": {
+     "method": "M07",
+     "sigma": 0.011994,
+     "eff": 0.751429,
+     "n_seeds": 20
+    },
+    "beyond": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.751097,
+     "n_seeds": 6
+    }
+   },
+   "G4/device": {
+    "best": {
+     "method": "M11",
+     "sigma": 20.558963,
+     "eff": 0.511052,
+     "n_seeds": 15
+    },
+    "best_1s": {
+     "method": "B1",
+     "sigma": 81.088055,
+     "eff": 0.500741,
+     "n_seeds": 2
+    },
+    "classical": {
+     "method": "M05",
+     "sigma": 83.725655,
+     "eff": 0.514093,
+     "n_seeds": 20
+    },
+    "sota": {
+     "method": "M11",
+     "sigma": 20.558963,
+     "eff": 0.511052,
+     "n_seeds": 15
+    },
+    "beyond": {
+     "method": "B1",
+     "sigma": 81.088055,
+     "eff": 0.500741,
+     "n_seeds": 2
+    }
+   },
+   "G5/ideal": {
+    "best": {
+     "method": "B2",
+     "sigma": 0.0,
+     "eff": 0.864025,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "B2",
+     "sigma": 0.0,
+     "eff": 0.862643,
+     "n_seeds": 20
+    },
+    "classical": {
+     "method": "M09",
+     "sigma": 0.049989,
+     "eff": 0.697957,
+     "n_seeds": 2
+    },
+    "sota": {
+     "method": "M11",
+     "sigma": 2.20729,
+     "eff": 0.882402,
+     "n_seeds": 20
+    },
+    "beyond": {
+     "method": "B2",
+     "sigma": 0.0,
+     "eff": 0.864025,
+     "n_seeds": 20
+    }
+   },
+   "G6/ideal": {
+    "best": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.757452,
+     "n_seeds": 2
+    },
+    "best_1s": {
+     "method": "B4",
+     "sigma": 1.015573,
+     "eff": 0.757514,
+     "n_seeds": 2
+    },
+    "classical": {
+     "method": "M09",
+     "sigma": 0.149154,
+     "eff": 0.644405,
+     "n_seeds": 2
+    },
+    "sota": {
+     "method": "M07",
+     "sigma": 0.748233,
+     "eff": 0.791029,
+     "n_seeds": 5
+    },
+    "beyond": {
+     "method": "B1",
+     "sigma": 0.0,
+     "eff": 0.757452,
+     "n_seeds": 2
+    }
+   },
+   "G6/device": {
+    "best": {
+     "method": "M11",
+     "sigma": 13.49199,
+     "eff": 0.544275,
+     "n_seeds": 4
+    },
+    "best_1s": {
+     "method": "B4",
+     "sigma": 19.452109,
+     "eff": 0.556841,
+     "n_seeds": 2
+    },
+    "classical": {
+     "method": "M09",
+     "sigma": 18.593442,
+     "eff": 0.470727,
+     "n_seeds": 2
+    },
+    "sota": {
+     "method": "M11",
+     "sigma": 13.49199,
+     "eff": 0.544275,
+     "n_seeds": 4
+    },
+    "beyond": {
+     "method": "B1",
+     "sigma": 17.114947,
+     "eff": 0.553562,
+     "n_seeds": 2
+    }
+   },
+   "G7/ideal": {
+    "best": {
+     "method": "M04",
+     "sigma": 34.569831,
+     "eff": 0.929967,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M18",
+     "sigma": 36.103077,
+     "eff": 0.929272,
+     "n_seeds": 10
+    },
+    "classical": {
+     "method": "M04",
+     "sigma": 34.569831,
+     "eff": 0.929967,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
+   },
+   "G7/device": {
+    "best": {
+     "method": "M04",
+     "sigma": 39.935941,
+     "eff": 0.790285,
+     "n_seeds": 20
+    },
+    "best_1s": {
+     "method": "M18",
+     "sigma": 39.185777,
+     "eff": 0.791845,
+     "n_seeds": 10
+    },
+    "classical": {
+     "method": "M04",
+     "sigma": 39.935941,
+     "eff": 0.790285,
+     "n_seeds": 20
+    },
+    "sota": null,
+    "beyond": null
+   }
+  },
+  "by_method": {
+   "B1": {
+    "tier": "beyond",
+    "ideal": {
+     "n": 5,
+     "sigma": 0.0,
+     "eff": 0.751097,
+     "time_s": 49.563912
+    },
+    "device": {
+     "n": 5,
+     "sigma": 17.114947,
+     "eff": 0.500741,
+     "time_s": 631.617134
+    }
+   },
+   "B2": {
+    "tier": "beyond",
+    "ideal": {
+     "n": 6,
+     "sigma": 0.0,
+     "eff": 0.755646,
+     "time_s": 3.5447325000000003
+    },
+    "device": {
+     "n": 5,
+     "sigma": 20.753407,
+     "eff": 0.503487,
+     "time_s": 3.697056
+    }
+   },
+   "B3": {
+    "tier": "beyond",
+    "ideal": {
+     "n": 6,
+     "sigma": 0.005997,
+     "eff": 0.7544705,
+     "time_s": 1.6139139999999998
+    },
+    "device": {
+     "n": 5,
+     "sigma": 20.665836,
+     "eff": 0.502998,
+     "time_s": 1.579835
+    }
+   },
+   "B4": {
+    "tier": "beyond",
+    "ideal": {
+     "n": 5,
+     "sigma": 0.402414,
+     "eff": 0.743507,
+     "time_s": 33.883073
+    },
+    "device": {
+     "n": 5,
+     "sigma": 20.597063,
+     "eff": 0.497833,
+     "time_s": 33.731865
+    }
+   },
+   "B5": {
+    "tier": "beyond",
+    "ideal": {
+     "n": 6,
+     "sigma": 0.279751,
+     "eff": 0.7738975,
+     "time_s": 25.330568
+    },
+    "device": {
+     "n": 5,
+     "sigma": 20.630253,
+     "eff": 0.512,
+     "time_s": 25.457883
+    }
+   },
+   "M01": {
+    "tier": "classical",
+    "ideal": {
+     "n": 6,
+     "sigma": 135.736943,
+     "eff": 0.39893,
+     "time_s": 0.0081725
+    },
+    "device": {
+     "n": 5,
+     "sigma": 174.756446,
+     "eff": 0.267001,
+     "time_s": 0.008759
+    }
+   },
+   "M02": {
+    "tier": "classical",
+    "ideal": {
+     "n": 6,
+     "sigma": 31.343816000000004,
+     "eff": 0.721652,
+     "time_s": 0.009967
+    },
+    "device": {
+     "n": 5,
+     "sigma": 48.973503,
+     "eff": 0.477757,
+     "time_s": 0.009436
+    }
+   },
+   "M03": {
+    "tier": "classical",
+    "ideal": {
+     "n": 6,
+     "sigma": 78.27770749999999,
+     "eff": 0.015732,
+     "time_s": 0.0982575
+    },
+    "device": {
+     "n": 5,
+     "sigma": 89.056219,
+     "eff": 0.013004,
+     "time_s": 0.09284
+    }
+   },
+   "M04": {
+    "tier": "classical",
+    "ideal": {
+     "n": 6,
+     "sigma": 14.411010000000001,
+     "eff": 0.79918,
+     "time_s": 1.8060025
+    },
+    "device": {
+     "n": 5,
+     "sigma": 25.823924,
+     "eff": 0.52293,
+     "time_s": 1.971338
+    }
+   },
+   "M05": {
+    "tier": "classical",
+    "ideal": {
+     "n": 6,
+     "sigma": 10.1875,
+     "eff": 0.7976000000000001,
+     "time_s": 1.637171
+    },
+    "device": {
+     "n": 5,
+     "sigma": 23.868558,
+     "eff": 0.514093,
+     "time_s": 1.758126
+    }
+   },
+   "M06": {
+    "tier": "classical",
+    "ideal": {
+     "n": 6,
+     "sigma": 0.2966105,
+     "eff": 0.7898545,
+     "time_s": 1.5708955
+    },
+    "device": {
+     "n": 5,
+     "sigma": 26.127162,
+     "eff": 0.517783,
+     "time_s": 1.471563
+    }
+   },
+   "M07": {
+    "tier": "sota",
+    "ideal": {
+     "n": 5,
+     "sigma": 0.011994,
+     "eff": 0.751429,
+     "time_s": 1.182138
+    },
+    "device": {
+     "n": 5,
+     "sigma": 26.440886,
+     "eff": 0.502998,
+     "time_s": 1.201275
+    }
+   },
+   "M08": {
+    "tier": "sota",
+    "ideal": null,
+    "device": null
+   },
+   "M09": {
+    "tier": "classical",
+    "ideal": {
+     "n": 6,
+     "sigma": 0.05888349999999999,
+     "eff": 0.6415569999999999,
+     "time_s": 255.9236555
+    },
+    "device": {
+     "n": 5,
+     "sigma": 20.849365,
+     "eff": 0.43077,
+     "time_s": 257.886485
+    }
+   },
+   "M10": {
+    "tier": "sota",
+    "ideal": {
+     "n": 6,
+     "sigma": 2.6490205,
+     "eff": 0.750882,
+     "time_s": 1.7322005
+    },
+    "device": {
+     "n": 5,
+     "sigma": 23.692783,
+     "eff": 0.485628,
+     "time_s": 1.941863
+    }
+   },
+   "M11": {
+    "tier": "sota",
+    "ideal": {
+     "n": 6,
+     "sigma": 1.199603,
+     "eff": 0.7757345,
+     "time_s": 1.0786825
+    },
+    "device": {
+     "n": 5,
+     "sigma": 13.49199,
+     "eff": 0.511052,
+     "time_s": 13.447796
+    }
+   },
+   "M12": {
+    "tier": "sota",
+    "ideal": {
+     "n": 2,
+     "sigma": 19.1073785,
+     "eff": 0.8222754999999999,
+     "time_s": 8.772477
+    },
+    "device": {
+     "n": 2,
+     "sigma": 30.415152999999997,
+     "eff": 0.5916555,
+     "time_s": 8.8177185
+    }
+   },
+   "M13": {
+    "tier": "sota",
+    "ideal": {
+     "n": 5,
+     "sigma": 2.233433,
+     "eff": 0.737237,
+     "time_s": 1.999243
+    },
+    "device": {
+     "n": 5,
+     "sigma": 16.754742,
+     "eff": 0.48509,
+     "time_s": 78.306772
+    }
+   },
+   "M14": {
+    "tier": "classical",
+    "ideal": {
+     "n": 6,
+     "sigma": 0.9360664999999999,
+     "eff": 0.74247,
+     "time_s": 0.889724
+    },
+    "device": {
+     "n": 5,
+     "sigma": 27.217624,
+     "eff": 0.511126,
+     "time_s": 0.858569
+    }
+   },
+   "M18": {
+    "tier": "sota",
+    "ideal": null,
+    "device": null
+   },
+   "M19": {
+    "tier": "classical",
+    "ideal": {
+     "n": 1,
+     "sigma": 16.675174,
+     "eff": 0.891871,
+     "time_s": 20.995532
+    },
+    "device": null
+   }
+  },
+  "pareto": [
+   {
+    "geometry": "G1",
+    "method": "B5",
+    "points": [
+     {
+      "lambda": 0.0,
+      "efficiency": 0.821959,
+      "uniformity": 1.0
+     },
+     {
+      "lambda": 0.05263157894736842,
+      "efficiency": 0.834286,
+      "uniformity": 0.995629
+     },
+     {
+      "lambda": 0.10526315789473684,
+      "efficiency": 0.835771,
+      "uniformity": 0.987801
+     },
+     {
+      "lambda": 0.15789473684210525,
+      "efficiency": 0.836216,
+      "uniformity": 0.978576
+     }
+    ]
+   },
+   {
+    "geometry": "G2",
+    "method": "B5",
+    "points": [
+     {
+      "lambda": 0.0,
+      "efficiency": 0.692828,
+      "uniformity": 1.0
+     },
+     {
+      "lambda": 0.05263157894736842,
+      "efficiency": 0.699248,
+      "uniformity": 0.99891
+     },
+     {
+      "lambda": 0.10526315789473684,
+      "efficiency": 0.702715,
+      "uniformity": 0.998708
+     },
+     {
+      "lambda": 0.15789473684210525,
+      "efficiency": 0.703999,
+      "uniformity": 0.997665
+     },
+     {
+      "lambda": 0.21052631578947367,
+      "efficiency": 0.705766,
+      "uniformity": 0.996351
+     },
+     {
+      "lambda": 0.2631578947368421,
+      "efficiency": 0.707124,
+      "uniformity": 0.994797
+     },
+     {
+      "lambda": 0.3157894736842105,
+      "efficiency": 0.70817,
+      "uniformity": 0.992947
+     },
+     {
+      "lambda": 0.3684210526315789,
+      "efficiency": 0.708214,
+      "uniformity": 0.990327
+     },
+     {
+      "lambda": 0.42105263157894735,
+      "efficiency": 0.708245,
+      "uniformity": 0.987147
+     }
+    ]
+   },
+   {
+    "geometry": "G3",
+    "method": "B5",
+    "points": [
+     {
+      "lambda": 0.0,
+      "efficiency": 0.691949,
+      "uniformity": 1.0
+     },
+     {
+      "lambda": 0.05263157894736842,
+      "efficiency": 0.703901,
+      "uniformity": 0.999032
+     },
+     {
+      "lambda": 0.10526315789473684,
+      "efficiency": 0.709147,
+      "uniformity": 0.997135
+     },
+     {
+      "lambda": 0.15789473684210525,
+      "efficiency": 0.711669,
+      "uniformity": 0.994389
+     },
+     {
+      "lambda": 0.21052631578947367,
+      "efficiency": 0.713847,
+      "uniformity": 0.991846
+     },
+     {
+      "lambda": 0.2631578947368421,
+      "efficiency": 0.714779,
+      "uniformity": 0.989718
+     }
+    ]
+   },
+   {
+    "geometry": "G4",
+    "method": "B5",
+    "points": [
+     {
+      "lambda": 0.0,
+      "efficiency": 0.750794,
+      "uniformity": 1.0
+     },
+     {
+      "lambda": 0.05263157894736842,
+      "efficiency": 0.763446,
+      "uniformity": 0.997224
+     },
+     {
+      "lambda": 0.10526315789473684,
+      "efficiency": 0.768709,
+      "uniformity": 0.994135
+     },
+     {
+      "lambda": 0.15789473684210525,
+      "efficiency": 0.770481,
+      "uniformity": 0.988266
+     },
+     {
+      "lambda": 0.21052631578947367,
+      "efficiency": 0.770962,
+      "uniformity": 0.981868
+     },
+     {
+      "lambda": 0.2631578947368421,
+      "efficiency": 0.771263,
+      "uniformity": 0.972417
+     }
+    ]
+   },
+   {
+    "geometry": "G5",
+    "method": "B5",
+    "points": [
+     {
+      "lambda": 0.0,
+      "efficiency": 0.859302,
+      "uniformity": 1.0
+     },
+     {
+      "lambda": 0.05263157894736842,
+      "efficiency": 0.883162,
+      "uniformity": 0.999994
+     },
+     {
+      "lambda": 0.10526315789473684,
+      "efficiency": 0.893294,
+      "uniformity": 0.994966
+     },
+     {
+      "lambda": 0.15789473684210525,
+      "efficiency": 0.89935,
+      "uniformity": 0.991553
+     },
+     {
+      "lambda": 0.21052631578947367,
+      "efficiency": 0.901372,
+      "uniformity": 0.985057
+     }
+    ]
+   },
+   {
+    "geometry": "G6",
+    "method": "B5",
+    "points": [
+     {
+      "lambda": 0.0,
+      "efficiency": 0.791031,
+      "uniformity": 1.0
+     }
+    ]
+   }
+  ],
+  "grid_100": {
+   "B1/G1/device": 27.297773,
+   "B1/G1/ideal": 0.0,
+   "B1/G2/device": 7.453088,
+   "B1/G2/ideal": 0.0,
+   "B1/G3/device": 4.408473,
+   "B1/G3/ideal": 0.0,
+   "B1/G4/device": 81.088055,
+   "B1/G4/ideal": 0.0,
+   "B1/G6/device": 17.114947,
+   "B1/G6/ideal": 0.0,
+   "B2/G1/device": 26.384268,
+   "B2/G1/ideal": 0.009809,
+   "B2/G2/device": 17.054215,
+   "B2/G2/ideal": 0.0,
+   "B2/G3/device": 20.753407,
+   "B2/G3/ideal": 0.0,
+   "B2/G4/device": 85.08979,
+   "B2/G4/ideal": 0.0,
+   "B2/G5/ideal": 0.0,
+   "B2/G6/device": 19.373293,
+   "B2/G6/ideal": 0.82679,
+   "B3/G1/device": 26.440886,
+   "B3/G1/ideal": 1.493359,
+   "B3/G2/device": 16.958594,
+   "B3/G2/ideal": 0.0,
+   "B3/G3/device": 20.665836,
+   "B3/G3/ideal": 0.0,
+   "B3/G4/device": 85.156683,
+   "B3/G4/ideal": 0.011994,
+   "B3/G5/ideal": 0.0,
+   "B3/G6/device": 19.468096,
+   "B3/G6/ideal": 0.545216,
+   "B4/G1/device": 24.335278,
+   "B4/G1/ideal": 0.402414,
+   "B4/G2/device": 17.254669,
+   "B4/G2/ideal": 0.30216,
+   "B4/G3/device": 20.597063,
+   "B4/G3/ideal": 0.48813,
+   "B4/G4/device": 83.632532,
+   "B4/G4/ideal": 0.367027,
+   "B4/G6/device": 19.443079,
+   "B4/G6/ideal": 1.043486,
+   "B5/G1/device": 26.063013,
+   "B5/G1/ideal": 0.188125,
+   "B5/G2/device": 18.726521,
+   "B5/G2/ideal": 0.215495,
+   "B5/G3/device": 20.630253,
+   "B5/G3/ideal": 0.227612,
+   "B5/G4/device": 91.351584,
+   "B5/G4/ideal": 0.390487,
+   "B5/G5/ideal": 0.33189,
+   "B5/G6/device": 19.39204,
+   "B5/G6/ideal": 0.378761,
+   "M01/G1/device": 174.756446,
+   "M01/G1/ideal": 189.107566,
+   "M01/G2/device": 6.552854,
+   "M01/G2/ideal": 1.986491,
+   "M01/G3/device": 24.142616,
+   "M01/G3/ideal": 9.935989,
+   "M01/G4/device": 270.975928,
+   "M01/G4/ideal": 107.270335,
+   "M01/G5/ideal": 164.203551,
+   "M01/G6/device": 832.15123,
+   "M01/G6/ideal": 958.160619,
+   "M02/G1/device": 49.779151,
+   "M02/G1/ideal": 43.152837,
+   "M02/G2/device": 19.796363,
+   "M02/G2/ideal": 8.539848,
+   "M02/G3/device": 21.532215,
+   "M02/G3/ideal": 6.648361,
+   "M02/G4/device": 99.580597,
+   "M02/G4/ideal": 25.035385,
+   "M02/G5/ideal": 43.506738,
+   "M02/G6/device": 48.973503,
+   "M02/G6/ideal": 37.652247,
+   "M03/G1/device": 89.056219,
+   "M03/G1/ideal": 78.558194,
+   "M03/G2/device": 46.265452,
+   "M03/G2/ideal": 35.385414,
+   "M03/G3/device": 86.624045,
+   "M03/G3/ideal": 77.997221,
+   "M03/G4/device": 934.468881,
+   "M03/G4/ideal": 85.738596,
+   "M03/G5/ideal": 64.348175,
+   "M03/G6/device": 103.283516,
+   "M03/G6/ideal": 98.756512,
+   "M04/G1/device": 31.151263,
+   "M04/G1/ideal": 15.901322,
+   "M04/G2/device": 18.106752,
+   "M04/G2/ideal": 3.432519,
+   "M04/G3/device": 22.29999,
+   "M04/G3/ideal": 5.646884,
+   "M04/G4/device": 88.270517,
+   "M04/G4/ideal": 12.992229,
+   "M04/G5/ideal": 16.047028,
+   "M04/G6/device": 25.823924,
+   "M04/G6/ideal": 15.829791,
+   "M04/G7/device": 39.935941,
+   "M04/G7/ideal": 34.569831,
+   "M05/G1/device": 28.275904,
+   "M05/G1/ideal": 12.143175,
+   "M05/G2/device": 17.79571,
+   "M05/G2/ideal": 2.269426,
+   "M05/G3/device": 21.514327,
+   "M05/G3/ideal": 3.75523,
+   "M05/G4/device": 83.725655,
+   "M05/G4/ideal": 8.727893,
+   "M05/G5/ideal": 11.647107,
+   "M05/G6/device": 23.868558,
+   "M05/G6/ideal": 11.784607,
+   "M06/G1/device": 26.127162,
+   "M06/G1/ideal": 0.474697,
+   "M06/G2/device": 17.675019,
+   "M06/G2/ideal": 0.085646,
+   "M06/G3/device": 20.729978,
+   "M06/G3/ideal": 0.130616,
+   "M06/G4/device": 96.374438,
+   "M06/G4/ideal": 0.291944,
+   "M06/G5/ideal": 0.301277,
+   "M06/G6/device": 29.533117,
+   "M06/G6/ideal": 0.422469,
+   "M07/G1/device": 26.440886,
+   "M07/G1/ideal": 1.478603,
+   "M07/G2/device": 16.958594,
+   "M07/G2/ideal": 0.0,
+   "M07/G3/device": 20.665836,
+   "M07/G3/ideal": 0.0,
+   "M07/G4/device": 85.156683,
+   "M07/G4/ideal": 0.011994,
+   "M07/G6/device": 29.648212,
+   "M07/G6/ideal": 0.748233,
+   "M08/G7/device": 160.415681,
+   "M08/G7/ideal": 5.147515,
+   "M09/G1/device": 23.715355,
+   "M09/G1/ideal": 0.065657,
+   "M09/G2/device": 16.967306,
+   "M09/G2/ideal": 0.014836,
+   "M09/G3/device": 20.849365,
+   "M09/G3/ideal": 0.05211,
+   "M09/G4/device": 88.335134,
+   "M09/G4/ideal": 0.071273,
+   "M09/G5/ideal": 0.049989,
+   "M09/G6/device": 18.593442,
+   "M09/G6/ideal": 0.149154,
+   "M10/G1/device": 23.692783,
+   "M10/G1/ideal": 2.233433,
+   "M10/G2/device": 19.714692,
+   "M10/G2/ideal": 6.410018,
+   "M10/G3/device": 21.135793,
+   "M10/G3/ideal": 3.1221,
+   "M10/G4/device": 84.550649,
+   "M10/G4/ideal": 2.197729,
+   "M10/G5/ideal": 3.064608,
+   "M10/G6/device": 30.254197,
+   "M10/G6/ideal": 1.434644,
+   "M10/G7/device": 62.304848,
+   "M10/G7/ideal": 21.506757,
+   "M11/G1/device": 12.968511,
+   "M11/G1/ideal": 1.198389,
+   "M11/G2/device": 9.003923,
+   "M11/G2/ideal": 0.489876,
+   "M11/G3/device": 14.589004,
+   "M11/G3/ideal": 0.827269,
+   "M11/G4/device": 20.558963,
+   "M11/G4/ideal": 1.261049,
+   "M11/G5/ideal": 2.20729,
+   "M11/G6/device": 13.49199,
+   "M11/G6/ideal": 1.200817,
+   "M11/G7/device": 30.48124,
+   "M11/G7/ideal": 22.458902,
+   "M12/G1/device": 32.32957,
+   "M12/G1/ideal": 18.933279,
+   "M12/G6/device": 28.500736,
+   "M12/G6/ideal": 19.281478,
+   "M13/G1/device": 14.854139,
+   "M13/G1/ideal": 2.233433,
+   "M13/G2/device": 8.899558,
+   "M13/G2/ideal": 6.410018,
+   "M13/G3/device": 16.754742,
+   "M13/G3/ideal": 3.1221,
+   "M13/G4/device": 21.647218,
+   "M13/G4/ideal": 2.197729,
+   "M13/G6/device": 19.826544,
+   "M13/G6/ideal": 1.478998,
+   "M13/G7/device": 30.901274,
+   "M13/G7/ideal": 21.506757,
+   "M14/G1/device": 27.217624,
+   "M14/G1/ideal": 1.749471,
+   "M14/G2/device": 16.891181,
+   "M14/G2/ideal": 0.153294,
+   "M14/G3/device": 20.476435,
+   "M14/G3/ideal": 0.338104,
+   "M14/G4/device": 89.40675,
+   "M14/G4/ideal": 0.718001,
+   "M14/G5/ideal": 65.879985,
+   "M14/G6/device": 29.862917,
+   "M14/G6/ideal": 1.154132,
+   "M18/G7/device": 49.154746,
+   "M18/G7/ideal": 5.576381,
+   "M19/G5/ideal": 16.675174
+  }
+ },
+ "models": {
+  "cgh_net": {
+   "held_out_n": 162,
+   "ratio": {
+    "median": 1.140030806202326,
+    "q1": 1.1021964864718425,
+    "q3": 1.1603704751445811
+   },
+   "time_ms": {
+    "median": 7485.530449979706,
+    "q1": 7445.30659999873,
+    "q3": 7554.6963000088
+   },
+   "onnx_bytes": 4671540,
+   "grid": 128,
+   "steps": 16000,
+   "batch": 32,
+   "ratio_by_kind": {
+    "G5_lattice": 1.0654278933908388,
+    "M19_three_plane": 1.1878923798810734,
+    "lattice": 1.1622532229081943,
+    "mixed": 1.1183008528207075,
+    "random": 1.1468728897317053,
+    "ring": 1.1004427444557658
+   },
+   "ac_hybrid": 0.6868902630956331,
+   "ac_m19": 0.5997412068455978,
+   "network_ms": 34.854199999244884,
+   "budget_ms": 7354.622799961362,
+   "share_above": 1.0,
+   "parity_intensity": 8.417985554842744e-06,
+   "params_note": "U-Net of 14 channels"
+  },
+  "cgh_net_2d": {
+   "held_out_n": 219,
+   "ratio": {
+    "median": 0.9993577980653524,
+    "q1": 0.9963574399865562,
+    "q3": 1.0014247044377016
+   },
+   "steps": 38000
+  },
+  "warmstart": {
+   "held_out_n": 66,
+   "iters": {
+    "model": {
+     "median": 8.0,
+     "q1": 5.0,
+     "q3": 61.0
+    },
+    "random": {
+     "median": 14.0,
+     "q1": 13.0,
+     "q3": 15.0
+    }
+   },
+   "ratio": 1.75,
+   "final_eff_diff": 0.04182404597408541,
+   "control": {
+    "random_nfix12": [
+     14.0,
+     15.0
+    ],
+    "random_nfix3": [
+     9.0,
+     61.0
+    ],
+    "model_nfix3": [
+     16.5,
+     61.0
+    ]
+   },
+   "control_never": {
+    "random_nfix12": 0.067,
+    "random_nfix3": 0.4,
+    "model_nfix3": 0.467
+   },
+   "n_fix_model": 3,
+   "n_fix_random": 12
+  }
+ },
+ "executive": {
+  "atoms": "6,100",
+  "spread": "11.4",
+  "title": "Scaling programmable light fields for optical trapping"
+ },
+ "readiness": {
+  "product_version": "0.02.000",
+  "contracts": [
+   {
+    "id": "params-record",
+    "state": "partial",
+    "provenance": "real",
+    "reason": "1 of 14 records rejected by contract 1."
+   },
+   {
+    "id": "case-index",
+    "state": "available",
+    "provenance": "real",
+    "reason": null
+   },
+   {
+    "id": "case-manifest",
+    "state": "available",
+    "provenance": "real",
+    "reason": null
+   },
+   {
+    "id": "trace",
+    "state": "available",
+    "provenance": "real",
+    "reason": null
+   },
+   {
+    "id": "benchmark-results",
+    "state": "partial",
+    "provenance": "real",
+    "reason": "61 of 168 benchmark cells were not run."
+   },
+   {
+    "id": "cgh-net",
+    "state": "available",
+    "provenance": "real",
+    "reason": null
+   },
+   {
+    "id": "warmstart-model",
+    "state": "training",
+    "provenance": "baseline",
+    "reason": "No released model; the slot's baseline answers (GS for cgh-net, random trap phases for warmstart-model)."
+   },
+   {
+    "id": "model-metrics",
+    "state": "available",
+    "provenance": "real",
+    "reason": null
+   },
+   {
+    "id": "model-evidence",
+    "state": "available",
+    "provenance": "real",
+    "reason": null
+   },
+   {
+    "id": "engine-reference",
+    "state": "available",
+    "provenance": "real",
+    "reason": null
+   },
+   {
+    "id": "api",
+    "state": "missing",
+    "provenance": null,
+    "reason": "The API lane is dormant; the site reads the committed documents."
+   }
+  ]
+ },
+ "unit_acceptance": [
+  [
+   "M01",
+   "efficiency 0.281, uniformity 0.0003 (deterministic)",
+   "1",
+   "tests/methods/baseline/test_m01_superposition.py"
+  ],
+  [
+   "M02",
+   "efficiency 0.750 [0.738, 0.752], uniformity 0.252 [0.106, 0.272]",
+   "6",
+   "tests/methods/baseline/test_m02_random_superposition.py"
+  ],
+  [
+   "M03",
+   "256 squared: efficiency 0.010, uniformity 0.057 [0.031, 0.072]; 768 squared: efficiency 0.008, uniformity 0.566 [0.543, 0.590]",
+   "5 and 2",
+   "tests/methods/baseline/test_m03_random_mask.py"
+  ],
+  [
+   "M04",
+   "flat beam: efficiency 0.939 [0.933, 0.939], uniformity 0.604 [0.557, 0.626]; Gaussian beam: efficiency 0.815 against its ceiling 0.869",
+   "3",
+   "tests/methods/baseline/test_m04_gs.py"
+  ],
+  [
+   "M05",
+   "uniformity 0.688 [0.638, 0.709] against 0.615 [0.550, 0.637] for GS at equal iterations; efficiency 0.811 against 0.816",
+   "5",
+   "tests/methods/baseline/test_m05_gaa.py"
+  ],
+  [
+   "M06",
+   "flat beam: efficiency and uniformity both at 0.9 after 12, 15 and 12 iterations (median uniformity 0.857 at 10); Gaussian beam: 12, 15 and 12; 3 x 3 x 3 lattice (0.9 and 0.98): 35, 20 and 27; budgets 15, 20 and 100",
+   "3",
+   "tests/methods/baseline/test_m06_gsw.py (and test_m06_against_slmsuite.py, notebook venv)"
+  ],
+  [
+   "M07",
+   "50 x 30 array to 0.5 percent in 64 and 64 iterations against 136 and 106 for M06 (phase fixed after 60; efficiency 0.83 and 0.83); with the source value of 12 it stalls at 3.58 percent",
+   "2",
+   "tests/methods/baseline/test_m07_phase_fixed_wgs.py (and test_m07_against_slmsuite.py, notebook venv)"
+  ],
+  [
+   "M08",
+   "signal-region error 12.4 (disc), 7.8 (ring) and 10.4 (bar) times below GS at the worse of two starts; efficiency 0.181 to 0.184 against 0.963 to 0.992",
+   "2 starts",
+   "tests/methods/baseline/test_m08_mraf.py"
+  ],
+  [
+   "M09",
+   "uniformity 0.9994 and 0.9992 (efficiency 0.66 and 0.65); 119 quasi-periodic traps at 0.023 percent rms",
+   "2 and 1",
+   "tests/methods/optim/test_m09_direct_search.py"
+  ],
+  [
+   "M10",
+   "analytic gradient within 2.5e-06 of finite differences; square lattice error 0.55 and 0.51 percent",
+   "2",
+   "tests/methods/optim/test_m10_cg.py"
+  ],
+  [
+   "M11",
+   "relative standard deviation 2.53, 2.46 and 2.26 percent against 17.78, 17.98 and 18.82 for GS at 30 iterations",
+   "3",
+   "tests/methods/optim/test_m11_wirtinger_adam.py"
+  ],
+  [
+   "M12",
+   "emulated camera loop: open-loop 20.9 and 20.4 percent to 0.84 and 1.07 percent in 20 iterations; 24.3 and 23.6 percent to 1.05 and 0.74 percent in three phase-fixed steps",
+   "2",
+   "tests/methods/control/test_m12_closed_loop.py"
+  ],
+  [
+   "M13",
+   "error 0.241 (efficiency 0.535) against 1.382 (0.507) for M10 without the device model, large disc on the crosstalk device",
+   "1",
+   "tests/methods/optim/test_m13_crosstalk_cg.py"
+  ],
+  [
+   "M14",
+   "worst per-mode relative error 0.002 [0.001, 0.002] over Noll modes 4 to 11",
+   "3",
+   "tests/methods/control/test_m14_zernike.py"
+  ],
+  [
+   "M15",
+   "ring phase winds by 2 pi l (winding error below the 1e-9 rad of the arithmetic) with a maximum error of 0.033 [0.028, 0.060] rad (isolated vortices of charge 1, 2, 3 and -2)",
+   "2 per charge",
+   "tests/methods/control/test_m15_vortex.py"
+  ],
+  [
+   "M16",
+   "0 path crossings in 60 loadings; moving traps keep 0.767 [0.747, 0.792] of their mean intensity (worst moving trap of each of 5 loadings)",
+   "60 loadings",
+   "tests/methods/control/test_m16_rearrangement.py"
+  ],
+  [
+   "M17",
+   "three-plane network refined by M19: median accuracy ratio 1.140 (quartiles 1.102 and 1.160) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
+   "162 volumes",
+   "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json"
+  ],
+  [
+   "M18",
+   "signal-region error 0.0204 (disc), 0.0179 (ring) and 0.0221 (line) against 0.250, 0.188 and 0.223 for MRAF from a random start (the better of two); baked size: 0.0259 (disc) and 0.0171 (ring) against 0.266 and 0.228",
+   "2 and 1",
+   "tests/methods/optim/test_m18_ot_mraf.py"
+  ],
+  [
+   "M19",
+   "plane means over overall mean 0.938, 0.987 and 1.075 and 0.926, 1.034 and 1.039 on three planes",
+   "2",
+   "tests/methods/baseline/test_m19_multiplane.py"
+  ],
+  [
+   "BS-4",
+   "95th percentile of the relative standard deviation a median 1.435 times below M07 (1.42 to 1.57) over a 200-sample aberration ensemble, at a median 0.982 of its efficiency; pointing errors 1.04 times (seed 1)",
+   "3 (pointing 1)",
+   "tests/methods/beyond/test_b4_robust.py"
+  ],
+  [
+   "BS-5",
+   "hypervolume 0.8190 against 0.8018 for the union of the M04, M05, M06 and M09 points; 7 front points dominate M04 and 8 dominate M05",
+   "1",
+   "tests/methods/beyond/test_b5_pareto.py"
+  ]
+ ],
+ "published_anchors": {
+  "M01": [
+   0.29,
+   0.01
+  ],
+  "M02": [
+   0.69,
+   0.01
+  ],
+  "M03": [
+   0.01,
+   0.58
+  ],
+  "M04": [
+   0.94,
+   0.6
+  ],
+  "M05": [
+   0.93,
+   0.79
+  ],
+  "M06": [
+   0.93,
+   0.99
+  ]
+ }
+}

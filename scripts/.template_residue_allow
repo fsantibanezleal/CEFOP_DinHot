@@ -1,0 +1,3 @@
+# Path fragments exempt from scripts/check_template_residue.py (one per line, '#' comments ignored).
+# A fragment matches if it appears anywhere in a tracked file's path. Keep this list tiny and
+# justified: it exists for the rare genuine collision, not to silence real residue.

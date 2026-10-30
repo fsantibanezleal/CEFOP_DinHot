@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+# ADR-0074: cheap checks on committed files. No pipeline test suite, no training stack, no bake: those run locally.
+# The web job builds the site and runs its unit tests (the contract and parity checks are milliseconds).
+# Every step runs under `bash -eo pipefail`, so a failing command inside a pipe fails the step (T9).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -eo pipefail {0}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the version check compares VERSION with the latest tag
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install the web dependencies (the SDD guard validates the executive view against the shell's installed schema)
+        run: cd frontend && npm ci
+      - name: Install the schema validator (the SDD guard and the planted-defect suite)
+        run: pip install jsonschema==4.26.0
+      - name: Lint
+        run: pip install ruff==0.15.18 && ruff check data-pipeline tests scripts app
+      - name: The workflows parse
+        run: |
+          pip install pyyaml==6.0.2
+          python -c "import sys, yaml, pathlib; [yaml.safe_load(p.read_text()) for p in pathlib.Path('.github/workflows').glob('*.yml')]; print('workflows: OK')"
+      - name: CONTRACT 2, manifests and artifacts consistent
+        run: python scripts/check_artifacts.py
+      - name: VERSION is the single source (T4)
+        run: python scripts/check_version_coherence.py
+      - name: The SDD, every requirement with a real gate (ADR-0075)
+        run: python scripts/check_sdd.py
+      - name: The notebooks, layout, English and Spanish mirror, levels, anatomy, metadata and cleanliness (static; the execution is a local gate, ADR-0074)
+        run: python scripts/check_notebooks.py
+      - name: The manuscripts, product.json declares the Zenodo technical report (static; the online read is a local release step, ADR-0074)
+        run: python scripts/check_manuscripts.py
+      - name: The README states the repository by areas
+        run: python scripts/check_readme_areas.py
+      - name: An animated SVG carries its reduced-motion block and plays ten seconds at most (shell 0.14.0, reuses the shell's analysis)
+        run: python scripts/check_svg_animation.py
+      - name: One deploy place
+        run: python scripts/check_deploy_place.py
+      - name: The SDD technology table is the pinned dependencies (spec area)
+        run: python scripts/check_tech_matrix.py
+      - name: Contract versions follow their schemas, each with its History entry, against the base (spec area)
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          base="$BEFORE"
+          if [ -z "${base//0/}" ]; then base=origin/develop; fi  # a new branch or a manual run has no before SHA
+          python scripts/check_contract_versions.py --base "$base"
+      - name: Every guard rejects a planted defect (spec area, cheap, standard library and pytest only)
+        run: pip install pytest==9.1.1 && python -m pytest tests/adversarial -q
+      - name: The contract catalog, every row complete and every path it names present (ADR-0080)
+        run: python scripts/check_contracts.py docs/contracts/catalog.md --repo-root .
+      - name: The readiness document is current with the catalog and the bake (ADR-0080)
+        run: python scripts/check_readiness.py
+      - name: Every committed document valid against its schema file (ADR-0080)
+        run: pip install jsonschema==4.26.0 && python scripts/check_documents.py
+      - name: Rows still served by a provider (listed while building; none on main)
+        run: |
+          set +e
+          python scripts/check_skeleton.py docs/contracts/catalog.md
+          code=$?
+          set -e
+          if [ "$code" -eq 2 ] && [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            echo "::error::main is a release: every catalog row must be real"; exit 1; fi
+          [ "$code" -eq 0 ] || [ "$code" -eq 2 ]
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: cd frontend && npm ci
+      - name: Build (copy the declared artifacts, type-check, bundle, materialise the routes)
+        run: cd frontend && npm run build
+      - name: Unit tests (contract both ways, engine parity, artifact layer)
+        run: cd frontend && npm test
+      - name: Web baseline (tokens, classes, numbers, images, animation loops)
+        run: python scripts/check_web_baseline.py
+
+  guards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Base-integrity guards (the regressions this archetype forbids; a model file a catalog row declares is admitted, 0.09.000)
+        run: python scripts/check_base_integrity.py
+      - name: No template residue (an instantiated product replaces the example)
+        run: python scripts/check_template_residue.py
+      - name: Every path a document names exists
+        run: python scripts/check_doc_paths.py
+      - name: No em-dash or emoji in product content (ADR-0067)
+        run: python scripts/check_content_standards.py
+      - name: CI budget, no training, trunk-only triggers (ADR-0074)
+        run: python scripts/check_ci_budget.py

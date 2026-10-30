@@ -1,0 +1,3 @@
+# The offline lane. Its engines are pinned in data-pipeline/requirements.txt, one exact pin per engine the research
+# chose, each with a card in docs/frameworks/ and a verified licence.
+-r data-pipeline/requirements.txt
