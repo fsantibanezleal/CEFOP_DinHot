@@ -47,7 +47,7 @@
    "id": "M07",
    "tier": "sota",
    "method": "Phase-fixed weighted GS",
-   "criterion": "fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations (DinHot's measured default; at the source's 12 it stalls at 2.9 percent on this grid)",
+   "criterion": "fewer iterations than M06 to a relative standard deviation of 0.5 percent on a 50x30 array, with the phase fixed after 60 iterations in the acceptance run (the code default `n_fix` is 12, as in Kim et al. 2019; at 12 it stalls at 2.9 percent on DinHot's grid); from the same start M07 matches slmsuite 0.5.0's WGS-Kim to 1e-4 percent (the first field is not reweighted, g_0 = 1)",
    "gate": "tests/methods/baseline/test_m07_phase_fixed_wgs.py"
   },
   {
@@ -82,14 +82,14 @@
    "id": "M12",
    "tier": "sota",
    "method": "Closed-loop WGS on an emulated camera",
-   "criterion": "from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7",
+   "criterion": "from a 19 percent rms open-loop spread, at most 2.1 percent in 20 iterations at gain 0.7; the acceptance runs on the emulated camera (`core/camera.py`), which reproduces the published feedback curves (Nogrette 2014: 19 percent to under 2.1; Kim 2019: 22 percent to under 1.8 in three phase-fixed steps)",
    "gate": "tests/methods/control/test_m12_closed_loop.py"
   },
   {
    "id": "M13",
    "tier": "sota",
    "method": "Device-aware CG with pixel crosstalk",
-   "criterion": "on the crosstalk device, lower error than M10 without the model on a large disc",
+   "criterion": "on the crosstalk device, lower error than M10 without the model on a large disc; a staircase line search lets it run its budget on a quantizing device, where its scored spread does not improve systematically (a measured negative)",
    "gate": "tests/methods/optim/test_m13_crosstalk_cg.py"
   },
   {
@@ -110,14 +110,14 @@
    "id": "M16",
    "tier": "sota",
    "method": "Hungarian assignment and linear phase interpolation",
-   "criterion": "no crossing moves for alpha 1.5 on a 7x7 to 3x3 sort; a moving trap above 70 percent of its mean intensity",
+   "criterion": "no crossing moves for alpha 1.5 on a 7x7 to 3x3 sort; a moving trap above 70 percent of its mean intensity on the frames themselves (the minimum over the frames of the sequence over their mean; between frames, under the blend model of B2's transient, it is not: notebook 07-04)",
    "gate": "tests/methods/control/test_m16_rearrangement.py"
   },
   {
    "id": "M17",
    "tier": "sota",
-   "method": "Unsupervised CNN hologram refined by GS (DeepCGH-style start)",
-   "criterion": "on held-out targets, the network start followed by GS refinement inside the same wall-clock budget reaches a higher accuracy than GS alone (measured alone, the network matches GS at equal time: median ratio 0.998)",
+   "method": "Multi-plane CNN hologram with an optional volumetric GS refinement (DeepCGH-style)",
+   "criterion": "on 162 held-out three-plane volumes, the hybrid (the network's phase, refined by M19 inside the same wall-clock budget only when that raises the volume accuracy) reaches a higher accuracy than M19 alone at that budget (measured median ratio 1.140); the refinement was kept on none of the volumes, so the measured method is the network alone",
    "gate": "tests/learned/test_m17_cgh_net.py"
   },
   {
@@ -138,14 +138,14 @@
    "id": "BS-1",
    "tier": "beyond",
    "method": "Device-aware weighted GS (engine id B1)",
-   "criterion": "on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower",
+   "criterion": "on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; measured against the corrected M07 and against slmsuite's WGS-Kim alike: a median of 25.8 times (15.9 to 33.3 over five seeds) at 0.995 of the efficiency, and 2.0 times on the full C08 device (the bake, three seeds; 2.2 in notebook 03-04) with 4-bit phase and flicker",
    "gate": "tests/methods/beyond/test_b1_device_wgs.py"
   },
   {
    "id": "BS-2",
    "tier": "beyond",
    "method": "Flicker-bounded phase-continuous sequence (engine id B2)",
-   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI",
+   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: holds when the peak step per frame is at most 0.2 Fourier units, on most seeds (acceptance task: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.910; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
    "gate": "tests/methods/beyond/test_b2_flicker_bounded.py"
   },
   {
@@ -159,7 +159,7 @@
    "id": "BS-4",
    "tier": "beyond",
    "method": "Aberration-robust hologram (engine id B4)",
-   "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower; robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.02 times)",
+   "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.04 times)",
    "gate": "tests/methods/beyond/test_b4_robust.py"
   },
   {
@@ -247,16 +247,16 @@
      "lane": "baked"
     },
     "M06": {
-     "efficiency": 0.816835,
-     "uniformity": 0.999971,
-     "rel_std_pct": 0.001987,
+     "efficiency": 0.816828,
+     "uniformity": 0.999965,
+     "rel_std_pct": 0.00233,
      "iterations": 30,
      "lane": "baked"
     },
     "M07": {
-     "efficiency": 0.816832,
+     "efficiency": 0.816826,
      "uniformity": 0.999988,
-     "rel_std_pct": 0.000689,
+     "rel_std_pct": 0.000691,
      "iterations": 30,
      "lane": "baked"
     },
@@ -281,24 +281,31 @@
      "iterations": 30,
      "lane": "live"
     },
+    "B3": {
+     "efficiency": 0.816826,
+     "uniformity": 1.0,
+     "rel_std_pct": 4e-06,
+     "iterations": 30,
+     "lane": "baked"
+    },
     "B4": {
-     "efficiency": 0.805525,
-     "uniformity": 0.993983,
-     "rel_std_pct": 0.425396,
+     "efficiency": 0.805461,
+     "uniformity": 0.993906,
+     "rel_std_pct": 0.421908,
      "iterations": 30,
      "lane": "baked"
     },
     "B5": {
-     "efficiency": 0.816833,
+     "efficiency": 0.816826,
      "uniformity": 1.0,
      "rel_std_pct": 0.0,
      "iterations": 20,
      "lane": "baked"
     },
     "M12": {
-     "efficiency": 0.811161,
-     "uniformity": 0.749577,
-     "rel_std_pct": 17.718612,
+     "efficiency": 0.81117,
+     "uniformity": 0.7493,
+     "rel_std_pct": 17.711675,
      "iterations": 30,
      "lane": "baked"
     }
@@ -306,46 +313,46 @@
    "reference_method": "M06",
    "best_method": "B5",
    "lane": "precompute",
-   "trace_bytes": 181518,
+   "trace_bytes": 183980,
    "seed": 20261028,
    "feedback": [
     {
      "step": 0,
-     "sigma": 9.1148,
+     "sigma": 9.1161,
      "eff": 0.81683
     },
     {
      "step": 1,
-     "sigma": 2.8507,
-     "eff": 0.81633
+     "sigma": 2.8392,
+     "eff": 0.81632
     },
     {
      "step": 2,
-     "sigma": 0.8669,
-     "eff": 0.816
+     "sigma": 0.8717,
+     "eff": 0.81599
     },
     {
      "step": 3,
-     "sigma": 0.2599,
-     "eff": 0.81588
+     "sigma": 0.263,
+     "eff": 0.81587
     },
     {
      "step": 4,
-     "sigma": 0.0776,
+     "sigma": 0.0789,
      "eff": 0.81584
     },
     {
      "step": 5,
-     "sigma": 0.0232,
+     "sigma": 0.0236,
      "eff": 0.81583
     }
    ],
    "dynamics": {
     "particle": "bead",
-    "fc_hz": 69.9885,
-    "kappa_pn_per_um": 4.00964,
+    "fc_hz": 69.992,
+    "kappa_pn_per_um": 4.01009,
     "depth": {
-     "value": 198.955,
+     "value": 198.971,
      "unit": "kBT"
     }
    }
@@ -421,16 +428,16 @@
      "lane": "baked"
     },
     "M06": {
-     "efficiency": 0.805185,
-     "uniformity": 0.983527,
-     "rel_std_pct": 0.609649,
+     "efficiency": 0.805825,
+     "uniformity": 0.977388,
+     "rel_std_pct": 0.858898,
      "iterations": 30,
      "lane": "baked"
     },
     "M07": {
-     "efficiency": 0.79826,
-     "uniformity": 0.98386,
-     "rel_std_pct": 0.77898,
+     "efficiency": 0.797684,
+     "uniformity": 0.999613,
+     "rel_std_pct": 0.013921,
      "iterations": 30,
      "lane": "baked"
     },
@@ -446,7 +453,7 @@
      "uniformity": 0.018984,
      "rel_std_pct": 44.419062,
      "iterations": 30,
-     "lane": "live"
+     "lane": "baked"
     },
     "M11": {
      "efficiency": 0.76265,
@@ -455,24 +462,31 @@
      "iterations": 30,
      "lane": "live"
     },
+    "B3": {
+     "efficiency": 0.797685,
+     "uniformity": 0.999616,
+     "rel_std_pct": 0.013772,
+     "iterations": 30,
+     "lane": "baked"
+    },
     "B4": {
-     "efficiency": 0.784929,
-     "uniformity": 0.977444,
-     "rel_std_pct": 0.869998,
+     "efficiency": 0.782997,
+     "uniformity": 0.975742,
+     "rel_std_pct": 0.867379,
      "iterations": 30,
      "lane": "baked"
     },
     "B5": {
-     "efficiency": 0.799564,
+     "efficiency": 0.797685,
      "uniformity": 1.0,
      "rel_std_pct": 0.0,
      "iterations": 20,
      "lane": "baked"
     },
     "M12": {
-     "efficiency": 0.806057,
-     "uniformity": 0.608221,
-     "rel_std_pct": 19.215398,
+     "efficiency": 0.813791,
+     "uniformity": 0.6109,
+     "rel_std_pct": 19.20957,
      "iterations": 30,
      "lane": "baked"
     }
@@ -480,113 +494,113 @@
    "reference_method": "M07",
    "best_method": "B5",
    "lane": "precompute",
-   "trace_bytes": 146036,
+   "trace_bytes": 149096,
    "seed": 20261028,
    "feedback": [
     {
      "step": 0,
-     "sigma": 20.3058,
-     "eff": 0.79826
+     "sigma": 20.1121,
+     "eff": 0.79768
     },
     {
      "step": 1,
-     "sigma": 6.0993,
-     "eff": 0.80158
+     "sigma": 6.1105,
+     "eff": 0.80147
     },
     {
      "step": 2,
-     "sigma": 2.0951,
-     "eff": 0.80182
+     "sigma": 2.169,
+     "eff": 0.80289
     },
     {
      "step": 3,
-     "sigma": 0.9988,
-     "eff": 0.80286
+     "sigma": 1.2241,
+     "eff": 0.80437
     },
     {
      "step": 4,
-     "sigma": 0.8124,
-     "eff": 0.80381
+     "sigma": 0.8774,
+     "eff": 0.80523
     },
     {
      "step": 5,
-     "sigma": 0.642,
-     "eff": 0.80445
+     "sigma": 0.6702,
+     "eff": 0.80608
     },
     {
      "step": 6,
-     "sigma": 0.4691,
-     "eff": 0.80504
+     "sigma": 0.8045,
+     "eff": 0.80706
     },
     {
      "step": 7,
-     "sigma": 0.5339,
-     "eff": 0.80569
+     "sigma": 0.6901,
+     "eff": 0.80766
     },
     {
      "step": 8,
-     "sigma": 0.3859,
-     "eff": 0.8061
+     "sigma": 0.4644,
+     "eff": 0.80803
     },
     {
      "step": 9,
-     "sigma": 0.3201,
-     "eff": 0.8064
+     "sigma": 0.2614,
+     "eff": 0.80824
     },
     {
      "step": 10,
-     "sigma": 0.4298,
-     "eff": 0.80685
+     "sigma": 0.1914,
+     "eff": 0.80843
     },
     {
      "step": 11,
-     "sigma": 1.1065,
-     "eff": 0.80815
+     "sigma": 0.2391,
+     "eff": 0.80857
     },
     {
      "step": 12,
-     "sigma": 1.0041,
-     "eff": 0.80947
+     "sigma": 0.2656,
+     "eff": 0.8088
     },
     {
      "step": 13,
-     "sigma": 0.5586,
-     "eff": 0.80994
+     "sigma": 0.3435,
+     "eff": 0.80914
     },
     {
      "step": 14,
-     "sigma": 0.3039,
-     "eff": 0.81012
+     "sigma": 0.3887,
+     "eff": 0.80961
     },
     {
      "step": 15,
-     "sigma": 0.1842,
-     "eff": 0.81021
+     "sigma": 0.4217,
+     "eff": 0.81006
     },
     {
      "step": 16,
-     "sigma": 0.0918,
-     "eff": 0.81027
+     "sigma": 0.3904,
+     "eff": 0.8104
     },
     {
      "step": 17,
-     "sigma": 0.1931,
-     "eff": 0.81039
+     "sigma": 0.3042,
+     "eff": 0.81073
     },
     {
      "step": 18,
-     "sigma": 0.1725,
-     "eff": 0.81043
+     "sigma": 0.5832,
+     "eff": 0.81126
     },
     {
      "step": 19,
-     "sigma": 0.1644,
-     "eff": 0.81049
+     "sigma": 1.0097,
+     "eff": 0.8133
     },
     {
      "step": 20,
-     "sigma": 0.2127,
-     "eff": 0.81057
+     "sigma": 1.3371,
+     "eff": 0.81581
     }
    ],
    "dynamics": null
@@ -648,23 +662,30 @@
      "lane": "baked"
     },
     "M06": {
-     "efficiency": 0.806545,
-     "uniformity": 0.957649,
-     "rel_std_pct": 1.234744,
+     "efficiency": 0.806281,
+     "uniformity": 0.958116,
+     "rel_std_pct": 1.276819,
      "iterations": 30,
      "lane": "baked"
     },
     "M07": {
-     "efficiency": 0.793695,
-     "uniformity": 0.991384,
-     "rel_std_pct": 0.27279,
+     "efficiency": 0.794122,
+     "uniformity": 0.994818,
+     "rel_std_pct": 0.198701,
      "iterations": 30,
      "lane": "baked"
     },
     "M12": {
-     "efficiency": 0.808093,
-     "uniformity": 0.361559,
-     "rel_std_pct": 20.351952,
+     "efficiency": 0.809228,
+     "uniformity": 0.376503,
+     "rel_std_pct": 20.307043,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B3": {
+     "efficiency": 0.794122,
+     "uniformity": 0.994788,
+     "rel_std_pct": 0.199007,
      "iterations": 30,
      "lane": "baked"
     }
@@ -672,36 +693,36 @@
    "reference_method": "M07",
    "best_method": "M07",
    "lane": "precompute",
-   "trace_bytes": 258681,
+   "trace_bytes": 233458,
    "seed": 20261028,
    "feedback": [
     {
      "step": 0,
-     "sigma": 22.3147,
-     "eff": 0.79369
+     "sigma": 22.3086,
+     "eff": 0.79412
     },
     {
      "step": 1,
-     "sigma": 3.0561,
-     "eff": 0.80083
+     "sigma": 2.9181,
+     "eff": 0.8014
     },
     {
      "step": 2,
-     "sigma": 2.3075,
-     "eff": 0.80452
+     "sigma": 2.1935,
+     "eff": 0.8049
     },
     {
      "step": 3,
-     "sigma": 1.3567,
-     "eff": 0.80685
+     "sigma": 1.4434,
+     "eff": 0.80766
     }
    ],
    "dynamics": {
     "particle": "atom",
-    "fc_hz": 104800.0,
-    "omega_r_hz": 107292.0,
+    "fc_hz": 107200.0,
+    "omega_r_hz": 109092.0,
     "depth": {
-     "value": 1002.57,
+     "value": 994.424,
      "unit": "uK"
     }
    }
@@ -774,9 +795,9 @@
      "lane": "baked"
     },
     "M13": {
-     "efficiency": 0.372829,
-     "uniformity": 0.730706,
-     "rel_std_pct": 26.929449,
+     "efficiency": 0.373336,
+     "uniformity": 0.722581,
+     "rel_std_pct": 27.741864,
      "iterations": 30,
      "lane": "baked"
     },
@@ -791,7 +812,7 @@
    "reference_method": "M13",
    "best_method": "M04",
    "lane": "precompute",
-   "trace_bytes": 111077,
+   "trace_bytes": 111090,
    "seed": 20261028,
    "feedback": null,
    "dynamics": null
@@ -853,9 +874,9 @@
      "lane": "baked"
     },
     "M06": {
-     "efficiency": 0.891643,
-     "uniformity": 0.98475,
-     "rel_std_pct": 0.709544,
+     "efficiency": 0.890626,
+     "uniformity": 0.989372,
+     "rel_std_pct": 0.495676,
      "iterations": 30,
      "lane": "baked"
     },
@@ -881,9 +902,9 @@
      "lane": "baked"
     },
     "M15": {
-     "efficiency": 0.891643,
-     "uniformity": 0.98475,
-     "rel_std_pct": 0.709544,
+     "efficiency": 0.890626,
+     "uniformity": 0.989372,
+     "rel_std_pct": 0.495676,
      "iterations": 30,
      "lane": "baked"
     },
@@ -895,9 +916,9 @@
      "lane": "baked"
     },
     "B5": {
-     "efficiency": 0.903718,
-     "uniformity": 0.976189,
-     "rel_std_pct": 0.983098,
+     "efficiency": 0.8889,
+     "uniformity": 0.988599,
+     "rel_std_pct": 0.507178,
      "iterations": 20,
      "lane": "baked"
     }
@@ -905,7 +926,7 @@
    "reference_method": "M09",
    "best_method": "M09",
    "lane": "precompute",
-   "trace_bytes": 128374,
+   "trace_bytes": 128388,
    "seed": 20261028,
    "feedback": null,
    "dynamics": null
@@ -967,14 +988,14 @@
      "lane": "baked"
     },
     "M06": {
-     "efficiency": 0.708153,
-     "uniformity": 0.9968,
-     "rel_std_pct": 0.169451,
+     "efficiency": 0.708163,
+     "uniformity": 0.996815,
+     "rel_std_pct": 0.168413,
      "iterations": 30,
      "lane": "baked"
     },
     "M07": {
-     "efficiency": 0.704264,
+     "efficiency": 0.704284,
      "uniformity": 1.0,
      "rel_std_pct": 0.0,
      "iterations": 30,
@@ -995,9 +1016,9 @@
      "lane": "baked"
     },
     "M15": {
-     "efficiency": 0.708153,
-     "uniformity": 0.9968,
-     "rel_std_pct": 0.169451,
+     "efficiency": 0.708163,
+     "uniformity": 0.996815,
+     "rel_std_pct": 0.168413,
      "iterations": 30,
      "lane": "baked"
     }
@@ -1005,7 +1026,7 @@
    "reference_method": "M07",
    "best_method": "M07",
    "lane": "precompute",
-   "trace_bytes": 117032,
+   "trace_bytes": 117039,
    "seed": 20261028,
    "feedback": null,
    "dynamics": null
@@ -1081,16 +1102,16 @@
      "lane": "live"
     },
     "M06": {
-     "efficiency": 0.801684,
-     "uniformity": 0.989923,
-     "rel_std_pct": 0.525373,
+     "efficiency": 0.801937,
+     "uniformity": 0.988432,
+     "rel_std_pct": 0.574757,
      "iterations": 30,
      "lane": "live"
     },
     "M07": {
-     "efficiency": 0.793184,
-     "uniformity": 0.999919,
-     "rel_std_pct": 0.00404,
+     "efficiency": 0.791194,
+     "uniformity": 0.999815,
+     "rel_std_pct": 0.00891,
      "iterations": 30,
      "lane": "live"
     },
@@ -1106,7 +1127,7 @@
      "uniformity": 0.157069,
      "rel_std_pct": 55.63728,
      "iterations": 30,
-     "lane": "baked"
+     "lane": "live"
     },
     "M11": {
      "efficiency": 0.767005,
@@ -1115,17 +1136,24 @@
      "iterations": 30,
      "lane": "live"
     },
+    "B3": {
+     "efficiency": 0.791194,
+     "uniformity": 0.999815,
+     "rel_std_pct": 0.00891,
+     "iterations": 30,
+     "lane": "baked"
+    },
     "B4": {
-     "efficiency": 0.774974,
-     "uniformity": 0.979533,
-     "rel_std_pct": 0.895008,
+     "efficiency": 0.773295,
+     "uniformity": 0.978878,
+     "rel_std_pct": 0.940948,
      "iterations": 30,
      "lane": "baked"
     },
     "B5": {
-     "efficiency": 0.799477,
-     "uniformity": 0.995233,
-     "rel_std_pct": 0.237379,
+     "efficiency": 0.798461,
+     "uniformity": 0.994751,
+     "rel_std_pct": 0.245685,
      "iterations": 20,
      "lane": "baked"
     }
@@ -1133,7 +1161,7 @@
    "reference_method": "M07",
    "best_method": "M09",
    "lane": "live",
-   "trace_bytes": 118978,
+   "trace_bytes": 121672,
    "seed": 20261028,
    "feedback": null,
    "dynamics": null
@@ -1185,16 +1213,16 @@
      "lane": "live"
     },
     "M06": {
-     "efficiency": 0.679311,
-     "uniformity": 0.71902,
-     "rel_std_pct": 14.945398,
+     "efficiency": 0.682286,
+     "uniformity": 0.74533,
+     "rel_std_pct": 14.344323,
      "iterations": 30,
      "lane": "live"
     },
     "M07": {
-     "efficiency": 0.675367,
-     "uniformity": 0.730564,
-     "rel_std_pct": 14.757656,
+     "efficiency": 0.674921,
+     "uniformity": 0.684915,
+     "rel_std_pct": 13.423807,
      "iterations": 30,
      "lane": "live"
     },
@@ -1206,23 +1234,23 @@
      "lane": "live"
     },
     "M13": {
-     "efficiency": 0.265548,
-     "uniformity": 0.046884,
-     "rel_std_pct": 31.111628,
+     "efficiency": 0.455512,
+     "uniformity": 0.349082,
+     "rel_std_pct": 23.676643,
      "iterations": 30,
      "lane": "baked"
     },
     "B1": {
-     "efficiency": 0.6483,
-     "uniformity": 0.841298,
-     "rel_std_pct": 6.705636,
+     "efficiency": 0.651932,
+     "uniformity": 0.847243,
+     "rel_std_pct": 7.053303,
      "iterations": 30,
      "lane": "baked"
     },
     "B4": {
-     "efficiency": 0.669243,
-     "uniformity": 0.723949,
-     "rel_std_pct": 14.326484,
+     "efficiency": 0.666374,
+     "uniformity": 0.73047,
+     "rel_std_pct": 13.556412,
      "iterations": 30,
      "lane": "baked"
     }
@@ -1230,7 +1258,7 @@
    "reference_method": "B1",
    "best_method": "B1",
    "lane": "precompute",
-   "trace_bytes": 62737,
+   "trace_bytes": 62728,
    "seed": 20261028,
    "feedback": null,
    "dynamics": null
@@ -1294,30 +1322,30 @@
      "lane": "live"
     },
     "M06": {
-     "efficiency": 0.453325,
-     "uniformity": 0.887128,
-     "rel_std_pct": 7.341021,
+     "efficiency": 0.453299,
+     "uniformity": 0.886746,
+     "rel_std_pct": 7.307628,
      "iterations": 30,
      "lane": "live"
     },
     "M07": {
-     "efficiency": 0.452966,
-     "uniformity": 0.892047,
-     "rel_std_pct": 7.269388,
+     "efficiency": 0.452637,
+     "uniformity": 0.889167,
+     "rel_std_pct": 7.093031,
      "iterations": 30,
      "lane": "live"
     },
     "M14": {
-     "efficiency": 0.805107,
-     "uniformity": 0.998602,
-     "rel_std_pct": 0.081841,
+     "efficiency": 0.805082,
+     "uniformity": 0.998793,
+     "rel_std_pct": 0.077318,
      "iterations": 4,
      "lane": "baked"
     },
     "B4": {
-     "efficiency": 0.449009,
-     "uniformity": 0.903516,
-     "rel_std_pct": 5.68559,
+     "efficiency": 0.448389,
+     "uniformity": 0.90901,
+     "rel_std_pct": 5.501109,
      "iterations": 30,
      "lane": "baked"
     }
@@ -1366,28 +1394,28 @@
    "aberration": null,
    "methods": {
     "M06": {
-     "efficiency": 0.805143,
-     "uniformity": 0.982149,
-     "rel_std_pct": 0.546019,
+     "efficiency": 0.805592,
+     "uniformity": 0.977946,
+     "rel_std_pct": 0.923721,
      "iterations": 30,
-     "lane": "live"
+     "lane": "baked"
     },
     "M07": {
-     "efficiency": 0.79812,
-     "uniformity": 0.999724,
-     "rel_std_pct": 0.009969,
+     "efficiency": 0.797153,
+     "uniformity": 0.999648,
+     "rel_std_pct": 0.011693,
      "iterations": 30,
      "lane": "live"
     },
     "M16": {
-     "efficiency": 0.818929,
-     "uniformity": 1e-06,
-     "rel_std_pct": 130.385824,
+     "efficiency": 0.823226,
+     "uniformity": 0.000349,
+     "rel_std_pct": 129.780303,
      "iterations": 10,
-     "lane": "live"
+     "lane": "baked"
     },
     "B2": {
-     "efficiency": 0.800221,
+     "efficiency": 0.79825,
      "uniformity": 1.0,
      "rel_std_pct": 0.0,
      "iterations": 13,
@@ -1396,8 +1424,8 @@
    },
    "reference_method": "M16",
    "best_method": "B2",
-   "lane": "live",
-   "trace_bytes": 128610,
+   "lane": "precompute",
+   "trace_bytes": 128669,
    "seed": 20261028,
    "feedback": null,
    "dynamics": null
@@ -1484,24 +1512,24 @@
      "lane": "baked"
     },
     "M06": {
-     "efficiency": 0.807438,
-     "uniformity": 0.967021,
-     "rel_std_pct": 1.133549,
+     "efficiency": 0.804899,
+     "uniformity": 0.970475,
+     "rel_std_pct": 1.019181,
      "iterations": 30,
      "lane": "baked"
     },
     "M07": {
-     "efficiency": 0.799388,
-     "uniformity": 0.971256,
-     "rel_std_pct": 1.406707,
+     "efficiency": 0.79743,
+     "uniformity": 0.999629,
+     "rel_std_pct": 0.012753,
      "iterations": 30,
      "lane": "baked"
     }
    },
    "reference_method": "M06",
-   "best_method": "M06",
+   "best_method": "M07",
    "lane": "precompute",
-   "trace_bytes": 124769,
+   "trace_bytes": 124663,
    "seed": 20261028,
    "feedback": null,
    "dynamics": null
@@ -1563,23 +1591,30 @@
      "lane": "baked"
     },
     "M06": {
-     "efficiency": 0.736028,
-     "uniformity": 0.977224,
-     "rel_std_pct": 0.695047,
+     "efficiency": 0.735956,
+     "uniformity": 0.973611,
+     "rel_std_pct": 0.739155,
      "iterations": 30,
      "lane": "baked"
     },
     "M07": {
-     "efficiency": 0.722937,
-     "uniformity": 0.997741,
-     "rel_std_pct": 0.103128,
+     "efficiency": 0.722975,
+     "uniformity": 0.992333,
+     "rel_std_pct": 0.300401,
      "iterations": 30,
      "lane": "baked"
     },
     "M12": {
-     "efficiency": 0.743065,
-     "uniformity": 0.383362,
-     "rel_std_pct": 20.18949,
+     "efficiency": 0.742994,
+     "uniformity": 0.381499,
+     "rel_std_pct": 20.158853,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "B3": {
+     "efficiency": 0.722975,
+     "uniformity": 0.992314,
+     "rel_std_pct": 0.30232,
      "iterations": 30,
      "lane": "baked"
     }
@@ -1587,40 +1622,140 @@
    "reference_method": "M07",
    "best_method": "M07",
    "lane": "precompute",
-   "trace_bytes": 217494,
+   "trace_bytes": 225664,
    "seed": 20261028,
    "feedback": [
     {
      "step": 0,
-     "sigma": 21.9836,
-     "eff": 0.72294
+     "sigma": 21.9947,
+     "eff": 0.72298
     },
     {
      "step": 1,
-     "sigma": 2.3647,
-     "eff": 0.73228
+     "sigma": 2.3743,
+     "eff": 0.73208
     },
     {
      "step": 2,
-     "sigma": 1.0804,
-     "eff": 0.73697
+     "sigma": 1.0681,
+     "eff": 0.73674
     },
     {
      "step": 3,
-     "sigma": 0.7828,
-     "eff": 0.74064
+     "sigma": 0.7812,
+     "eff": 0.74037
     },
     {
      "step": 4,
-     "sigma": 0.6045,
-     "eff": 0.74259
+     "sigma": 0.5568,
+     "eff": 0.74248
     },
     {
      "step": 5,
-     "sigma": 0.5222,
-     "eff": 0.74384
+     "sigma": 0.4433,
+     "eff": 0.74372
     }
    ],
+   "dynamics": null
+  },
+  {
+   "case_id": "C14_volume_learned",
+   "short": "C14",
+   "title": "Three-plane volume at the learned model's geometry",
+   "category": "Shaped and 3D",
+   "status": "baked",
+   "reason": null,
+   "setup": {
+    "wavelength_nm": 850,
+    "focal_mm": 2.56,
+    "na": 0.5,
+    "n_imm": 1.0,
+    "n_pix": 128,
+    "pitch_um": 20,
+    "pad": 1,
+    "beam": {
+     "kind": "gaussian",
+     "waist_frac": 1.0
+    }
+   },
+   "grid": {
+    "n_pix": 128,
+    "pad": 1,
+    "bin_um": 0.85,
+    "half_field_um": 54.4
+   },
+   "wavelength_nm": 850,
+   "na": 0.5,
+   "n_pix": 128,
+   "target_kind": "traps",
+   "n_traps": 48,
+   "shape": null,
+   "device": null,
+   "aberration": null,
+   "methods": {
+    "M01": {
+     "efficiency": 0.49969,
+     "uniformity": 0.196123,
+     "rel_std_pct": 68.88281,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M02": {
+     "efficiency": 0.699423,
+     "uniformity": 0.407475,
+     "rel_std_pct": 27.747972,
+     "iterations": 1,
+     "lane": "live"
+    },
+    "M04": {
+     "efficiency": 0.795099,
+     "uniformity": 0.701345,
+     "rel_std_pct": 15.25594,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M06": {
+     "efficiency": 0.785107,
+     "uniformity": 0.992467,
+     "rel_std_pct": 0.315173,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M10": {
+     "efficiency": 0.341177,
+     "uniformity": 0.339586,
+     "rel_std_pct": 26.092385,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M11": {
+     "efficiency": 0.755456,
+     "uniformity": 0.959287,
+     "rel_std_pct": 2.048906,
+     "iterations": 30,
+     "lane": "live"
+    },
+    "M19": {
+     "efficiency": 0.751541,
+     "uniformity": 0.71348,
+     "rel_std_pct": 15.250606,
+     "iterations": 30,
+     "lane": "baked"
+    },
+    "M17": {
+     "efficiency": 0.396124,
+     "uniformity": 0.374653,
+     "rel_std_pct": 36.399737,
+     "iterations": 0,
+     "lane": "baked"
+    }
+   },
+   "reference_method": "M17",
+   "best_method": "M06",
+   "lane": "precompute",
+   "trace_bytes": 50763,
+   "seed": 20261028,
+   "feedback": null,
    "dynamics": null
   }
  ],
@@ -1951,8 +2086,8 @@
    },
    {
     "id": "cgh-net",
-    "state": "training",
-    "provenance": "baseline"
+    "state": "available",
+    "provenance": "real"
    },
    {
     "id": "warmstart-model",
@@ -1986,127 +2121,127 @@
    "M01",
    "efficiency 0.281, uniformity 0.0003 (deterministic)",
    "1",
-   "E2 D5"
+   "tests/methods/baseline/test_m01_superposition.py"
   ],
   [
    "M02",
    "efficiency 0.750 [0.738, 0.752], uniformity 0.252 [0.106, 0.272]",
    "6",
-   "E2 D5"
+   "tests/methods/baseline/test_m02_random_superposition.py"
   ],
   [
    "M03",
    "256 squared: efficiency 0.010, uniformity 0.057 [0.031, 0.072]; 768 squared: efficiency 0.008, uniformity 0.566 [0.543, 0.590]",
    "5 and 2",
-   "E2 D5"
+   "tests/methods/baseline/test_m03_random_mask.py"
   ],
   [
    "M04",
-   "flat beam: efficiency 0.939 [0.933, 0.939], uniformity 0.604 [0.557, 0.626]; Gaussian beam: efficiency 0.815",
-   "5",
-   "E2 D5"
+   "flat beam: efficiency 0.939 [0.933, 0.939], uniformity 0.604 [0.557, 0.626]; Gaussian beam: efficiency 0.815 against its ceiling 0.869",
+   "3",
+   "tests/methods/baseline/test_m04_gs.py"
   ],
   [
    "M05",
-   "uniformity 0.688 [0.638, 0.709] against 0.615 [0.550, 0.637] for GS at equal iterations",
+   "uniformity 0.688 [0.638, 0.709] against 0.615 [0.550, 0.637] for GS at equal iterations; efficiency 0.811 against 0.816",
    "5",
-   "E2 D5"
+   "tests/methods/baseline/test_m05_gaa.py"
   ],
   [
    "M06",
-   "efficiency and uniformity both at 0.9 after 10 to 13 iterations (flat and Gaussian beams); 3 x 3 x 3 lattice reaches 0.9 and 0.98",
+   "flat beam: efficiency and uniformity both at 0.9 after 12, 15 and 12 iterations (median uniformity 0.857 at 10); Gaussian beam: 12, 15 and 12; 3 x 3 x 3 lattice (0.9 and 0.98): 35, 20 and 27; budgets 15, 20 and 100",
    "3",
-   "E2 D5"
+   "tests/methods/baseline/test_m06_gsw.py (and test_m06_against_slmsuite.py, notebook venv)"
   ],
   [
    "M07",
-   "50 x 30 array to 0.5 percent in 63 and 64 iterations against 121 and 147 for M06 (phase fixed after 60); with the source value of 12 it stalls at 2.88 percent",
+   "50 x 30 array to 0.5 percent in 64 and 64 iterations against 136 and 106 for M06 (phase fixed after 60; efficiency 0.83 and 0.83); with the source value of 12 it stalls at 3.58 percent",
    "2",
-   "E2 D5"
+   "tests/methods/baseline/test_m07_phase_fixed_wgs.py (and test_m07_against_slmsuite.py, notebook venv)"
   ],
   [
    "M08",
-   "signal-region error 14.5 (disc), 7.9 (ring) and 12.1 (bar) times below GS; efficiency 0.18 against 0.97 to 0.99",
-   "3",
-   "E2 D5"
+   "signal-region error 12.4 (disc), 7.8 (ring) and 10.4 (bar) times below GS at the worse of two starts; efficiency 0.181 to 0.184 against 0.963 to 0.992",
+   "2 starts",
+   "tests/methods/baseline/test_m08_mraf.py"
   ],
   [
    "M09",
    "uniformity 0.9994 and 0.9992 (efficiency 0.66 and 0.65); 119 quasi-periodic traps at 0.023 percent rms",
    "2 and 1",
-   "E3 D5"
+   "tests/methods/optim/test_m09_direct_search.py"
   ],
   [
    "M10",
-   "analytic gradient within 1.8e-7 of finite differences; square lattice error 0.55 and 0.51 percent",
+   "analytic gradient within 2.5e-06 of finite differences; square lattice error 0.55 and 0.51 percent",
    "2",
-   "E3 D5"
+   "tests/methods/optim/test_m10_cg.py"
   ],
   [
    "M11",
-   "relative standard deviation 2.54, 2.46 and 2.26 percent against 17.79, 17.98 and 18.82 for GS at 30 iterations",
+   "relative standard deviation 2.53, 2.46 and 2.26 percent against 17.78, 17.98 and 18.82 for GS at 30 iterations",
    "3",
-   "E3 D5"
+   "tests/methods/optim/test_m11_wirtinger_adam.py"
   ],
   [
    "M12",
-   "emulated camera loop: open-loop 20.9 and 20.1 percent to 1.47 and 1.08 percent in 20 iterations; 24.3 and 23.4 percent to 0.77 and 0.53 percent in three phase-fixed steps",
+   "emulated camera loop: open-loop 20.9 and 20.4 percent to 0.84 and 1.07 percent in 20 iterations; 24.3 and 23.6 percent to 1.05 and 0.74 percent in three phase-fixed steps",
    "2",
-   "E2 D5"
+   "tests/methods/control/test_m12_closed_loop.py"
   ],
   [
    "M13",
-   "error 0.241 (efficiency 0.535) against 1.38 (0.507) for M10 without the device model, large disc on the crosstalk device",
+   "error 0.241 (efficiency 0.535) against 1.382 (0.507) for M10 without the device model, large disc on the crosstalk device",
    "1",
-   "E3 D5"
+   "tests/methods/optim/test_m13_crosstalk_cg.py"
   ],
   [
    "M14",
    "worst per-mode relative error 0.002 [0.001, 0.002] over Noll modes 4 to 11",
    "3",
-   "E2 D5"
+   "tests/methods/control/test_m14_zernike.py"
   ],
   [
    "M15",
-   "ring phase winds by 2 pi l with a maximum error of 0.033 rad [0.028, 0.060] (isolated vortex)",
-   "3",
-   "E2 D5"
+   "ring phase winds by 2 pi l (winding error below the 1e-9 rad of the arithmetic) with a maximum error of 0.033 [0.028, 0.060] rad (isolated vortices of charge 1, 2, 3 and -2)",
+   "2 per charge",
+   "tests/methods/control/test_m15_vortex.py"
   ],
   [
    "M16",
-   "0 path crossings in 60 loadings; moving traps keep 0.870 [0.748, 0.963] of their mean intensity",
+   "0 path crossings in 60 loadings; moving traps keep 0.767 [0.747, 0.792] of their mean intensity (worst moving trap of each of 5 loadings)",
    "60 loadings",
-   "E2 D5"
+   "tests/methods/control/test_m16_rearrangement.py"
   ],
   [
    "M17",
-   "three-plane network refined by M19: median accuracy ratio 1.140 [1.102, 1.160] on 162 held-out volumes",
+   "three-plane network refined by M19: median accuracy ratio 1.140 (quartiles 1.102 and 1.160) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
    "162 volumes",
-   "M1 Update 2"
+   "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json"
   ],
   [
    "M18",
-   "signal-region error 0.0204 (disc), 0.0179 (ring) and 0.0221 (line) against 0.250, 0.192 and 0.250 for MRAF from a random start",
-   "1",
-   "E3 D5"
+   "signal-region error 0.0204 (disc), 0.0179 (ring) and 0.0221 (line) against 0.250, 0.188 and 0.223 for MRAF from a random start (the better of two); baked size: 0.0259 (disc) and 0.0171 (ring) against 0.266 and 0.228",
+   "2 and 1",
+   "tests/methods/optim/test_m18_ot_mraf.py"
   ],
   [
    "M19",
-   "plane means over overall mean 0.938, 0.987, 1.075 and 0.926, 1.034, 1.039 on three planes",
+   "plane means over overall mean 0.938, 0.987 and 1.075 and 0.926, 1.034 and 1.039 on three planes",
    "2",
-   "E2 D5"
+   "tests/methods/baseline/test_m19_multiplane.py"
   ],
   [
    "BS-4",
-   "95th percentile of the relative standard deviation 4.045 against 6.268 for M07 (1.55 times) over a 200-sample aberration ensemble; efficiency 0.7031 against 0.7169; pointing errors 1.02 times",
+   "95th percentile of the relative standard deviation 3.947 against 6.192 for M07 (1.57 times) over a 200-sample aberration ensemble; efficiency 0.7047 against 0.7181; pointing errors 1.04 times",
    "1",
-   "E3 D5"
+   "tests/methods/beyond/test_b4_robust.py"
   ],
   [
    "BS-5",
-   "hypervolume 0.8201 against 0.8033 for the union of the GS-family points; one front point dominates M04 and M05",
+   "hypervolume 0.8190 against 0.8018 for the union of the M04, M05, M06 and M09 points; 7 front points dominate M04 and 8 dominate M05; front built in 48 seconds",
    "1",
-   "E3 D5"
+   "tests/methods/beyond/test_b5_pareto.py"
   ]
  ],
  "published_anchors": {

@@ -26,7 +26,7 @@
 % publishing tool when the version DOI is reserved.
 \newcommand{\doctype}{Technical report}
 \newcommand{\docversion}{v0.02.000}
-\newcommand{\docdate}{28 October 2026}
+\newcommand{\docdate}{29 October 2026}
 \newcommand{\versiondoi}{10.5281/zenodo.NNNNNNNN}
 \newcommand{\conceptdoi}{10.5281/zenodo.NNNNNNNN}
 \newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
@@ -96,7 +96,8 @@ holographic optical tweezers dated 2010; it was rewritten in Python and FastAPI 
 browser application whose numbers are computed by the engine or baked offline and replayed. This report describes the
 problem, the optical model and the device, the three tiers of methods, the cases and the protocols, the results, the learned
 models, the proposals beyond the published state of the art, the live engine and the limits. Every number in the tables and
-the text is generated from the committed artifacts of the repository or is quoted from a named unit measurement.
+the text is generated from the committed artifacts of the repository or measured by the scripts kept with this report; the browser
+timings are quoted from the product's record of measured resources.
 
 \begin{figure}[t]
 \centering
@@ -166,6 +167,7 @@ Setup & $\lambda$ (nm) & $f$ (mm) & NA & SLM pixels & pitch ($\mu$m) & pad & bin
 Atom (C01--C04, C09--C13) & \atomLambda & \atomFocal & \atomNa & $\atomNpix^2$ & \atomPitch & \atomPad & \atomBin & \atomHalf\\
 Bead (C05--C07, in water, index \beadNimm) & \beadLambda & \beadFocal & \beadNa & $\beadNpix^2$ & \beadPitch & \beadPad & \beadBin & \beadHalf\\
 C08 & \devcLambda & \devcFocal & \devcNa & $\devcNpix^2$ & \devcPitch & \devcPad & \devcBin & \devcHalf\\
+C14 (the learned model's volume) & \voluLambda & \voluFocal & \voluNa & $\voluNpix^2$ & \voluPitch & \voluPad & \voluBin & \voluHalf\\
 \bottomrule
 \end{tabular}
 
@@ -210,8 +212,8 @@ cost $\sum d^\alpha$, $\alpha>1$, which avoids crossings, and moves them along i
 \textbf{An unsupervised convolutional network refined by GS (M17)} follows DeepCGH~\cite{eybposh}. \textbf{Optimal-transport
 initialization of MRAF (M18)} seeds the phase from a transport map~\cite{swan,torchylo}.
 
-Of the \benchNProtocol{} engine methods, \nMethodsBaked{} ran in the bake of the cases; \notBakedList{} are the learned slots, whose
-baselines answer when no model is released (Section~\ref{sec:learned}).
+Of the \benchNProtocol{} engine methods, \nMethodsBaked{} ran in the bake of the cases: \notBakedSentence. The two learned slots answer
+with the released graph (M17, on C14) or, with no model released, with their baseline (B3; Section~\ref{sec:learned}).
 
 \input{../data/table_ladder.tex}
 \input{../data/table_acceptance.tex}
@@ -222,7 +224,8 @@ A case is an optical setup, a device, a target (a list of traps or a shaped pote
 for dynamic cases, a particle and a rearrangement. There are \nCases{} cases in four categories (Table~\ref{tab:cases}):
 arrays (a $3\times3$ grid, a $10\times10$ grid with camera feedback, a $32\times32$ array of \maxTraps{} traps, the calibration
 task and a disordered array of \nDisordered{} traps on integer FFT bins at least five bins apart), shaped and three-dimensional
-targets (a disc potential with the crosstalk model, a three-plane array with vortices, a vortex ring with a line), device and
+targets (a disc potential with the crosstalk model, a three-plane array with vortices, a vortex ring with a line, and a three-plane volume
+at the geometry of the released learned model), device and
 optics (high numerical aperture, a device-limited array, an aberrated array with and without correction) and dynamics and
 controls (an atom-rearrangement sequence and a trap outside the field, which is refused and never computed). Every case states
 numeric expected ranges for its metrics, measured on three seeds, and the bake fails outside them. All cases are synthetic:
@@ -248,7 +251,7 @@ Each case is computed offline with every method valid for it (the seed is stated
 ranges, and committed as a manifest and a trace of at most \liveTraceKiB{} KiB. Table~\ref{tab:calibration} compares the
 calibration case with the published rows of Di Leonardo et al.: the ordering of the six baselines and the weighted-GS
 uniformity are reproduced; the efficiencies of the GS family are lower than published because the engine's Gaussian input beam
-caps the efficiency, whereas the source uses a flat beam (the flat-beam test of M04 gives 0.939 efficiency and 0.604
+caps the efficiency, whereas the source uses a flat beam (the flat-beam test of M04 gives \accFourFlatEff{} efficiency and \accFourFlatUni{}
 uniformity; Table~\ref{tab:acceptance}). The DinHot uniformity of random superposition and of the random mask differ from the
 published values on the engine's smaller grid, as the acceptance test of those methods states: the order, not the value, transfers.
 
@@ -358,10 +361,12 @@ sequence is optimized with the trap phases locked to a smooth trajectory; the ga
 optimize its intermediate frames~\cite{lpi}. The moving traps keep a higher minimum intensity than under linear phase
 interpolation, as quantified in the companion manuscript. \textbf{BS-3, learned warm start:} refuted (Section~\ref{sec:learned}).
 \textbf{BS-4, aberration-robust hologram:} the expected cost over residual aberrations is minimized; over a 200-sample ensemble of residual Noll modes 4 to 11
-the 95th percentile of the relative standard deviation is 1.55 times below that of M07 with an efficiency 1.9 percent lower (Table~\ref{tab:acceptance});
-robustness to pointing errors does not follow (1.02 times), because the spot width bounds it, and is reported as a negative result. The gap is that corrections are
-global or per site, never robust~\cite{machu}. \textbf{BS-5, efficiency--uniformity Pareto front} by continuation of a weighted cost: the front's hypervolume exceeds that of
-the points of the GS family and one front point dominates M04 and M05 (Table~\ref{tab:acceptance}), where published methods report single trade-off points~\cite{dileonardo}.
+the 95th percentile of the relative standard deviation is \accBFourRatio{} times below that of M07 on the seed of its test, with an efficiency \accBFourEffDrop{}
+percent lower (Table~\ref{tab:acceptance}); robustness to pointing errors does not follow (\accBFourPointing{} times), because the spot width bounds
+it, and is reported as a negative result. The gap is that corrections are
+global or per site, never robust~\cite{machu}. \textbf{BS-5, efficiency--uniformity Pareto front} by continuation of a weighted cost: the front's hypervolume (\accBFiveHv) exceeds
+that of the points of the GS family and direct search (\accBFiveHvBase), and \accBFiveDomFour{} front points dominate M04 and \accBFiveDomFive{} dominate M05
+(Table~\ref{tab:acceptance}), where published methods report single trade-off points~\cite{dileonardo}.
 
 \section{The live engine and the product}\label{sec:live}
 
@@ -369,8 +374,8 @@ The site is static; every computation runs in the browser or was baked offline a
 models, the device model and the live methods, running in a Web Worker so the interface does not block, with the FFT in Float64 (fft.js). An optional WebGPU backend
 runs the FFT-form iterations on the GPU and falls back to the CPU path when the browser offers none; an agreement check inside every GPU run compares the trap fields
 with the CPU result. At the live grid ($256^2$ padded to $512^2$) a weighted GS iteration measured about \liveIterMs{} ms, so a 30-iteration run fits the lane budget of
-\liveBudgetMs{} ms. The Python engine writes \liveFixtures{} reference documents and \liveTests{} unit tests compare the TypeScript engine with them; the worst observed difference of
-any quantity is $\liveWorst$ (the Parseval sum), and every phase agrees to $10^{-11}$ rad or better. On \liveAdapter{}, 30 iterations of M07 took \liveGpuS{} s with the GPU
+\liveBudgetMs{} ms. The Python engine writes \liveFixtures{} reference documents and \liveTests{} parity tests compare the TypeScript engine with them, each quantity within
+the tolerance its document states (at most $\liveTol$ absolute). On \liveAdapter{}, 30 iterations of M07 took \liveGpuS{} s with the GPU
 backend against \liveCpuS{} s on the CPU path in the same browser. The methods that are baked and replayed are labelled as such in the interface. Of the \nContracts{} data
 contracts of the build, \nContractsAvailable{} are fully available; the others are partial (the case outside the field is refused, so one of the \nCases{} case records is rejected by the input contract, and benchmark cells are not yet measured), answered by a baseline (the two model slots) or missing (the dormant API, which serves GET requests and answers 503 with the declared state).
 
