@@ -267,7 +267,7 @@ def f(x: float, d: int = 3) -> str:
 # ---------------------------------------------------------------------------------------------------- tables
 
 def table_ladder(ladder: list[dict]) -> str:
-    out = ["\\begin{longtable}{@{}p{0.07\\textwidth} p{0.13\\textwidth} p{0.32\\textwidth} p{0.39\\textwidth}@{}}\n",
+    out = ["\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.07\\textwidth} >{\\raggedright\\arraybackslash}p{0.13\\textwidth} >{\\raggedright\\arraybackslash}p{0.32\\textwidth} >{\\raggedright\\arraybackslash}p{0.39\\textwidth}@{}}\n",
            "\\caption{The method ladder of the design document: identifier, tier, method and acceptance criterion.}\\label{tab:ladder}\\\\\n",
            "\\toprule Id & Tier & Method & Acceptance criterion\\\\\\midrule\\endfirsthead\n",
            "\\toprule Id & Tier & Method & Acceptance criterion\\\\\\midrule\\endhead\n"]
@@ -382,12 +382,12 @@ def table_benchmark(bench: dict) -> str:
 
 def table_bench_methods(bench: dict) -> str:
     n = len(bench["point_geometries"])
-    out = ["{\\footnotesize\n\\begin{longtable}{@{}l l r r r r r r@{}}\n",
+    out = ["\\begin{table}[p]\\centering\\footnotesize\n",
            f"\\caption{{Benchmark, per method: medians over the point-trap geometries the method ran on (of {n}) at 100 iterations with "
            "the default parameters, on the ideal device and on the C08 device. $\\sigma$ relative standard deviation (\\%), $e$ efficiency, "
-           "time wall-clock seconds under shared load.}\\label{tab:benchmethods}\\\\\n",
-           "\\toprule Id & Tier & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & $e$ C08\\\\\\midrule\\endfirsthead\n",
-           "\\toprule Id & Tier & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & $e$ C08\\\\\\midrule\\endhead\n"]
+           "time wall-clock seconds under shared load.}\\label{tab:benchmethods}\n",
+           "\\begin{tabular}{@{}l l r r r r r r@{}}\\toprule Id & Tier & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & "
+           "$e$ C08\\\\\\midrule\n"]
     order = sorted(bench["by_method"], key=lambda m: (m.startswith("B"), m))
     for m in order:
         v = bench["by_method"][m]
@@ -395,7 +395,7 @@ def table_bench_methods(bench: dict) -> str:
         ideal = (f"{i['n']} & {sig(i['sigma'])} & {f(i['eff'], 3)} & {i['time_s']:.2g}" if i else "0 & n/a & n/a & n/a")
         dev = f"{sig(d['sigma'])} & {f(d['eff'], 3)}" if d else "n/a & n/a"
         out.append(f"{tex_escape(ladder_id(m))} & {TIER_LABEL.get(v['tier'], '')} & {ideal} & {dev}\\\\\n")
-    out.append("\\bottomrule\\end{longtable}}\n")
+    out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
 
