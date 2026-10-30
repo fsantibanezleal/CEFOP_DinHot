@@ -543,7 +543,8 @@ def measure_BS4() -> dict:
             f"{nom['efficiency_mean']:.4f}; pointing errors {ratio_p:.2f} times")
     return row("BS-4", text, "1", T_BEYOND + "test_b4_robust.py",
                {"sigma_p95_b4": rob["sigma_p95"], "sigma_p95_m07": nom["sigma_p95"], "ratio": ratio,
-                "efficiency_b4": rob["efficiency_mean"], "efficiency_m07": nom["efficiency_mean"], "pointing_ratio": ratio_p})
+                "efficiency_b4": rob["efficiency_mean"], "efficiency_m07": nom["efficiency_mean"], "pointing_ratio": ratio_p,
+                "pointing_sigma_p95_b4": rob_p["sigma_p95"], "pointing_sigma_p95_m07": nom_p["sigma_p95"]})
 
 
 def measure_BS5() -> dict:

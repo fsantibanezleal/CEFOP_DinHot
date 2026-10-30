@@ -64,6 +64,18 @@ efficiency and 9e-5 relative in the trap intensities after thirty. The GPU path 
 a few trap-sized buffers, released when the run ends or is cancelled; the point-trap plan caches at most `M n <= 2e6` factors (32 MB). These
 numbers are repeated by `frontend/scripts/engine-browser.mjs` (real Worker and WebGPU in Chromium, local, never in Node CI).
 
+## Live engine parity
+
+Measured on 2026-10-29 on the tree of the release branch. The Python engine writes 46 reference documents to `tests/fixtures/engine/`,
+each with the tolerance its quantities are compared at (the loosest is 1e-9 absolute); three vitest files compare the TypeScript engine with
+them, 92 tests in all (29 in `core.parity.test.ts`, 16 in `device.parity.test.ts`, 47 in `methods.parity.test.ts`), all passing:
+
+```
+$ cd frontend && npx vitest run src/engine/holo/core.parity.test.ts src/engine/holo/device.parity.test.ts \
+    src/engine/holo/methods.parity.test.ts --reporter=json --outputFile=<temp root>/parity.json
+numTotalTests 92, numPassedTests 92
+```
+
 ## Training the learned model
 
 The training record `data/derived/models/cgh-net-training.json` (unit M1) holds the configuration and the sizes of `cgh-net`: 16,000 steps of

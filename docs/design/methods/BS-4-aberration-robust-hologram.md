@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b4_robust.py` |
 | Live port | none (lane `baked`; `getMethod('B4')` raises `NotLive`) |
 | Card | [B4](../../frameworks/B4_aberration-robust-hologram.md) |
-| Outcome | confirmed for residual aberrations (1.55 times, criterion 1.25); not obtained for pointing errors (1.02 times, a reported negative); the first claim of 2 times for both was not reached |
+| Outcome | confirmed for residual aberrations (a median of 1.435 times over three seeds, 1.42 to 1.57, criterion 1.25; 1.55 on one seed before the 2026-10-29 rule corrections); not obtained for pointing errors (1.04 times, a reported negative; 1.02 before the corrections); the first claim of 2 times for both was not reached |
 
 ## Tier and role
 
@@ -92,7 +92,7 @@ Acceptance run of 2026-10-28 (E3 report D4 and D5, and the module docstring), 10
 |---|---|---|---|
 | p95 relative standard deviation (percent), aberration only | 6.268 | 4.045 | 1.55 times (criterion 1.25) |
 | Mean efficiency | 0.7169 | 0.7031 | minus 1.9 percent (criterion at most minus 10) |
-| p95 relative standard deviation with a 0.15 bin pointing error added (`sample` design, an earlier measurement, before the narrowing) | 7.457 | 7.309 | 1.02 times |
+| p95 relative standard deviation with a 0.15 bin pointing error added (`sample` design, 20 samples, B4 at 3 iterations and q = 2; re-measured 2026-10-29 by the studio report's `acceptance.py`, 7.457, 7.309 and 1.02 before the rule corrections) | 8.492 | 8.152 | 1.04 times |
 
 Level sensitivity: a level of 0.937 gave 4.89 percent (1.28 times), 0.95 with 80 iterations gave 5.10 percent (1.23 times), 0.9 with 80 iterations 1.55 times. Tried and not adopted: ensemble WGS with per-iteration samples (worse),
 Adam on random samples (1.0 to 1.1 times), CG on 16 fixed random samples (1.05 times).

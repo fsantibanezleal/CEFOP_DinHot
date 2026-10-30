@@ -20,10 +20,14 @@ Sources, all committed with the product:
 ``UNIT_ACCEPTANCE`` below is read from ``acceptance.json``, written by ``acceptance.py`` (run it first, same folder), which measures
 the acceptance quantity of each method M01 to M19, BS-4 and BS-5 as its gate test computes it, on the current engine. The values
 of BS-1 and BS-2 in the companion manuscript are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py``.
+``QUOTED_LIVE`` holds the browser measurements, which a standard-library script cannot repeat; each names the section of
+``docs/design/measured-resources.md`` or of the SDD that records it. The count of engine fixtures and their loosest tolerance are
+read from ``tests/fixtures/engine``.
 """
 from __future__ import annotations
 
 import json
+import math
 import re
 import statistics
 from pathlib import Path
@@ -49,12 +53,27 @@ def load_acceptance() -> list[tuple[str, str, str, str]]:
 
 UNIT_ACCEPTANCE = load_acceptance()
 
-# Live-engine measurements quoted from the T1 unit report (wip/dinhot/t1-live-engine-2026-10-28.md, Summary and D4) and the
-# lane budget of the design document (SDD, section Lanes). Source tag in the last field of each entry.
+
+def acceptance_numbers() -> dict[str, dict]:
+    return {r["id"]: r["numbers"] for r in json.loads((HERE / "acceptance.json").read_text(encoding="utf-8"))["rows"]}
+
+
+def fixtures_summary() -> dict:
+    """The engine fixtures the TypeScript parity tests read: their count and the loosest absolute tolerance they state."""
+    docs = [json.loads(f.read_text(encoding="utf-8")) for f in sorted((ROOT / "tests" / "fixtures" / "engine").glob("*.json"))]
+    tols = [d["tolerance"]["abs"] for d in docs if isinstance(d.get("tolerance"), dict) and d["tolerance"].get("abs")]
+    return {"n": len(docs), "loosest_abs": max(tols)}
+
+
+NUMBER_WORDS = {10: "ten", 11: "eleven", 12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen", 16: "sixteen"}
+
+# Browser measurements recorded in the product (docs/design/measured-resources.md, MR) and the lane budget of the design document
+# (SDD, section Lanes). Source in the last field of each entry.
 QUOTED_LIVE = {
-    "liveFixtures": ("46", "T1 Summary"), "liveTests": ("104", "T1 Summary"), "liveWorst": (r"1.8\times 10^{-11}", "T1 Summary"),
-    "liveGpuS": ("0.30 to 0.32", "T1 D4"), "liveCpuS": ("1.5 to 1.6", "T1 D4"), "liveAdapter": ("an integrated Intel gen-12lp adapter", "T1 D4"),
-    "liveIterMs": ("24", "SDD Lanes"), "liveBudgetMs": ("1500", "SDD Lanes"), "liveTraceKiB": ("256", "SDD Lanes"),
+    "liveTests": ("92", "MR, Live engine parity"),
+    "liveGpuS": ("0.31 to 0.32", "MR, The live engine"), "liveCpuS": ("1.5 to 1.6", "MR, The live engine"),
+    "liveAdapter": ("an integrated Intel gen-12lp adapter", "MR, The live engine"),
+    "liveIterMs": ("24", "MR, The live engine"), "liveBudgetMs": ("1500", "SDD Lanes"), "liveTraceKiB": ("256", "SDD Lanes"),
 }
 
 TIER_LABEL = {"classical": "Classical", "sota": "State of the art", "beyond": "Beyond"}
@@ -217,7 +236,7 @@ def table_acceptance() -> str:
 
 def table_cases(cases: list[dict]) -> str:
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{The thirteen cases: category, optical setup, target and the methods that ran in the bake. C11 is refused by the input contract and never computed.}\\label{tab:cases}\n",
+           f"\\caption{{The {NUMBER_WORDS.get(len(cases), len(cases))} cases: category, optical setup, target and the methods that ran in the bake. C11 is refused by the input contract and never computed.}}\\label{{tab:cases}}\n",
            "\\begin{tabular}{@{}l l l l r l@{}}\\toprule Case & Category & Setup & Target & Methods & Reference\\\\\\midrule\n"]
     for c in cases:
         if c["status"] != "baked":
@@ -323,7 +342,7 @@ def main() -> int:
     L.append(macro("maxTraps", max(traps)))
     c13 = next(c for c in baked if c["short"] == "C13")
     L.append(macro("nDisordered", c13["n_traps"]))
-    for short, pre in (("C02", "atom"), ("C05", "bead"), ("C08", "devc")):
+    for short, pre in (("C02", "atom"), ("C05", "bead"), ("C08", "devc"), ("C14", "volu")):
         c = next(x for x in baked if x["short"] == short)
         st, gr = c["setup"], c["grid"]
         L.append(macro(pre + "Lambda", st["wavelength_nm"]))
@@ -339,9 +358,26 @@ def main() -> int:
     L.append(macro("devcBits", cc8["device"]["bit_depth"]))
     L.append(macro("devcFill", f"{cc8['device']['fill_factor']:g}"))
     L.append(macro("devcFlicker", f"{cc8['device']['flicker_rad']:g}"))
-    L.append(macro("notBakedList", " and ".join(sorted(set(bench["methods_in_protocol"]) - set(engine_methods)))))
+    not_baked = sorted(set(bench["methods_in_protocol"]) - set(engine_methods))
+    L.append(macro("notBakedSentence", "every one of them ran in at least one case" if not not_baked else
+                   " and ".join(not_baked) + (" is" if len(not_baked) == 1 else " are") + " not part of any case"))
     for k, (v, _src) in QUOTED_LIVE.items():
         L.append(macro(k, v))
+    fx = fixtures_summary()
+    L.append(macro("liveFixtures", fx["n"]))
+    L.append(macro("liveTol", f"10^{{{round(math.log10(fx['loosest_abs']))}}}"))
+    # the measured acceptance rows the prose cites (acceptance.json)
+    acc = acceptance_numbers()
+    m4, b4, b5 = acc["M04"], acc["BS-4"], acc["BS-5"]
+    L.append(macro("accFourFlatEff", f(statistics.median(m4["flat_efficiency"]), 3)))
+    L.append(macro("accFourFlatUni", f(statistics.median(m4["flat_uniformity"]), 3)))
+    L.append(macro("accBFourRatio", f(b4["ratio"], 2)))
+    L.append(macro("accBFourEffDrop", f"{100 * (1 - b4['efficiency_b4'] / b4['efficiency_m07']):.1f}"))
+    L.append(macro("accBFourPointing", f(b4["pointing_ratio"], 2)))
+    L.append(macro("accBFiveHv", f(b5["hypervolume"], 4)))
+    L.append(macro("accBFiveHvBase", f(b5["hypervolume_base"], 4)))
+    L.append(macro("accBFiveDomFour", b5["dominating_m04"]))
+    L.append(macro("accBFiveDomFive", b5["dominating_m05"]))
     L.append(macro("benchTimes", ", ".join(f"{x:g}" for x in bench["budgets"]["time_s"])))
     L.append(macro("bakeCeightMsevenSigma", f(cc8["methods"]["M07"]["rel_std_pct"], 1)))
     L.append(macro("bakeCeightBOneSigma", f(cc8["methods"]["B1"]["rel_std_pct"], 1)))

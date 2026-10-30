@@ -77,7 +77,7 @@ export const RECORDED: Record<string, RecordedClaim> = {
       efficiencyRatio: 0.982,
       ensemble: 200,
       /** The factor against pointing errors: measured, reported, not claimed. */
-      pointingFactor: 1.02,
+      pointingFactor: 1.04,
     },
   },
 };
