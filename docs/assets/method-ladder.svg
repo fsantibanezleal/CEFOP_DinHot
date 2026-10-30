@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="t d">
+  <title id="t">The method ladder of DinHot</title>
+  <desc id="d">Twenty-four methods in six families: analytic baselines M01 to M03, the Gerchberg-Saxton family M04 to M08 and M19, optimization M09 to M11, M13 and M18, control M12 and M14 to M16, learned M17 and B3, and beyond the state of the art B1 to B5.</desc>
+  <style>
+    :root { --bg:#ffffff; --fg:#1b1f24; --mut:#5b6573; --line:#9aa5b1; --a:#e8f0fb; --b:#e9f5ec; --c:#fdf1e1; --d:#f4eaf8; --e:#e6f4f6; --f:#fbe9e9; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0e1116; --fg:#e6e9ed; --mut:#9aa5b1; --line:#4b5563; --a:#1c2b44; --b:#1b3326; --c:#3a2c17; --d:#2d2038; --e:#16323a; --f:#3d2022; } }
+    .bg { fill: var(--bg); }
+    text { fill: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+    .h { font-weight: 600; font-size: 13px; }
+    .m { fill: var(--mut); font-size: 11px; }
+    .box { stroke: var(--line); stroke-width: 1; }
+  </style>
+  <rect class="bg" width="760" height="330"/>
+  <text class="h" x="20" y="26">Method ladder: each method is one vertical (engine, test, benchmark run, card, Methodology topic)</text>
+
+  <rect class="box" x="20" y="44" width="110" height="130" rx="6" style="fill:var(--a)"/>
+  <text class="h" x="30" y="64">Analytic</text><text class="m" x="30" y="80">baselines</text>
+  <text x="30" y="104">M01 prisms, lenses</text><text x="30" y="124">M02 random sup.</text><text x="30" y="144">M03 random mask</text>
+
+  <rect class="box" x="140" y="44" width="130" height="190" rx="6" style="fill:var(--b)"/>
+  <text class="h" x="150" y="64">Gerchberg-Saxton</text><text class="m" x="150" y="80">iterate plane to plane</text>
+  <text x="150" y="104">M04 GS</text><text x="150" y="124">M05 GAA</text><text x="150" y="144">M06 weighted GS</text><text x="150" y="164">M07 phase-fixed WGS</text><text x="150" y="184">M08 MRAF (fields)</text><text x="150" y="204">M19 volumetric 3D GS</text>
+
+  <rect class="box" x="280" y="44" width="130" height="170" rx="6" style="fill:var(--c)"/>
+  <text class="h" x="290" y="64">Optimization</text><text class="m" x="290" y="80">cost and gradient</text>
+  <text x="290" y="104">M09 direct search</text><text x="290" y="124">M10 conjugate gradient</text><text x="290" y="144">M11 Wirtinger, Adam</text><text x="290" y="164">M13 crosstalk-aware CG</text><text x="290" y="184">M18 OT-initialized MRAF</text>
+
+  <rect class="box" x="420" y="44" width="150" height="150" rx="6" style="fill:var(--d)"/>
+  <text class="h" x="430" y="64">Control</text><text class="m" x="430" y="80">feedback, modes, motion</text>
+  <text x="430" y="104">M12 closed-loop WGS</text><text x="430" y="124">M14 Zernike correction</text><text x="430" y="144">M15 vortex traps</text><text x="430" y="164">M16 rearrangement</text>
+
+  <rect class="box" x="580" y="44" width="160" height="90" rx="6" style="fill:var(--e)"/>
+  <text class="h" x="590" y="64">Learned</text><text class="m" x="590" y="80">trained offline, ONNX</text>
+  <text x="590" y="104">M17 CNN hologram</text><text x="590" y="124">B3 learned warm start</text>
+
+  <rect class="box" x="420" y="214" width="320" height="94" rx="6" style="fill:var(--f)"/>
+  <text class="h" x="430" y="234">Beyond the published state of the art</text>
+  <text x="430" y="256">B1 device-aware WGS     B2 flicker-bounded sequence</text>
+  <text x="430" y="276">B4 aberration-robust hologram     B5 Pareto front</text>
+  <text class="m" x="430" y="296">B3 sits under Learned (refuted); the emulated camera is part of M12</text>
+
+  <text class="m" x="20" y="262">Physics under every method: forward models, device, Zernike,</text>
+  <text class="m" x="20" y="278">trap physics, particle dynamics, emulated camera, portable RNG.</text>
+  <text class="m" x="20" y="302">Lane: live in the browser, baked offline and replayed, or both.</text>
+</svg>

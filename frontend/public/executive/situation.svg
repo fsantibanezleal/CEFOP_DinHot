@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-label="Four roles share one bench: calibration and timing hand-offs are where the light field falls short">
+<title>Four roles share one bench: calibration and timing hand-offs are where the light field falls short</title>
+<rect x="1" y="1" width="798" height="478" rx="12" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="2" y="338" width="796" height="12" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="2" y="350" width="796" height="128" rx="0" fill="var(--color-surface-2)" stroke="none" stroke-width="0" opacity="0.5"/>
+<path d="M 100 230 L 150 230" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 175 230 L 450 230" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="20" y="204" width="80" height="52" rx="6" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="86" cy="230" r="7" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.5"/>
+<path d="M 36 218 L 62 218 M 36 230 L 62 230 M 36 242 L 62 242" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 60 256 L 60 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="150" y="186" width="26" height="88" rx="3" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 156 196 L 156 264 M 163 196 L 163 264 M 170 196 L 170 264" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 163 274 L 163 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="255" cy="230" rx="11" ry="40" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 255 270 L 255 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="335" cy="230" rx="11" ry="40" fill="var(--color-accent-soft)" stroke="var(--color-border)" stroke-width="2"/>
+<path d="M 335 270 L 335 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 392 198 L 446 214 L 446 246 L 392 262 Z" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M 410 262 L 410 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="452" y="158" width="188" height="144" rx="14" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2.5"/>
+<rect x="468" y="172" width="156" height="116" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="1.5"/>
+<path d="M 546 302 L 546 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle class="b1" cx="498" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="dim" cx="523" cy="196" r="7" fill="var(--color-fg-faint)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="548" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b2" cx="573" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="598" cy="196" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b2" cx="498" cy="230" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="523" cy="230" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="573" cy="230" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="dim" cx="598" cy="230" r="7" fill="var(--color-fg-faint)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="miss" cx="498" cy="264" r="7" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-dasharray="3 3"/>
+<circle class="b2" cx="523" cy="264" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="548" cy="264" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="dim" cx="573" cy="264" r="7" fill="var(--color-fg-faint)" stroke="var(--color-border)" stroke-width="1"/>
+<circle class="b1" cx="598" cy="264" r="9" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1"/>
+<rect x="690" y="196" width="86" height="68" rx="8" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="690" cy="230" r="20" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="690" cy="230" r="8" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.2"/>
+<path d="M 733 264 L 733 338" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 640 230 L 670 230" fill="none" stroke="var(--color-fg-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 6"/>
+<rect x="13" y="34" width="94" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="60" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Laser</text>
+<text data-lang="es" x="60" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Láser</text>
+<rect x="170" y="34" width="239" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="290" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Relay optics</text>
+<text data-lang="es" x="290" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Óptica de relevo</text>
+<rect x="412" y="34" width="266" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="545" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Trap array</text>
+<text data-lang="es" x="545" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Arreglo de trampas</text>
+<rect x="681" y="34" width="107" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="735" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Camera</text>
+<text data-lang="es" x="735" y="59" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Cámara</text>
+<rect x="30" y="80" width="239" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="150" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Light modulator</text>
+<text data-lang="es" x="150" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Modulador de luz</text>
+<rect x="322" y="80" width="147" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="395" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Objective</text>
+<text data-lang="es" x="395" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Objetivo</text>
+<rect x="467" y="80" width="226" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="580" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Vacuum chamber</text>
+<text data-lang="es" x="580" y="105" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Cámara de vacío</text>
+<path d="M 60 68 L 60 204" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 290 68 L 290 80 M 290 114 L 262 196" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 545 68 L 545 80 M 545 114 L 545 190" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 735 68 L 735 196" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 150 114 L 160 186" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<path d="M 395 114 L 410 198" fill="none" stroke="var(--color-fg-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 5"/>
+<rect x="36" y="362" width="136" height="64" rx="6" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<circle cx="64" cy="394" r="5" fill="var(--color-fg-faint)"/><circle cx="84" cy="394" r="5" fill="var(--color-accent)"/><circle cx="104" cy="394" r="5" fill="var(--color-fg-faint)"/><circle cx="124" cy="394" r="5" fill="var(--color-accent)"/><circle cx="144" cy="394" r="5" fill="var(--color-fg-faint)"/>
+<path d="M 104 426 L 104 436 M 78 438 L 130 438" fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<g><circle cx="215" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="197" y="386" width="36" height="46" rx="12" fill="var(--color-accent-2)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<g><circle cx="335" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="317" y="386" width="36" height="46" rx="12" fill="var(--color-accent)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<g><circle cx="545" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="527" y="386" width="36" height="46" rx="12" fill="var(--color-good)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<g><circle cx="700" cy="370" r="13" fill="var(--color-fg-subtle)" stroke="var(--color-border)" stroke-width="1.5"/>
+<rect x="682" y="386" width="36" height="46" rx="12" fill="var(--color-warn)" stroke="var(--color-border)" stroke-width="1.5"/></g>
+<path d="M 335 368 L 335 358 M 335 358 L 163 358 L 163 276" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>
+<path d="M 545 368 L 545 304" fill="none" stroke="var(--color-good)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>
+<path d="M 245 396 L 265 396" fill="none" stroke="var(--color-accent-2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 700 368 L 700 266" fill="none" stroke="var(--color-warn)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>
+<path d="M 372 400 L 500 400" fill="none" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 488 392 L 500 400 L 488 408" fill="none" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 590 400 L 650 400" fill="none" stroke="var(--color-warn)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 640 392 L 652 400 L 640 408" fill="none" stroke="var(--color-warn)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 300 400 L 255 400" fill="none" stroke="var(--color-accent-2)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 265 392 L 253 400 L 265 408" fill="none" stroke="var(--color-accent-2)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="155" y="440" width="120" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="215" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Control</text>
+<text data-lang="es" x="215" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Control</text>
+<rect x="291" y="440" width="107" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="345" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Optics</text>
+<text data-lang="es" x="345" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Óptica</text>
+<rect x="472" y="440" width="147" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="545" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Physicist</text>
+<text data-lang="es" x="545" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Físico</text>
+<rect x="640" y="440" width="120" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="2"/>
+<text data-lang="en" x="700" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Manager</text>
+<text data-lang="es" x="700" y="465" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Jefe</text>
+<rect x="161" y="296" width="107" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="215" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Drift</text>
+<text data-lang="es" x="215" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Deriva</text>
+<path d="M 190 296 L 170 276" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="284" y="296" width="292" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="430" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Hand-off gap</text>
+<text data-lang="es" x="430" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Brecha en la entrega</text>
+<path d="M 440 330 L 440 392" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 4"/>
+<rect x="610" y="296" width="160" height="34" rx="8" fill="var(--color-surface)" stroke="var(--color-bad)" stroke-width="2"/>
+<text data-lang="en" x="690" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Slow loop</text>
+<text data-lang="es" x="690" y="321" text-anchor="middle" font-size="22" font-weight="600" fill="var(--color-fg)">Lazo lento</text>
+<path d="M 690 330 L 690 368" fill="none" stroke="var(--color-bad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 4"/>
+</svg>

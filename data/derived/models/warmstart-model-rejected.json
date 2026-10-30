@@ -1,0 +1,113 @@
+{
+  "slot": "warmstart-model",
+  "status": "not released: the acceptance criterion is not met, the random start (M07 own start) answers",
+  "criterion": "median iterations to 1 percent at least two times below the random start, final efficiency and uniformity equal within 1 percent, model at most 1 MB",
+  "candidate": {
+    "steps": 6000,
+    "onnx_bytes": 338987,
+    "n_fix_of_the_model_arm": 3,
+    "n_fix_of_the_random_arm": 12,
+    "parity_wrapped_abs_diff": {
+      "max": 0.0009768009185791013,
+      "p999": 0.0009765632534399628,
+      "share_above_1e-5": 0.1380615234375
+    },
+    "heldout_sha256": "bff5bee5cf62a827cf1d55bc87e4caf56117c35224e435152110b2b508079412",
+    "config": {
+      "data_seed": 20261101,
+      "init_seed": 7,
+      "steps": 6000,
+      "batch": 8,
+      "lr": 0.0008,
+      "unroll": 10,
+      "n_fix": 3,
+      "max_hours": 1.5,
+      "d": 64,
+      "layers": 2,
+      "heads": 4,
+      "ff": 128,
+      "dense_bias": 0.6
+    }
+  },
+  "metrics": {
+    "held_out_n": 66,
+    "iterations_to_1pct": {
+      "model": {
+        "median": 8.0,
+        "q1": 5.0,
+        "q3": 61.0
+      },
+      "random": {
+        "median": 14.0,
+        "q1": 13.0,
+        "q3": 15.0
+      }
+    },
+    "final_rel_std_pct": {
+      "model": {
+        "median": 0.29410340385148137,
+        "q1": 0.00035087306963673494,
+        "q3": 4.715117552707861
+      },
+      "random": {
+        "median": 0.0148804118440592,
+        "q1": 1.2738596218750297e-07,
+        "q3": 0.09908225257361498
+      }
+    }
+  },
+  "ratio_random_over_model_median_iterations": 1.75,
+  "final_metrics_relative_difference_of_medians": {
+    "efficiency": 0.04182404597408541,
+    "uniformity": 0.007086570881715141
+  },
+  "groups": {
+    "gen": {
+      "n": 60,
+      "iterations_median": {
+        "random": 14.0,
+        "model": 8.5
+      }
+    },
+    "bench": {
+      "n": 6,
+      "iterations_median": {
+        "random": 13.5,
+        "model": 5.5
+      }
+    }
+  },
+  "seeds": [
+    301,
+    302,
+    303
+  ],
+  "iteration_budget": 60,
+  "control_without_the_network": {
+    "what": "every second generated held-out geometry (30), seeds 301 to 303, budget 60; the learned start replaced by M07's random start, same n_fix",
+    "median_and_q3_iterations": {
+      "random_nfix12": [
+        14.0,
+        15.0
+      ],
+      "random_nfix3": [
+        9.0,
+        61.0
+      ],
+      "model_nfix3": [
+        16.5,
+        61.0
+      ]
+    },
+    "share_never_reaching_1pct": {
+      "random_nfix12": 0.067,
+      "random_nfix3": 0.4,
+      "model_nfix3": 0.467
+    },
+    "reading": "the shorter freeze (n_fix 3) gives the fewer iterations where it converges; the network adds nothing over a random start with the same n_fix"
+  },
+  "oracle_bound": {
+    "what": "start from the trap phases of a converged random-start M07 solution, 10 held-out geometries, seed 301, N=256",
+    "iterations": "with n_fix 12 the oracle start still needs 13 to 16 iterations on dense lattices; with n_fix 2 to 4 it needs 5 to 7 where the random start needs 13 to 16"
+  }
+}

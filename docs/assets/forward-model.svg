@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210" role="img" aria-labelledby="t d">
+  <title id="t">From phase mask to trapped particle</title>
+  <desc id="d">A phase mask on the SLM passes through the device model, the lens Fourier transform gives the focal field, the metrics score the traps, and the trap physics and particle dynamics turn the intensity into stiffness and motion.</desc>
+  <style>
+    :root { --bg:#ffffff; --fg:#1b1f24; --mut:#5b6573; --line:#9aa5b1; --a:#e8f0fb; --b:#e9f5ec; --c:#fdf1e1; --d:#f4eaf8; --e:#e6f4f6; --ar:#5b6573; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0e1116; --fg:#e6e9ed; --mut:#9aa5b1; --line:#4b5563; --a:#1c2b44; --b:#1b3326; --c:#3a2c17; --d:#2d2038; --e:#16323a; --ar:#9aa5b1; } }
+    .bg { fill: var(--bg); }
+    text { fill: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+    .h { font-weight: 600; font-size: 13px; }
+    .m { fill: var(--mut); font-size: 11px; }
+    .box { stroke: var(--line); stroke-width: 1; }
+    .ar { stroke: var(--ar); stroke-width: 1.5; fill: none; marker-end: url(#fm-arrow); }
+  </style>
+  <defs><marker id="fm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" style="fill:var(--ar)"/></marker></defs>
+  <rect class="bg" width="760" height="210"/>
+  <text class="h" x="20" y="24">The chain every method works inside (physics components P01 to P06)</text>
+
+  <rect class="box" x="20" y="44" width="120" height="84" rx="6" style="fill:var(--a)"/>
+  <text class="h" x="30" y="66">Phase mask</text><text class="m" x="30" y="86">phi_j on n_pix by n_pix</text><text class="m" x="30" y="102">a method's output</text>
+
+  <rect class="box" x="170" y="44" width="130" height="84" rx="6" style="fill:var(--b)"/>
+  <text class="h" x="180" y="66">Device (P02)</text><text class="m" x="180" y="86">bits, crosstalk, fill</text><text class="m" x="180" y="102">factor, flicker</text>
+
+  <rect class="box" x="330" y="44" width="130" height="84" rx="6" style="fill:var(--c)"/>
+  <text class="h" x="340" y="66">Lens (P01)</text><text class="m" x="340" y="86">FFT form, point-trap</text><text class="m" x="340" y="102">form, angular spectrum</text>
+
+  <rect class="box" x="490" y="44" width="120" height="84" rx="6" style="fill:var(--d)"/>
+  <text class="h" x="500" y="66">Metrics (P01)</text><text class="m" x="500" y="86">efficiency e</text><text class="m" x="500" y="102">uniformity u, sigma</text>
+
+  <rect class="box" x="640" y="44" width="100" height="84" rx="6" style="fill:var(--e)"/>
+  <text class="h" x="650" y="66">Particle</text><text class="m" x="650" y="86">P04 stiffness</text><text class="m" x="650" y="102">P05 dynamics</text>
+
+  <path class="ar" d="M142 86 L166 86"/><path class="ar" d="M302 86 L326 86"/><path class="ar" d="M462 86 L486 86"/><path class="ar" d="M612 86 L636 86"/>
+
+  <text class="m" x="20" y="160">Aberrations (P03) add a wavefront before the lens; the emulated camera (P06) reads trap intensities for feedback.</text>
+  <text class="m" x="20" y="178">Every random draw comes from one portable generator (P07), so the browser repeats what the pipeline baked.</text>
+</svg>

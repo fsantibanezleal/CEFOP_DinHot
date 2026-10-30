@@ -1,0 +1,17 @@
+# Repo-local tool configuration ONLY. A product declares NO package of its own.
+# See conventions/no-internal-packages.md: if a package is required it is a SEPARATE REPO with a
+# valid PyPI project, published, and consumed as a dependency (milldem, minehaulsim, oreblocks).
+# data-pipeline/ is scripts, invoked by path: python data-pipeline/run.py. Its engines are pinned in
+# data-pipeline/requirements.txt, each with a card in docs/frameworks/ and a verified licence.
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+# E741 (an ambiguous single-letter name such as I) is allowed: domain notation (compartments, matrices, an
+# identity) uses single capitals on purpose.
+ignore = ["E741"]

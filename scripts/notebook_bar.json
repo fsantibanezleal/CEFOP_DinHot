@@ -1,0 +1,106 @@
+{
+  "_comment": "The measured floors of the notebook bar (CAOS_MANAGE conventions/product-notebooks.md section 1), read by scripts/check_notebooks.py and its tests. Per-level floors are keyed by the notebook level; a notebook without a valid level is measured at level 2. import_names maps a distribution to the module it is imported as (the gate never asks the environment); non_method names the callees and modules that are not the product's method; example_fingerprints are hashes of the long sentences of the template's example notebooks (python scripts/check_notebooks.py --write-fingerprints rewrites them). reexports maps a name a package exposes to the module that defines it, for a package whose source is not in the repository (a package in the repository is read from its __init__.py).",
+  "tooling": [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "seaborn",
+    "plotly",
+    "IPython",
+    "PIL",
+    "tqdm",
+    "requests",
+    "ipywidgets",
+    "nbformat",
+    "nbclient",
+    "rich",
+    "pytest"
+  ],
+  "import_names": {
+    "scikit-learn": "sklearn",
+    "scikit-image": "skimage",
+    "opencv-python": "cv2",
+    "opencv-python-headless": "cv2",
+    "pywavelets": "pywt",
+    "pyyaml": "yaml",
+    "pillow": "PIL",
+    "beautifulsoup4": "bs4",
+    "python-dateutil": "dateutil",
+    "attrs": "attr",
+    "umap-learn": "umap",
+    "scikit-optimize": "skopt",
+    "scikit-fuzzy": "skfuzzy",
+    "scikit-survival": "sksurv",
+    "pytorch-lightning": "pytorch_lightning",
+    "tensorflow-cpu": "tensorflow",
+    "msgpack-python": "msgpack",
+    "biopython": "Bio",
+    "pyserial": "serial",
+    "pymupdf": "fitz",
+    "python-igraph": "igraph",
+    "ruamel-yaml": "ruamel",
+    "google-cloud-storage": "google",
+    "protobuf": "google",
+    "jinja2": "jinja2",
+    "scikit-posthocs": "scikit_posthocs",
+    "statsmodels": "statsmodels",
+    "xgboost": "xgboost",
+    "lightgbm": "lightgbm"
+  },
+  "non_method": {
+    "callee": "^(read|load|open|write|save|dump|fetch|download|get_version|version)(_|$)",
+    "modules": [
+      "io",
+      "schema",
+      "schemas",
+      "config",
+      "constants",
+      "paths"
+    ]
+  },
+  "filler": [
+    "Interpret the method with its units",
+    "Trace the evidence from source contract to result",
+    "The question is what the artifact represents",
+    "Read the physical axes and units",
+    "Conclusion is conditional on",
+    "The following cell reads committed evidence only",
+    "Interprete el metodo con sus unidades",
+    "Interpreta el método con sus unidades",
+    "Rastrea la evidencia desde el contrato de origen hasta el resultado",
+    "La pregunta es qué representa el artefacto",
+    "Lee los ejes físicos y las unidades",
+    "La conclusión está condicionada a",
+    "La siguiente celda lee solo evidencia confirmada"
+  ],
+  "floors": {
+    "method_cells": {
+      "1": 3,
+      "2": 5,
+      "3": 5,
+      "4": 5
+    },
+    "figures": {
+      "1": 1,
+      "2": 2,
+      "3": 2,
+      "4": 2
+    },
+    "prose_words": {
+      "1": 500,
+      "2": 800,
+      "3": 800,
+      "4": 800
+    },
+    "words_after_figure": 40,
+    "setup_cells_max": 2,
+    "reproduction_checks_max": 1,
+    "repeated_sentences_max": 2,
+    "long_sentence_chars": 50,
+    "logic_lines_max": 30,
+    "line_chars_max": 120,
+    "level3_product_cells_min": 2
+  },
+  "example_fingerprints": "0052ae27fbce 014a972ed102 03c1d84594d7 044f7c99be7a 0477eeaf90a4 048756d5d038 048ff47daccf 04e3ff66b72c 04eda0a78fbf 052a9c0d61ee 053e17d7e069 05eb27eb4b14 05f9b5e5a8b3 06a444cf6af4 077eb536e6fb 0821ea52cd0e 08795044cc48 08a8d719537d 09b9c6c6e426 0b4844c7896f 0b7a7ecda99a 0de4e335abc3 0df986b3565e 0ed3e0ae5543 0f2479b3218e 0fad27db578b 0ff830c26264 101820ad492f 108bd200af52 109ff2ff6683 124301550879 12532ee80362 12543157bafd 125dda0f2c87 1286a495ee65 12af9290ad33 13b046e9b9ba 1495e8565924 15c32c4aa34e 160fdc8534e8 16145db9ced5 174b5e6556d0 17c65f552fc7 182889bce56a 188500862dd8 18b8682690be 1934f1957fc1 1af461f37240 1b5e987191fa 1b650b9f1fd7 1c90d5e98a8f 203b60e65011 20b5e7f0b843 211a3eae28ea 21f8242d298a 228e5ad3f471 22edf51bb35f 2307a78e046f 234b660179d7 234d6149b7e8 2358bf536668 23998aec3712 25099d9c00d1 26c85ea87146 286cc8558a8b 2883f6107c4d 28c611eb2ed6 28ef14159c2f 290a030060fe 29d3f3304ce5 2a7fcb0e8c41 2acb03106096 2c35ba086866 2c9643f4bd05 2c9b115bac0d 2c9e530048a6 2d28ac3b4574 2e3014b4eeea 2ead37f46cb3 2eb19e4a139f 2f0186016853 2f2eb1f950dd 3059883abe55 316cb29e2803 318223f50e2c 31fc3d0b0d73 32c164f4369d 32da0f2319bf 333c03e9bb29 336ba9f324a4 33b4b6deb13d 349dbce8ffd3 34b29d78766a 35125e609a0f 352e503a42e4 3531aa939b4d 35528cffdffe 35855a2a1146 3619431d549d 361cd66899fd 368c23b156c2 373cbc5b2b97 379301fa8323 386470d5ee9c 38cd0767c856 3921102d069b 39d0d7bcd1d4 39d92e441299 3b8c76a6309c 3c249c415c47 3c24a293d47a 3caa8319c163 3d0355b23460 3e2e7968d934 3e6f4da025c3 3e8cc12373af 3e9cd2b348d1 3f33d0e9f677 3f3df014fc2f 40981a539017 41a3cb09e4f4 41d1e79b30b4 41d7f5380209 4210cb294c1d 42747a550b23 42790d3193ff 4282fdf6adfc 42f1491ee866 42f2a894aee3 437baa50e0d2 448d32f5da2f 45c16456351b 468af6360319 46d4afda8ea8 474bdba4ef4b 47d138f93502 48609b2369b2 487ba6fbbf33 48ab2246e875 494b5c88c969 495f22dbdd60 497aa8ee8ec8 49902346df30 499167e08687 49bb5c5cf24e 4af4058e42d5 4b64456cb2c7 4bb812088419 4c6cfb8ee9fb 4cd442a77653 4d0a1a669fed 4dc222ef9ee8 4e43541ed9b2 4ebab513bdfa 4ebd17867186 4efb98c9e1c6 4f140d8dfe19 4fd1aa51a6eb 500f90901744 50ee5e95643a 50f332df205e 510084f25e10 5184e0da27d1 561cadf48a3f 56445b86ccbe 5669c18c3ae6 56cdfc12387b 577eb63980ba 580a21c4ea2c 5836896c637b 5846419ea7f2 5863b3e4b83e 586749ec8ecc 5912c0b03ce6 59254a23b762 59bee3c28f42 5a10c4ba30a1 5a4a8bf9e7d9 5a5fe7061ec0 5bb9243e4b22 5bb97ae4775c 5df9e70efb1d 5e08e51ca3fb 5e787e2aa415 5ecbce409427 5fc0f3a07ba5 60214a94f317 612a1d06f38e 61c038ac9955 61d397f3c937 61ebe24d9c33 6225131eb11a 62bbd501d3f7 630c0f7747db 635aea528d48 63c138264d07 63d8eb8c84b1 6443adf6d31f 64e9f079b29a 64f75c271fba 6519a38084e8 654f76a55eeb 658b7b9b3ac8 66af2ed63a06 67246bbd6407 67c24b35d367 67fead3b3ded 6815ada6152a 683bc5774d4d 68744f6bebf7 688d048535e8 68a9d786b030 6938719efd47 69396ba446cf 69639660a5ea 6974fc74238d 69efd47c34a1 6a295d66c2e5 6a5541b55f82 6a8f2620af0b 6ac4c5f07295 6b2df133bac3 6b30aacf4827 6b39180b03a8 6b98fc82b057 6bfdcebe4c9e 6c2debbcc211 6d0550dc3c64 6d3569d3768e 6d7550b0242b 6f7963f1f665 6f8ae34cd078 7018e7aef1cb 709fc792e594 70b51961c9b4 70eb1e583832 71670849f569 723e6d67796d 72ee98044939 7304a5af2a2f 73f8c83aa8e7 75b9832031d3 75c834476ec8 76c323f2712a 76da06cd8d6b 76f4e764e70d 77d9e362b3ef 7896518f01fb 78e5101c1175 7a4211874a93 7acdb38ce835 7b0c0eceb426 7b497b230e6f 7b803e86d22e 7d383ee3aab2 7df53727be62 7e4df3515a29 7e916598041a 7f3f18b042ea 7fd5091d6ee7 80ae02a3761e 80e887b2202c 81ea429258db 82896294be32 8459af722e3b 84dfbab0be81 8558e5a2311d 85898c70674e 85c1f05b4d8c 85daee1060cd 868ec0ce4df6 86c220d55a50 86d8f70a5689 87871f77b7c7 87970296a7f2 87a512ec2612 890fb846f17b 89795602c875 89cc4443fbae 89ce77b82bae 8a2958cab133 8a30d0ac5c72 8a5296b8786a 8a8ed2a1fc09 8b0256a01243 8b118a2d8d19 8c402f111a7b 8ca51ee1bfa2 8d8afe0b2e58 8f15508cfe93 8f7475558ce0 90f7307a8e46 918e3eaac119 91c73a316dbf 927c59509fbe 92910f340730 9465287ec09e 9520a03e569b 95311f42e1d4 955c540eb2d5 958391487b9b 95b25ee3f039 95bf3931f7b8 961e16bb8b13 96ac25350371 97545c4279f8 97e3c4d29329 98883d660e60 99347b4efe7a 9968f3d0e9af 998d5d60182c 99c4a305d3c2 99d28d51e6ca 99e7d2acb31d 9abe012bc63b 9b06e8609431 9b14b42826ba 9b16de037759 9bdc4d99fa50 9bdfccf2c344 9c8785727c26 9db43750a24d 9db78645d9fc 9f8850bd8eb8 9fccaf3cce58 9fdc4136697b a05d7e168c6b a06ac6d1c568 a0b82700e23e a14779132a36 a19a57275029 a1a4e197439e a1d022986c88 a23f1ddf23d2 a25b6e21c443 a2943088b47b a3bed27a5207 a461e63d0f13 a4775e468b50 a4806f588e5b a48d00349b4b a4f4a6e65e85 a642ec49d0e1 a9bf9688b488 aa4d1f7866eb aa51b35f4964 aa739e1c19c9 aa871d388d8d ab0e828227fe ab1978af3250 abfd34134582 ad5e473278de ae464a42a2e4 ae557199bbb9 ae8a02034c09 aea4dcd03aac aefaf69dcc11 af3cf6bd10e2 af81dfec3855 afbff5366b08 b18001f2c176 b1d05ac323e7 b1e79fc020d5 b1f747b5a3a5 b2270817a6fb b2d915c5474a b3a5ef5b5dcc b407903ba784 b408160f8aca b58c43e4eaa1 b72d2803c94e b7da796ad830 b7e7f7ee6859 b86e77021025 b8fc7de3326b b9c23b3ecfdf ba1b5e1fd6f3 bafa85539707 bafc37396675 bcff40b213c5 bd8077f0cd30 bd8cf52f13cd bec980669133 bf1e10b071d4 bf43f6cd6564 bf6d4c2b1ced c12474a707ea c153a0c53402 c1ebdda221c7 c1ed73f7319b c24f64d59c4c c292c2c6203e c33cbd849180 c385d1c3803b c4b07e273fd5 c4c152182489 c4f953a77afb c519d825ae4b c55f52927a26 c5922a9b0f23 c5d1de47b8fc c5dc55b61400 c6363e39e8c6 c6857f48ba1b c7238aad08d3 c7bd48081013 c82741d0e59f c88baf069698 c9378292eceb cb1219d8cd1a cb17b6a4fdc4 cb89b550443a ccc986f09d16 cd1ec2c8a741 ce23accbf925 ce6045b47a92 cf435cec3ca4 cf7d04efe292 cfb846a9c327 d07fdc114f7f d0b18e772c78 d0c4131a4d95 d152b9d101fd d1e5a6f9df61 d2b32f5c288b d2ec2af39b38 d3d5124333cc d5c93cae66d1 d5ecdedcbc7c d6c5fa0a3602 d796a904951d d855af2dfef4 d883c12b9afd d8a9f0191631 d9027d3cc643 d91d5976852a da2bdf1344cd db8321a896d5 dbcb98d75517 dd4ad0895527 ddb4a72390c7 ddbc2ea381aa de32a7ac4f47 df72e5e97e6f e00255bbe499 e03ed24ede1d e11fe002ca70 e1857f27835b e24d45dbab85 e257716f7f05 e2f230dcb48a e347f4e44f6f e383d0f84110 e3a3df9a2aeb e3d87c72a659 e3e54f66f88d e3fcc52a6074 e4c4876c44a2 e50a217ab6fe e53c93dbede6 e57cf22b7f1c e68aed2a0139 e72e059a91f1 e76cf8c5e9a9 e7cbb9f538fe e85c5f403ea4 e8adc3d05597 e8b8546d2524 e91f437cc3a1 e9e8a853a155 e9f8484d55e1 ea5c83d0c312 eabfea26b429 eacc56eeb1f6 eb697b5a62d3 eb8c304b1f42 ec08363e020f ec422ac6fd3b ed0db06380c8 ee7b1b823ca0 ee996e524336 ef3288074a65 ef766af7fc5d efa917de60bd efb2c3123f46 f07cf350d017 f08f2edc5351 f0cabe6b3342 f1137119d2aa f16ba2f6e918 f19ade64c767 f1f49f83dde2 f236b70078d0 f28f757666a2 f32ef3af8293 f37321764000 f4c2e2eb9f93 f53c217d2c1d f5f3fd6dd502 f6f9167cc05b f7e9813db7cf f80fc23c37b1 faa184e71d70 fabb1dd0e4a6 fbda68da3268 fc26ffa89690 fc2f49016825 fd7ce957a1e9 fdc519d7d6d4 fe31c14449fe fe9134e23842 fe9221d5352b fed99508a33a ff66b2bf9a3f ffe1c196e551",
+  "reexports": {}
+}

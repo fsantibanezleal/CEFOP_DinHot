@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" class="arch-svg" role="img" aria-label="The App: the six routes, the rail and the five groups of views">
+  <!-- Hand-authored; shell tokens only; both languages in one file (ADR-0058). -->
+  <style>
+    .arch-svg text { font-family: var(--font-sans); }
+    .arch-svg .mono { font-family: var(--font-mono); }
+    .arch-svg .pn { fill: var(--color-surface); stroke: var(--color-border); stroke-width: 1.2; }
+    .arch-svg .bx { fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1; }
+    .arch-svg .on { fill: var(--color-accent-soft); stroke: var(--color-accent); stroke-width: 1.2; }
+    .arch-svg .ok { fill: var(--color-surface-2); stroke: var(--color-good); stroke-width: 1.2; }
+    .arch-svg .wn { fill: var(--color-surface-2); stroke: var(--color-warn); stroke-width: 1.2; }
+    .arch-svg .mg { fill: var(--color-surface-2); stroke: var(--color-magenta); stroke-width: 1.2; }
+    .arch-svg .ln-off { fill: none; stroke: var(--color-magenta); stroke-width: 1.4; }
+    .arch-svg .ln-rep { fill: none; stroke: var(--color-good); stroke-width: 1.4; }
+    .arch-svg .ln-live { fill: none; stroke: var(--color-accent); stroke-width: 1.4; }
+    .arch-svg .ttl { fill: var(--color-fg); font-size: 15px; font-weight: 700; }
+    .arch-svg .h { fill: var(--color-fg); font-size: 12px; font-weight: 700; }
+    .arch-svg .it { fill: var(--color-fg); font-size: 11px; }
+    .arch-svg .itb { fill: var(--color-fg); font-size: 11px; font-weight: 600; }
+    .arch-svg .sub { fill: var(--color-fg-subtle); font-size: 10.5px; }
+    .arch-svg .cd { fill: var(--color-fg-subtle); font-size: 10px; }
+    .arch-svg .acc { fill: var(--color-accent); font-size: 11px; font-weight: 600; }
+    .arch-svg .t-off { fill: var(--color-magenta); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .t-rep { fill: var(--color-good); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .t-live { fill: var(--color-accent); font-size: 12.5px; font-weight: 700; }
+    .arch-svg .flow { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.4; }
+    .arch-svg .dash { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.4; stroke-dasharray: 5 4; }
+  </style>
+  <defs>
+    <marker id="dh1-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 z" fill="var(--color-fg-faint)"/>
+    </marker>
+  </defs>
+  <text class="ttl l-en" x="20" y="28">The App: what you choose on the left, what it shows on the right</text>
+  <text class="ttl l-es" x="20" y="28">La App: lo que se elige a la izquierda, lo que muestra a la derecha</text>
+  <rect class="on" x="20" y="40" width="136" height="26" rx="13"/>
+  <text class="acc" x="88" y="57" text-anchor="middle">App</text>
+  <rect class="bx" x="164" y="40" width="136" height="26" rx="13"/>
+  <text class="it l-en" x="232" y="57" text-anchor="middle">Introduction</text>
+  <text class="it l-es" x="232" y="57" text-anchor="middle">Introducción</text>
+  <rect class="bx" x="308" y="40" width="136" height="26" rx="13"/>
+  <text class="it l-en" x="376" y="57" text-anchor="middle">Methodology</text>
+  <text class="it l-es" x="376" y="57" text-anchor="middle">Metodología</text>
+  <rect class="bx" x="452" y="40" width="136" height="26" rx="13"/>
+  <text class="it l-en" x="520" y="57" text-anchor="middle">Implementation</text>
+  <text class="it l-es" x="520" y="57" text-anchor="middle">Implementación</text>
+  <rect class="bx" x="596" y="40" width="136" height="26" rx="13"/>
+  <text class="it l-en" x="664" y="57" text-anchor="middle">Experiments</text>
+  <text class="it l-es" x="664" y="57" text-anchor="middle">Experimentos</text>
+  <rect class="bx" x="740" y="40" width="136" height="26" rx="13"/>
+  <text class="it" x="808" y="57" text-anchor="middle">Benchmark</text>
+  <rect class="pn" x="20" y="78" width="250" height="362" rx="10"/>
+  <text class="h l-en" x="34" y="100">Rail</text>
+  <text class="h l-es" x="34" y="100">Panel</text>
+  <rect class="bx" x="34" y="112" width="222" height="54" rx="6"/>
+  <text class="itb l-en" x="46" y="134">Case and method</text>
+  <text class="itb l-es" x="46" y="134">Caso y método</text>
+  <text class="sub l-en" x="46" y="152">case selector, method ladder</text>
+  <text class="sub l-es" x="46" y="152">selector de caso, escalera de métodos</text>
+  <rect class="bx" x="34" y="176" width="222" height="54" rx="6"/>
+  <text class="itb l-en" x="46" y="198">Run</text>
+  <text class="itb l-es" x="46" y="198">Corrida</text>
+  <text class="sub l-en" x="46" y="216">device, iterations, backend, seed</text>
+  <text class="sub l-es" x="46" y="216">dispositivo, iteraciones, motor, semilla</text>
+  <rect class="bx" x="34" y="240" width="222" height="54" rx="6"/>
+  <text class="itb l-en" x="46" y="262">View</text>
+  <text class="itb l-es" x="46" y="262">Vista</text>
+  <text class="sub l-en" x="46" y="280">mask stage, colour floor, band</text>
+  <text class="sub l-es" x="46" y="280">etapa de máscara, piso de color, banda</text>
+  <rect class="bx" x="34" y="304" width="222" height="54" rx="6"/>
+  <text class="itb l-en" x="46" y="326">Edit</text>
+  <text class="itb l-es" x="46" y="326">Edición</text>
+  <text class="sub l-en" x="46" y="344">trap editor: select, add, move, delete</text>
+  <text class="sub l-es" x="46" y="344">editor: elegir, agregar, mover, borrar</text>
+  <rect class="bx" x="34" y="368" width="222" height="54" rx="6"/>
+  <text class="itb l-en" x="46" y="390">Values</text>
+  <text class="itb l-es" x="46" y="390">Valores</text>
+  <text class="sub l-en" x="46" y="408">efficiency, uniformity, spread</text>
+  <text class="sub l-es" x="46" y="408">eficiencia, uniformidad, dispersión</text>
+  <rect class="pn" x="290" y="78" width="590" height="362" rx="10"/>
+  <rect class="on" x="302" y="90" width="104" height="26" rx="13"/>
+  <text class="acc l-en" x="354" y="107" text-anchor="middle">Hologram</text>
+  <text class="acc l-es" x="354" y="107" text-anchor="middle">Holograma</text>
+  <rect class="bx" x="302" y="128" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="354" y="157" text-anchor="middle">Phase mask</text>
+  <text class="it l-es" x="354" y="150" text-anchor="middle">Máscara de</text>
+  <text class="it l-es" x="354" y="164" text-anchor="middle">fase</text>
+  <rect class="bx" x="302" y="186" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="354" y="215" text-anchor="middle">Device effects</text>
+  <text class="it l-es" x="354" y="208" text-anchor="middle">Efectos del</text>
+  <text class="it l-es" x="354" y="222" text-anchor="middle">dispositivo</text>
+  <rect class="bx" x="302" y="244" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="354" y="273" text-anchor="middle">Aberrations</text>
+  <text class="it l-es" x="354" y="273" text-anchor="middle">Aberraciones</text>
+  <rect class="on" x="414" y="90" width="104" height="26" rx="13"/>
+  <text class="acc l-en" x="466" y="107" text-anchor="middle">Focal plane</text>
+  <text class="acc l-es" x="466" y="107" text-anchor="middle">Plano focal</text>
+  <rect class="bx" x="414" y="128" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="466" y="157" text-anchor="middle">Focal plane</text>
+  <text class="it l-es" x="466" y="157" text-anchor="middle">Plano focal</text>
+  <rect class="bx" x="414" y="186" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="466" y="215" text-anchor="middle">Axial cut</text>
+  <text class="it l-es" x="466" y="215" text-anchor="middle">Corte axial</text>
+  <rect class="bx" x="414" y="244" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="466" y="273" text-anchor="middle">3D lobes</text>
+  <text class="it l-es" x="466" y="273" text-anchor="middle">Lóbulos 3D</text>
+  <rect class="on" x="526" y="90" width="104" height="26" rx="13"/>
+  <text class="acc l-en" x="578" y="107" text-anchor="middle">Traps</text>
+  <text class="acc l-es" x="578" y="107" text-anchor="middle">Trampas</text>
+  <rect class="bx" x="526" y="128" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="578" y="150" text-anchor="middle">Per-trap</text>
+  <text class="it l-en" x="578" y="164" text-anchor="middle">intensity</text>
+  <text class="it l-es" x="578" y="150" text-anchor="middle">Intensidad por</text>
+  <text class="it l-es" x="578" y="164" text-anchor="middle">trampa</text>
+  <rect class="bx" x="526" y="186" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="578" y="215" text-anchor="middle">Depth</text>
+  <text class="it l-es" x="578" y="215" text-anchor="middle">Profundidad</text>
+  <rect class="bx" x="526" y="244" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="578" y="273" text-anchor="middle">Power budget</text>
+  <text class="it l-es" x="578" y="266" text-anchor="middle">Balance de</text>
+  <text class="it l-es" x="578" y="280" text-anchor="middle">potencia</text>
+  <rect class="on" x="638" y="90" width="104" height="26" rx="13"/>
+  <text class="acc l-en" x="690" y="107" text-anchor="middle">Convergence</text>
+  <text class="acc l-es" x="690" y="107" text-anchor="middle">Convergencia</text>
+  <rect class="bx" x="638" y="128" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="690" y="150" text-anchor="middle">Metrics by</text>
+  <text class="it l-en" x="690" y="164" text-anchor="middle">iteration</text>
+  <text class="it l-es" x="690" y="150" text-anchor="middle">Métricas por</text>
+  <text class="it l-es" x="690" y="164" text-anchor="middle">iteración</text>
+  <rect class="bx" x="638" y="186" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="690" y="215" text-anchor="middle">Pareto front</text>
+  <text class="it l-es" x="690" y="208" text-anchor="middle">Frente de</text>
+  <text class="it l-es" x="690" y="222" text-anchor="middle">Pareto</text>
+  <rect class="bx" x="638" y="244" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="690" y="266" text-anchor="middle">Camera</text>
+  <text class="it l-en" x="690" y="280" text-anchor="middle">feedback</text>
+  <text class="it l-es" x="690" y="266" text-anchor="middle">Realimentación</text>
+  <text class="it l-es" x="690" y="280" text-anchor="middle">de cámara</text>
+  <rect class="on" x="750" y="90" width="104" height="26" rx="13"/>
+  <text class="acc l-en" x="802" y="107" text-anchor="middle">Dynamics</text>
+  <text class="acc l-es" x="802" y="107" text-anchor="middle">Dinámica</text>
+  <rect class="bx" x="750" y="128" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="802" y="150" text-anchor="middle">Trapped</text>
+  <text class="it l-en" x="802" y="164" text-anchor="middle">particle</text>
+  <text class="it l-es" x="802" y="150" text-anchor="middle">Partícula</text>
+  <text class="it l-es" x="802" y="164" text-anchor="middle">atrapada</text>
+  <rect class="bx" x="750" y="186" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="802" y="215" text-anchor="middle">Spectrum</text>
+  <text class="it l-es" x="802" y="215" text-anchor="middle">Espectro</text>
+  <rect class="bx" x="750" y="244" width="104" height="50" rx="6"/>
+  <text class="it l-en" x="802" y="273" text-anchor="middle">Rearrangement</text>
+  <text class="it l-es" x="802" y="273" text-anchor="middle">Reordenamiento</text>
+  <rect class="ok" x="302" y="306" width="556" height="40" rx="6"/>
+  <text class="it l-en" x="316" y="324">Each group carries a lane badge, live or replay, and the provenance of what it draws</text>
+  <text class="it l-es" x="316" y="324">Cada grupo lleva una insignia de carril, en vivo o reproducción, y la procedencia de lo que dibuja</text>
+  <text class="sub l-en" x="316" y="339">a replayed number is never read as a live one</text>
+  <text class="sub l-es" x="316" y="339">un número reproducido nunca se lee como uno en vivo</text>
+  <rect class="bx" x="302" y="356" width="556" height="40" rx="6"/>
+  <text class="it l-en" x="316" y="374">Focus mode: ?focus=1 opens the open group in the full viewport; Escape returns</text>
+  <text class="it l-es" x="316" y="374">Modo Foco: ?focus=1 abre el grupo abierto en toda la ventana; Escape vuelve</text>
+  <text class="sub l-en" x="316" y="389">to the same case, group and view (the case is ?case=, the view ?view=)</text>
+  <text class="sub l-es" x="316" y="389">al mismo caso, grupo y vista (el caso es ?case=, la vista ?view=)</text>
+  <rect class="bx" x="302" y="406" width="556" height="24" rx="6"/>
+  <text class="sub l-en" x="316" y="422">Context: the write-up of the case, the sixth peer beside the five groups</text>
+  <text class="sub l-es" x="316" y="422">Contexto: el texto del caso, el sexto par junto a los cinco grupos</text>
+</svg>

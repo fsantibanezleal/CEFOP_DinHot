@@ -1,0 +1,9 @@
+# DEV lane, lint + test. Pinned to the verified install (Python 3.12, 2026-06-20).
+pytest==9.1.1
+ruff==0.15.18
+# Contract tests (docs/contracts/): the schema files and the OpenAPI document are validated on the Python side
+jsonschema==4.26.0
+openapi-spec-validator==0.9.0
+# fastapi and httpx run the dormant app/ in the API contract tests (tests/contracts/test_api.py); they do not activate the API lane (requirements-api.txt stays comment-only until it is activated)
+fastapi==0.143.0
+httpx==0.28.1

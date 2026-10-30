@@ -1,0 +1,11 @@
+# GPU lane: offline training and export of the two learned model slots (cgh-net, warmstart-model; catalog rows of the same
+# names). Training and evaluation run locally on a workstation GPU, never in CI (ADR-0069, ADR-0074).
+# CUDA 12.6 wheel of torch 2.14.1 from the index PyTorch documents for it (https://download.pytorch.org/whl/cu126); the
+# ordinary PyPI Windows wheel resolves to a CPU-only build. Verify torch.cuda.is_available() before any GPU-run claim.
+# Environment (not in this file): py -3.13 venv at the venvs root behind the .venv-gpu junction.
+-r requirements-precompute.txt
+--extra-index-url https://download.pytorch.org/whl/cu126
+torch==2.14.1+cu126
+onnx==1.23.2
+onnxruntime==1.31.1
+onnxscript==0.7.2
