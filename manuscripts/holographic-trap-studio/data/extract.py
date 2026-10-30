@@ -488,6 +488,12 @@ def main() -> int:
     L.append(macro("benchMethodsMeasured", ", ".join(bench["methods_measured"])))
     L.append(macro("benchNMeasured", len(bench["methods_measured"])))
     L.append(macro("benchNProtocol", len(bench["methods_in_protocol"])))
+    no_rows = [m for m in bench["methods_in_protocol"] if m not in bench["methods_measured"]]
+    # main.tex names the reasons of these three methods (a vortex charge, a rearrangement block, the learned model's geometry)
+    if bench["rows"] > 100 and set(no_rows) != {"M15", "M16", "M17"}:
+        raise SystemExit(f"the methods without a benchmark row are {no_rows}: revise the sentence of main.tex that names their reasons")
+    L.append(macro("benchNoRows", " , ".join(tex_escape(ladder_id(m)) for m in no_rows).replace(" , ", ", ") or "none"))
+    L.append(macro("benchNNoRows", len(no_rows)))
     L.append(macro("benchSeedsMin", bench["seeds_min"]))
     L.append(macro("benchSeedsMax", bench["seeds_max"]))
     L.append(macro("benchNPoint", len(bench["point_geometries"])))

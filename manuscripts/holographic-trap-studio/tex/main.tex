@@ -304,10 +304,12 @@ the converged row). Every cell runs on \benchSeeds{} seeds and reports the media
 uniformity, relative standard deviation, time and iterations, on the ideal device and on the C08 device (every hologram scored
 against its device). The Pareto fronts are stored with the cells.
 
-The committed results file holds \benchRows{} rows of the \benchNMeasured{} engine methods; \benchSkipped{} method--geometry cells are
+The committed results file holds \benchRows{} rows of \benchNMeasured{} of the \benchNProtocol{} engine methods; \benchSkipped{} method--geometry cells are
 recorded as skipped with the reason the file states (a method that does not accept the target, such as a two-dimensional method on a
 three-dimensional lattice, or one that refuses the geometry). A cell runs between \benchSeedsMin{} and \benchSeedsMax{} seeds, the bound the protocol
-puts on the wall clock of a group. Table~\ref{tab:benchmark} names, per geometry and device, the method of each tier with the lowest median spread at
+puts on the wall clock of a group. The \benchNNoRows{} methods without a row (\benchNoRows) refuse every geometry of the protocol by
+their specification (a vortex charge, a rearrangement block, the geometry the learned model was trained for); their tests and
+their cases measure them. Table~\ref{tab:benchmark} names, per geometry and device, the method of each tier with the lowest median spread at
 100 iterations among those that reach at least half of the cell's best efficiency, and the best method at a time budget of 1~s;
 Table~\ref{tab:benchmethods} gives the medians of every method over the \benchNPoint{} point-trap geometries, and Fig.~\ref{fig:bench} every cell.
 
