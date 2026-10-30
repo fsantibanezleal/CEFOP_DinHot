@@ -166,7 +166,7 @@
    "id": "BS-5",
    "tier": "beyond",
    "method": "Efficiency-uniformity Pareto front (engine id B5)",
-   "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task",
+   "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured: 0.8190 against 0.8018); in the benchmark at 100 iterations on the ideal device the stored front reaches that hypervolume on 3 of the 6 geometries with a front, and not on G1, G4 (by 0.003 and 0.001) nor G6 (0.791 against 0.813)",
    "gate": "tests/methods/beyond/test_b5_pareto.py"
   }
  ],
