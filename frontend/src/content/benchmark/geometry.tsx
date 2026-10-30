@@ -210,6 +210,13 @@ function GeometryBody({ res, geometry }: { res: BenchmarkResults; geometry: stri
   const ran = new Set(res.rows.filter((r) => r.geometry === geometry).map((r) => r.method));
   const skipped = skippedIn(res, geometry);
   const all = methodsIn(res);
+  // a group runs its seeds until the protocol's wall-clock bound (at least 2), so a cell holds between 2 and the protocol's seeds
+  const seeds = res.rows.filter((r) => r.geometry === geometry).map((r) => r.n_seeds);
+  const lo = seeds.length ? Math.min(...seeds) : res.protocol.seeds;
+  const hi = seeds.length ? Math.max(...seeds) : res.protocol.seeds;
+  const seedText = lo === hi ? { en: `${hi} seeds per cell`, es: `${hi} semillas por celda` }
+    : { en: `${lo} to ${hi} seeds per cell (the protocol runs up to ${res.protocol.seeds}, within the wall-clock bound of a group)`,
+        es: `${lo} a ${hi} semillas por celda (el protocolo corre hasta ${res.protocol.seeds}, dentro del límite de tiempo de un grupo)` };
   if (!g) {
     return (
       <p className="caos-pending" data-state="unavailable">
@@ -221,8 +228,8 @@ function GeometryBody({ res, geometry }: { res: BenchmarkResults; geometry: stri
   return (
     <>
       <P
-        en={`${g.id} is "${g.name.en}": ${g.n_traps} traps in ${g.dims} dimensions, run at the grids ${res.protocol.grids.join(', ')} with ${res.protocol.seeds} seeds per cell. ${ran.size} of the ${all.length} methods of the ladder have rows on it and ${skipped.length} are listed as not run, each with the reason its own specification gives (a target kind it does not accept, a dimension it does not cover, a device it cannot model).${g.n_traps === 0 ? ' A trap count of 0 marks a geometry that is a field and not a set of traps; its methods are the full-field ones.' : ''}`}
-        es={`${g.id} es "${g.name.es}": ${g.n_traps} trampas en ${g.dims} dimensiones, corrida en las grillas ${res.protocol.grids.join(', ')} con ${res.protocol.seeds} semillas por celda. ${ran.size} de los ${all.length} métodos de la escalera tienen filas en ella y ${skipped.length} figuran como no corridos, cada uno con la razón que da su propia especificación (un tipo de objetivo que no acepta, una dimensión que no cubre, un dispositivo que no puede modelar).${g.n_traps === 0 ? ' Un número de trampas igual a 0 marca una geometría que es un campo y no un conjunto de trampas; sus métodos son los de campo completo.' : ''}`}
+        en={`${g.id} is "${g.name.en}": ${g.n_traps} traps in ${g.dims} dimensions, run at the grids ${res.protocol.grids.join(', ')} with ${seedText.en}. ${ran.size} of the ${all.length} methods of the ladder have rows on it and ${skipped.length} are listed as not run, each with the reason its own specification gives (a target kind it does not accept, a dimension it does not cover, a device it cannot model).${g.n_traps === 0 ? ' A trap count of 0 marks a geometry that is a field and not a set of traps; its methods are the full-field ones.' : ''}`}
+        es={`${g.id} es "${g.name.es}": ${g.n_traps} trampas en ${g.dims} dimensiones, corrida en las grillas ${res.protocol.grids.join(', ')} con ${seedText.es}. ${ran.size} de los ${all.length} métodos de la escalera tienen filas en ella y ${skipped.length} figuran como no corridos, cada uno con la razón que da su propia especificación (un tipo de objetivo que no acepta, una dimensión que no cubre, un dispositivo que no puede modelar).${g.n_traps === 0 ? ' Un número de trampas igual a 0 marca una geometría que es un campo y no un conjunto de trampas; sus métodos son los de campo completo.' : ''}`}
       />
       {GEOMETRY_REFS[geometry] ? (
         <P
