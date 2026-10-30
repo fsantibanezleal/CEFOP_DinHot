@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b1_device_wgs.py` |
 | Live port | none (lane `baked`; `getMethod('B1')` raises `NotLive`) |
 | Card | [B1](../../frameworks/B1_device-aware-wgs.md) |
-| Outcome | hypothesis confirmed on the ladder criterion (spread 49 times below M07 at 0.997 of its efficiency) |
+| Outcome | hypothesis confirmed on the ladder criterion (a median of 25.8 times below M07 over five seeds at 0.995 of its efficiency); in the benchmark on the C08 device it holds on the ring and the random set, not on the large set (1.73 times) nor on the two lattices, where it keeps its start (update of 2026-10-30) |
 
 ## Tier and role
 
@@ -118,7 +118,7 @@ the factor of two holds on the harder device, which has the 4-bit quantizer and 
 ## Limits and failure modes
 
 - UNVERIFIED: the unit of $k$ in the crosstalk kernel (the model is relative to the model of the device, not to a measured instrument; see M13 and the device model P02).
-- One seed in the acceptance test; the benchmark repeats it over 20 seeds on the C08 device (its rows are not yet in `data/derived/benchmark/results.json`).
+- Five seeds in the measurement of the claim and one in the acceptance test; the benchmark's B1 cells on the C08 device hold the seeds of the table in the update below, within the wall-clock bound of a group.
 - Baked: a step works on about nine times the pixels of the plain FFT (3 by 3 upsampling); the cost of a hologram is above the live budget.
 - Traps must be on bins with $z = 0$ and no vortex on a device; a shaped target is refused.
 - Flicker is random and is dropped from the optimization model; it is scored but not modelled.
@@ -137,3 +137,17 @@ the factor of two holds on the harder device, which has the 4-bit quantizer and 
 Re-measured against the corrected M07 and against slmsuite's WGS-Kim directly (crosstalk device, 10x10 task, 256 x 256 pixels padded 2, five seeds, the same random-superposition start): the ratio of the reference's relative standard deviation to B1's is a median of 33.1 times (22.0 to 60.5) against both, at 0.994 of the reference's efficiency (0.987 to 0.995). B1's spread per seed: 0.091, 0.145, 0.175, 0.086 and 0.240 percent. The claim holds; the crosstalk of the device, not the first-update defect of the old M07, sets the baseline's floor near 5 percent.
 
 Second re-measurement, the same day, after M06 was corrected the same way (its first field projected with the initial weights, as slmsuite's WGS-Leonardo does; `tests/methods/baseline/test_m06_against_slmsuite.py`) and the GS family of the beyond methods was made the ladder methods' own rules (`optim/_gs_family.py`). B1's warm start is twelve iterations of M06, so B1 changed and the reference did not: the ratio is a median of 25.8 times (15.9 to 33.3 over the same five seeds) at 0.995 of the reference's efficiency (0.991 to 0.997); B1's spread per seed 0.298, 0.198, 0.207, 0.157 and 0.205 percent, the reference 4.745, 4.784, 5.456, 5.213 and 5.287 percent. The claim (at least two times, efficiency at most 10 percent lower) holds on every seed. These numbers supersede the ones above.
+
+## Update of 2026-10-30: the safeguard and the benchmark
+
+B1 now returns its best iterate that keeps 0.9 of its warm start's efficiency (The method, Safeguard). Its acceptance figures do not change: the five seeds of the crosstalk device and the three of the full device give the same spreads to four digits (the studio's `manuscripts/device-aware-flicker-bounded/data/measure.py`, rerun on 2026-10-30), and C08 moves in the fourth digit (its table above). The benchmark repeats the comparison on its own geometries, on the C08 device (4-bit phase, crosstalk, fill factor 0.85 and flicker 0.05 rad), at 100 iterations with the default parameters, read from `data/derived/benchmark/results.json`:
+
+| Geometry | B1 spread (percent) | M07 spread (percent) | Factor | Efficiency ratio | Seeds (B1, M07) |
+|---|---|---|---|---|---|
+| G1 Square 10 x 10 | 27.3 | 26.4 | 0.97 | 1.013 | 2, 20 |
+| G2 Ring of 36 traps | 7.45 | 17 | 2.28 | 0.965 | 2, 20 |
+| G3 Random 100 traps | 4.41 | 20.7 | 4.69 | 0.938 | 2, 20 |
+| G4 Quasi-periodic 119 | 81.1 | 85.2 | 1.05 | 0.996 | 2, 20 |
+| G6 Large: 32 x 32 and disordered 819 | 17.1 | 29.6 | 1.73 | 1.061 | 2, 5 |
+
+So in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.061); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds. On the lattices of this device every iterate past the start gives up more than a tenth of the light, so B1 keeps its start; on the ideal device the spreads of B1 and of M07 are both below the resolution of the file on most geometries, which is a tie and not a gain.
