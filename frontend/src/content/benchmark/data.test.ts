@@ -85,7 +85,9 @@ describe('the recorded acceptance numbers equal the SDD', () => {
           continue;
         }
         const written = String(value);
-        const ok = new RegExp(`(^|[^0-9.])${written.replace('.', '\\.')}([^0-9]|\\.(?![0-9])|$)`).test(row) || (WORDS[value] !== undefined && row.includes(WORDS[value]));
+        // a decimal the SDD writes with trailing zeros (0.910) is the same number as its shortest form (0.91)
+        const zeros = written.includes('.') ? '0*' : '';
+        const ok = new RegExp(`(^|[^0-9.])${written.replace('.', '\\.')}${zeros}([^0-9]|\\.(?![0-9])|$)`).test(row) || (WORDS[value] !== undefined && row.includes(WORDS[value]));
         expect(ok, `${id}.${key} = ${written} is not in the SDD row ${rec.row}`).toBe(true);
       }
     });
