@@ -108,5 +108,30 @@
     "pipeline.model.holo.methods.optim.m13_crosstalk_cg.run",
     "pipeline.model.holo.methods.optim.m18_ot_mraf.run"
   ],
-  "method_packages": []
+  "method_packages": [],
+  "manuscripts": [
+    {
+      "kind": "technical-report",
+      "concept_doi": "10.5281/zenodo.23788731",
+      "title": "DinHot: A Holographic Optical Trap Studio Comparing Classical, State-of-the-Art and Beyond-State-of-the-Art Hologram Methods on a Device Model",
+      "version": "0.02.000",
+      "covers": [
+        "BS-1",
+        "BS-2",
+        "BS-3",
+        "BS-4",
+        "BS-5"
+      ]
+    },
+    {
+      "kind": "manuscript",
+      "concept_doi": "10.5281/zenodo.23788733",
+      "title": "Device-Aware Weighted Gerchberg-Saxton and Flicker-Bounded Phase-Continuous Sequences for Holographic Optical Trap Arrays",
+      "version": "0.01",
+      "covers": [
+        "BS-1",
+        "BS-2"
+      ]
+    }
+  ]
 }

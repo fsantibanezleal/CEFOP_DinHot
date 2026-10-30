@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { CITATIONS } from '../citations';
 import { INTRODUCTION_CITATIONS } from '../citations/introduction';
 import { METHODOLOGY_CITATIONS } from '../citations/methodology';
-import { TechnicalView } from './technical';
+import { MANUSCRIPTS, TechnicalView } from './technical';
 
 const ITEMS = [...CITATIONS, ...METHODOLOGY_CITATIONS, ...INTRODUCTION_CITATIONS];
 
@@ -75,5 +75,21 @@ describe('the Spanish text', () => {
   it('is written as Spanish, with its accents', () => {
     for (const w of ['Holograma', 'Convergencia', 'Dinámica', 'física', 'matemática', 'Aberraciones', 'óptica', 'Introducción']) expect(source).toContain(w);
     expect(source).not.toMatch(/(Dinamica|fisica|matematica|optica|Introduccion|Metodologia|informacion|ubicacion)/);
+  });
+});
+
+describe('the technical report and the manuscripts', () => {
+  const declared = JSON.parse(readFileSync(new URL('../../../../product.json', import.meta.url), 'utf8')).manuscripts;
+
+  it('lists every Zenodo record of product.json, each with its concept DOI as a link, (English render, Spanish source)', () => {
+    expect(declared.length).toBeGreaterThan(0);
+    expect(MANUSCRIPTS).toEqual(declared);
+    const html = render('en');
+    for (const m of declared) expect(html).toContain(`href="https://doi.org/${m.concept_doi}"`);
+    expect(text(html)).toContain('Technical report, version');
+    // the Spanish strings, read from the source as the rest of this file does
+    const src = readFileSync(new URL('./technical.tsx', import.meta.url), 'utf8');
+    expect(src).toContain('Informe técnico, versión');
+    expect(src).toContain('DOI de concepto');
   });
 });
