@@ -138,7 +138,7 @@
    "id": "BS-1",
    "tier": "beyond",
    "method": "Device-aware weighted GS (engine id B1)",
-   "criterion": "on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; measured against the corrected M07 and against slmsuite's WGS-Kim alike: a median of 25.8 times (15.9 to 33.3 over five seeds) at 0.995 of the efficiency, and 2.0 times on the full C08 device (the bake, three seeds; 2.2 in notebook 03-04) with 4-bit phase and flicker",
+   "criterion": "on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; measured against the corrected M07 and against slmsuite's WGS-Kim alike: a median of 25.8 times (15.9 to 33.3 over five seeds) at 0.995 of the efficiency, and 2.0 times on the full C08 device (the bake, three seeds; 2.2 in notebook 03-04) with 4-bit phase and flicker; in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.061); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds",
    "gate": "tests/methods/beyond/test_b1_device_wgs.py"
   },
   {
@@ -1241,9 +1241,9 @@
      "lane": "baked"
     },
     "B1": {
-     "efficiency": 0.651932,
-     "uniformity": 0.847243,
-     "rel_std_pct": 7.053303,
+     "efficiency": 0.651959,
+     "uniformity": 0.847098,
+     "rel_std_pct": 7.043659,
      "iterations": 30,
      "lane": "baked"
     },
@@ -1258,7 +1258,7 @@
    "reference_method": "B1",
    "best_method": "B1",
    "lane": "precompute",
-   "trace_bytes": 62728,
+   "trace_bytes": 62737,
    "seed": 20261028,
    "feedback": null,
    "dynamics": null
@@ -1943,8 +1943,8 @@
     "best": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.8149,
-     "n_seeds": 6
+     "eff": 0.81326,
+     "n_seeds": 7
     },
     "best_1s": {
      "method": "B5",
@@ -1967,8 +1967,8 @@
     "beyond": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.8149,
-     "n_seeds": 6
+     "eff": 0.81326,
+     "n_seeds": 7
     }
    },
    "G1/device": {
@@ -2007,14 +2007,14 @@
     "best": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.692828,
-     "n_seeds": 11
+     "eff": 0.692234,
+     "n_seeds": 8
     },
     "best_1s": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.692828,
-     "n_seeds": 11
+     "eff": 0.692234,
+     "n_seeds": 8
     },
     "classical": {
      "method": "M09",
@@ -2031,8 +2031,8 @@
     "beyond": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.692828,
-     "n_seeds": 11
+     "eff": 0.692234,
+     "n_seeds": 8
     }
    },
    "G2/device": {
@@ -2062,8 +2062,8 @@
     },
     "beyond": {
      "method": "B1",
-     "sigma": 7.405253,
-     "eff": 0.456468,
+     "sigma": 7.453088,
+     "eff": 0.456423,
      "n_seeds": 2
     }
    },
@@ -2071,14 +2071,14 @@
     "best": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.695312,
-     "n_seeds": 7
+     "eff": 0.695336,
+     "n_seeds": 6
     },
     "best_1s": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.695312,
-     "n_seeds": 7
+     "eff": 0.695336,
+     "n_seeds": 6
     },
     "classical": {
      "method": "M09",
@@ -2095,15 +2095,15 @@
     "beyond": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.695312,
-     "n_seeds": 7
+     "eff": 0.695336,
+     "n_seeds": 6
     }
    },
    "G3/device": {
     "best": {
      "method": "B1",
-     "sigma": 4.475818,
-     "eff": 0.399619,
+     "sigma": 4.408473,
+     "eff": 0.399626,
      "n_seeds": 2
     },
     "best_1s": {
@@ -2126,8 +2126,8 @@
     },
     "beyond": {
      "method": "B1",
-     "sigma": 4.475818,
-     "eff": 0.399619,
+     "sigma": 4.408473,
+     "eff": 0.399626,
      "n_seeds": 2
     }
    },
@@ -2136,7 +2136,7 @@
      "method": "B1",
      "sigma": 0.0,
      "eff": 0.751097,
-     "n_seeds": 8
+     "n_seeds": 6
     },
     "best_1s": {
      "method": "B5",
@@ -2160,7 +2160,7 @@
      "method": "B1",
      "sigma": 0.0,
      "eff": 0.751097,
-     "n_seeds": 8
+     "n_seeds": 6
     }
    },
    "G4/device": {
@@ -2172,8 +2172,8 @@
     },
     "best_1s": {
      "method": "B1",
-     "sigma": 27.540045,
-     "eff": 0.420452,
+     "sigma": 81.088055,
+     "eff": 0.500741,
      "n_seeds": 2
     },
     "classical": {
@@ -2189,10 +2189,10 @@
      "n_seeds": 15
     },
     "beyond": {
-     "method": "B4",
-     "sigma": 83.632532,
-     "eff": 0.497833,
-     "n_seeds": 9
+     "method": "B1",
+     "sigma": 81.088055,
+     "eff": 0.500741,
+     "n_seeds": 2
     }
    },
    "G5/ideal": {
@@ -2285,9 +2285,9 @@
      "n_seeds": 4
     },
     "beyond": {
-     "method": "B2",
-     "sigma": 19.373293,
-     "eff": 0.557682,
+     "method": "B1",
+     "sigma": 17.114947,
+     "eff": 0.553562,
      "n_seeds": 2
     }
    },
@@ -2353,13 +2353,13 @@
      "n": 5,
      "sigma": 0.0,
      "eff": 0.751097,
-     "time_s": 52.502922
+     "time_s": 49.563912
     },
     "device": {
      "n": 5,
-     "sigma": 64.092941,
-     "eff": 0.295824,
-     "time_s": 727.247509
+     "sigma": 17.114947,
+     "eff": 0.500741,
+     "time_s": 631.617134
     }
    },
    "B2": {
@@ -2832,15 +2832,15 @@
    }
   ],
   "grid_100": {
-   "B1/G1/device": 64.092941,
+   "B1/G1/device": 27.297773,
    "B1/G1/ideal": 0.0,
-   "B1/G2/device": 7.405253,
+   "B1/G2/device": 7.453088,
    "B1/G2/ideal": 0.0,
-   "B1/G3/device": 4.475818,
+   "B1/G3/device": 4.408473,
    "B1/G3/ideal": 0.0,
-   "B1/G4/device": 456.522021,
+   "B1/G4/device": 81.088055,
    "B1/G4/ideal": 0.0,
-   "B1/G6/device": 152.542628,
+   "B1/G6/device": 17.114947,
    "B1/G6/ideal": 0.0,
    "B2/G1/device": 26.384268,
    "B2/G1/ideal": 0.009809,

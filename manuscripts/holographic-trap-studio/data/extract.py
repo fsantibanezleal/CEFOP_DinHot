@@ -488,6 +488,17 @@ def main() -> int:
     L.append(macro("benchMethodsMeasured", ", ".join(bench["methods_measured"])))
     L.append(macro("benchNMeasured", len(bench["methods_measured"])))
     L.append(macro("benchNProtocol", len(bench["methods_in_protocol"])))
+    # BS-1 against M07 on the C08 device, per geometry, at 100 iterations (the grid of medians): both thresholds of the claim
+    g100 = load(DERIVED / "benchmark" / "results.json")
+    c100 = {(x["method"], x["geometry"]): x for x in g100["rows"] if x["budget_kind"] == "iterations" and x["budget"] == 100
+            and x["params"] == "default" and x["device"] == "device"}
+    b1_cells = [(g, c100[("M07", g)]["rel_std_pct"]["median"] / c100[("B1", g)]["rel_std_pct"]["median"],
+                 c100[("B1", g)]["efficiency"]["median"] / c100[("M07", g)]["efficiency"]["median"])
+                for (m, g) in sorted(c100) if m == "B1" and ("M07", g) in c100]
+    b1_pass = [g for g, fac, eff in b1_cells if fac >= 2 and eff >= 0.9]
+    L.append(macro("benchOneN", len(b1_cells)))
+    L.append(macro("benchOnePass", len(b1_pass)))
+    L.append(macro("benchOnePassList", " and ".join(b1_pass) if b1_pass else "none"))
     no_rows = [m for m in bench["methods_in_protocol"] if m not in bench["methods_measured"]]
     # main.tex names the reasons of these three methods (a vortex charge, a rearrangement block, the learned model's geometry)
     if bench["rows"] > 100 and set(no_rows) != {"M15", "M16", "M17"}:
