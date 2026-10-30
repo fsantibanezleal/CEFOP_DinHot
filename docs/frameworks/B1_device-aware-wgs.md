@@ -43,13 +43,13 @@ outer iterations. Reading the traps off the device's focal field uses the neares
 On the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower:
 `tests/methods/beyond/test_b1_device_wgs.py::test_acceptance_two_times_lower_rel_std_than_phase_fixed_wgs_on_the_crosstalk_device`.
 
-## Measured values (DinHot measurement, acceptance run of 2026-10-28)
+## Measured values (seed 1 of the claim's measurement, 2026-10-30)
 
 | Quantity | B1 | M07 on the ideal model, scored on the device | Conditions |
 |---|---|---|---|
-| Relative standard deviation (percent) | 0.091 | 4.454 (the method module) and 4.504 (in-test copy) | 1 seed, 10 by 10 task on 256 by 256 padded 2 |
-| Efficiency | 0.7423 | 0.7447 and 0.7459 | same |
-| Ratio | 15.9 times lower spread on this seed, 0.997 of the efficiency; a median of 25.8 times (15.9 to 33.3) over five seeds, re-measured 2026-10-29 after the rule corrections (49 times on this seed before) | | |
+| Relative standard deviation (percent) | 0.298 | 4.745 (30 iterations) and 4.746 (100 iterations) | 1 seed, 10 by 10 task on 256 by 256 padded 2 |
+| Efficiency | 0.7452 | 0.7471 | same |
+| Ratio | 15.9 times lower spread on this seed, 0.997 of the efficiency; a median of 25.8 times (15.9 to 33.3) over five seeds; B1's benchmark cells on the C08 device hold 2 seeds (M07's 20) | | |
 
 More iterations do not help the baseline (spread 4.504 with 30 iterations and 4.525 with 100). The criterion is exceeded by a wide margin; the benchmark
 repeats it over 20 seeds on the C08 device.

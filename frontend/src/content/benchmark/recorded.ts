@@ -27,8 +27,8 @@ export const RECORDED: Record<string, RecordedClaim> = {
       seeds: 5,
       /** B1's efficiency over M07's, in the same runs. */
       efficiencyRatio: 0.995,
-      /** The factor on the full C08 device, with 4-bit phase and flicker. */
-      fullDeviceFactor: 2.2,
+      /** The ratio of the means on the C08 device (4-bit phase, crosstalk, fill factor and flicker) over the three seeds of the bake's expected ranges. */
+      fullDeviceFactor: 2.0,
     },
   },
   'BS-2': {
@@ -40,8 +40,10 @@ export const RECORDED: Record<string, RecordedClaim> = {
       b2High: 0.926,
       lpiLow: 0.551,
       lpiHigh: 0.709,
-      /** The largest peak step per frame, in Fourier units, up to which the claim holds. */
+      /** The peak step per frame, in Fourier units, of the frames the method names for a move (a bound set on C10's sort). */
       stepLimit: 0.2,
+      /** The peak step per frame of the acceptance task itself, 13 frames for a move of 2 Fourier units. */
+      acceptancePeakStep: 0.31,
       /** Long lattice moves: the medians of two lattices and the seeds that meet 0.9 of the mean. */
       longMedianA: 0.933,
       longMedianB: 0.936,
