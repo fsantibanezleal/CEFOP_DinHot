@@ -380,7 +380,9 @@ succeeds.
 the crosstalk kernel and the quantizer. The gap is that the crosstalk model has only been used with conjugate gradient on shaped potentials~\cite{schroff},
 or inside a weighted GS that replaces amplitudes only~\cite{persson}. On the crosstalk device, the relative standard deviation is lower than
 that of phase-fixed WGS by the factor reported in the companion manuscript; on the small C08 grid the baked factor is \bakeCeightRatio{} at an
-efficiency ratio of \bakeCeightEffRatio. \textbf{BS-2, flicker-bounded phase-continuous sequences.} Each intermediate hologram of a moving-trap
+efficiency ratio of \bakeCeightEffRatio. In the benchmark on the C08 device it meets both thresholds on \benchOnePass{} of
+\benchOneN{} geometries (\benchOnePassList; the companion manuscript gives each geometry), and it returns its best iterate that keeps 0.9 of
+its warm start's efficiency, so its weight update cannot wind up. \textbf{BS-2, flicker-bounded phase-continuous sequences.} Each intermediate hologram of a moving-trap
 sequence is optimized with the trap phases locked to a smooth trajectory; the gap is that linear phase interpolation does not
 optimize its intermediate frames~\cite{lpi}. The moving traps keep a higher minimum intensity than under linear phase
 interpolation, as quantified in the companion manuscript. \textbf{BS-3, learned warm start:} refuted (Section~\ref{sec:learned}).
