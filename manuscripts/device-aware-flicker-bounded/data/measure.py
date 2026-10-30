@@ -344,6 +344,28 @@ def read_manifests() -> dict:
     return out
 
 
+def read_benchmark(budget: int = 100) -> dict:
+    """BS-1 in the studio's benchmark (``data/derived/benchmark/results.json``): on every geometry where both ran, the factor of
+    B1 over phase-fixed WGS (M07) on the relative standard deviation and the efficiency ratio, at ``budget`` iterations with the
+    default parameters, on the C08 device and on the ideal device."""
+    r = json.loads((ROOT / "data" / "derived" / "benchmark" / "results.json").read_text(encoding="utf-8"))
+    cells = {(x["method"], x["geometry"], x["device"]): x for x in r["rows"]
+             if x["budget_kind"] == "iterations" and x["budget"] == budget and x["params"] == "default"}
+    out = {"budget": budget, "devices": {}}
+    for device in ("device", "ideal"):
+        rows = []
+        for (m, g, d), b1 in sorted(cells.items()):
+            if m != "B1" or d != device or ("M07", g, d) not in cells:
+                continue
+            m7 = cells[("M07", g, d)]
+            rows.append({"geometry": g, "n_seeds": min(b1["n_seeds"], m7["n_seeds"]),
+                         "sigma_b1": b1["rel_std_pct"]["median"], "sigma_m07": m7["rel_std_pct"]["median"],
+                         "factor": m7["rel_std_pct"]["median"] / max(b1["rel_std_pct"]["median"], 1e-6),
+                         "eff_ratio": b1["efficiency"]["median"] / m7["efficiency"]["median"]})
+        out["devices"][device] = rows
+    return out
+
+
 def macro(name: str, value: str) -> str:
     return f"\\newcommand{{\\{name}}}{{{value}}}\n"
 
@@ -392,6 +414,7 @@ def write_macros(data: dict, path: Path) -> None:
     L.append(macro("parCgSteps", B1.DEFAULT_STEPS))
     L.append(macro("parWarm", B1.DEFAULT_WARM))
     L.append(macro("parOuter", B1.DEFAULT_OUTER))
+    L.append(macro("parFloor", f"{B1.EFFICIENCY_FLOOR:g}"))
     L.append(macro("parFrames", B2.DEFAULT_FRAMES))
     L.append(macro("parFrameIters", B2.DEFAULT_FRAME_ITERATIONS))
     L.append(macro("parPhaseVel", f"{B2.DEFAULT_PHASE_VELOCITY_MAX:g}"))
@@ -480,6 +503,21 @@ def write_macros(data: dict, path: Path) -> None:
     L.append(macro("cTenLpiMin", fmt(min(r["lpi_enough"] for r in rows), 3)))
     L.append(macro("cTenLpiMax", fmt(max(r["lpi_enough"] for r in rows), 3)))
     L.append(macro("cTenBLeads", sum(r["b2_enough"] > r["lpi_enough"] for r in rows)))
+    # BS-1 in the studio's benchmark, on the C08 device
+    bb = data["benchmark_bs1"]
+    dev = bb["devices"]["device"]
+    L.append(macro("benchOneBudget", bb["budget"]))
+    L.append(macro("benchOneDevN", len(dev)))
+    if dev:
+        fac = [x["factor"] for x in dev]
+        eff = [x["eff_ratio"] for x in dev]
+        L.append(macro("benchOneDevMed", fmt(statistics.median(fac), 2)))
+        L.append(macro("benchOneDevMin", fmt(min(fac), 2)))
+        L.append(macro("benchOneDevMax", fmt(max(fac), 2)))
+        L.append(macro("benchOneDevEff", fmt(statistics.median(eff), 3)))
+        L.append(macro("benchOneDevPass", sum(1 for x in dev if x["factor"] >= 2 and x["eff_ratio"] >= 0.9)))
+        L.append(macro("benchOneDevSeedsMin", min(x["n_seeds"] for x in dev)))
+        L.append(macro("benchOneDevSeedsMax", max(x["n_seeds"] for x in dev)))
     path.write_text("".join(L), encoding="utf-8")
 
 
@@ -501,8 +539,8 @@ def main() -> int:
         write_macros(json.loads((out / "beyond.json").read_text(encoding="utf-8")), out / "beyond_numbers.tex")
         print("rewrote", out / "beyond_numbers.tex")
         return 0
-    parts = set(a.parts.split(","))
-    known = {"bs1", "bs1_full", "bs2", "bs2_scope"}
+    parts = {x for x in a.parts.split(",") if x}  # --parts "" re-reads the bake and the benchmark only
+    known = {"bs1", "bs1_full", "bs2", "bs2_scope"}  # the benchmark and the bake are read every run
     if parts - known:
         ap.error(f"unknown parts {sorted(parts - known)}; known: {sorted(known)}")
     data = {} if parts == known else json.loads((out / "beyond.json").read_text(encoding="utf-8"))
@@ -516,6 +554,7 @@ def main() -> int:
     if "bs2_scope" in parts:
         data["bs2_scope"] = measure_b2_scope(list(range(1, a.seeds_long + 1)), list(range(1, a.seeds_c10 + 1)))
     data["bake"] = read_manifests()
+    data["benchmark_bs1"] = read_benchmark()
     (out / "beyond.json").write_text(json.dumps(data, indent=1), encoding="utf-8")
     write_macros(data, out / "beyond_numbers.tex")
     print("wrote", out / "beyond.json", out / "beyond_numbers.tex")

@@ -61,7 +61,9 @@ pixel-crosstalk kernel and the phase quantizer of the device (device-aware WGS) 
 $10\times10$ lattice behind a crosstalk device, the relative standard deviation falls from a median of \sigmaMsevenThirty{} percent for phase-fixed
 WGS at 30 iterations (\sigmaMsevenHundred{} percent at 100) to \sigmaBOne{} percent, a median factor of \ratioOneMed{} over
 \nSeedsOne{} seeds (range \ratioOneMin{} to \ratioOneMax) at a median \effRatioOne{} of the baseline's efficiency; the factor is \ratioOneFullMed{} with \parBits{}-bit
-phase and a fill factor of \parFill{} added, and \bakeCeightRatio{} on a smaller $8\times8$ grid with a fixed \bakeCeightIters{}-iteration budget. A control that removes the device model from the loop gains nothing
+phase and a fill factor of \parFill{} added, and \bakeCeightRatio{} on a smaller $8\times8$ grid with a fixed \bakeCeightIters{}-iteration budget; over the \benchOneDevN{} geometries
+of the studio's benchmark on its full device the median factor is \benchOneDevMed{} (\benchOneDevMin{} to \benchOneDevMax), and \benchOneDevPass{} of
+them meet both thresholds. A control that removes the device model from the loop gains nothing
 (\sigmaNoModel{} percent), so the gain comes from the model. Second, optimizing every intermediate hologram of a moving-trap sequence with the trap phases locked to a smooth
 trajectory (flicker-bounded sequence) keeps the minimum transient intensity of the moving traps at a median \bTwoMed{} of their mean (range \bTwoMin{} to \bTwoMax) over \nSeedsTwo{} seeds at thirteen frames (below $0.9$ at seven frames),
 against \lpiMed{} (\lpiMin{} to \lpiMax) for linear phase interpolation. The bound holds while the peak step per frame is at most \claimStepFu{} Fourier units: on longer
@@ -128,7 +130,9 @@ L(\phi)=\frac{\sum_m\big(|V_m(\phi)|^2-T_m\big)^2}{\sum_mT_m^2},\qquad T_m=\eta\
 where $V=\mathrm{Op}(\phi)$ runs through the straight-through quantizer, the crosstalk operator, the FFT of the upsampled grid and the pixel envelope. The target level is the current efficiency $\eta$, so the steps flatten the traps without
 trading efficiency away; the weights supply the integral feedback that few steps per iteration lack. The gradient is the closed form through the crosstalk adjoint, so no automatic differentiation is needed.
 The conjugate-gradient steps are Fletcher--Reeves with a strong-Wolfe line search, restarted at every outer iteration because the target changes with the weights. The start is \parWarm{} iterations of weighted GS on the ideal model,
-and there are \parOuter{} outer iterations.
+and there are \parOuter{} outer iterations. The weight update is an integrator that a few gradient steps may not follow on a device they
+cannot fit, so B1 returns its best iterate, the warm start included: the phase of lowest spread on its device model among the iterates that keep
+at least \parFloor{} of the warm start's efficiency, the bound of the hypothesis. A run whose weights wind up therefore never returns worse than its start.
 
 \subsection{Baselines and protocol}
 
@@ -228,7 +232,10 @@ implies, not at an equal number of frames on long moves.
 \textbf{Model, not instrument.} Both results are computed on a scalar Fourier model with the device effects stated above. The crosstalk parameters come from a published fit on another device; the \parBits{}-bit, fill-factor and flicker effects have no published source in this model, and random flicker is not applied in the scoring. The frequency unit of the kernel is
 carried over from the model and is not verified against the source. An instrument with a different kernel would give a different factor, and the sensitivity of B1 to a mismatched kernel was not tested.
 
-\textbf{Variation.} The BS-1 factor ranges over the seeds from \ratioOneMin{} to \ratioOneMax{} on one task, and falls to \ratioOneFullMed{} on the full device and to \bakeCeightRatio{} on the smaller grid with a fixed budget. The result is a large improvement on this task, not a constant. The number of seeds is \nSeedsOne{} for the crosstalk device and \nSeedsOneFull{} for the full device; other geometries (for example the disordered arrays of the studio) are not measured here.
+\textbf{Variation.} The BS-1 factor ranges over the seeds from \ratioOneMin{} to \ratioOneMax{} on one task, and falls to \ratioOneFullMed{} on the full device and to \bakeCeightRatio{} on the smaller grid with a fixed budget. The result is a large improvement on this task, not a constant. The number of seeds is \nSeedsOne{} for the crosstalk device and \nSeedsOneFull{} for the full device; on the \benchOneDevN{} geometries of the studio's benchmark, on its C08 device (which adds flicker) at \benchOneBudget{} iterations with the
+default parameters and \benchOneDevSeedsMin{} to \benchOneDevSeedsMax{} seeds per cell, the factor over phase-fixed WGS has a median of \benchOneDevMed{}
+(\benchOneDevMin{} to \benchOneDevMax) at a median efficiency ratio of \benchOneDevEff, and \benchOneDevPass{} of them meet both thresholds of the hypothesis:
+the gain is that of the task and devices above, and it does not carry to every geometry.
 B1 is built for traps on FFT bins at the focal plane without vortices, and is more expensive than the baseline by about the square of the upsampling factor per step; it is a baked method, not a live one.
 
 \textbf{BS-2 transient model.} The ratio of BS-2 is defined by our blend model of the SLM field between frames. It omits the temporal response and the refresh of the device, and the LPI baseline is our implementation of a published description, not the authors' code. In the source of the baseline, LPI on hardware stays above $0.70$ of its intensity, whereas it scores lower here

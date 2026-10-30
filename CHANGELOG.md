@@ -43,6 +43,9 @@ tagged.
 - The benchmark lists a cell whose method refuses the geometry as skipped with the method's reason, instead of stopping the run, and
   stores B5's Pareto front from the indices of its non-dominated points (the release run stopped on it).
 - BS-4's robustness to pointing errors re-measured on the corrected engine: 1.04 times (1.02 before), still a reported negative.
+- B1 (BS-1) returns its best iterate that keeps 0.9 of its warm start's efficiency: its weight update could wind up on a device
+  it cannot follow (the benchmark's square lattice on the C08 device, where one seed fell to 0.03 efficiency); its acceptance
+  figures are unchanged, C08 and the benchmark's B1 cells were re-measured.
 - A released model without onnxruntime refuses to run instead of answering with its baseline under the learned method's id.
 - The cgh-net, warmstart-model and model-metrics contracts (1.0.1) state the released slot: three focal planes in, the volumetric GS (M19)
   as its baseline.
