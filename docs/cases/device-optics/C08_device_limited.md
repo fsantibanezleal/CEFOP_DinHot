@@ -53,9 +53,9 @@ This section is written by `scripts/write_case_ranges.py`.
 
 | Key | Range | Measured on the 3 seeds | Meaning |
 |---|---|---|---|
-| `B1.efficiency` | 0.5894 to 0.7204 | 0.651932, 0.650719, 0.662071 | fraction of the input power in the trap peaks |
-| `B1.rel_std_pct` | 5.355 to 7.63 | 7.0533, 6.50771, 5.91576 | relative standard deviation of the trap intensities, in percent |
-| `B1.uniformity` | 0.7767 to 0.9492 | 0.847243, 0.855131, 0.88647 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
+| `B1.efficiency` | 0.5894 to 0.7204 | 0.651959, 0.65069, 0.662057 | fraction of the input power in the trap peaks |
+| `B1.rel_std_pct` | 5.363 to 7.629 | 7.04366, 6.53407, 5.9105 | relative standard deviation of the trap intensities, in percent |
+| `B1.uniformity` | 0.7762 to 0.9486 | 0.847098, 0.853563, 0.886535 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
 | `B4.efficiency` | 0.6026 to 0.7365 | 0.666374, 0.672037, 0.670147 | fraction of the input power in the trap peaks |
 | `B4.rel_std_pct` | 11.65 to 14.24 | 13.5564, 12.5261, 12.7619 | relative standard deviation of the trap intensities, in percent |
 | `B4.uniformity` | 0.6453 to 0.7887 | 0.73047, 0.714561, 0.705836 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
