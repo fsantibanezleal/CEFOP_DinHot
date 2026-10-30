@@ -10,8 +10,8 @@ Sources, all committed with the product:
   * ``docs/design/SDD.md``: the method ladder (id, tier, method, acceptance criterion).
   * ``data/derived/manifests/*.json`` and ``data/derived/C*/trace.json``: the baked cases (setup, device, per-method scores,
     feedback steps, bead and atom dynamics).
-  * ``data/derived/benchmark/results.json``: the benchmark protocol and the cells measured so far. A cell that the file does
-    not hold is reported as not yet measured; nothing is filled in.
+  * ``data/derived/benchmark/results.json``: the benchmark protocol, its cells and the skipped cells with their reasons; the
+    tables summarize the cells at 100 iterations and at the 1 s budget with the default parameters.
   * ``data/derived/models/*.json`` and ``models/cgh-net.json``: the learned models and the measured negative of the
     warm-start model.
   * ``content/executive.json``: the published figures of the executive view, with their source ids.
@@ -139,25 +139,80 @@ def case_summary() -> list[dict]:
     return out
 
 
-def benchmark_summary() -> dict:
+def ladder_id(mid: str) -> str:
+    """The SDD ladder id of an engine method (B1 is BS-1)."""
+    return f"BS-{mid[1:]}" if mid.startswith("B") else mid
+
+
+def bench_cells(rows: list[dict], kind: str, budget: float, params: str = "default") -> dict:
+    return {(x["method"], x["geometry"], x["device"]): x for x in rows
+            if x["budget_kind"] == kind and x["budget"] == budget and x["params"] == params}
+
+
+def best_of(cells: dict, geometry: str, device: str, methods: set[str]) -> dict | None:
+    """The method with the lowest median relative standard deviation among those of ``methods`` that reach at least half of the
+    best median efficiency of the cell (the rule of the results table), or None when none of them ran there."""
+    cand = [(m, x) for (m, g, d), x in cells.items() if g == geometry and d == device and m in methods]
+    if not cand:
+        return None
+    top = max(x["efficiency"]["median"] for _, x in cand)
+    ok = [(m, x) for m, x in cand if x["efficiency"]["median"] >= 0.5 * top]
+    m, x = min(ok, key=lambda p: (p[1]["rel_std_pct"]["median"], p[0]))
+    return {"method": m, "sigma": x["rel_std_pct"]["median"], "eff": x["efficiency"]["median"], "n_seeds": x["n_seeds"]}
+
+
+def benchmark_summary(ladder: list[dict]) -> dict:
     r = load(DERIVED / "benchmark" / "results.json")
     rows = r["rows"]
     methods = sorted({x["method"] for x in rows})
-    cells = {}
-    for x in rows:
-        if x["budget_kind"] == "iterations" and x["budget"] == 100:
-            cells[f"{x['method']}/{x['geometry']}/{x['device']}"] = {
-                "eff": x["efficiency"]["median"], "sigma": x["rel_std_pct"]["median"], "sigma_q1": x["rel_std_pct"]["q1"],
-                "sigma_q3": x["rel_std_pct"]["q3"], "n_seeds": x["n_seeds"]}
+    tier = {row["id"]: row["tier"] for row in ladder}
+    tier_of = {m: tier.get(ladder_id(m)) for m in methods}
     skipped = {}
     for s in r["skipped"]:
         skipped.setdefault(s["reason"]["en"], 0)
         skipped[s["reason"]["en"]] += 1
     all_methods = sorted({s["method"] for s in r["skipped"]} | set(methods))
+    geos = r["geometries"]
+    point = [g["id"] for g in geos if g["n_traps"]]
+    it100, t1 = bench_cells(rows, "iterations", 100), bench_cells(rows, "time", 1.0)
+    by_geometry = {}
+    for g in geos:
+        for device in ("ideal", "device"):
+            if not any(gg == g["id"] and d == device for (_, gg, d) in it100):
+                continue
+            cell = {"best": best_of(it100, g["id"], device, set(methods)), "best_1s": best_of(t1, g["id"], device, set(methods))}
+            for tr in TIER_LABEL:
+                cell[tr] = best_of(it100, g["id"], device, {m for m in methods if tier_of[m] == tr})
+            by_geometry[f"{g['id']}/{device}"] = cell
+    by_method = {}
+    for m in methods:
+        out = {"tier": tier_of[m]}
+        for device in ("ideal", "device"):
+            xs = [it100[(m, g, device)] for g in point if (m, g, device) in it100]
+            out[device] = None if not xs else {
+                "n": len(xs), "sigma": statistics.median(x["rel_std_pct"]["median"] for x in xs),
+                "eff": statistics.median(x["efficiency"]["median"] for x in xs),
+                "time_s": statistics.median(x["time_s"]["median"] for x in xs)}
+        by_method[m] = out
     return {"schema": r["schema"], "engine_version": r["engine_version"], "grids": r["protocol"]["grids"],
-            "seeds": r["protocol"]["seeds"], "budgets": r["protocol"]["budgets"], "geometries": r["geometries"],
+            "seeds": r["protocol"]["seeds"], "budgets": r["protocol"]["budgets"], "geometries": geos, "point_geometries": point,
             "rows": len(rows), "methods_measured": methods, "methods_in_protocol": all_methods,
-            "skipped": len(r["skipped"]), "skipped_reasons": skipped, "cells_100": cells}
+            "skipped": len(r["skipped"]), "skipped_reasons": skipped,
+            "seeds_min": min((x["n_seeds"] for x in rows), default=0), "seeds_max": max((x["n_seeds"] for x in rows), default=0),
+            "by_geometry": by_geometry, "by_method": by_method, "pareto": r.get("pareto") or [],
+            "grid_100": {f"{m}/{g}/{d}": x["rel_std_pct"]["median"] for (m, g, d), x in it100.items()}}
+
+
+def bench_leader(bench: dict, device: str) -> dict | None:
+    """Over the point-trap geometries that have rows on ``device`` (the device rows leave the multi-plane geometry out): the method
+    with the lowest median spread among those measured on all of them that reach at least half of the best median efficiency."""
+    n = sum(1 for g in bench["point_geometries"] if f"{g}/{device}" in bench["by_geometry"])
+    full = {m: v[device] for m, v in bench["by_method"].items() if v[device] and v[device]["n"] == n}
+    if not full:
+        return None
+    top = max(v["eff"] for v in full.values())
+    m, v = min(((m, v) for m, v in full.items() if v["eff"] >= 0.5 * top), key=lambda p: (p[1]["sigma"], p[0]))
+    return {"method": m, **v}
 
 
 def models_summary() -> dict:
@@ -197,7 +252,8 @@ def executive_summary() -> dict:
 def readiness_summary() -> dict:
     r = load(DERIVED / "readiness.json")
     return {"product_version": r["product_version"],
-            "contracts": [{"id": c["id"], "state": c["state"], "provenance": c["provenance"]} for c in r["contracts"]]}
+            "contracts": [{"id": c["id"], "state": c["state"], "provenance": c["provenance"],
+                           "reason": (c.get("reason") or {}).get("en")} for c in r["contracts"]]}
 
 
 def macro(name: str, value) -> str:
@@ -211,7 +267,7 @@ def f(x: float, d: int = 3) -> str:
 # ---------------------------------------------------------------------------------------------------- tables
 
 def table_ladder(ladder: list[dict]) -> str:
-    out = ["\\begin{longtable}{@{}p{0.07\\textwidth} p{0.14\\textwidth} p{0.34\\textwidth} p{0.40\\textwidth}@{}}\n",
+    out = ["\\begin{longtable}{@{}p{0.07\\textwidth} p{0.13\\textwidth} p{0.32\\textwidth} p{0.39\\textwidth}@{}}\n",
            "\\caption{The method ladder of the design document: identifier, tier, method and acceptance criterion.}\\label{tab:ladder}\\\\\n",
            "\\toprule Id & Tier & Method & Acceptance criterion\\\\\\midrule\\endfirsthead\n",
            "\\toprule Id & Tier & Method & Acceptance criterion\\\\\\midrule\\endhead\n"]
@@ -287,23 +343,59 @@ def table_results(cases: list[dict]) -> str:
         if c["target_kind"] != "traps":
             out.append(f"{c['short']} & shaped potential & n/a & n/a & n/a & n/a & n/a" + "\\\\\n")
             continue
-        out.append(f"{c['short']} & {c['best_method']} & {f(b['efficiency'], 3)} & {f(b['rel_std_pct'], 2)} & "
-                   f"{f(m7['rel_std_pct'], 2) if m7 else 'n/a'} & {f(m7['efficiency'], 3) if m7 else 'n/a'} & "
+        out.append(f"{c['short']} & {c['best_method']} & {f(b['efficiency'], 3)} & {sig2(b['rel_std_pct'])} & "
+                   f"{sig2(m7['rel_std_pct']) if m7 else 'n/a'} & {f(m7['efficiency'], 3) if m7 else 'n/a'} & "
                    f"{f(m4['rel_std_pct'], 1) if m4 else 'n/a'}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
 
+def sig(x: float) -> str:
+    """A spread in percent: two significant digits, and below the resolution of the results file (six decimals) a bound."""
+    return "$<$0.001" if x < 1e-3 else (f"{x:.0f}" if x >= 100 else f"{x:.2g}")
+
+
+def sig2(x: float) -> str:
+    """A spread in percent at two decimals, and below them a bound."""
+    return "$<$0.01" if x < 0.005 else f(x, 2)
+
+
+def _cell(b: dict | None) -> str:
+    return "n/a" if not b else f"{tex_escape(ladder_id(b['method']))} {sig(b['sigma'])}"
+
+
 def table_benchmark(bench: dict) -> str:
+    names = {g["id"]: g["name"]["en"] for g in bench["geometries"]}
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Benchmark cells measured so far in the committed results file (budget of 100 iterations, medians over the seeds). A cell absent from the file is not yet measured.}\\label{tab:benchmark}\n",
-           "\\begin{tabular}{@{}l l l r r r@{}}\\toprule Method & Geometry & Device & Seeds & $e$ & $\\sigma$ (\\%)\\\\\\midrule\n"]
-    for key, v in sorted(bench["cells_100"].items()):
-        mth, geo, dev = key.split("/")
-        out.append(f"{mth} & {geo} & {dev} & {v['n_seeds']} & {f(v['eff'], 3)} & {f(v['sigma'], 2)}\\\\\n")
-    if not bench["cells_100"]:
-        out.append("\\multicolumn{6}{c}{no cell at 100 iterations yet}\\\\\n")
+           "\\caption{Benchmark, per geometry and device: the method of each tier with the lowest median relative standard deviation "
+           "$\\sigma$ (\\%) at 100 iterations among those that reach at least half of the best median efficiency of the cell, and the best "
+           "method of all at a time budget of 1~s. Default parameters, medians over the seeds of each cell.}\\label{tab:benchmark}\n",
+           "\\begin{tabular}{@{}l l l l l l@{}}\\toprule Geometry & Device & Classical & State of the art & Beyond & Best at 1 s\\\\\\midrule\n"]
+    for key, c in bench["by_geometry"].items():
+        g, device = key.split("/")
+        dev = "ideal" if device == "ideal" else "C08"
+        out.append(f"{g} {tex_escape(names[g])} & {dev} & {_cell(c['classical'])} & {_cell(c['sota'])} & {_cell(c['beyond'])} & "
+                   f"{_cell(c['best_1s'])}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
+    return "".join(out)
+
+
+def table_bench_methods(bench: dict) -> str:
+    n = len(bench["point_geometries"])
+    out = ["{\\footnotesize\n\\begin{longtable}{@{}l l r r r r r r@{}}\n",
+           f"\\caption{{Benchmark, per method: medians over the point-trap geometries the method ran on (of {n}) at 100 iterations with "
+           "the default parameters, on the ideal device and on the C08 device. $\\sigma$ relative standard deviation (\\%), $e$ efficiency, "
+           "time wall-clock seconds under shared load.}\\label{tab:benchmethods}\\\\\n",
+           "\\toprule Id & Tier & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & $e$ C08\\\\\\midrule\\endfirsthead\n",
+           "\\toprule Id & Tier & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & $e$ C08\\\\\\midrule\\endhead\n"]
+    order = sorted(bench["by_method"], key=lambda m: (m.startswith("B"), m))
+    for m in order:
+        v = bench["by_method"][m]
+        i, d = v["ideal"], v["device"]
+        ideal = (f"{i['n']} & {sig(i['sigma'])} & {f(i['eff'], 3)} & {i['time_s']:.2g}" if i else "0 & n/a & n/a & n/a")
+        dev = f"{sig(d['sigma'])} & {f(d['eff'], 3)}" if d else "n/a & n/a"
+        out.append(f"{tex_escape(ladder_id(m))} & {TIER_LABEL.get(v['tier'], '')} & {ideal} & {dev}\\\\\n")
+    out.append("\\bottomrule\\end{longtable}}\n")
     return "".join(out)
 
 
@@ -312,7 +404,7 @@ def table_benchmark(bench: dict) -> str:
 def main() -> int:
     ladder = parse_ladder()
     cases = case_summary()
-    bench = benchmark_summary()
+    bench = benchmark_summary(ladder)
     models = models_summary()
     ex = executive_summary()
     ready = readiness_summary()
@@ -396,6 +488,24 @@ def main() -> int:
     L.append(macro("benchMethodsMeasured", ", ".join(bench["methods_measured"])))
     L.append(macro("benchNMeasured", len(bench["methods_measured"])))
     L.append(macro("benchNProtocol", len(bench["methods_in_protocol"])))
+    L.append(macro("benchSeedsMin", bench["seeds_min"]))
+    L.append(macro("benchSeedsMax", bench["seeds_max"]))
+    L.append(macro("benchNPoint", len(bench["point_geometries"])))
+    for device, nm in (("ideal", "Ideal"), ("device", "Device")):
+        cells = [c for k, c in bench["by_geometry"].items() if k.endswith("/" + device)]
+        L.append(macro(f"benchGeo{nm}", len(cells)))
+        for tr, tn in (("classical", "Classical"), ("sota", "Sota"), ("beyond", "Beyond")):
+            L.append(macro(f"benchWins{nm}{tn}", sum(1 for c in cells if c["best"] and bench["by_method"][c["best"]["method"]]["tier"] == tr)))
+        meds = [v[device] for v in bench["by_method"].values() if v[device]]
+        top = max((v["eff"] for v in meds), default=0.0)
+        kept = sorted(v["sigma"] for v in meds if v["eff"] >= 0.5 * top)
+        L.append(macro(f"benchSpread{nm}Low", sig(kept[0]) if kept else "n/a"))
+        L.append(macro(f"benchSpread{nm}High", sig(kept[-1]) if kept else "n/a"))
+        L.append(macro(f"benchSpread{nm}N", len(kept)))
+        lead = bench_leader(bench, device)
+        L.append(macro(f"benchBest{nm}", tex_escape(ladder_id(lead["method"])) if lead else "n/a"))
+        L.append(macro(f"benchBest{nm}Sigma", sig(lead["sigma"]) if lead else "n/a"))
+        L.append(macro(f"benchBest{nm}Eff", f(lead["eff"], 3) if lead else "n/a"))
     # feedback
     for short, nm in (("C01", "COne"), ("C02", "CTwo"), ("C03", "CThree"), ("C13", "CThirteen")):
         s = fb[short]
@@ -454,6 +564,10 @@ def main() -> int:
     real = sum(1 for c in ready["contracts"] if c["state"] == "available")
     L.append(macro("nContracts", len(ready["contracts"])))
     L.append(macro("nContractsAvailable", real))
+    others = [c for c in ready["contracts"] if c["state"] != "available"]
+    L.append(macro("readinessOthers", "; ".join(
+        f"\\texttt{{{tex_escape(c['id'])}}} is {c['state']}" + (f" ({tex_escape(c['reason'].rstrip('.'))})" if c["reason"] else "")
+        for c in others)))
     (HERE / "studio_numbers.tex").write_text("".join(L), encoding="utf-8")
 
     (HERE / "table_ladder.tex").write_text(table_ladder(ladder), encoding="utf-8")
@@ -462,7 +576,8 @@ def main() -> int:
     (HERE / "table_calibration.tex").write_text(table_calibration(cases), encoding="utf-8")
     (HERE / "table_results.tex").write_text(table_results(cases), encoding="utf-8")
     (HERE / "table_benchmark.tex").write_text(table_benchmark(bench), encoding="utf-8")
-    print("wrote studio.json, studio_numbers.tex and 6 tables;", "tiers", tiers, "cases", len(cases), "baked", len(baked))
+    (HERE / "table_bench_methods.tex").write_text(table_bench_methods(bench), encoding="utf-8")
+    print("wrote studio.json, studio_numbers.tex and 7 tables;", "tiers", tiers, "cases", len(cases), "baked", len(baked))
     return 0
 
 

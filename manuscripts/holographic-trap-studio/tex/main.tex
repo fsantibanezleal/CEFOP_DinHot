@@ -156,7 +156,7 @@ gradient methods differentiate through the device without automatic differentiat
 indexing~\cite{noll}. Table~\ref{tab:setups} lists the three optical setups of the cases.
 
 \begin{table}[t]
-\centering\small
+\centering\footnotesize
 \caption{The optical setups of the cases, read from the committed manifests and traces. The device row of C08 is the device the
 benchmark also uses for its device cells.}
 \label{tab:setups}
@@ -165,14 +165,14 @@ benchmark also uses for its device cells.}
 Setup & $\lambda$ (nm) & $f$ (mm) & NA & SLM pixels & pitch ($\mu$m) & pad & bin ($\mu$m) & half field ($\mu$m)\\
 \midrule
 Atom (C01--C04, C09--C13) & \atomLambda & \atomFocal & \atomNa & $\atomNpix^2$ & \atomPitch & \atomPad & \atomBin & \atomHalf\\
-Bead (C05--C07, in water, index \beadNimm) & \beadLambda & \beadFocal & \beadNa & $\beadNpix^2$ & \beadPitch & \beadPad & \beadBin & \beadHalf\\
+Bead (C05--C07, water) & \beadLambda & \beadFocal & \beadNa & $\beadNpix^2$ & \beadPitch & \beadPad & \beadBin & \beadHalf\\
 C08 & \devcLambda & \devcFocal & \devcNa & $\devcNpix^2$ & \devcPitch & \devcPad & \devcBin & \devcHalf\\
-C14 (the learned model's volume) & \voluLambda & \voluFocal & \voluNa & $\voluNpix^2$ & \voluPitch & \voluPad & \voluBin & \voluHalf\\
+C14 & \voluLambda & \voluFocal & \voluNa & $\voluNpix^2$ & \voluPitch & \voluPad & \voluBin & \voluHalf\\
 \bottomrule
 \end{tabular}
 
 \smallskip
-\footnotesize C08 device: \devcBits-bit phase, crosstalk $\sigma=1.24$, $q=1.80$ on $3\times3$ sub-pixels, fill factor \devcFill, flicker \devcFlicker{} rad.
+\footnotesize The bead setup is in water of index \beadNimm; C14 is the volume of the released learned model. C08 device: \devcBits-bit phase, crosstalk $\sigma=1.24$, $q=1.80$ on $3\times3$ sub-pixels, fill factor \devcFill, flicker \devcFlicker{} rad.
 \end{table}
 
 \section{The three tiers of methods}\label{sec:tiers}
@@ -304,13 +304,32 @@ the converged row). Every cell runs on \benchSeeds{} seeds and reports the media
 uniformity, relative standard deviation, time and iterations, on the ideal device and on the C08 device (every hologram scored
 against its device). The Pareto fronts are stored with the cells.
 
-The committed results file holds \benchRows{} rows, covering \benchNMeasured{} of the \benchNProtocol{} engine methods (\benchMethodsMeasured);
-\benchSkipped{} method--geometry cells are recorded as skipped with a reason (a method that does not accept the target, such as a
-two-dimensional method on a three-dimensional lattice, or a method not registered in that build). The remaining cells are not yet
-measured, so this report makes no comparative statement from the benchmark and states the per-case baked scores and the unit measurements
-instead. Table~\ref{tab:benchmark} lists the cells present.
+The committed results file holds \benchRows{} rows of the \benchNMeasured{} engine methods; \benchSkipped{} method--geometry cells are
+recorded as skipped with the reason the file states (a method that does not accept the target, such as a two-dimensional method on a
+three-dimensional lattice, or one that refuses the geometry). A cell runs between \benchSeedsMin{} and \benchSeedsMax{} seeds, the bound the protocol
+puts on the wall clock of a group. Table~\ref{tab:benchmark} names, per geometry and device, the method of each tier with the lowest median spread at
+100 iterations among those that reach at least half of the cell's best efficiency, and the best method at a time budget of 1~s;
+Table~\ref{tab:benchmethods} gives the medians of every method over the \benchNPoint{} point-trap geometries, and Fig.~\ref{fig:bench} every cell.
+
+On the ideal device the best method of a geometry is classical on \benchWinsIdealClassical, state of the art on \benchWinsIdealSota{} and beyond on
+\benchWinsIdealBeyond{} of the \benchGeoIdeal{} geometries; on the C08 device the counts are \benchWinsDeviceClassical, \benchWinsDeviceSota{} and
+\benchWinsDeviceBeyond{} of \benchGeoDevice{} (the multi-plane geometry has no device rows). Over the point-trap geometries the lowest median spread
+on the ideal device is that of \benchBestIdeal{} (\benchBestIdealSigma{} percent at a median efficiency of \benchBestIdealEff), and on the C08 device
+that of \benchBestDevice{} (\benchBestDeviceSigma{} percent at \benchBestDeviceEff). The medians of the \benchSpreadIdealN{} methods that keep at least
+half of the best efficiency span \benchSpreadIdealLow{} to \benchSpreadIdealHigh{} percent on the ideal device and \benchSpreadDeviceLow{} to
+\benchSpreadDeviceHigh{} percent (\benchSpreadDeviceN{} methods) on the C08 device, where every method runs with its default parameters and only the
+device-aware ones model the device. The times are wall-clock seconds of the machine that ran the benchmark, under shared load.
 
 \input{../data/table_benchmark.tex}
+\input{../data/table_bench_methods.tex}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-bench.pdf}
+\caption{Benchmark: median relative standard deviation at 100 iterations with the default parameters, every method on every geometry, on the ideal
+device (a) and on the C08 device (b). Blank: the method does not accept the geometry or refuses it, or the geometry has no device row.}
+\label{fig:bench}
+\end{figure}
 
 \section{The learned models}\label{sec:learned}
 
@@ -377,7 +396,8 @@ with the CPU result. At the live grid ($256^2$ padded to $512^2$) a weighted GS 
 \liveBudgetMs{} ms. The Python engine writes \liveFixtures{} reference documents and \liveTests{} parity tests compare the TypeScript engine with them, each quantity within
 the tolerance its document states (at most $\liveTol$ absolute). On \liveAdapter{}, 30 iterations of M07 took \liveGpuS{} s with the GPU
 backend against \liveCpuS{} s on the CPU path in the same browser. The methods that are baked and replayed are labelled as such in the interface. Of the \nContracts{} data
-contracts of the build, \nContractsAvailable{} are fully available; the others are partial (the case outside the field is refused, so one of the \nCases{} case records is rejected by the input contract, and benchmark cells are not yet measured), answered by a baseline (the two model slots) or missing (the dormant API, which serves GET requests and answers 503 with the declared state).
+contracts of the build, \nContractsAvailable{} are fully available, and the build declares the state of the others: \readinessOthers. The refused record is the case outside the field, and the
+benchmark counts its skipped cells as not run; the dormant API serves GET requests and answers 503 with the declared state.
 
 \section{Limits}\label{sec:limits}
 
@@ -386,7 +406,7 @@ camera whose errors are stated parameters. Device and set-up parameters come fro
 The engine is scalar (Fraunhofer and angular spectrum); the high-numerical-aperture case carries a validity flag and the vectorial lane is not built. The fill-factor, 4-bit and flicker effects of the
 device have no published source in this build and are computed only. The crosstalk kernel's frequency unit is carried over from the engine and is not verified against the source. The transient-intensity model of BS-2 is
 the engine's own (Section~\ref{sec:beyond} and the companion manuscript) and the linear-phase-interpolation baseline is DinHot's implementation of a published description, not the authors' code. The
-unit measurements of Table~\ref{tab:acceptance} use between one and six seeds; the benchmark that repeats them on \benchSeeds{} seeds is incomplete in the committed file. The cgh-net advantage is on a plane-image accuracy measure over generated volumes and
+unit measurements of Table~\ref{tab:acceptance} use between one and six seeds; the benchmark repeats the methods on its geometries with \benchSeedsMin{} to \benchSeedsMax{} seeds per cell. The cgh-net advantage is on a plane-image accuracy measure over generated volumes and
 the benchmark's volumetric layouts, not on a hardware experiment. The learned warm start is refuted and the two-dimensional network ties with GS. The executive figures of the introduction are taken from the cited publications and not re-measured.
 
 \section*{Data and code availability}
