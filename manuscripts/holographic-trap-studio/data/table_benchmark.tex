@@ -1,13 +1,17 @@
 \begin{table}[t]\centering\footnotesize
 \caption{Benchmark, per geometry and device: the method of each tier with the lowest median relative standard deviation $\sigma$ (\%) at 100 iterations among those that reach at least half of the best median efficiency of the cell, and the best method of all at a time budget of 1~s. Default parameters, medians over the seeds of each cell.}\label{tab:benchmark}
 \begin{tabular}{@{}l l l l l l@{}}\toprule Geometry & Device & Classical & State of the art & Beyond & Best at 1 s\\\midrule
-G1 Square 10 x 10 & ideal & M01 269 & n/a & n/a & M01 269\\
-G1 Square 10 x 10 & C08 & M01 265 & n/a & n/a & M01 265\\
-G2 Ring of 36 traps & ideal & M01 2.1 & n/a & n/a & M01 2.1\\
-G2 Ring of 36 traps & C08 & M01 3.7 & n/a & n/a & M01 3.7\\
-G3 Random 100 traps & ideal & M01 7.8 & n/a & n/a & M01 7.8\\
-G3 Random 100 traps & C08 & M01 13 & n/a & n/a & M01 13\\
-G4 Quasi-periodic 119 & ideal & M01 106 & n/a & n/a & M01 106\\
-G4 Quasi-periodic 119 & C08 & M01 161 & n/a & n/a & M01 161\\
-G5 3D lattice 5 x 5 x 3 & ideal & M01 144 & n/a & n/a & M01 144\\
+G1 Square 10 x 10 & ideal & M09 0.066 & M11 1.2 & BS-1 $<$0.001 & BS-5 $<$0.001\\
+G1 Square 10 x 10 & C08 & M09 24 & M11 13 & BS-4 24 & BS-5 25\\
+G2 Ring of 36 traps & ideal & M09 0.015 & M07 $<$0.001 & BS-1 $<$0.001 & BS-1 $<$0.001\\
+G2 Ring of 36 traps & C08 & M01 6.6 & M13 8.9 & BS-1 7.4 & M01 6.6\\
+G3 Random 100 traps & ideal & M09 0.052 & M07 $<$0.001 & BS-1 $<$0.001 & BS-1 $<$0.001\\
+G3 Random 100 traps & C08 & M14 20 & M11 15 & BS-1 4.5 & BS-4 20\\
+G4 Quasi-periodic 119 & ideal & M09 0.071 & M07 0.012 & BS-1 $<$0.001 & BS-5 $<$0.001\\
+G4 Quasi-periodic 119 & C08 & M05 84 & M11 21 & BS-4 84 & BS-1 28\\
+G5 3D lattice 5 x 5 x 3 & ideal & M09 0.05 & M11 2.2 & BS-2 $<$0.001 & BS-2 $<$0.001\\
+G6 Large: 32 x 32 and disordered 819 & ideal & M09 0.15 & M07 0.75 & BS-1 $<$0.001 & BS-4 1\\
+G6 Large: 32 x 32 and disordered 819 & C08 & M09 19 & M11 13 & BS-2 19 & BS-4 19\\
+G7 Shaped fields (ring, disc, line, LG ring) & ideal & M04 35 & M18 5.6 & n/a & M18 36\\
+G7 Shaped fields (ring, disc, line, LG ring) & C08 & M04 40 & M11 30 & n/a & M18 39\\
 \bottomrule\end{tabular}\end{table}

@@ -500,8 +500,14 @@ def main() -> int:
     for device, nm in (("ideal", "Ideal"), ("device", "Device")):
         cells = [c for k, c in bench["by_geometry"].items() if k.endswith("/" + device)]
         L.append(macro(f"benchGeo{nm}", len(cells)))
+        # a cell whose best spreads of two or more tiers sit below the file's resolution is a tie, not a win of one tier
+        def tied(c: dict) -> bool:
+            return sum(1 for tr in TIER_LABEL if c[tr] and c[tr]["sigma"] < 1e-3) >= 2
+
         for tr, tn in (("classical", "Classical"), ("sota", "Sota"), ("beyond", "Beyond")):
-            L.append(macro(f"benchWins{nm}{tn}", sum(1 for c in cells if c["best"] and bench["by_method"][c["best"]["method"]]["tier"] == tr)))
+            L.append(macro(f"benchWins{nm}{tn}", sum(1 for c in cells if c["best"] and not tied(c)
+                                                     and bench["by_method"][c["best"]["method"]]["tier"] == tr)))
+        L.append(macro(f"benchTies{nm}", sum(1 for c in cells if tied(c))))
         meds = [v[device] for v in bench["by_method"].values() if v[device]]
         top = max((v["eff"] for v in meds), default=0.0)
         kept = sorted(v["sigma"] for v in meds if v["eff"] >= 0.5 * top)
