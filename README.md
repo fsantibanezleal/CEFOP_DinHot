@@ -36,8 +36,10 @@ seeds and metrics, and is compared with the other tiers on the Benchmark page:
 The detailed technical report and the manuscripts of the beyond-the-state-of-the-art methods are on Zenodo, each under its own concept
 DOI, and are declared in `product.json` `manuscripts` once they are published ([guide 09](docs/guides/09_method-tiers.md)).
 
-- Technical report (Zenodo, CC BY 4.0): concept DOI TO BE FILLED AT RELEASE by the main session.
-- Manuscripts of the BS claims: concept DOIs TO BE FILLED AT RELEASE by the main session, one per manuscript.
+- Technical report (Zenodo, CC BY 4.0), the product, its 24 methods, fourteen cases, the benchmark and BS-1 to BS-5:
+  [10.5281/zenodo.23788731](https://doi.org/10.5281/zenodo.23788731) (concept DOI, always the latest version).
+- Manuscript of BS-1 and BS-2, device-aware weighted GS and flicker-bounded phase-continuous sequences (Zenodo, CC BY 4.0):
+  [10.5281/zenodo.23788733](https://doi.org/10.5281/zenodo.23788733) (concept DOI).
 
 ## Areas
 

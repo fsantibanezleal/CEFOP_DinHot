@@ -4,10 +4,39 @@
 // (the App's six groups), the repository inventory of the pre-rebuild code at commit f032a9b (the history), and the algorithms and
 // physics dossiers (the physics orientation and the equations). The page states no measured DinHot number: the Experiments and
 // Benchmark pages read the committed artifacts.
+import type { ReactNode } from 'react';
 import { Callout, Cite, DocSection, Equation, Figure, Glossary } from '@fasl-work/caos-app-shell';
 import { L, P, useT } from '../bi';
 import { FlowFigure } from '../figures';
 import { GroupsFigure } from './figure';
+
+/** One Zenodo record of the product, as `product.json` declares it (the manuscripts gate, scripts/check_manuscripts.py). */
+export interface ManuscriptEntry {
+  kind: 'technical-report' | 'manuscript';
+  concept_doi: string;
+  title: string;
+  version: string;
+  covers: string[];
+}
+
+// The product's Zenodo records are read from product.json at build time, the one place that names them, so this page never
+// types a DOI. A build without the field shows the section's text without the list.
+const PRODUCT = import.meta.glob('../../../../product.json', { eager: true, import: 'default' }) as Record<string, { manuscripts?: ManuscriptEntry[] }>;
+export const MANUSCRIPTS: ManuscriptEntry[] = Object.values(PRODUCT)[0]?.manuscripts ?? [];
+
+function manuscriptItem(m: ManuscriptEntry): { en: ReactNode; es: ReactNode } {
+  const link = <a href={`https://doi.org/${m.concept_doi}`}>{m.concept_doi}</a>;
+  const claims = m.covers.join(', ');
+  return m.kind === 'technical-report'
+    ? {
+        en: <>Technical report, version {m.version}: <em>{m.title}</em>, covering {claims}. Concept DOI {link}.</>,
+        es: <>Informe técnico, versión {m.version}: <em>{m.title}</em>, que cubre {claims}. DOI de concepto {link}.</>,
+      }
+    : {
+        en: <>Manuscript of {claims}, version {m.version}: <em>{m.title}</em>. Concept DOI {link}.</>,
+        es: <>Manuscrito de {claims}, versión {m.version}: <em>{m.title}</em>. DOI de concepto {link}.</>,
+      };
+}
 
 export function TechnicalView() {
   const t = useT();
@@ -19,8 +48,8 @@ export function TechnicalView() {
           es={<>Un modulador espacial de luz (SLM) de sólo fase, ubicado en la pupila de un objetivo de microscopio, puede crear cientos o miles de trampas ópticas a la vez, pero sólo si el patrón de fase que muestra está bien calculado. El patrón decide cuánta luz llega a las trampas (la eficiencia de difracción), qué tan iguales son las trampas (la uniformidad), a dónde va la luz parásita (el orden cero, las trampas fantasma y las réplicas), cómo sobrevive el patrón a un dispositivo real (cuantización de fase, diafonía entre píxeles y aberraciones) y con qué rapidez puede recalcularse cuando las trampas se mueven.</>}
         />
         <P
-          en={<>The methods that solve this span fifty years, from the superposition of prisms and lenses <Cite id="dileonardo2007" /> to phase-fixed weighted Gerchberg-Saxton <Cite id="kim2019" />, gradient optimization with a device model <Cite id="schroff2023" />, optimal transport and learned holography. No public tool runs them side by side on the same task, with the same seeds and metrics, together with the device and the physics of what is trapped. DinHot does that, and adds six methods past the published state of the art.</>}
-          es={<>Los métodos que lo resuelven abarcan cincuenta años, desde la superposición de prismas y lentes <Cite id="dileonardo2007" /> hasta Gerchberg-Saxton ponderado con fase fija <Cite id="kim2019" />, la optimización por gradiente con un modelo del dispositivo <Cite id="schroff2023" />, el transporte óptimo y la holografía aprendida. Ninguna herramienta pública los ejecuta lado a lado sobre la misma tarea, con las mismas semillas y métricas, junto con el dispositivo y la física de lo que se atrapa. DinHot lo hace, y agrega seis métodos más allá del estado del arte publicado.</>}
+          en={<>The methods that solve this span fifty years, from the superposition of prisms and lenses <Cite id="dileonardo2007" /> to phase-fixed weighted Gerchberg-Saxton <Cite id="kim2019" />, gradient optimization with a device model <Cite id="schroff2023" />, optimal transport and learned holography. No public tool runs them side by side on the same task, with the same seeds and metrics, together with the device and the physics of what is trapped. DinHot does that, and adds five methods past the published state of the art.</>}
+          es={<>Los métodos que lo resuelven abarcan cincuenta años, desde la superposición de prismas y lentes <Cite id="dileonardo2007" /> hasta Gerchberg-Saxton ponderado con fase fija <Cite id="kim2019" />, la optimización por gradiente con un modelo del dispositivo <Cite id="schroff2023" />, el transporte óptimo y la holografía aprendida. Ninguna herramienta pública los ejecuta lado a lado sobre la misma tarea, con las mismas semillas y métricas, junto con el dispositivo y la física de lo que se atrapa. DinHot lo hace, y agrega cinco métodos más allá del estado del arte publicado.</>}
         />
         <P
           en="DinHot is a holography studio for optical trap arrays and shaped light fields that runs in the browser. A reader picks a case, a trap geometry or a target potential on a stated optical setup and a stated phase-only SLM, and computes the phase hologram with any of 24 methods, from the classical baselines through the current state of the art to methods beyond it. It then shows where the light goes, how uniform and efficient the traps are, what the device and the aberrations cost, what a camera feedback loop recovers, and what a trapped bead or atom does in the computed potential. It serves the reader who has to choose or tune a hologram method for a trap array."
@@ -114,8 +143,8 @@ export function TechnicalView() {
           es="Lo que no se afirma se declara como no objetivos. DinHot no maneja hardware: calcula y evalúa hologramas en simulación, y su método con cámara en el lazo corre sobre una cámara emulada cuyos errores son parámetros declarados. No es un gemelo digital calibrado de un laboratorio: los parámetros del dispositivo y del montaje provienen de experimentos publicados y se rotulan como tales. El motor es escalar, no vectorial, y la holografía de pantallas queda fuera porque la tarea es distinta aunque los métodos se solapen. No hay servidor."
         />
         <P
-          en={<>No controlled published comparison of weighted Gerchberg-Saxton, its phase-fixed form, conjugate gradient, MRAF <Cite id="pasienski2008" /> and a learned method on the same point-trap array was found, so the benchmark protocol is DinHot&apos;s own and its numbers are measured here, never quoted from a paper. This page states none of them: the Experiments and Benchmark pages read them from the committed artifacts. One of the six methods past the published state of the art carries a negative result that the benchmark reports: the aberration-robust hologram does not become robust to pointing errors, because the width of the trap bounds it.</>}
-          es={<>No se encontró una comparación publicada y controlada de Gerchberg-Saxton ponderado, su forma de fase fija, el gradiente conjugado, MRAF <Cite id="pasienski2008" /> y un método aprendido sobre el mismo arreglo de trampas puntuales, de modo que el protocolo de benchmark es propio de DinHot y sus números se miden aquí, nunca se citan de un artículo. Esta página no declara ninguno: las páginas de Experimentos y Benchmark los leen de los artefactos comprometidos. Uno de los seis métodos más allá del estado del arte publicado lleva un resultado negativo que el benchmark informa: el holograma robusto a aberraciones no se vuelve robusto a errores de apuntamiento, porque el ancho de la trampa lo acota.</>}
+          en={<>No controlled published comparison of weighted Gerchberg-Saxton, its phase-fixed form, conjugate gradient, MRAF <Cite id="pasienski2008" /> and a learned method on the same point-trap array was found, so the benchmark protocol is DinHot&apos;s own and its numbers are measured here, never quoted from a paper. This page states none of them: the Experiments and Benchmark pages read them from the committed artifacts. Two of the five methods past the published state of the art carry a measured negative that the pages report: the learned warm start is refuted, its gain coming from an earlier phase freeze and not from the network, and the aberration-robust hologram does not become robust to pointing errors, because the width of the trap bounds it.</>}
+          es={<>No se encontró una comparación publicada y controlada de Gerchberg-Saxton ponderado, su forma de fase fija, el gradiente conjugado, MRAF <Cite id="pasienski2008" /> y un método aprendido sobre el mismo arreglo de trampas puntuales, de modo que el protocolo de benchmark es propio de DinHot y sus números se miden aquí, nunca se citan de un artículo. Esta página no declara ninguno: las páginas de Experimentos y Benchmark los leen de los artefactos comprometidos. Dos de los cinco métodos más allá del estado del arte publicado llevan un negativo medido que las páginas informan: el inicio aprendido queda refutado, porque su ganancia viene de congelar la fase antes y no de la red, y el holograma robusto a aberraciones no se vuelve robusto a errores de apuntamiento, porque el ancho de la trampa lo acota.</>}
         />
         <Callout variant="honest" title={t('A model of a trap array, not an instrument', 'Un modelo de un arreglo de trampas, no un instrumento')}>
           {t('A number in the App is the value of the stated model for the stated case. It is not a prediction for a particular laboratory, and DinHot measures no instrument. Where a page quotes a published figure, it is cited and labelled as published.', 'Un número en la App es el valor del modelo declarado para el caso declarado. No es una predicción para un laboratorio en particular, y DinHot no mide ningún instrumento. Donde una página cita una cifra publicada, está citada y rotulada como publicada.')}
@@ -186,6 +215,16 @@ export function TechnicalView() {
             { en: 'Benchmark: the protocol of 24 methods over seven geometries and 20 seeds, its Pareto fronts and the learned models.', es: 'Benchmark: el protocolo de 24 métodos sobre siete geometrías y 20 semillas, sus frentes de Pareto y los modelos aprendidos.' },
           ]}
         />
+      </DocSection>
+      <DocSection
+        title={{ en: 'Technical report and manuscripts', es: 'Informe técnico y manuscritos' }}
+        noRefsReason={{ en: 'Lists the Zenodo records of this product; each entry is its own reference.', es: 'Lista los registros de Zenodo de este producto; cada entrada es su propia referencia.' }}
+      >
+        <P
+          en={<>The product's results are published on Zenodo under CC BY 4.0, each record under a concept DOI that always resolves to its latest version: the technical report follows the releases, and the claims beyond the state of the art have a manuscript of their own. The numbers of both are generated from the committed artifacts of this repository.</>}
+          es={<>Los resultados del producto se publican en Zenodo bajo CC BY 4.0, cada registro con un DOI de concepto que siempre lleva a su última versión: el informe técnico sigue a las versiones del producto, y las afirmaciones más allá del estado del arte tienen un manuscrito propio. Los números de ambos se generan desde los artefactos versionados de este repositorio.</>}
+        />
+        {MANUSCRIPTS.length > 0 && <L items={MANUSCRIPTS.map(manuscriptItem)} />}
       </DocSection>
     </>
   );
