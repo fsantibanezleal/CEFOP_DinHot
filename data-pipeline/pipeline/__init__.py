@@ -1,8 +1,8 @@
-"""pipeline, the offline+live engine for the CAOS product-repo template (ADR-0057).
+"""pipeline, the offline engine of DinHot and the reference of its live lane (ADR-0057).
 
-Rename this package to `pipeline` per product and replace the EXAMPLE engine (model/ + the stage bodies) with the
-deep-research-chosen SOTA engine. Everything else (the two data contracts, the staged pipeline, the lane gate, the
-manifest/trace, the cases-by-category registry) is the FROZEN base, instantiate it, do not redesign it.
+The engine is `model/holo/` (the forward models, the device model, the methods of the ladder and the learned slots), with
+the stage bodies that bake, evaluate, benchmark and train. The two data contracts, the staged pipeline, the lane gate, the
+manifest and trace and the cases-by-category registry are the template's frozen base.
 """
 
 from pathlib import Path

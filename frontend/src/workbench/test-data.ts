@@ -89,7 +89,7 @@ export function richCase(o: RichOptions = {}): CaseData {
     category: { en: 'Test data', es: 'Datos de prueba' },
     real_or_synthetic: 'synthetic',
     expected_band: { en: 'A synthetic case that exercises every view.', es: 'Un caso sintético que ejercita cada vista.' },
-    engine: { package: 'dinhot-holo', version: '0.00.000', model: 'scalar-fourier' },
+    engine: { package: 'dinhot-holo', version: 'test', model: 'scalar-fourier' },
     params,
     seed: 20261028,
     artifact: { path: `${id}/trace.json`, format: 'json', trace_schema: 'dinhot.trace/v1', bytes: 1 },

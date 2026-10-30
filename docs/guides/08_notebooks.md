@@ -3,8 +3,8 @@
 The notebooks are the product's didactic layer: they teach a reader, step by step and on the product's own data, how
 its methods work, where each method stands against the state of the art, and what the product adds beyond it. They
 import the product's methods and never re-implement them; logic that exists only in a notebook is incomplete. The
-rule is CAOS_MANAGE `conventions/product-notebooks.md`; this guide is how a product applies it, and it opens with the bar. The template ships an
-example set on the SIR model, which a product replaces (`scripts/check_template_residue.py` lists it).
+rule is CAOS_MANAGE `conventions/product-notebooks.md`; this guide is how a product applies it, and it opens with the bar. DinHot's set is the
+eight topics of `notebooks/README.md`; none of the template's example set remains (`scripts/check_template_residue.py` checks it).
 
 ## The bar: a notebook is a worked lesson
 

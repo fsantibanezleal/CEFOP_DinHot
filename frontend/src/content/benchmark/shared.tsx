@@ -125,7 +125,7 @@ export function CellControls({ res, prefix, showView = true }: { res: BenchmarkR
   const lang = useShellLang();
   const budgets = budgetsOf(res);
   return (
-    <div className="caos-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem 1.5rem', margin: '0.5rem 0' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem 1.5rem', margin: '0.5rem 0' }}>
       <ChipGroup
         id={`${prefix}-device`}
         label={{ en: 'Device the hologram is scored against', es: 'Dispositivo contra el que se evalúa el holograma' }}
