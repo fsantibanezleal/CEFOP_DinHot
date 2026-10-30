@@ -86,7 +86,7 @@ iterations. Gate `tests/methods/baseline/test_m07_phase_fixed_wgs.py`:
 ## Evaluation that confirms or refutes it
 
 Confirmed if M07 reaches 0.5 percent in fewer iterations than M06 on the crowded array. Refuted by the second test for the literal
-Kim setting on this grid: with $N = 12$ the spread stalls at 2.9 percent. The row is therefore confirmed only with the larger `n_fix`; the
+Kim setting on this grid: with $N = 12$ the spread stalls at 3.58 percent (2.9 before the 2026-10-29 rule corrections). The row is therefore confirmed only with the larger `n_fix`; the
 two findings are both kept, because the replication of a published setting that does not transfer to a smaller SLM is itself a result.
 
 ## Measured result
@@ -96,8 +96,8 @@ um), 2 seeds:
 
 | Quantity | Measured | Conditions |
 |---|---|---|
-| Iterations to 0.5 percent, `n_fix = 60` | 63 and 64 (M06: 121 and 147) | FFT form |
-| Minimum spread, `n_fix = 12` | stalls at 2.88 percent over 40 iterations | seed 1 |
+| Iterations to 0.5 percent, `n_fix = 60` | 64 and 64 (M06: 136 and 106), re-measured 2026-10-30 (63 and 64 against 121 and 147 before the rule corrections) | FFT form |
+| Minimum spread, `n_fix = 12` | stalls at 3.58 percent over 40 iterations (2.88 before the rule corrections) | seed 1 |
 | Minimum spread against `n_fix` 12 / 20 / 30 / 40 / 60 | 2.9 / 1.6 / 1.5 / 0.8 / 1e-5 percent | same grid |
 | 10x10 task, flat beam, family trend (E3 in-test copy) | efficiency 0.91, uniformity 1.00 | against Di Leonardo's GSW 0.93 / 0.99 |
 

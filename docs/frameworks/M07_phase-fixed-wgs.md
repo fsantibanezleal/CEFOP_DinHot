@@ -43,8 +43,8 @@ measured stall of the source default.
 
 | Quantity | Measured | Conditions |
 |---|---|---|
-| Iterations to 0.5 percent, `n_fix = 60` | 63 and 64 (M06: 121 and 147) | 2 seeds, 50 by 30 array, 256 by 256 padded 2 |
-| Minimum spread, `n_fix = 12` (Kim default) | stalls at 2.88 percent over 40 iterations | same grid |
+| Iterations to 0.5 percent, `n_fix = 60` | 64 and 64 (M06: 136 and 106) | 2 seeds, 50 by 30 array, 256 by 256 padded 2; re-measured 2026-10-30 |
+| Minimum spread, `n_fix = 12` (Kim default) | stalls at 3.58 percent over 40 iterations | same grid; re-measured 2026-10-30 |
 | Minimum spread against `n_fix` 12 / 20 / 30 / 40 / 60 | 2.9 / 1.6 / 1.5 / 0.8 / 1e-5 percent | same |
 
 Mechanism: on this crowded grid (44 pixels per trap) the phase frozen after 12 iterations belongs to an unconverged hologram and

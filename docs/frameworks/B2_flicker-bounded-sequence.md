@@ -51,7 +51,7 @@ Minimum transient intensity of a moving trap at least 0.9 of its mean, against L
 | Quantity | B2 | LPI baseline of the test | Conditions |
 |---|---|---|---|
 | Moving-trap minimum ratio | 0.916, 0.920, 0.926 | 0.709, 0.614, 0.551 | 3 seeds, 13 frames, 256 by 256 padded 2 (re-measured 2026-10-29) |
-| Per-frame relative standard deviation | at most 0.17 percent | 24 to 29 percent | same task, measured before the 2026-10-29 rule corrections |
+| Per-frame relative standard deviation | at most 0.386 percent | 22.8 to 27.0 percent | same task and seeds, re-measured 2026-10-30 |
 
 The LPI baseline in the test is written from the text of arXiv 2501.01391 (independent endpoint holograms, wrapped phase interpolation, superposition at every step) and scored
 by the same function. The paper reports above 0.70 for LPI on hardware; the test's LPI scores lower under the DinHot transient model above, so the two numbers are not the same measurement.

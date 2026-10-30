@@ -89,7 +89,7 @@ Acceptance run of 2026-10-28 (E3 report D3 and D5), 256 by 256 padded 2, test se
 | Quantity | B2 | LPI baseline of the test |
 |---|---|---|
 | Moving-trap minimum ratio (seeds 1, 2, 3; re-measured 2026-10-29, 0.919, 0.920, 0.923 against 0.724, 0.537, 0.551 before the rule corrections) | 0.916, 0.920, 0.926 | 0.709, 0.614, 0.551 |
-| Per-frame relative standard deviation | at most 0.17 percent | 24 to 29 percent |
+| Per-frame relative standard deviation (seeds 1 to 3, re-measured 2026-10-30; at most 0.17 and 24 to 29 before the rule corrections) | at most 0.386 percent | 22.8 to 27.0 percent |
 
 The paper reports above 0.70 for LPI on hardware; the test's LPI scores lower under DinHot's transient model, so the two numbers are not the same measurement. The M16 sequence (an LPI) scores 0.870 median
 [0.748, 0.963] on its own 7 by 7 to 3 by 3 sort under its frame-position measure, which also differs. Outcome: confirmed within the model.
