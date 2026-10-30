@@ -151,3 +151,23 @@ def test_an_error_that_is_not_a_refusal_stops_the_run(tmp_path, monkeypatch):
         monkeypatch.setattr(protocol.infer, "run_method", broken)
         with pytest.raises(RuntimeError, match="planted bug"):
             protocol.run(tmp_path / "out", seeds=2, workers=1, reduced=True, geometries=["G1"], methods=["M02"])
+
+
+def test_b5_front_is_stored_as_its_non_dominated_points():
+    """B5 returns its front as rows of (e, u, sigma) with the indices of the non-dominated ones: the cell keeps those points."""
+    import numpy as np
+
+    meta = {"lambdas": [0.0, 0.5, 1.0], "front": np.array([[0.79, 1.0, 0.1], [0.80, 0.5, 9.0], [0.83, 0.09, 40.0]]),
+            "pareto": np.array([2, 0])}
+    assert protocol.pareto_points(meta) == [{"lambda": 0.0, "efficiency": 0.79, "uniformity": 1.0},
+                                            {"lambda": 1.0, "efficiency": 0.83, "uniformity": 0.09}]
+    assert protocol.pareto_points({"pareto": []}) is None and protocol.pareto_points({}) is None
+
+
+def test_the_real_b5_runs_through_the_protocol_and_its_front_validates(tmp_path):
+    """Must refute: a B5 group that stops the run (the release run of 2026-10-29 stopped on it after four hours)."""
+    doc = protocol.run(tmp_path / "out", seeds=2, workers=1, reduced=True, geometries=["G1"], methods=["B5"])
+    assert cs.errors("benchmark-results", doc) == []
+    assert [r for r in doc["rows"] if r["method"] == "B5" and r["geometry"] == "G1"]
+    front = doc["pareto"]
+    assert front, doc["pareto"]
