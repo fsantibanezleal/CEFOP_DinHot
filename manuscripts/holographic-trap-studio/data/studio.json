@@ -1,5 +1,5 @@
 {
- "product_version": "0.02.000",
+ "product_version": "0.02.001",
  "ladder": [
   {
    "id": "M01",
@@ -135,37 +135,37 @@
    "gate": "tests/methods/baseline/test_m19_multiplane.py"
   },
   {
-   "id": "BS-1",
+   "id": "B1",
    "tier": "beyond",
-   "method": "Device-aware weighted GS (engine id B1)",
+   "method": "Device-aware weighted GS",
    "criterion": "on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; measured against the corrected M07 and against slmsuite's WGS-Kim alike: a median of 25.8 times (15.9 to 33.3 over five seeds) at 0.995 of the efficiency, and 2.0 times on the full C08 device (the bake, three seeds; 2.2 in notebook 03-04) with 4-bit phase and flicker; in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.061); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds",
    "gate": "tests/methods/beyond/test_b1_device_wgs.py"
   },
   {
-   "id": "BS-2",
+   "id": "B2",
    "tier": "beyond",
-   "method": "Flicker-bounded phase-continuous sequence (engine id B2)",
+   "method": "Flicker-bounded phase-continuous sequence",
    "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: with the frames that keep the peak step per frame at most 0.2 Fourier units (a bound set on C10's sort) it holds on most seeds (acceptance task, 13 frames at 0.31 Fourier units per frame, seeds 1 to 3: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds, and B2 above LPI on 7 of 8 seeds of each); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.911; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
    "gate": "tests/methods/beyond/test_b2_flicker_bounded.py"
   },
   {
-   "id": "BS-3",
+   "id": "B3",
    "tier": "beyond",
-   "method": "Learned warm start for phase-fixed WGS (refuted) (engine id B3)",
-   "criterion": "measured negative: on held-out geometries the network start needs a median 8 iterations to 1 percent against 14 from a random start (1.75 times, below the 2 times claimed), and a control with the same early phase fix and no network gains as much; the model is not released and the claim BS-3 is reported as refuted",
+   "method": "Learned warm start for phase-fixed WGS (refuted)",
+   "criterion": "measured negative: on held-out geometries the network start needs a median 8 iterations to 1 percent against 14 from a random start (1.75 times, below the 2 times claimed), and a control with the same early phase fix and no network gains as much; the model is not released and the claim B3 is reported as refuted",
    "gate": "tests/learned/test_b3_warm_start.py"
   },
   {
-   "id": "BS-4",
+   "id": "B4",
    "tier": "beyond",
-   "method": "Aberration-robust hologram (engine id B4)",
+   "method": "Aberration-robust hologram",
    "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.04 times)",
    "gate": "tests/methods/beyond/test_b4_robust.py"
   },
   {
-   "id": "BS-5",
+   "id": "B5",
    "tier": "beyond",
-   "method": "Efficiency-uniformity Pareto front (engine id B5)",
+   "method": "Efficiency-uniformity Pareto front",
    "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured: 0.8190 against 0.8018); in the benchmark the stored front (B5's converged run of the first seed) reaches that hypervolume on 3 of the 6 geometries with a front against the medians at 100 iterations on the ideal device, 5 of 6 against those at 30, and not on G1, G4 (by 0.003 and 0.001) nor G6 (0.791 against 0.813)",
    "gate": "tests/methods/beyond/test_b5_pareto.py"
   }
@@ -1952,19 +1952,13 @@
      "eff": 0.813891,
      "n_seeds": 9
     },
-    "classical": {
+    "published": {
      "method": "M09",
      "sigma": 0.065657,
      "eff": 0.680624,
      "n_seeds": 2
     },
-    "sota": {
-     "method": "M11",
-     "sigma": 1.198389,
-     "eff": 0.829645,
-     "n_seeds": 20
-    },
-    "beyond": {
+    "proposed": {
      "method": "B1",
      "sigma": 0.0,
      "eff": 0.81326,
@@ -1984,19 +1978,13 @@
      "eff": 0.595264,
      "n_seeds": 8
     },
-    "classical": {
-     "method": "M09",
-     "sigma": 23.715355,
-     "eff": 0.491246,
-     "n_seeds": 2
-    },
-    "sota": {
+    "published": {
      "method": "M11",
      "sigma": 12.968511,
      "eff": 0.585318,
      "n_seeds": 14
     },
-    "beyond": {
+    "proposed": {
      "method": "B4",
      "sigma": 24.335278,
      "eff": 0.586705,
@@ -2016,19 +2004,13 @@
      "eff": 0.692234,
      "n_seeds": 8
     },
-    "classical": {
-     "method": "M09",
-     "sigma": 0.014836,
-     "eff": 0.638709,
-     "n_seeds": 2
-    },
-    "sota": {
+    "published": {
      "method": "M07",
      "sigma": 0.0,
      "eff": 0.693251,
      "n_seeds": 20
     },
-    "beyond": {
+    "proposed": {
      "method": "B1",
      "sigma": 0.0,
      "eff": 0.692234,
@@ -2048,19 +2030,13 @@
      "eff": 0.295953,
      "n_seeds": 20
     },
-    "classical": {
+    "published": {
      "method": "M01",
      "sigma": 6.552854,
      "eff": 0.295953,
      "n_seeds": 20
     },
-    "sota": {
-     "method": "M13",
-     "sigma": 8.899558,
-     "eff": 0.48509,
-     "n_seeds": 3
-    },
-    "beyond": {
+    "proposed": {
      "method": "B1",
      "sigma": 7.453088,
      "eff": 0.456423,
@@ -2080,19 +2056,13 @@
      "eff": 0.695336,
      "n_seeds": 6
     },
-    "classical": {
-     "method": "M09",
-     "sigma": 0.05211,
-     "eff": 0.637185,
-     "n_seeds": 2
-    },
-    "sota": {
+    "published": {
      "method": "M07",
      "sigma": 0.0,
      "eff": 0.696829,
      "n_seeds": 20
     },
-    "beyond": {
+    "proposed": {
      "method": "B1",
      "sigma": 0.0,
      "eff": 0.695336,
@@ -2112,19 +2082,13 @@
      "eff": 0.423126,
      "n_seeds": 9
     },
-    "classical": {
-     "method": "M14",
-     "sigma": 20.476435,
-     "eff": 0.431526,
-     "n_seeds": 20
-    },
-    "sota": {
+    "published": {
      "method": "M11",
      "sigma": 14.589004,
      "eff": 0.452912,
      "n_seeds": 15
     },
-    "beyond": {
+    "proposed": {
      "method": "B1",
      "sigma": 4.408473,
      "eff": 0.399626,
@@ -2144,19 +2108,13 @@
      "eff": 0.751111,
      "n_seeds": 10
     },
-    "classical": {
-     "method": "M09",
-     "sigma": 0.071273,
-     "eff": 0.621232,
-     "n_seeds": 2
-    },
-    "sota": {
+    "published": {
      "method": "M07",
      "sigma": 0.011994,
      "eff": 0.751429,
      "n_seeds": 20
     },
-    "beyond": {
+    "proposed": {
      "method": "B1",
      "sigma": 0.0,
      "eff": 0.751097,
@@ -2176,19 +2134,13 @@
      "eff": 0.500741,
      "n_seeds": 2
     },
-    "classical": {
-     "method": "M05",
-     "sigma": 83.725655,
-     "eff": 0.514093,
-     "n_seeds": 20
-    },
-    "sota": {
+    "published": {
      "method": "M11",
      "sigma": 20.558963,
      "eff": 0.511052,
      "n_seeds": 15
     },
-    "beyond": {
+    "proposed": {
      "method": "B1",
      "sigma": 81.088055,
      "eff": 0.500741,
@@ -2208,19 +2160,13 @@
      "eff": 0.862643,
      "n_seeds": 20
     },
-    "classical": {
+    "published": {
      "method": "M09",
      "sigma": 0.049989,
      "eff": 0.697957,
      "n_seeds": 2
     },
-    "sota": {
-     "method": "M11",
-     "sigma": 2.20729,
-     "eff": 0.882402,
-     "n_seeds": 20
-    },
-    "beyond": {
+    "proposed": {
      "method": "B2",
      "sigma": 0.0,
      "eff": 0.864025,
@@ -2240,19 +2186,13 @@
      "eff": 0.757514,
      "n_seeds": 2
     },
-    "classical": {
+    "published": {
      "method": "M09",
      "sigma": 0.149154,
      "eff": 0.644405,
      "n_seeds": 2
     },
-    "sota": {
-     "method": "M07",
-     "sigma": 0.748233,
-     "eff": 0.791029,
-     "n_seeds": 5
-    },
-    "beyond": {
+    "proposed": {
      "method": "B1",
      "sigma": 0.0,
      "eff": 0.757452,
@@ -2272,19 +2212,13 @@
      "eff": 0.556841,
      "n_seeds": 2
     },
-    "classical": {
-     "method": "M09",
-     "sigma": 18.593442,
-     "eff": 0.470727,
-     "n_seeds": 2
-    },
-    "sota": {
+    "published": {
      "method": "M11",
      "sigma": 13.49199,
      "eff": 0.544275,
      "n_seeds": 4
     },
-    "beyond": {
+    "proposed": {
      "method": "B1",
      "sigma": 17.114947,
      "eff": 0.553562,
@@ -2304,14 +2238,13 @@
      "eff": 0.929272,
      "n_seeds": 10
     },
-    "classical": {
+    "published": {
      "method": "M04",
      "sigma": 34.569831,
      "eff": 0.929967,
      "n_seeds": 20
     },
-    "sota": null,
-    "beyond": null
+    "proposed": null
    },
    "G7/device": {
     "best": {
@@ -2326,19 +2259,18 @@
      "eff": 0.791845,
      "n_seeds": 10
     },
-    "classical": {
+    "published": {
      "method": "M04",
      "sigma": 39.935941,
      "eff": 0.790285,
      "n_seeds": 20
     },
-    "sota": null,
-    "beyond": null
+    "proposed": null
    }
   },
   "by_method": {
    "B1": {
-    "tier": "beyond",
+    "group": "proposed",
     "ideal": {
      "n": 5,
      "sigma": 0.0,
@@ -2353,7 +2285,7 @@
     }
    },
    "B2": {
-    "tier": "beyond",
+    "group": "proposed",
     "ideal": {
      "n": 6,
      "sigma": 0.0,
@@ -2368,7 +2300,7 @@
     }
    },
    "B3": {
-    "tier": "beyond",
+    "group": "proposed",
     "ideal": {
      "n": 6,
      "sigma": 0.005997,
@@ -2383,7 +2315,7 @@
     }
    },
    "B4": {
-    "tier": "beyond",
+    "group": "proposed",
     "ideal": {
      "n": 5,
      "sigma": 0.402414,
@@ -2398,7 +2330,7 @@
     }
    },
    "B5": {
-    "tier": "beyond",
+    "group": "proposed",
     "ideal": {
      "n": 6,
      "sigma": 0.279751,
@@ -2413,7 +2345,7 @@
     }
    },
    "M01": {
-    "tier": "classical",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 135.736943,
@@ -2428,7 +2360,7 @@
     }
    },
    "M02": {
-    "tier": "classical",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 31.343816000000004,
@@ -2443,7 +2375,7 @@
     }
    },
    "M03": {
-    "tier": "classical",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 78.27770749999999,
@@ -2458,7 +2390,7 @@
     }
    },
    "M04": {
-    "tier": "classical",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 14.411010000000001,
@@ -2473,7 +2405,7 @@
     }
    },
    "M05": {
-    "tier": "classical",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 10.1875,
@@ -2488,7 +2420,7 @@
     }
    },
    "M06": {
-    "tier": "classical",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 0.2966105,
@@ -2503,7 +2435,7 @@
     }
    },
    "M07": {
-    "tier": "sota",
+    "group": "published",
     "ideal": {
      "n": 5,
      "sigma": 0.011994,
@@ -2518,12 +2450,12 @@
     }
    },
    "M08": {
-    "tier": "sota",
+    "group": "published",
     "ideal": null,
     "device": null
    },
    "M09": {
-    "tier": "classical",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 0.05888349999999999,
@@ -2538,7 +2470,7 @@
     }
    },
    "M10": {
-    "tier": "sota",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 2.6490205,
@@ -2553,7 +2485,7 @@
     }
    },
    "M11": {
-    "tier": "sota",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 1.199603,
@@ -2568,7 +2500,7 @@
     }
    },
    "M12": {
-    "tier": "sota",
+    "group": "published",
     "ideal": {
      "n": 2,
      "sigma": 19.1073785,
@@ -2583,7 +2515,7 @@
     }
    },
    "M13": {
-    "tier": "sota",
+    "group": "published",
     "ideal": {
      "n": 5,
      "sigma": 2.233433,
@@ -2598,7 +2530,7 @@
     }
    },
    "M14": {
-    "tier": "classical",
+    "group": "published",
     "ideal": {
      "n": 6,
      "sigma": 0.9360664999999999,
@@ -2613,12 +2545,12 @@
     }
    },
    "M18": {
-    "tier": "sota",
+    "group": "published",
     "ideal": null,
     "device": null
    },
    "M19": {
-    "tier": "classical",
+    "group": "published",
     "ideal": {
      "n": 1,
      "sigma": 16.675174,
@@ -3297,13 +3229,13 @@
    "tests/methods/baseline/test_m19_multiplane.py"
   ],
   [
-   "BS-4",
+   "B4",
    "95th percentile of the relative standard deviation a median 1.435 times below M07 (1.42 to 1.57) over a 200-sample aberration ensemble, at a median 0.982 of its efficiency; pointing errors 1.04 times (seed 1)",
    "3 (pointing 1)",
    "tests/methods/beyond/test_b4_robust.py"
   ],
   [
-   "BS-5",
+   "B5",
    "hypervolume 0.8190 against 0.8018 for the union of the M04, M05, M06 and M09 points; 7 front points dominate M04 and 8 dominate M05",
    "1",
    "tests/methods/beyond/test_b5_pareto.py"

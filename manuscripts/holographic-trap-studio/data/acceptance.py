@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure the acceptance quantity of every method of the DinHot ladder (M01 to M19, BS-4 and BS-5) and write ``acceptance.json``.
+"""Measure the acceptance quantity of every method of DinHot (M01 to M19, B4 and B5) and write ``acceptance.json``.
 
 Each ``measure_<id>`` below computes the quantity of its method's gate test, on the same setup, task, seeds and budget as that
 test, with the method modules and ``pipeline.model.holo.core`` of the current engine, and returns the numbers and the text of
@@ -7,7 +7,7 @@ its row of the acceptance table of the technical report (``extract.py`` reads th
 test each function mirrors is named in its docstring and in the ``source`` field of the row. The script measures, it does not
 assert a pass (ADR-0069): a number that misses its bar is written as measured.
 
-BS-1 and BS-2 are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` and are not part of this table.
+B1 and B2 are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` and are not part of this table.
 M17 needs the released network, onnxruntime and the held-out file, which the pipeline environment does not have: its row takes
 the values from ``data/derived/models/metrics.json``, the committed artifact its gate test reads, and says so.
 
@@ -66,7 +66,7 @@ from pipeline.model.holo.methods.optim import m13_crosstalk_cg as M13  # noqa: E
 from pipeline.model.holo.methods.optim import m18_ot_mraf as M18  # noqa: E402
 
 IDS = ["M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10", "M11", "M12", "M13", "M14", "M15", "M16", "M17",
-       "M18", "M19", "BS-4", "BS-5"]
+       "M18", "M19", "B4", "B5"]
 
 T_BASE, T_OPT, T_CTRL, T_BEYOND = "tests/methods/baseline/", "tests/methods/optim/", "tests/methods/control/", "tests/methods/beyond/"
 
@@ -556,7 +556,7 @@ def measure_BS4() -> dict:
     text = (f"95th percentile of the relative standard deviation a median {med:.3f} times below M07 ({min(ratios):.2f} to "
             f"{max(ratios):.2f}) over a 200-sample aberration ensemble, at a median {statistics.median(effs):.3f} of its efficiency; "
             f"pointing errors {ratio_p:.2f} times (seed 1)")
-    return row("BS-4", text, "3 (pointing 1)", T_BEYOND + "test_b4_robust.py",
+    return row("B4", text, "3 (pointing 1)", T_BEYOND + "test_b4_robust.py",
                {"ratio": ratios, "eff_ratio": effs, "sigma_p95_b4": sb4, "sigma_p95_m07": sm7, "pointing_ratio": ratio_p,
                 "pointing_sigma_p95_b4": rob_p["sigma_p95"], "pointing_sigma_p95_m07": nom_p["sigma_p95"]})
 
@@ -580,7 +580,7 @@ def measure_BS5() -> dict:
     dom = {n: int(np.sum((front[:, 0] >= base[n][0]) & (front[:, 1] > base[n][1]))) for n in ("M04", "M05")}
     text = (f"hypervolume {res.meta['hypervolume']:.4f} against {hv_base:.4f} for the union of the M04, M05, M06 and M09 points; "
             f"{dom['M04']} front points dominate M04 and {dom['M05']} dominate M05")
-    return row("BS-5", text, "1", T_BEYOND + "test_b5_pareto.py",
+    return row("B5", text, "1", T_BEYOND + "test_b5_pareto.py",
                {"hypervolume": float(res.meta["hypervolume"]), "hypervolume_base": float(hv_base), "dominating_m04": dom["M04"],
                 "dominating_m05": dom["M05"], "front_seconds": elapsed})
 
