@@ -47,9 +47,9 @@ export const architecture: ArchitectureConfig = {
       es: 'La ciencia',
       svg: science,
       body_en:
-        'A method returns a phase mask for the SLM. The chain carries it through the device, the lens and the focal field to the trap metrics and to the trapped particle, and the ladder of methods runs from the analytic baselines to methods beyond the published state of the art. The oracles that check the chain are physical laws, never a model judging a model.',
+        'A method returns a phase mask for the SLM. The chain carries it through the device, the lens and the focal field to the trap metrics and to the trapped particle, and the ladder of methods runs from the analytic baselines to five methods that DinHot proposes. The oracles that check the chain are physical laws, never a model judging a model.',
       body_es:
-        'Un método devuelve una máscara de fase para el SLM. La cadena la lleva por el dispositivo, la lente y el campo focal hasta las métricas de las trampas y la partícula atrapada, y la escalera de métodos va de las líneas base analíticas a métodos que superan el estado del arte publicado. Los oráculos que verifican la cadena son leyes físicas, nunca un modelo juzgando a un modelo.',
+        'Un método devuelve una máscara de fase para el SLM. La cadena la lleva por el dispositivo, la lente y el campo focal hasta las métricas de las trampas y la partícula atrapada, y la escalera de métodos va de las líneas base analíticas a cinco métodos que propone DinHot. Los oráculos que verifican la cadena son leyes físicas, nunca un modelo juzgando a un modelo.',
     },
     {
       id: 'contracts',

@@ -38,8 +38,8 @@ METHODS = {"03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite": ["M07"],
 LEVEL3 = [k for k, (level, _) in ROWS.items() if level == 3]
 LEVEL4 = [k for k, (level, _) in ROWS.items() if level == 4]
 MARKERS = {"en": ("**Question:**", "**Answer:**"), "es": ("**Pregunta:**", "**Respuesta:**")}
-SOTA = {"en": "State of the art", "es": "Estado del arte"}
-BEYOND = {"en": "Beyond the state of the art", "es": "Más allá del estado del arte"}
+SOTA = {"en": "Comparison", "es": "Comparación"}
+BEYOND = {"en": "Evidence", "es": "Evidencia"}
 
 
 def load_gate():
@@ -221,8 +221,8 @@ def plant_copied_template_sentence(nb: dict) -> None:
 PLANTS = [
     (plant_long_line, "characters", "01-fourier-optics/01-where-the-light-goes"),
     (plant_unprinted_answer, "answer quotes no number", "03-gerchberg-saxton/02-weights-for-uniformity"),
-    (plant_no_state_of_the_art_cell, "no method cell under State of the art", LEVEL3[0]),
-    (plant_no_table_under_beyond, "Beyond the state of the art", LEVEL4[0]),
+    (plant_no_state_of_the_art_cell, "no method cell under Comparison", LEVEL3[0]),
+    (plant_no_table_under_beyond, "Evidence", LEVEL4[0]),
     (plant_copied_template_sentence, "generic filler sentence", "02-analytic-holograms/01-superposition-and-random-mask"),
 ]
 

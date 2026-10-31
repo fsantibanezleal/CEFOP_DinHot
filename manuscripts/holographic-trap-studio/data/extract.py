@@ -7,7 +7,8 @@ Run from the repository root (standard library only):
     python manuscripts/holographic-trap-studio/data/extract.py
 
 Sources, all committed with the product:
-  * ``docs/design/SDD.md``: the method ladder (id, tier, method, acceptance criterion).
+  * ``docs/design/SDD.md``: the method ladder (id, group, method, acceptance criterion); the report shows two groups, the
+    published methods M01 to M19 and the methods proposed here, B1 to B5 (the SDD's ids of the latter are internal).
   * ``data/derived/manifests/*.json`` and ``data/derived/C*/trace.json``: the baked cases (setup, device, per-method scores,
     feedback steps, bead and atom dynamics).
   * ``data/derived/benchmark/results.json``: the benchmark protocol, its cells and the skipped cells with their reasons; the
@@ -18,8 +19,8 @@ Sources, all committed with the product:
   * ``data/derived/readiness.json``: what is real in the build.
 
 ``UNIT_ACCEPTANCE`` below is read from ``acceptance.json``, written by ``acceptance.py`` (run it first, same folder), which measures
-the acceptance quantity of each method M01 to M19, BS-4 and BS-5 as its gate test computes it, on the current engine. The values
-of BS-1 and BS-2 in the companion manuscript are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py``.
+the acceptance quantity of each method M01 to M19, B4 and B5 as its gate test computes it, on the current engine. The values
+of B1 and B2 in the companion manuscript are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py``.
 ``QUOTED_LIVE`` holds the browser measurements, which a standard-library script cannot repeat; each names the section of
 ``docs/design/measured-resources.md`` or of the SDD that records it. The count of engine fixtures and their loosest tolerance are
 read from ``tests/fixtures/engine``.
@@ -77,7 +78,13 @@ QUOTED_LIVE = {
     "liveBudgetMs": ("1500", "SDD Lanes"), "liveTraceKiB": ("256", "SDD Lanes"),
 }
 
-TIER_LABEL = {"classical": "Classical", "sota": "State of the art", "beyond": "Beyond"}
+# The two groups a reader sees: the SDD sorts the methods in three internal tiers, the report in published and proposed ones.
+GROUPS = ("published", "proposed")
+GROUP_LABEL = {"published": "Published methods", "proposed": "Methods proposed here"}
+
+
+def group_of(tier: str | None) -> str | None:
+    return None if tier is None else ("proposed" if tier == "beyond" else "published")
 
 
 def load(path: Path):
@@ -96,9 +103,10 @@ def parse_ladder() -> list[dict]:
     for line in lines[i + 1:]:
         if line.startswith("## "):
             break
-        if re.match(r"^\| (M\d\d|BS-\d) \|", line) and not line.startswith("| BS-6 |"):
+        if re.match(r"^\| (M\d\d|BS-[1-5]) \|", line):
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            rows.append({"id": cells[0], "tier": cells[1], "method": cells[2], "criterion": cells[3], "gate": cells[4].strip("`")})
+            rows.append({"id": shown_id(cells[0]), "tier": cells[1], "method": re.sub(r" \(engine id B\d\)", "", cells[2]),
+                         "criterion": re.sub(r"\bBS-([1-9])", r"B\1", cells[3]), "gate": cells[4].strip("`")})
     return rows
 
 
@@ -140,9 +148,14 @@ def case_summary() -> list[dict]:
     return out
 
 
+def shown_id(lid: str) -> str:
+    """The id a reader sees: the engine id (the SDD's claim id of a proposed method is internal)."""
+    return "B" + lid.rsplit("-", 1)[1] if lid.startswith("BS") else lid
+
+
 def ladder_id(mid: str) -> str:
-    """The SDD ladder id of an engine method (B1 is BS-1)."""
-    return f"BS-{mid[1:]}" if mid.startswith("B") else mid
+    """The id of an engine method in the report (the engine id itself)."""
+    return mid
 
 
 def bench_cells(rows: list[dict], kind: str, budget: float, params: str = "default") -> dict:
@@ -185,12 +198,12 @@ def benchmark_summary(ladder: list[dict]) -> dict:
             if not any(gg == g["id"] and d == device for (_, gg, d) in it100):
                 continue
             cell = {"best": best_of(it100, g["id"], device, set(methods)), "best_1s": best_of(t1, g["id"], device, set(methods))}
-            for tr in TIER_LABEL:
-                cell[tr] = best_of(it100, g["id"], device, {m for m in methods if tier_of[m] == tr})
+            for gr in GROUPS:
+                cell[gr] = best_of(it100, g["id"], device, {m for m in methods if group_of(tier_of[m]) == gr})
             by_geometry[f"{g['id']}/{device}"] = cell
     by_method = {}
     for m in methods:
-        out = {"tier": tier_of[m]}
+        out = {"group": group_of(tier_of[m])}
         for device in ("ideal", "device"):
             xs = [it100[(m, g, device)] for g in point if (m, g, device) in it100]
             out[device] = None if not xs else {
@@ -271,14 +284,16 @@ def f(x: float, d: int = 3) -> str:
 # ---------------------------------------------------------------------------------------------------- tables
 
 def table_ladder(ladder: list[dict]) -> str:
-    out = ["\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.07\\textwidth} >{\\raggedright\\arraybackslash}p{0.13\\textwidth} >{\\raggedright\\arraybackslash}p{0.32\\textwidth} >{\\raggedright\\arraybackslash}p{0.39\\textwidth}@{}}\n",
-           "\\caption{The method ladder of the design document: identifier, tier, method and acceptance criterion.}\\label{tab:ladder}\\\\\n",
-           "\\toprule Id & Tier & Method & Acceptance criterion\\\\\\midrule\\endfirsthead\n",
-           "\\toprule Id & Tier & Method & Acceptance criterion\\\\\\midrule\\endhead\n"]
-    for r in ladder:
-        crit = tex_escape(re.sub(r"\s+", " ", r["criterion"]))
-        crit = crit.replace("1e-9", "$10^{-9}$")
-        out.append(f"{tex_escape(r['id'])} & {TIER_LABEL[r['tier']]} & {tex_escape(r['method'])} & \\footnotesize {crit}\\\\\n")
+    out = ["\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.07\\textwidth} >{\\raggedright\\arraybackslash}p{0.38\\textwidth} >{\\raggedright\\arraybackslash}p{0.47\\textwidth}@{}}\n",
+           "\\caption{The methods of the studio and the acceptance criterion the design document fixes for each: the published methods M01 to M19 and the methods proposed here, B1 to B5.}\\label{tab:ladder}\\\\\n",
+           "\\toprule Id & Method & Acceptance criterion\\\\\\midrule\\endfirsthead\n",
+           "\\toprule Id & Method & Acceptance criterion\\\\\\midrule\\endhead\n"]
+    for gr in GROUPS:
+        out.append(f"\\multicolumn{{3}}{{@{{}}l}}{{\\textit{{{GROUP_LABEL[gr]}}}}}\\\\\n")
+        for r in (r for r in ladder if group_of(r["tier"]) == gr):
+            crit = tex_escape(re.sub(r"\s+", " ", r["criterion"]))
+            crit = crit.replace("1e-9", "$10^{-9}$")
+            out.append(f"{tex_escape(r['id'])} & {tex_escape(r['method'])} & \\footnotesize {crit}\\\\\n")
     out.append("\\bottomrule\\end{longtable}\n")
     return "".join(out)
 
@@ -371,14 +386,14 @@ def _cell(b: dict | None) -> str:
 def table_benchmark(bench: dict) -> str:
     names = {g["id"]: g["name"]["en"] for g in bench["geometries"]}
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Benchmark, per geometry and device: the method of each tier with the lowest median relative standard deviation "
+           "\\caption{Benchmark, per geometry and device: the published method and the proposed method with the lowest median relative standard deviation "
            "$\\sigma$ (\\%) at 100 iterations among those that reach at least half of the best median efficiency of the cell, and the best "
            "method of all at a time budget of 1~s. Default parameters, medians over the seeds of each cell.}\\label{tab:benchmark}\n",
-           "\\begin{tabular}{@{}l l l l l l@{}}\\toprule Geometry & Device & Classical & State of the art & Beyond & Best at 1 s\\\\\\midrule\n"]
+           "\\begin{tabular}{@{}l l l l l@{}}\\toprule Geometry & Device & Published & Proposed & Best at 1 s\\\\\\midrule\n"]
     for key, c in bench["by_geometry"].items():
         g, device = key.split("/")
         dev = "ideal" if device == "ideal" else "C08"
-        out.append(f"{g} {tex_escape(names[g])} & {dev} & {_cell(c['classical'])} & {_cell(c['sota'])} & {_cell(c['beyond'])} & "
+        out.append(f"{g} {tex_escape(names[g])} & {dev} & {_cell(c['published'])} & {_cell(c['proposed'])} & "
                    f"{_cell(c['best_1s'])}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
@@ -390,16 +405,20 @@ def table_bench_methods(bench: dict) -> str:
            f"\\caption{{Benchmark, per method: medians over the point-trap geometries the method ran on (of {n}) at 100 iterations with "
            "the default parameters, on the ideal device and on the C08 device. $\\sigma$ relative standard deviation (\\%), $e$ efficiency, "
            "time wall-clock seconds under shared load.}\\label{tab:benchmethods}\n",
-           "\\begin{tabular}{@{}l l r r r r r r@{}}\\toprule Id & Tier & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & "
+           "\\begin{tabular}{@{}l r r r r r r@{}}\\toprule Id & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & "
            "$e$ C08\\\\\\midrule\n"]
     order = sorted(bench["by_method"], key=lambda m: (m.startswith("B"), m))
+    last = None
     for m in order:
         v = bench["by_method"][m]
+        if v["group"] != last:
+            last = v["group"]
+            out.append(f"\\multicolumn{{7}}{{@{{}}l}}{{\\textit{{{GROUP_LABEL.get(last, '')}}}}}\\\\\n")
         i, d = v["ideal"], v["device"]
         secs = (f"{i['time_s']:.0f}" if i["time_s"] >= 100 else f"{i['time_s']:.2g}") if i else ""
         ideal = (f"{i['n']} & {sig(i['sigma'])} & {f(i['eff'], 3)} & {secs}" if i else "0 & n/a & n/a & n/a")
         dev = f"{sig(d['sigma'])} & {f(d['eff'], 3)}" if d else "n/a & n/a"
-        out.append(f"{tex_escape(ladder_id(m))} & {TIER_LABEL.get(v['tier'], '')} & {ideal} & {dev}\\\\\n")
+        out.append(f"{tex_escape(ladder_id(m))} & {ideal} & {dev}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
@@ -414,7 +433,7 @@ def main() -> int:
     ex = executive_summary()
     ready = readiness_summary()
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    tiers = {t: sum(1 for r in ladder if r["tier"] == t) for t in TIER_LABEL}
+    tiers = {t: sum(1 for r in ladder if r["tier"] == t) for t in ("classical", "sota", "beyond")}
     baked = [c for c in cases if c["status"] == "baked"]
     traps = [c["n_traps"] for c in baked if c["n_traps"]]
     method_cells = sum(len(c["methods"]) for c in baked)
@@ -427,9 +446,8 @@ def main() -> int:
 
     L = ["% Generated by data/extract.py from the committed files. Do not edit.\n"]
     L.append(macro("productVersion", version))
-    L.append(macro("nClassical", tiers["classical"]))
-    L.append(macro("nSota", tiers["sota"]))
-    L.append(macro("nBeyond", tiers["beyond"]))
+    L.append(macro("nPublished", tiers["classical"] + tiers["sota"]))
+    L.append(macro("nProposed", tiers["beyond"]))
     L.append(macro("nLadder", len(ladder)))
     L.append(macro("nCases", len(cases)))
     L.append(macro("nCasesBaked", len(baked)))
@@ -465,7 +483,7 @@ def main() -> int:
     L.append(macro("liveTol", f"10^{{{round(math.log10(fx['loosest_abs']))}}}"))
     # the measured acceptance rows the prose cites (acceptance.json)
     acc = acceptance_numbers()
-    m4, b4, b5 = acc["M04"], acc["BS-4"], acc["BS-5"]
+    m4, b4, b5 = acc["M04"], acc["B4"], acc["B5"]
     L.append(macro("accFourFlatEff", f(statistics.median(m4["flat_efficiency"]), 3)))
     L.append(macro("accFourFlatUni", f(statistics.median(m4["flat_uniformity"]), 3)))
     L.append(macro("accBFourRatio", f(statistics.median(b4["ratio"]), 3)))
@@ -561,11 +579,11 @@ def main() -> int:
         L.append(macro(f"benchGeo{nm}", len(cells)))
         # a cell whose best spreads of two or more tiers sit below the file's resolution is a tie, not a win of one tier
         def tied(c: dict) -> bool:
-            return sum(1 for tr in TIER_LABEL if c[tr] and c[tr]["sigma"] < 1e-3) >= 2
+            return sum(1 for gr in GROUPS if c[gr] and c[gr]["sigma"] < 1e-3) >= 2
 
-        for tr, tn in (("classical", "Classical"), ("sota", "Sota"), ("beyond", "Beyond")):
-            L.append(macro(f"benchWins{nm}{tn}", sum(1 for c in cells if c["best"] and not tied(c)
-                                                     and bench["by_method"][c["best"]["method"]]["tier"] == tr)))
+        for gr, gn in (("published", "Published"), ("proposed", "Proposed")):
+            L.append(macro(f"benchWins{nm}{gn}", sum(1 for c in cells if c["best"] and not tied(c)
+                                                     and bench["by_method"][c["best"]["method"]]["group"] == gr)))
         L.append(macro(f"benchTies{nm}", sum(1 for c in cells if tied(c))))
         meds = [v[device] for v in bench["by_method"].values() if v[device]]
         top = max((v["eff"] for v in meds), default=0.0)
@@ -639,7 +657,7 @@ def main() -> int:
     state_words = {"partial": "partial", "training": "answered by its baseline, with no released model", "missing": "missing"}
     L.append(macro("readinessOthers", "; ".join(
         f"\\texttt{{{tex_escape(c['id'])}}} is {state_words.get(c['state'], c['state'])}"
-        + (f" ({tex_escape(c['reason'].rstrip('.'))})" if c["reason"] and c["state"] != "training" else "")
+        + (f" ({tex_escape(c['reason'].rstrip('.').replace('were not run', 'were skipped'))})" if c["reason"] and c["state"] != "training" else "")
         for c in others)))
     (HERE / "studio_numbers.tex").write_text("".join(L), encoding="utf-8")
 

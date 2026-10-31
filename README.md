@@ -16,29 +16,28 @@ aberrations cost, what a camera feedback loop recovers and what a trapped bead o
 CEFOP (Universidad de Concepcion) as DinHotSys, a C++ desktop tool, and is rebuilt here on the CAOS product template and shell. The
 design is [docs/design/SDD.md](docs/design/SDD.md).
 
-## The three tiers of methods
+## The methods
 
-Every method of the ladder belongs to one tier ([guide 09](docs/guides/09_method-tiers.md)), runs on the product's cases with the same
-seeds and metrics, and is compared with the other tiers on the Benchmark page:
+Every method runs on the product's cases with the same seeds and metrics, and is compared with the others on the Benchmark page:
 
-- **Classical**: the established methods, from the superposition of prisms and lenses to Gerchberg-Saxton, weighted GS and the
-  volumetric 3D GS.
-- **State of the art**: the current solutions, replicated or implemented here, among them phase-fixed weighted GS, MRAF, optimal-transport
-  starts, conjugate gradient and Wirtinger-Adam descent with a device model, closed-loop feedback, atom rearrangement and the learned
-  multi-plane network. The level 3 notebooks run them against slmsuite 0.5.0 or the classical method.
-- **Beyond the state of the art**: five proposals of the product, BS-1 to BS-5, each tested and reported as it came out, including two
-  measured negatives (BS-3, the learned warm start, refuted; BS-4, whose robustness to pointing errors does not follow) and one
-  measured scope (BS-2 holds for short steps per frame; on long moves linear phase interpolation leads at equal frames). Each has a level 4
-  notebook.
+- **Published methods** (19), replicated or implemented here: the superposition of prisms and lenses, Gerchberg-Saxton, weighted GS,
+  the volumetric 3D GS, phase-fixed weighted GS, MRAF, optimal-transport starts, conjugate gradient and Wirtinger-Adam descent with a
+  device model, closed-loop feedback, atom rearrangement and the learned multi-plane network. The level 3 notebooks run them against
+  slmsuite 0.5.0 or against each other.
+- **Proposed methods** (5): device-aware weighted GS, flicker-bounded phase-continuous sequences, a learned warm start, an
+  aberration-robust hologram and an efficiency-uniformity front, each tested and reported as it came out, including two measured
+  negatives (the learned warm start is refuted; the robustness of the aberration-robust hologram to pointing errors does not follow)
+  and one measured scope (the flicker-bounded sequence holds for short steps per frame; on long moves linear phase interpolation leads
+  at equal frames). Each has a level 4 notebook.
 
 ## Technical report and manuscripts
 
-The detailed technical report and the manuscripts of the beyond-the-state-of-the-art methods are on Zenodo, each under its own concept
-DOI, and are declared in `product.json` `manuscripts` once they are published ([guide 09](docs/guides/09_method-tiers.md)).
+The detailed technical report and the manuscript of the proposed methods are on Zenodo, each under its own concept DOI, and are
+declared in `product.json` `manuscripts`.
 
-- Technical report (Zenodo, CC BY 4.0), the product, its 24 methods, fourteen cases, the benchmark and BS-1 to BS-5:
+- Technical report (Zenodo, CC BY 4.0), the product, its 24 methods, fourteen cases and the benchmark:
   [10.5281/zenodo.23788731](https://doi.org/10.5281/zenodo.23788731) (concept DOI, always the latest version).
-- Manuscript of BS-1 and BS-2, device-aware weighted GS and flicker-bounded phase-continuous sequences (Zenodo, CC BY 4.0):
+- Manuscript on device-aware weighted GS and flicker-bounded phase-continuous sequences (Zenodo, CC BY 4.0):
   [10.5281/zenodo.23788733](https://doi.org/10.5281/zenodo.23788733) (concept DOI).
 
 ## Areas
@@ -51,7 +50,7 @@ The repository by area: its folder, whether the area is active or dormant, and w
 | API | [`app/`](app/) | dormant: this solution does not require it at the moment | Ships dormant, the site is static; activation is [guide 04](docs/guides/04_run-the-api.md). |
 | Core pipelines | [`data-pipeline/`](data-pipeline/) | active | The engine (`pipeline/model/holo/`: forward model, 24 methods in four families, the learned slots), the named stages (bake, evaluate, benchmark, train) and the canonical bake of the fourteen cases: `./scripts/precompute.sh`. See [data-pipeline/README.md](data-pipeline/README.md). |
 | Packages | (PyPI) [numpy](https://pypi.org/project/numpy/) | active: consumes numpy, and in the notebooks matplotlib, scipy, [slmsuite](https://pypi.org/project/slmsuite/) 0.5.0 and [onnxruntime](https://pypi.org/project/onnxruntime/) 1.31.1 | DinHot publishes no package of its own; the methods live in the pipeline and are imported by path. |
-| Notebooks | [`notebooks/`](notebooks/) | active | Eight topics of didactic notebooks in English and Spanish, from the Fourier optics of a hologram to the learned methods, with level 3 notebooks for the state-of-the-art methods and level 4 for the five claims beyond it. Run: `./scripts/setup.sh --notebooks`, then `python scripts/run_notebooks.py`. Index: [notebooks/README.md](notebooks/README.md); guide: [guide 08](docs/guides/08_notebooks.md). |
+| Notebooks | [`notebooks/`](notebooks/) | active | Eight topics of didactic notebooks in English and Spanish, from the Fourier optics of a hologram to the learned methods, with level 3 notebooks for the comparison with published methods and level 4 for the five proposed methods. Run: `./scripts/setup.sh --notebooks`, then `python scripts/run_notebooks.py`. Index: [notebooks/README.md](notebooks/README.md); guide: [guide 08](docs/guides/08_notebooks.md). |
 | Data | [`data/`](data/) | active | The fourteen cases (`data/examples/cases.json`), the committed derived artifacts of the bake and the evidence of the two learned models, with the sources and their licence classes in [data/README.md](data/README.md). |
 | Contracts | [`docs/contracts/`](docs/contracts/) | active | The contract catalog, the JSON schemas (params record, trace, manifest, model card and metrics) and the OpenAPI document. |
 | Documentation | [`docs/`](docs/) | active | The SDD ([docs/design/SDD.md](docs/design/SDD.md)), the [guides](docs/guides.md), the [case pages](docs/cases.md) and the [framework cards](docs/frameworks.md) of every method. |

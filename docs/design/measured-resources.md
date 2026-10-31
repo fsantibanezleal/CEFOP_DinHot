@@ -81,7 +81,7 @@ numTotalTests 92, numPassedTests 92
 The training record `data/derived/models/cgh-net-training.json` (unit M1) holds the configuration and the sizes of `cgh-net`: 16,000 steps of
 batch 32, learning rate 0.001, 14 channels, at most 2.2 hours, 4,671,540 bytes of ONNX at opset 17. The graph agrees with the training
 framework on the reconstructed focal intensity to a relative 8.4e-6 (the card states 1e-5). On 162 held-out volumes the median accuracy against GS is
-1.140 (quartiles 1.102 and 1.160), and one solve takes a median 7,486 ms in the comparison that gave it (`data/derived/models/metrics.json`).
+1.139 (quartiles 1.102 and 1.160), and one solve takes a median 3,384 ms in the comparison that gave it (`data/derived/models/metrics.json`).
 The slot `warmstart-model` was trained and rejected: `data/derived/models/warmstart-model-rejected.json` records the measured negative.
 
 ## The site: build and deploy payload

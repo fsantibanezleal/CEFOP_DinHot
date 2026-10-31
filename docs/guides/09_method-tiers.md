@@ -15,8 +15,18 @@ and is held to the whole rule, with its five claims BS-1 to BS-5 in the SDD.
 | `beyond` | Proposed methods that explore new branches and paths for the problem: the product's own proposals | A written proposal per method in the SDD: the hypothesis, the method, the evaluation that would confirm or refute it |
 
 Each tier is real code in the engine or the data processing (or in a published package the product consumes), run on the
-product's data and compared with the other tiers on the same data and protocol. The Methodology page presents the three
-as tiers, and the benchmark compares them.
+product's data and compared with the other tiers on the same data and protocol. The Methodology page presents each
+method by its own name, and the benchmark compares them.
+
+## The tier names are internal
+
+"Classical", "state of the art", "beyond the state of the art", SOTA, the ids `M-<n>` and `BS-<n>` and "tier" sort the
+methods here, in the SDD, the plans and the gates. They never reach a reader (from 0.14.000; CAOS_MANAGE
+`conventions/method-tiers-and-manuscripts.md` section 0, Felipe 2026-10-30): no manuscript, notebook, index, README,
+page, section, tab, chart, label, post or file name is titled or worded with them. A reader sees each method by its name ("Bond's
+work index", "SciPy's RK45"); a manuscript puts the published methods under Related work and the product's own under
+Method; a notebook uses the sections `Comparison` and `Evidence`. `scripts/check_internal_names.py` fails a product that
+lets them through, and CAOS_MANAGE `tools/zenodo/check_manuscript_voice.py` refuses such a manuscript before its DOI.
 
 A proposal beyond the state of the art answers the problem differently. A validation protocol, a calibration or a benchmark
 design is welcome, but by itself it is not a beyond-the-state-of-the-art method: it checks other people's methods more
@@ -33,7 +43,7 @@ The method ladder is a table, one row per method, and the `tier` column says whi
 | id | tier | method | acceptance criterion | gate |
 |---|---|---|---|---|
 | M-1 | classical | the established method | one measurable criterion | `tests/test_x.py::test_classical` |
-| M-2 | sota | the current solution | one measurable criterion | `notebooks/en/01-topic/03-sota.ipynb` |
+| M-2 | sota | the current solution | one measurable criterion | `notebooks/en/01-topic/03-rk45-against-the-engine.ipynb` |
 | BS-1 | beyond | the product's own proposal | the criterion that confirms or refutes the hypothesis | `tests/test_x.py::test_beyond` |
 
 ## Beyond the state of the art
@@ -53,7 +63,7 @@ Every finding names the rule file. The template passes with its two rows and `No
 
 ## In the notebooks
 
-The notebooks carry level 3 (state of the art) and level 4 (beyond it) for the methods of each tier
+The notebooks carry level 3 (comparison with published methods) and level 4 (proposed methods) for the methods of each tier
 ([`08_notebooks.md`](08_notebooks.md)). The metadata links them to the ladder:
 
 - a level 3 notebook lists in `caos.methods` the ids of the `sota` rows it runs (`"methods": ["M-2"]`); every `sota` row must

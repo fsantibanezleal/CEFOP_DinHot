@@ -24,16 +24,16 @@
 % Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
 % publishing tool when the version DOI is reserved.
 \newcommand{\doctype}{Preprint}
-\newcommand{\docversion}{v0.01}
-\newcommand{\docdate}{30 October 2026}
-\newcommand{\versiondoi}{10.5281/zenodo.23788734}
+\newcommand{\docversion}{v0.02}
+\newcommand{\docdate}{31 October 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.23837877}
 \newcommand{\conceptdoi}{10.5281/zenodo.23788733}
 \newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
 \newcommand{\headerblock}{%
 \begin{center}
 \fbox{\parbox{0.94\textwidth}{\small\raggedright
 \textbf{\doctype} \quad$\cdot$\quad \docversion, \docdate \quad$\cdot$\quad Licence CC BY 4.0\\[2pt]
-CAOS open-research programme \quad$\cdot$\quad CEFOP\_DinHot, holographic optical trap studio, claims BS-1 and BS-2\\[2pt]
+CAOS open-research programme \quad$\cdot$\quad CEFOP\_DinHot, holographic optical trap studio\\[2pt]
 Version DOI \href{https://doi.org/\versiondoi}{\texttt{\versiondoi}} \quad$\cdot$\quad
 concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptdoi}}\\[2pt]
 Not peer reviewed. Source code, data and computational records: \href{https://\docrepo}{\texttt{\docrepo}}
@@ -53,7 +53,7 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 \headerblock
 
 \begin{abstract}
-Phase-fixed weighted Gerchberg--Saxton (WGS) is the practical state of the art for large arrays of optical traps, but it
+Phase-fixed weighted Gerchberg--Saxton (WGS) is the practical method for large arrays of optical traps, but it
 optimizes the hologram on an ideal model of the spatial light modulator (SLM), and the sequences that move traps interpolate
 between holograms that were never optimized for the frames in between. We test two hypotheses against the strongest baselines
 on the same scalar Fourier model. First, keeping the WGS weights but replacing the phase update by conjugate-gradient steps through the
@@ -89,8 +89,8 @@ conjugate-gradient minimization of shaped potentials~\cite{schroff}, but not ins
 interpolate the position, the amplitude and the optical phase of every trap between two endpoint holograms and invert the transform at every step~\cite{lpi};
 the intermediate holograms are never individually optimized, their trap intensities are uneven, and the interference of the transient spots makes the intensity dip.
 
-We propose and test a method for each gap. Section~\ref{sec:model} fixes the model, Section~\ref{sec:b1} defines the device-aware WGS (BS-1) and
-Section~\ref{sec:b2} the flicker-bounded sequence (BS-2), each with the hypothesis that would refute it, the baseline, the protocol and the results.
+We propose and test a method for each gap. Section~\ref{sec:model} fixes the model, Section~\ref{sec:b1} defines the device-aware WGS (B1) and
+Section~\ref{sec:b2} the flicker-bounded sequence (B2), each with the hypothesis that would refute it, the baseline, the protocol and the results.
 Section~\ref{sec:limits} states what the results do not show.
 
 \section{Model and metrics}\label{sec:model}
@@ -115,7 +115,7 @@ Every hologram is scored on the device with the same function, whatever model it
 \textbf{Task and setup.} The task is a $10\times10$ square lattice of equal traps eight FFT bins apart on an SLM of $\parNpix^2$ pixels padded by \parPad, with $\lambda=\parLambda$~nm, $f=\parFocal$~mm, $p=\parPitch$~$\mu$m and
 NA $\parNa$ in air. All methods are deterministic given a seed.
 
-\section{BS-1: device-aware weighted GS}\label{sec:b1}
+\section{Device-aware weighted GS}\label{sec:b1}
 
 \subsection{Hypothesis and method}
 
@@ -144,7 +144,7 @@ Each configuration runs on \nSeedsOne{} seeds; the full device runs on \nSeedsOn
 
 \begin{table}[t]
 \centering\small
-\caption{BS-1 on the $10\times10$ task, scored on the device. Medians over the seeds; $\sigma$ is the relative standard deviation of the trap intensities (\%), $e$ the efficiency.}
+\caption{Device-aware WGS on the $10\times10$ task, scored on the device. Medians over the seeds; $\sigma$ is the relative standard deviation of the trap intensities (\%), $e$ the efficiency.}
 \label{tab:b1}
 \begin{tabular}{@{}l r r r@{}}
 \toprule
@@ -174,12 +174,12 @@ is \bakeCeightRatioThree. The factor is therefore not a constant: it depends on 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig-b1.pdf}
-\caption{BS-1. (a) Sorted trap intensities of one hologram (seed 1) on the crosstalk device: phase-fixed WGS leaves a spread, B1 is flat. (b) Relative standard deviation on the device for every seed (log scale): the baselines, B1 with the device
+\caption{Device-aware WGS. (a) Sorted trap intensities of one hologram (seed 1) on the crosstalk device: phase-fixed WGS leaves a spread, B1 is flat. (b) Relative standard deviation on the device for every seed (log scale): the baselines, B1 with the device
 model removed from the loop, and B1.}
 \label{fig:b1}
 \end{figure}
 
-\section{BS-2: flicker-bounded phase-continuous sequences}\label{sec:b2}
+\section{Flicker-bounded phase-continuous sequences}\label{sec:b2}
 
 \subsection{Hypothesis and method}
 
@@ -206,7 +206,7 @@ difference), and the transform inverted at every frame (the superposition of the
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig-b2.pdf}
-\caption{BS-2. (a) Intensity of the moving trap with the lowest minimum, divided by its frame mean, along the 13-frame sequence (seed 1): LPI dips and overshoots, the flicker-bounded sequence stays close to one. The dotted line is $0.9$. (b) Minimum transient ratio of the moving traps against the length of the sequence, one marker per seed.}
+\caption{Flicker-bounded sequence. (a) Intensity of the moving trap with the lowest minimum, divided by its frame mean, along the 13-frame sequence (seed 1): LPI dips and overshoots, the flicker-bounded sequence stays close to one. The dotted line is $0.9$. (b) Minimum transient ratio of the moving traps against the length of the sequence, one marker per seed.}
 \label{fig:b2}
 \end{figure}
 
@@ -239,13 +239,13 @@ bound is therefore met on most seeds and not on all, and at an equal number of f
 \textbf{Model, not instrument.} Both results are computed on a scalar Fourier model with the device effects stated above. The crosstalk parameters come from a published fit on another device; the \parBits{}-bit, fill-factor and flicker effects have no published source in this model, and random flicker is not applied in the scoring. The frequency unit of the kernel is
 carried over from the model and is not verified against the source. An instrument with a different kernel would give a different factor, and the sensitivity of B1 to a mismatched kernel was not tested.
 
-\textbf{Variation.} The BS-1 factor ranges over the seeds from \ratioOneMin{} to \ratioOneMax{} on one task, and falls to \ratioOneFullMed{} on the full device without flicker and to \bakeCeightRatioThree{} on the smaller grid with flicker and a fixed budget. The result is a large improvement on this task, not a constant. The number of seeds is \nSeedsOne{} for the crosstalk device and \nSeedsOneFull{} for the full device; on the \benchOneDevN{} geometries of the studio's benchmark, on its C08 device (which adds flicker) at \benchOneBudget{} iterations with the
+\textbf{Variation.} The factor of B1 ranges over the seeds from \ratioOneMin{} to \ratioOneMax{} on one task, and falls to \ratioOneFullMed{} on the full device without flicker and to \bakeCeightRatioThree{} on the smaller grid with flicker and a fixed budget. The result is a large improvement on this task, not a constant. The number of seeds is \nSeedsOne{} for the crosstalk device and \nSeedsOneFull{} for the full device; on the \benchOneDevN{} geometries of the studio's benchmark, on its C08 device (which adds flicker) at \benchOneBudget{} iterations with the
 default parameters, with \benchOneDevSeeds{} seeds per cell for B1 and \benchOneDevSeedsMseven{} for M07, the factor over phase-fixed WGS is \benchOneDevList{}, a median of \benchOneDevMed{}
 (\benchOneDevMin{} to \benchOneDevMax) at a median efficiency ratio of \benchOneDevEff, and \benchOneDevPass{} of them meet both thresholds of the hypothesis:
 the gain is that of the task and devices above, and it does not carry to every geometry.
 B1 is built for traps on FFT bins at the focal plane without vortices, and is more expensive than the baseline by about the square of the upsampling factor per step; it is a baked method, not a live one.
 
-\textbf{BS-2 transient model.} The ratio of BS-2 is defined by our blend model of the SLM field between frames. It omits the temporal response and the refresh of the device, and the LPI baseline is our implementation of a published description, not the authors' code. In the source of the baseline, LPI on hardware stays above $0.70$ of its intensity, whereas it scores lower here
+\textbf{Transient model.} The ratio of B2 is defined by our blend model of the SLM field between frames. It omits the temporal response and the refresh of the device, and the LPI baseline is our implementation of a published description, not the authors' code. In the source of the baseline, LPI on hardware stays above $0.70$ of its intensity, whereas it scores lower here
 under our model, so the absolute values are not comparable between the two. The result establishes the ordering of the two methods under one model, on the acceptance task and, within the step bound, on most seeds of the longer moves of Section~\ref{sec:b2scope}, whose
 failing seeds fail on their phase path and are not recovered by more frames; at an equal number of frames on a long sort, LPI leads. It does not show that atoms are rearranged with fewer losses.
 
@@ -260,7 +260,7 @@ at most \claimStepFu{} Fourier units, it meets the bound on most seeds and not o
 \section*{Data and code availability}
 
 The methods (B1 and B2), the baselines, the measurement script that regenerates every number, table and figure reported here (\texttt{manuscripts/device-aware-flicker-bounded/data/measure.py}) and the committed baked artifacts it reads are in the repository
-\url{https://github.com/fsantibanezleal/CEFOP_DinHot} (Apache-2.0). The studio runs at \url{https://dinhot.fasl-work.com}. The acceptance tests of the two methods are \texttt{tests/methods/beyond/test\_b1\_device\_wgs.py} and \texttt{test\_b2\_flicker\_bounded.py}.
+\url{https://github.com/fsantibanezleal/CEFOP_DinHot} (Apache-2.0). The studio runs at \url{https://dinhot.fasl-work.com}. The acceptance tests of the two methods are \texttt{test\_b1\_device\_wgs.py} and \texttt{test\_b2\_flicker\_bounded.py}.
 
 \begin{thebibliography}{99}\small
 \bibitem{dileonardo} Di Leonardo, Ianni and Ruocco, ``Computer generation of optimal holograms for optical trap arrays,'' \emph{Opt. Express} 15, 1913, 2007. doi:10.1364/OE.15.001913.

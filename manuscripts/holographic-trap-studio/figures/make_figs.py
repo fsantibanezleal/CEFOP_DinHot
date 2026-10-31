@@ -47,7 +47,7 @@ def fig_pipeline() -> None:
     ax.set_xlim(0, 100)
     ax.set_ylim(0, 30)
     ax.axis("off")
-    boxes = [(1, "Case\nsetup, device,\ntarget, seed", BLUE), (21, f"Method\n({n_rows} ladder rows)\nphase $\\phi_j$", ORANGE),
+    boxes = [(1, "Case\nsetup, device,\ntarget, seed", BLUE), (21, f"Method\n({n_rows} methods)\nphase $\\phi_j$", ORANGE),
              (41, "Device\nquantizer, crosstalk,\nfill factor", PURPLE), (61, "Focal field\nFFT form,\npoint-trap form", GREEN),
              (81, "Metrics\n$e$, $u$, $\\sigma$,\nfeedback, bead", RED)]
     for x, label, col in boxes:
@@ -177,7 +177,7 @@ def fig_bench() -> None:
     grid = b["grid_100"]
     geos = [g["id"] for g in b["geometries"]]
     methods = sorted({k.split("/")[0] for k in grid}, key=lambda m: (m.startswith("B"), m))
-    label = {m: (f"BS-{m[1:]}" if m.startswith("B") else m) for m in methods}
+    label = {m: m for m in methods}
     fig, axs = plt.subplots(1, 2, figsize=(7.2, 5.4), sharey=True)
     for ax, device, title in ((axs[0], "ideal", "(a) ideal device"), (axs[1], "device", "(b) C08 device")):
         z = np.full((len(methods), len(geos)), np.nan)
