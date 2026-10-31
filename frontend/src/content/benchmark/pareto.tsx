@@ -1,12 +1,12 @@
 // The Pareto fronts (area `comparison`): per geometry, every method of the chosen cell as a point of (uniformity, efficiency) beside the
-// front of B5, which the document stores as a curve, and the hypervolume test of BS-5 computed from both. The front is the document's `pareto`
+// front of B5, which the document stores as a curve, and the hypervolume test of B5 computed from both. The front is the document's `pareto`
 // array; the points are its rows; the dominance and the areas are computed here, in the browser, from those two.
 import { Cite, ChipGroup, formatNumber, DocSection, PlotCard, useShellLang } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useState } from 'react';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import { bs5Cells, budgetText, frontOf, hypervolume, nonDominated, pickRows, shownId, TIER_NAME, TIER_ORDER, verdictOf, type Lang } from './data';
+import { b5Cells, budgetText, frontOf, hypervolume, nonDominated, pickRows, shownId, KIND_ORDER, KIND_TEXT, verdictOf, type Lang } from './data';
 import { CellControls, Note, Ready, TableWrap, useBench, useNum, useResolved } from './shared';
 
 function ParetoBody({ res }: { res: BenchmarkResults }) {
@@ -18,19 +18,19 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
   const [geo, setGeo] = useState<string>('');
   const geometry = withFront.find((g) => g.id === geo)?.id ?? withFront[0]?.id ?? res.geometries[0]?.id ?? '';
   if (!budget) return null;
-  const cells = bs5Cells(res, budget);
-  const verdict = verdictOf(cells.map((c) => c.hvFront >= c.hvClassical));
+  const cells = b5Cells(res, budget);
+  const verdict = verdictOf(cells.map((c) => c.hvFront >= c.hvPublished));
   const rows = pickRows(res, geometry, device, budget, 'default');
   const front = frontOf(res, geometry);
   const pts = [
-    ...rows.map((p) => ({ kind: p.tier ?? 'none', u: p.row.uniformity.median, e: p.row.efficiency.median, name: `${shownId(p.method)}` })),
+    ...rows.map((p) => ({ kind: p.kind ?? 'none', u: p.row.uniformity.median, e: p.row.efficiency.median, name: `${shownId(p.method)}` })),
     ...front.map((p) => ({ kind: 'front' as const, u: p.u, e: p.e, name: `B5, lambda ${formatNumber(p.lambda, lang, { digits: 3 })}` })),
   ];
   const xs = pts.map((p) => p.u);
-  const kinds = [...TIER_ORDER, 'none' as const, 'front' as const].filter((k) => pts.some((p) => p.kind === k));
+  const kinds = [...KIND_ORDER, 'none' as const, 'front' as const].filter((k) => pts.some((p) => p.kind === k));
   const series = kinds.map((k) => ({
     id: k,
-    label: k === 'front' ? { en: 'B5 front (continuation over lambda)', es: 'Frente de B5 (continuación en lambda)' } : k === 'none' ? { en: 'not on the ladder', es: 'fuera de la escalera' } : TIER_NAME[k],
+    label: k === 'front' ? { en: 'B5 front (continuation over lambda)', es: 'Frente de B5 (continuación en lambda)' } : k === 'none' ? { en: 'not on the ladder', es: 'fuera de la escalera' } : KIND_TEXT[k],
     mode: 'points' as const,
     size: k === 'front' ? 7 : 10,
     values: pts.map((p) => (p.kind === k ? p.e : null)),
@@ -88,15 +88,15 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
           <table className="caos-table" data-state="ready" data-table="bs5">
             <caption>
               {es
-                ? `La prueba de BS-5 en cada geometría con frente, con ${budgetText(budget).es}: el hipervolumen del frente de B5 contra el de la unión de los puntos de M04, M05, M06 y M09 (el criterio de la escalera), y qué puntos de esos cuatro domina algún punto del frente.`
-                : `The BS-5 test on each geometry with a front, at ${budgetText(budget).en}: the hypervolume of the B5 front against that of the union of the M04, M05, M06 and M09 points (the ladder's criterion), and which of those four points some front point dominates.`}
+                ? `La prueba de B5 en cada geometría con frente, con ${budgetText(budget).es}: el hipervolumen del frente de B5 contra el de la unión de los puntos de M04, M05, M06 y M09 (el criterio de la escalera), y qué puntos de esos cuatro domina algún punto del frente.`
+                : `The B5 test on each geometry with a front, at ${budgetText(budget).en}: the hypervolume of the B5 front against that of the union of the M04, M05, M06 and M09 points (the ladder's criterion), and which of those four points some front point dominates.`}
             </caption>
             <thead>
               <tr>
                 <th className="caos-col-text">{es ? 'Geometría' : 'Geometry'}</th>
                 <th>{es ? 'Puntos del frente' : 'Front points'}</th>
                 <th>{es ? 'HV del frente' : 'HV of the front'}</th>
-                <th>{es ? 'HV de los cuatro puntos clásicos' : 'HV of the four classical points'}</th>
+                <th>{es ? 'HV de los cuatro puntos publicados' : 'HV of the four published points'}</th>
                 <th className="caos-col-text">{es ? 'Puntos dominados' : 'Points dominated'}</th>
                 <th className="caos-col-text">{es ? 'Resultado' : 'Result'}</th>
               </tr>
@@ -107,12 +107,12 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
                   <td className="caos-col-text">{c.geometry}</td>
                   <td>{c.nFront}</td>
                   <td>{n(c.hvFront, 4)}</td>
-                  <td>{n(c.hvClassical, 4)}</td>
+                  <td>{n(c.hvPublished, 4)}</td>
                   <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
                     {c.dominated.length ? c.dominated.join(', ') : es ? 'ninguno' : 'none'}
                     {c.missing.length ? <span className="caos-plot-note" style={{ display: 'block' }}>{es ? 'sin fila: ' : 'no row: '}{c.missing.join(', ')}</span> : null}
                   </td>
-                  <td className="caos-col-text">{c.hvFront >= c.hvClassical ? (es ? 'el frente es mayor o igual' : 'front at least as large') : es ? 'el frente es menor' : 'front smaller'}</td>
+                  <td className="caos-col-text">{c.hvFront >= c.hvPublished ? (es ? 'el frente es mayor o igual' : 'front at least as large') : es ? 'el frente es menor' : 'front smaller'}</td>
                 </tr>
               ))}
             </tbody>
@@ -129,13 +129,13 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
 export function verdictLine(v: ReturnType<typeof verdictOf>, es: boolean): string {
   switch (v) {
     case 'supported':
-      return es ? 'Veredicto de BS-5 en esta celda: sustentado en todas las geometrías con frente.' : 'Verdict of BS-5 in this cell: supported on every geometry with a front.';
+      return es ? 'Veredicto de B5 en esta celda: sustentado en todas las geometrías con frente.' : 'Verdict of B5 in this cell: supported on every geometry with a front.';
     case 'partly':
-      return es ? 'Veredicto de BS-5 en esta celda: sustentado en algunas geometrías y no en otras.' : 'Verdict of BS-5 in this cell: supported on some geometries and not on others.';
+      return es ? 'Veredicto de B5 en esta celda: sustentado en algunas geometrías y no en otras.' : 'Verdict of B5 in this cell: supported on some geometries and not on others.';
     case 'not-supported':
-      return es ? 'Veredicto de BS-5 en esta celda: no sustentado en ninguna geometría con frente.' : 'Verdict of BS-5 in this cell: not supported on any geometry with a front.';
+      return es ? 'Veredicto de B5 en esta celda: no sustentado en ninguna geometría con frente.' : 'Verdict of B5 in this cell: not supported on any geometry with a front.';
     default:
-      return es ? 'Veredicto de BS-5 en esta celda: sin datos (el documento no trae frente o faltan los métodos del criterio).' : 'Verdict of BS-5 in this cell: no data (the document holds no front or lacks the methods of the criterion).';
+      return es ? 'Veredicto de B5 en esta celda: sin datos (el documento no trae frente o faltan los métodos del criterio).' : 'Verdict of B5 in this cell: no data (the document holds no front or lacks the methods of the criterion).';
   }
 }
 
@@ -146,12 +146,12 @@ export function ParetoTopic() {
       <P
         en={
           <>
-            Every method trades efficiency against uniformity, and the published tables give each one a single trade-off point at the weight or mixing parameter its authors chose <Cite id="dileonardo2007" />. BS-5 (engine id B5) computes the whole front by a continuation over a trade-off parameter, so the question the chart answers is where the single points of the other methods sit relative to the best trade-off attainable on the same task. A point under the front is a method that gives up light or uniformity that the front shows can be kept; a point on it is a trade-off that the front cannot improve on.
+            Every method trades efficiency against uniformity, and the published tables give each one a single trade-off point at the weight or mixing parameter its authors chose <Cite id="dileonardo2007" />. B5 (engine id B5) computes the whole front by a continuation over a trade-off parameter, so the question the chart answers is where the single points of the other methods sit relative to the best trade-off attainable on the same task. A point under the front is a method that gives up light or uniformity that the front shows can be kept; a point on it is a trade-off that the front cannot improve on.
           </>
         }
         es={
           <>
-            Cada método intercambia eficiencia por uniformidad, y las tablas publicadas dan a cada uno un solo punto de ese intercambio, en el peso o el parámetro de mezcla que eligieron sus autores <Cite id="dileonardo2007" />. BS-5 (identificador de motor B5) calcula el frente completo por continuación sobre un parámetro de intercambio, de modo que la pregunta que responde el gráfico es dónde quedan los puntos sueltos de los demás métodos respecto del mejor intercambio alcanzable en la misma tarea. Un punto bajo el frente es un método que cede luz o uniformidad que el frente muestra que puede conservarse; un punto sobre él es un intercambio que el frente no puede mejorar.
+            Cada método intercambia eficiencia por uniformidad, y las tablas publicadas dan a cada uno un solo punto de ese intercambio, en el peso o el parámetro de mezcla que eligieron sus autores <Cite id="dileonardo2007" />. B5 (identificador de motor B5) calcula el frente completo por continuación sobre un parámetro de intercambio, de modo que la pregunta que responde el gráfico es dónde quedan los puntos sueltos de los demás métodos respecto del mejor intercambio alcanzable en la misma tarea. Un punto bajo el frente es un método que cede luz o uniformidad que el frente muestra que puede conservarse; un punto sobre él es un intercambio que el frente no puede mejorar.
           </>
         }
       />

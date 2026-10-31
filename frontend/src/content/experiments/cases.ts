@@ -231,8 +231,8 @@ export const CASES: Record<string, CaseText> = {
 
   C03_large_array: {
     question: {
-      en: 'Does the large-array state of the art, phase-fixed weighted GS plus a few camera steps, hold on a large array, and what does an atom in one trap feel?',
-      es: '¿Se sostiene en una matriz grande el estado del arte, GS ponderado de fase fija más unos pocos pasos de cámara, y qué siente un átomo en una trampa?',
+      en: 'Does the phase-fixed weighted GS that large-array experiments use, plus a few camera steps, hold on a large array, and what does an atom in one trap feel?',
+      es: '¿Se sostiene en una matriz grande el GS ponderado de fase fija que usan los experimentos de matrices grandes, más unos pocos pasos de cámara, y qué siente un átomo en una trampa?',
     },
     setup: {
       en: 'The case places {n} equal traps on a square lattice with {lat} um spacing, with the optics of the atom setup ({wl} nm, {focal} mm, numerical aperture {na}, an SLM of {npix} by {npix} pixels). {nm} methods run on it, and the reference method is {ref}. The emulated camera has a gain error of {gainRms} rms, and the loop has a gain of {fbGain} and {steps} steps. A rubidium atom of {mass} mass units in one trap, at {power} mW, is integrated with a step of {dt} s to test the hologram through the frequency of its oscillation.',

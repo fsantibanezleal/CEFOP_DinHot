@@ -5,12 +5,12 @@ import { Cite, DocSection, useShellLang } from '@fasl-work/caos-app-shell';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
 import { LADDER, MethodTable } from '../methodology/ladder';
-import { nameOf, shownId, skippedIn, tierOf, TIER_SHORT, type Lang } from './data';
+import { nameOf, shownId, skippedIn, kindOf, KIND_TEXT, type Lang } from './data';
 import { Note, Ready, TableWrap, useBench, WRAP } from './shared';
 
 /** The difficulty of each geometry and the published task it is set against, from the benchmark protocol (the algorithms dossier D4.3 and D4.2). */
 const SOURCE: Record<string, { en: string; es: string }> = {
-  G1: { en: 'The 10 by 10 square array of Di Leonardo et al. 2007, the one published table that compares the classical methods on one task.', es: 'La matriz cuadrada de 10 por 10 de Di Leonardo et al. 2007, la única tabla publicada que compara los métodos clásicos en una misma tarea.' },
+  G1: { en: 'The 10 by 10 square array of Di Leonardo et al. 2007, the one published table that compares the published methods on one task.', es: 'La matriz cuadrada de 10 por 10 de Di Leonardo et al. 2007, la única tabla publicada que compara los métodos publicados en una misma tarea.' },
   G2: { en: 'Defined by the protocol: a ring of traps; no published task is set against it.', es: 'Definida por el protocolo: un anillo de trampas; no hay una tarea publicada con la que se contraste.' },
   G3: { en: 'Defined by the protocol: random positions with a minimum spacing, an array with no lattice symmetry.', es: 'Definida por el protocolo: posiciones aleatorias con un espaciamiento mínimo, una matriz sin simetría de red.' },
   G4: { en: 'The quasi-periodic set of Polin et al. 2005.', es: 'El conjunto cuasiperiódico de Polin et al. 2005.' },
@@ -68,7 +68,7 @@ function Tables({ res }: { res: BenchmarkResults }) {
           <thead>
             <tr>
               <th className="caos-col-text">{es ? 'Método' : 'Method'}</th>
-              <th className="caos-col-text">{es ? 'Nivel' : 'Tier'}</th>
+              <th className="caos-col-text">{es ? 'Tipo' : 'Kind'}</th>
               <th className="caos-col-text">{es ? 'Geometría' : 'Geometry'}</th>
               <th className="caos-col-text">{es ? 'Razón' : 'Reason'}</th>
             </tr>
@@ -82,7 +82,7 @@ function Tables({ res }: { res: BenchmarkResults }) {
               skipped.map((s) => (
                 <tr key={`${s.method}-${s.geometry}`}>
                   <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>{shownId(s.method)} {nameOf(s.method, lang)}</td>
-                  <td className="caos-col-text">{tierOf(s.method) ? TIER_SHORT[tierOf(s.method)!][lang] : '-'}</td>
+                  <td className="caos-col-text">{kindOf(s.method) ? KIND_TEXT[kindOf(s.method)!][lang] : '-'}</td>
                   <td className="caos-col-text">{s.geometry}</td>
                   <td className="caos-col-text" style={{ ...WRAP, whiteSpace: 'normal' }}>{s.reason[lang]}</td>
                 </tr>

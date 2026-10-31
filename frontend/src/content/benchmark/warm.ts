@@ -1,4 +1,4 @@
-// The record of the rejected warm-start model (BS-3, catalog row warmstart-model): `data/derived/models/warmstart-model-rejected.json`,
+// The record of the rejected warm-start model (B3, catalog row warmstart-model): `data/derived/models/warmstart-model-rejected.json`,
 // written by the evaluation stage when a trained model does not meet its criterion. It is not one of the files the site copies to
 // `public/data` (the model-metrics document has no entry for a slot without a released model), so the page reads it from the repository
 // at build time; a build without the file shows the claim without its numbers and says so. The glob matches nothing when the file is absent.
