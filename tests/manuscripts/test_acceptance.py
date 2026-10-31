@@ -19,9 +19,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "manuscripts" / "holographic-trap-studio" / "data"
 IDS = ["M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10", "M11", "M12", "M13", "M14", "M15", "M16", "M17",
-       "M18", "M19", "BS-4", "BS-5"]       # the rows of the table before it was measured (M01 to M19, BS-4, BS-5)
+       "M18", "M19", "B4", "B5"]       # the rows of the table before it was measured (M01 to M19, BS-4, BS-5)
 # Decimal constants that describe a row's setup (a bar, a gain, a start), not a measured value; they appear in the text by design.
-SETUP_CONSTANTS = {"M06": {"0.9", "0.98"}, "M07": {"0.5"}, "BS-4": {"0.5"}}
+SETUP_CONSTANTS = {"M06": {"0.9", "0.98"}, "M07": {"0.5"}, "B4": {"0.5"}}
 DECIMAL = re.compile(r"(?<![\w.])-?\d+\.\d+(?:e-?\d+)?")
 
 
