@@ -20,6 +20,7 @@ standard library only).
 | `check_artifacts.py` | contract 2: the index, manifests and artifacts agree; each lane matches its gate |
 | `check_version_coherence.py` | VERSION is the only source; the package, the changelog and the tags agree with it |
 | `check_notebooks.py` | the notebooks: layout, the English and Spanish mirror, levels, the SDD's sota methods (`caos.methods`) and `BS-` claims, anatomy, metadata, cleanliness, pins (static; the execution is `run_notebooks.py --check`) |
+| `check_internal_names.py` | the tier names (classical, state of the art, beyond it, SOTA, `BS-<n>`) never reach a reader: notebooks, their indexes, manuscript sources, `product.json` manuscript titles, the README and the app's strings name each method instead (from 0.14.000) |
 | `check_readme_areas.py` | the README states the repository by areas, each active or dormant, every folder link present |
 | `check_sdd.py` | the SDD has its sections; every requirement names a gate that exists; the method ladder names the tier of each method and a product has all three (classical, sota, beyond) and a `BS-` claim |
 | `check_manuscripts.py` | `product.json` declares the product's Zenodo manuscripts, a technical report at least; `--release` requires the report at the release's version, `--zenodo` reads the records online (local, never CI) |

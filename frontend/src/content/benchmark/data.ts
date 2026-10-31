@@ -1,8 +1,8 @@
-// What the Benchmark page computes from the committed documents: the rows of one cell of the protocol, the tier of every method, the
-// Pareto and hypervolume arithmetic and the verdict of each beyond-the-state-of-the-art claim. Pure functions of the benchmark document
+// What the Benchmark page computes from the committed documents: the rows of one cell of the protocol, the kind of every method, the
+// Pareto and hypervolume arithmetic and the verdict of each proposed-method claim. Pure functions of the benchmark document
 // (`data/derived/benchmark/results.json`, catalog row benchmark-results 1.0.0), so a test can plant a document and a page can show
 // whatever the document holds: a method, a geometry or a budget that is absent is absent from the page, never typed into it.
-import { LADDER, type Tier } from '../methodology/ladder';
+import { KIND_NAME, kindOfTier, LADDER, type Kind } from '../methodology/ladder';
 import type { BenchmarkResults, BenchmarkRow, Text } from '../../lib/contract.types';
 
 export type Lang = 'en' | 'es';
@@ -16,49 +16,43 @@ export interface Budget {
 }
 export type Stat = BenchmarkRow['efficiency'];
 
-export const TIER_ORDER: Tier[] = ['classical', 'sota', 'beyond'];
-export const TIER_NAME: Record<Tier, Text> = {
-  classical: { en: 'classical', es: 'clásico' },
-  sota: { en: 'state of the art', es: 'estado del arte' },
-  beyond: { en: 'beyond the state of the art', es: 'más allá del estado del arte' },
-};
-/** A short tier tag for a table column and a chart key. */
-export const TIER_SHORT: Record<Tier, Text> = {
-  classical: { en: 'classical', es: 'clásico' },
-  sota: { en: 'SOTA', es: 'EDA' },
-  beyond: { en: 'beyond', es: 'más allá' },
-};
+export type { Kind };
+export const KIND_ORDER: Kind[] = ['published', 'proposed'];
+/** What the reader sees for a kind of method, in a table column and a chart key. */
+export const KIND_TEXT: Record<Kind, Text> = KIND_NAME;
 
-/** The ladder row of a benchmark method id (M01 to M19, or the engine id B1 to B5 of a beyond method), or undefined off the ladder. */
+/** The ladder row of a benchmark method id (M01 to M19, or the engine id B1 to B5 of a proposed method), or undefined off the ladder. */
 export function ladderOf(method: string) {
   return LADDER.find((r) => r.engine === method || r.id === method);
 }
-export const tierOf = (method: string): Tier | null => ladderOf(method)?.tier ?? null;
-const tierRank = (method: string) => {
-  const t = tierOf(method);
-  return t === null ? TIER_ORDER.length : TIER_ORDER.indexOf(t);
+export const kindOf = (method: string): Kind | null => {
+  const row = ladderOf(method);
+  return row ? kindOfTier(row.tier) : null;
+};
+const kindRank = (method: string) => {
+  const k = kindOf(method);
+  return k === null ? KIND_ORDER.length : KIND_ORDER.indexOf(k);
 };
 /** The name of a method on the ladder, in a language; the id itself when the ladder does not know it. */
 export const nameOf = (method: string, lang: Lang): string => ladderOf(method)?.name[lang] ?? method;
-/** The id the reader sees: the benchmark carries the engine id of a beyond method (B1), the ladder its row id (BS-1); both are shown. */
+/** The id the reader sees: the engine id of the method (M01 to M19, B1 to B5). */
 export function shownId(method: string): string {
-  const row = ladderOf(method);
-  return row && row.id !== row.engine ? `${row.id} (${row.engine})` : method;
+  return ladderOf(method)?.engine ?? method;
 }
-export const orderMethods = (a: string, b: string): number => tierRank(a) - tierRank(b) || a.localeCompare(b, 'en', { numeric: true });
+export const orderMethods = (a: string, b: string): number => kindRank(a) - kindRank(b) || a.localeCompare(b, 'en', { numeric: true });
 
 export const budgetId = (b: Budget): string => `${b.kind}:${b.value}`;
 export function parseBudget(id: string): Budget {
   const [kind, value] = id.split(':');
   return { kind: kind as BudgetKind, value: Number(value) };
 }
-const KIND_ORDER: BudgetKind[] = ['iterations', 'time', 'converged'];
+const BUDGET_KIND_ORDER: BudgetKind[] = ['iterations', 'time', 'converged'];
 
 /** Every budget the rows carry, iterations then time then converged, each ascending. */
 export function budgetsOf(res: BenchmarkResults): Budget[] {
   const seen = new Map<string, Budget>();
   for (const r of res.rows) seen.set(`${r.budget_kind}:${r.budget}`, { kind: r.budget_kind, value: r.budget });
-  return [...seen.values()].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.value - b.value);
+  return [...seen.values()].sort((a, b) => BUDGET_KIND_ORDER.indexOf(a.kind) - BUDGET_KIND_ORDER.indexOf(b.kind) || a.value - b.value);
 }
 
 /** The words of a budget: "30 iterations", "50 ms", "1 s", "converged (cap 300 s)". The value is the one the document carries. */
@@ -77,7 +71,7 @@ export const methodsIn = (res: BenchmarkResults): string[] =>
 /** One method of one cell, with the row that is shown and what was not. */
 export interface Picked {
   method: string;
-  tier: Tier | null;
+  kind: Kind | null;
   /** The row shown. */
   row: BenchmarkRow;
   /** The parameters of the row shown. */
@@ -91,7 +85,7 @@ export interface Picked {
 /**
  * The rows of one cell (geometry, device, budget). `default` shows every method at its paper's parameters. `tuned` shows a method at its
  * tuned row when it has one; a method without one stays at its default row and carries `noTunedRow`, so the page never lets a tuned result
- * stand against an unlabelled default (protocol rule 5). Sorted by tier, then by method.
+ * stand against an unlabelled default (protocol rule 5). Sorted by kind, then by method.
  */
 export function pickRows(res: BenchmarkResults, geometry: string, device: Device, budget: Budget, view: ParamsView): Picked[] {
   const cell = res.rows.filter((r) => r.geometry === geometry && r.device === device && r.budget_kind === budget.kind && r.budget === budget.value);
@@ -101,7 +95,7 @@ export function pickRows(res: BenchmarkResults, geometry: string, device: Device
     const tuned = cell.find((r) => r.method === method && r.params === 'tuned');
     const row = view === 'tuned' ? (tuned ?? def) : def;
     if (!row) continue;
-    out.push({ method, tier: tierOf(method), row, params: row.params, noTunedRow: view === 'tuned' && !tuned, hasTuned: Boolean(tuned) });
+    out.push({ method, kind: kindOf(method), row, params: row.params, noTunedRow: view === 'tuned' && !tuned, hasTuned: Boolean(tuned) });
   }
   return out;
 }
@@ -121,8 +115,10 @@ export function mostUniform(rows: Picked[]): Picked | null {
   return kept.reduce((a, b) => (b.row.rel_std_pct.median < a.row.rel_std_pct.median ? b : a));
 }
 
-/** The most uniform method of one tier in a cell, by the rule of `mostUniform` applied inside the tier (efficiency against the tier's own best). */
-export const bestOfTier = (rows: Picked[], tier: Tier): Picked | null => mostUniform(rows.filter((p) => p.tier === tier));
+/** The most uniform method of one kind in a cell, by the rule of `mostUniform` applied inside the kind (efficiency against the kind's own best). */
+export const bestOfKind = (rows: Picked[], kind: Kind): Picked | null => mostUniform(rows.filter((p) => p.kind === kind));
+/** The strongest published method of a cell: the most uniform row among all the published methods (M01 to M19), the baseline of every proposed method. */
+export const bestPublished = (rows: Picked[]): Picked | null => bestOfKind(rows, 'published');
 
 // ---------------------------------------------------------------------------------------------------------------- Pareto arithmetic
 
@@ -204,43 +200,43 @@ export function verdictOf(cells: boolean[]): Verdict {
 
 /** The criteria of the SDD ladder rows, as numbers the page tests the measurement against (the test `data.test.ts` keeps them equal to the SDD). */
 export const CRITERIA = {
-  /** BS-1: the relative standard deviation at least this many times below M07 on the crosstalk device, efficiency at most this share lower. */
-  bs1: { sigmaFactor: 2, effRatio: 0.9 },
-  /** BS-3: the median iterations to 1 percent at least this many times below the random start. */
-  bs3: { iterationFactor: 2 },
-  /** BS-4: the 95th percentile of the relative standard deviation over the aberration ensemble at least this many times below M07, efficiency at most this share lower. */
-  bs4: { sigmaFactor: 1.25, effRatio: 0.9 },
+  /** B1: the relative standard deviation at least this many times below M07 on the crosstalk device, efficiency at most this share lower. */
+  b1: { sigmaFactor: 2, effRatio: 0.9 },
+  /** B3: the median iterations to 1 percent at least this many times below the random start. */
+  b3: { iterationFactor: 2 },
+  /** B4: the 95th percentile of the relative standard deviation over the aberration ensemble at least this many times below M07, efficiency at most this share lower. */
+  b4: { sigmaFactor: 1.25, effRatio: 0.9 },
 } as const;
 
-/** The strongest baseline of a beyond method in this benchmark's matrix, by the SDD row that names it (M07 for BS-1 and BS-4). */
+/** The strongest baseline of a proposed method in this benchmark's matrix, by the SDD row that names it (M07 for B1 and B4). */
 export const BASELINE_OF: Record<string, string> = { B1: 'M07', B4: 'M07' };
 
-/** The hypervolume test of BS-5 in one geometry: the front against the union of the classical points of the SDD criterion, at one cell. */
-export const BS5_CLASSICAL = ['M04', 'M05', 'M09', 'M06'] as const;
-export interface Bs5Cell {
+/** The hypervolume test of B5 in one geometry: the front against the union of the published points of the SDD criterion, at one cell. */
+export const B5_PUBLISHED = ['M04', 'M05', 'M09', 'M06'] as const;
+export interface B5Cell {
   geometry: string;
   hvFront: number;
-  hvClassical: number;
-  /** The classical methods of the criterion whose point is dominated by some front point. */
+  hvPublished: number;
+  /** The published methods of the criterion whose point is dominated by some front point. */
   dominated: string[];
   /** The methods of the criterion with no row in this cell. */
   missing: string[];
   nFront: number;
 }
-export function bs5Cells(res: BenchmarkResults, budget: Budget, device: Device = 'ideal'): Bs5Cell[] {
-  const out: Bs5Cell[] = [];
+export function b5Cells(res: BenchmarkResults, budget: Budget, device: Device = 'ideal'): B5Cell[] {
+  const out: B5Cell[] = [];
   for (const g of res.geometries) {
     const front = frontOf(res, g.id);
     if (!front.length) continue;
-    const rows = pickRows(res, g.id, device, budget, 'default').filter((p) => (BS5_CLASSICAL as readonly string[]).includes(p.method));
+    const rows = pickRows(res, g.id, device, budget, 'default').filter((p) => (B5_PUBLISHED as readonly string[]).includes(p.method));
     const pts = rows.map((p) => ({ m: p.method, e: p.row.efficiency.median, u: p.row.uniformity.median }));
     const fp = front.map((p) => ({ e: p.e, u: p.u }));
     out.push({
       geometry: g.id,
       hvFront: hypervolume(fp),
-      hvClassical: hypervolume(pts),
+      hvPublished: hypervolume(pts),
       dominated: pts.filter((q) => fp.some((p) => dominates(p, q))).map((q) => q.m),
-      missing: BS5_CLASSICAL.filter((m) => !pts.some((q) => q.m === m)),
+      missing: B5_PUBLISHED.filter((m) => !pts.some((q) => q.m === m)),
       nFront: front.length,
     });
   }

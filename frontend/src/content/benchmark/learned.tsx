@@ -1,4 +1,4 @@
-// The learned models (area `comparison`: a learned model and a classical baseline on the same data): the held-out metrics of the slots in the
+// The learned models (area `comparison`: a learned model and a published baseline on the same data): the held-out metrics of the slots in the
 // model-metrics document, which model answered each slot (the released one or its baseline) as the readiness document says, the M17 row beside
 // its baseline M19 in the benchmark matrix and in the baked C14 case, and the measured negative of the warm-start slot.
 import { Cite, DocSection, useShellLang } from '@fasl-work/caos-app-shell';
@@ -90,7 +90,7 @@ function MetricsTable({ metrics }: { metrics: ModelMetrics }) {
               <td className="caos-col-text"><Answers slot="warmstart-model" /></td>
               <td colSpan={4} className="caos-col-text" style={{ whiteSpace: 'normal' }}>
                 {es ? 'Sin entrada: no hay modelo publicado.' : 'No entry: no released model.'}
-                {WARM ? (es ? ` Se entrenó y se rechazó: mediana de ${n(WARM.metrics.iterations_to_1pct.model.median)} iteraciones contra ${n(WARM.metrics.iterations_to_1pct.random.median)} del arranque aleatorio (${n(WARM.ratio_random_over_model_median_iterations)} veces; el criterio pide ${CRITERIA.bs3.iterationFactor}).` : ` It was trained and rejected: median ${n(WARM.metrics.iterations_to_1pct.model.median)} iterations against ${n(WARM.metrics.iterations_to_1pct.random.median)} from the random start (${n(WARM.ratio_random_over_model_median_iterations)} times; the criterion asks for ${CRITERIA.bs3.iterationFactor}).`) : ''}
+                {WARM ? (es ? ` Se entrenó y se rechazó: mediana de ${n(WARM.metrics.iterations_to_1pct.model.median)} iteraciones contra ${n(WARM.metrics.iterations_to_1pct.random.median)} del arranque aleatorio (${n(WARM.ratio_random_over_model_median_iterations)} veces; el criterio pide ${CRITERIA.b3.iterationFactor}).` : ` It was trained and rejected: median ${n(WARM.metrics.iterations_to_1pct.model.median)} iterations against ${n(WARM.metrics.iterations_to_1pct.random.median)} from the random start (${n(WARM.ratio_random_over_model_median_iterations)} times; the criterion asks for ${CRITERIA.b3.iterationFactor}).`) : ''}
               </td>
             </tr>
           )}
@@ -172,16 +172,16 @@ function PairTable({ res, c14 }: { res: BenchmarkResults; c14: CaseManifest | un
 export function LearnedTopic() {
   const { data } = useBench();
   return (
-    <DocSection title={{ en: 'Learned models against their classical baselines', es: 'Modelos aprendidos frente a sus líneas base clásicas' }} id="learned" area="comparison" refs={['eybposh2020', 'whyte2005']}>
+    <DocSection title={{ en: 'Learned models against their published baselines', es: 'Modelos aprendidos frente a sus líneas base publicadas' }} id="learned" area="comparison" refs={['eybposh2020', 'whyte2005']}>
       <P
         en={
           <>
-            DinHot has two learned slots. The multi-plane network of M17 is built in the setting of DeepCGH <Cite id="eybposh2020" />: three plane amplitudes in, one phase out, trained without labels on a loss that is the accuracy itself, and judged against the volumetric GS of Whyte and Courtial <Cite id="whyte2005" /> given the same wall-clock. The warm-start network of B3 predicts the starting trap phases of the phase-fixed WGS. A learned slot is shown only against its classical baseline on held-out volumes or geometries, never against a number from a paper, and the table says which model answered: the released network, or the baseline that answers when the slot is in training state.
+            DinHot has two learned slots. The multi-plane network of M17 is built in the setting of DeepCGH <Cite id="eybposh2020" />: three plane amplitudes in, one phase out, trained without labels on a loss that is the accuracy itself, and judged against the volumetric GS of Whyte and Courtial <Cite id="whyte2005" /> given the same wall-clock. The warm-start network of B3 predicts the starting trap phases of the phase-fixed WGS. A learned slot is shown only against its published baseline on held-out volumes or geometries, never against a number from a paper, and the table says which model answered: the released network, or the baseline that answers when the slot is in training state.
           </>
         }
         es={
           <>
-            DinHot tiene dos espacios aprendidos. La red multiplano de M17 se construye en el planteamiento de DeepCGH <Cite id="eybposh2020" />: tres amplitudes de plano de entrada, una fase de salida, entrenada sin etiquetas con una pérdida que es la propia exactitud, y se juzga contra el GS volumétrico de Whyte y Courtial <Cite id="whyte2005" /> con el mismo reloj. La red de arranque de B3 predice las fases iniciales de las trampas del WGS de fase fija. Un espacio aprendido se muestra solo frente a su línea base clásica sobre volúmenes o geometrías reservados, nunca contra un número de un artículo, y la tabla dice qué modelo respondió: la red publicada, o la línea base que responde cuando el espacio está en estado de entrenamiento.
+            DinHot tiene dos espacios aprendidos. La red multiplano de M17 se construye en el planteamiento de DeepCGH <Cite id="eybposh2020" />: tres amplitudes de plano de entrada, una fase de salida, entrenada sin etiquetas con una pérdida que es la propia exactitud, y se juzga contra el GS volumétrico de Whyte y Courtial <Cite id="whyte2005" /> con el mismo reloj. La red de arranque de B3 predice las fases iniciales de las trampas del WGS de fase fija. Un espacio aprendido se muestra solo frente a su línea base publicada sobre volúmenes o geometrías reservados, nunca contra un número de un artículo, y la tabla dice qué modelo respondió: la red publicada, o la línea base que responde cuando el espacio está en estado de entrenamiento.
           </>
         }
       />

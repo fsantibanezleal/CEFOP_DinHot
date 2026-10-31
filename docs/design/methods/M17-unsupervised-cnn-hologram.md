@@ -24,7 +24,7 @@ GS and about 10 percent trap-depth variation on about 20 sites.
 
 ## Problem it answers
 
-A hologram for a three-plane point target by one network pass, in about 35 ms, when the target changes at interaction rate; the baseline it must beat is
+A hologram for a three-plane point target by one network pass, in about 22 ms, when the target changes at interaction rate; the baseline it must beat is
 the volumetric 3D GS (M19) at the same wall-clock.
 
 ## Inputs and outputs
@@ -73,7 +73,7 @@ the baseline answers: M19 at 30 iterations (`BASELINE_ITERATIONS`), `provenance 
 
 Inference is one pass of a 0.99M-parameter U-Net (median 34.9 ms in the committed evaluation, `network_ms_median` of `evaluation-detail.json`), on one thread of
 onnxruntime-web (GitHub Pages sends no cross-origin isolation headers). Training is offline on a GPU (about 1.3 h, the SDD limit is 3 h and 7 GB) and never in CI
-or in the browser (ADR-0069, ADR-0074). The baseline M19 takes a median 7.35 s at 30 iterations on the held-out volumes on the development machine.
+or in the browser (ADR-0069, ADR-0074). The baseline M19 takes a median 3.32 s at 30 iterations on the held-out volumes on the development machine.
 
 ## Acceptance criterion and gate
 
@@ -98,15 +98,15 @@ version was refuted by the same test (ratio 0.998) and not released; the record 
 Committed evaluation (`data/derived/models/metrics.json` and `evaluation-detail.json`, produced by the evaluate stage on the released graph; M1 report Update 2). Conditions:
 162 held-out volumes (160 generated, 40 per kind of random, lattice, ring and mixed, data seed 20269004, plus two benchmark layouts: the 3D lattice G5 and the three-plane
 layout of the M19 acceptance test), sha256 `3c974555676078b4756443e750793ae8c3a5bced595d673a0fa3092f1d316cb0` (the file lives in the data root, not in the repository);
-wall-clock budget $T$ = 7354.6 ms (the median of M19 at 30 iterations on those volumes); one machine.
+wall-clock budget $T$ = 3320.6 ms (the median of M19 at 30 iterations on those volumes); one machine.
 
 | Quantity | Measured |
 |---|---|
-| Ratio hybrid over M19 at equal wall-clock, median [q1, q3] | 1.140 [1.102, 1.160]; above 1 on 162 of 162 volumes |
-| Median volume accuracy AC | hybrid 0.6869, M19 0.5997 |
-| By kind | lattice 1.162, random 1.147, mixed 1.118, ring 1.100, G5 lattice 1.065, M19 three-plane layout 1.188 |
-| Budget curve (54 volumes each) | 1.149 at 0.33 $T$ (2.4 s), 1.148 at 0.6 $T$ (4.4 s), above 1 on 100 percent |
-| Refinement | never kept: the hybrid AC equals the network alone, so the network (34.9 ms) answers, about 200 times faster than the budget |
+| Ratio hybrid over M19 at equal wall-clock, median [q1, q3] | 1.139 [1.102, 1.160]; above 1 on 162 of 162 volumes |
+| Median volume accuracy AC | hybrid 0.6869, M19 0.5994 |
+| By kind | lattice 1.163, random 1.147, mixed 1.120, ring 1.102, G5 lattice 1.066, M19 three-plane layout 1.187 |
+| Budget curve (54 volumes each) | 1.149 at 0.33 $T$ (1.1 s), 1.148 at 0.6 $T$ (2.0 s), above 1 on 100 percent |
+| Refinement | never kept: the hybrid AC equals the network alone, so the network (21.8 ms) answers, about 150 times faster than the budget |
 | ONNX parity with torch | reconstructed plane intensities, max $|\Delta I|/\max I$ = 8.42e-6 (inside 1e-5); the phase differs up to 4.2e-3 (99.9th percentile 3.9e-4), reported, not claimed |
 
 The committed canonical bake runs M17 on C14, the case at the network's geometry, with the released graph (`data/derived/manifests/C14_volume_learned.json`, `models`: `cgh-net: real`); the other cases are outside the geometry the graph was trained for and do not list M17.

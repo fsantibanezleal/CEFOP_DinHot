@@ -47,7 +47,7 @@ LEVEL4 = {
     "07-feedback-and-dynamics/05-flicker-bounded-moves": ("m16_rearrangement", "b2_flicker_bounded", "transient_min_ratio"),
 }
 MARKERS = {"en": ("**Question:**", "**Answer:**"), "es": ("**Pregunta:**", "**Respuesta:**")}
-BEYOND = {"en": "Beyond the state of the art", "es": "Más allá del estado del arte"}
+BEYOND = {"en": "Evidence", "es": "Evidencia"}
 RESULTS = {"en": "## Results", "es": "## Resultados"}
 
 
@@ -201,7 +201,7 @@ def test_a_level_4_notebook_runs_the_baseline_and_the_claimed_method(lang, row):
 def test_a_level_3_notebook_runs_its_method_and_shows_a_figure_under_state_of_the_art(lang, row):
     nb = read(lang, row)
     name = LEVEL3[ROWS[row][2][0]]
-    sota = {"en": "State of the art", "es": "Estado del arte"}[lang]
+    sota = {"en": "Comparison", "es": "Comparación"}[lang]
     section, calls, figures = None, 0, 0
     for cell in nb["cells"]:
         if cell["cell_type"] == "markdown":
@@ -257,7 +257,7 @@ def plant_method_handed_over_as_a_callback(nb: dict) -> None:
 PLANTS = [
     (plant_long_line, "characters", "05-optimization/01-the-cost-and-its-gradient"),
     (plant_unprinted_answer, "answer quotes no number", "05-optimization/02-the-wirtinger-gradient-and-adams-step"),
-    (plant_no_figure_under_beyond, "Beyond the state of the art", "05-optimization/05-the-efficiency-uniformity-front"),
+    (plant_no_figure_under_beyond, "Evidence", "05-optimization/05-the-efficiency-uniformity-front"),
     (plant_copied_template_sentence, "generic filler sentence", "06-device-and-aberrations/01-what-the-device-costs"),
     (plant_method_handed_over_as_a_callback, "method cells", "07-feedback-and-dynamics/02-assigning-atoms-to-sites"),
 ]

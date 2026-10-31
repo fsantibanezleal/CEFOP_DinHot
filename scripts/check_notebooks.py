@@ -20,7 +20,8 @@ as a local release gate (ADR-0074). It fails, naming the file and the rule, on
   the SDD's ``## Method ladder`` table (``| id | tier | method | acceptance criterion | gate |``) that no level 3 notebook names in
   ``caos.methods``, in each language; a level 3 notebook that names none, or a method that is no ``sota`` row; ``caos.methods`` on
   another level. A tree whose SDD has no readable ladder is left to ``scripts/check_sdd.py``, which owns that table;
-- **anatomy**: the second-level sections of the tree's language, in order, as the level requires; a first cell that is not
+- **anatomy**: the second-level sections of the tree's language, in order, as the level requires (from template 0.14.000 the
+  sections of levels 3 and 4 are ``Comparison`` and ``Evidence``: the tier names never title a notebook); a first cell that is not
   markdown; a code cell not directly preceded by a markdown cell, or without a comment;
 - **metadata**: the ``caos`` block (language, topic, level, title, packages, data, sources, beyond) must agree with the
   tree, the folder, ``notebooks/requirements.txt`` (each package an exact line of it, ``name==version`` or
@@ -46,7 +47,7 @@ as a local release gate (ADR-0074). It fails, naming the file and the rule, on
   floor: method cells (calls into a method package, a pipeline module or, at level 3, a pinned reference implementation), figures and
   the words that read each, explanatory prose, setup cells, reproduction checks, long sentences shared with another notebook of the tree,
   generic filler, two statements on a line, long lines and cells, the question in the first cell, an answer that quotes a number an output
-  shows, a method cell and a figure under State of the art (level 3) and a figure or table under Beyond the state of the art (level 4);
+  shows, a method cell and a figure under Comparison (level 3) and a figure or table under Evidence (level 4);
 - **CI**: ``.github/workflows/ci.yml`` runs this check and ``check_readme_areas.py``, and no workflow executes the notebooks.
 
 Usage: ``python scripts/check_notebooks.py [repo_root] [--pypi]``. Exit 0 clean, 1 on any finding. ``--pypi`` is opt-in and never
@@ -81,8 +82,8 @@ SECTIONS = (
     ("Setup", "Preparación", 1),
     ("Data", "Datos", 1),
     ("Method", "Método", 1),
-    ("State of the art", "Estado del arte", 3),
-    ("Beyond the state of the art", "Más allá del estado del arte", 4),
+    ("Comparison", "Comparación", 3),
+    ("Evidence", "Evidencia", 4),
     ("Results", "Resultados", 1),
     ("Summary", "Resumen", 1),
     ("References", "Referencias", 1),
@@ -95,7 +96,11 @@ OPTIONAL_KEYS = ("methods",)  # level 3 only: the ids of the SDD's sota methods 
 LADDER_SECTION = "Method ladder"
 LADDER_HEAD = ["id", "tier", "method", "acceptance criterion", "gate"]
 RULE = "CAOS_MANAGE conventions/method-tiers-and-manuscripts.md"
-BEYOND_SECTION = "Beyond the state of the art"
+BEYOND_SECTION = "Beyond the state of the art"  # the SDD's section: an internal record, never a notebook heading
+# the notebook sections of levels 3 and 4 (template 0.14.000): the tier names are internal and never a heading a reader
+# sees (CAOS_MANAGE conventions/method-tiers-and-manuscripts.md section 0); scripts/check_internal_names.py holds the rest
+COMPARISON_SECTION = "Comparison"
+EVIDENCE_SECTION = "Evidence"
 SLUG = re.compile(r"^(\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)$")
 NOTEBOOK = re.compile(r"^(\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)\.ipynb$")
 BS_ID = re.compile(r"\bBS-\d+\b")
@@ -1729,15 +1734,15 @@ def reading_findings(rel: str, r: Reading, bar: dict) -> list[str]:
             out.append(f"{rel}: bar: the answer quotes no number that appears in an output of the notebook, at the precision the answer writes it "
                        f"(numbers in the answer: {quoted[:6]})")
     if r.level == 3:
-        if not [i for i in r.method_cells if r.section[i] == "State of the art"]:
-            out.append(f"{rel}: bar: no method cell under State of the art: a level 3 notebook runs the state of the art")
-        if not sum(n for i, n in r.fig_cells if r.section[i] == "State of the art"):
-            out.append(f"{rel}: bar: no figure under State of the art: a level 3 notebook compares it with a figure")
+        if not [i for i in r.method_cells if r.section[i] == COMPARISON_SECTION]:
+            out.append(f"{rel}: bar: no method cell under {COMPARISON_SECTION}: a level 3 notebook runs the published method it compares")
+        if not sum(n for i, n in r.fig_cells if r.section[i] == COMPARISON_SECTION):
+            out.append(f"{rel}: bar: no figure under {COMPARISON_SECTION}: a level 3 notebook compares the methods with a figure")
     if r.level == 4:
-        shown_beyond = sum(n for i, n in r.fig_cells if r.section[i] == BEYOND_SECTION) \
-            + sum(1 for i, c in enumerate(r.cells) if r.section[i] == BEYOND_SECTION and has_table(c))
+        shown_beyond = sum(n for i, n in r.fig_cells if r.section[i] == EVIDENCE_SECTION) \
+            + sum(1 for i, c in enumerate(r.cells) if r.section[i] == EVIDENCE_SECTION and has_table(c))
         if not shown_beyond:
-            out.append(f"{rel}: bar: no figure or table under {BEYOND_SECTION}: a level 4 notebook measures its claim")
+            out.append(f"{rel}: bar: no figure or table under {EVIDENCE_SECTION}: a level 4 notebook measures its claim")
     out.extend(f"{rel}: bar: {message}" for message in r.line_findings)
     return out
 

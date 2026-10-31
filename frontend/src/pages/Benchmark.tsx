@@ -17,7 +17,7 @@ import { ProtocolTopic } from '../content/benchmark/protocol';
 import { ProvenanceTopic } from '../content/benchmark/provenance';
 import { BudgetTopic, DeviceTopic } from '../content/benchmark/robustness';
 import { BenchProvider } from '../content/benchmark/shared';
-import { TiersTopic } from '../content/benchmark/tiers';
+import { PublishedProposedTopic } from '../content/benchmark/published-proposed';
 import { CITATIONS } from '../content/citations';
 import { BENCHMARK_CITATIONS } from '../content/citations/benchmark';
 import { EXPERIMENTS_CITATIONS } from '../content/citations/experiments';
@@ -37,8 +37,8 @@ export function Benchmark() {
       <DocPage
         title={{ en: 'Benchmark', es: 'Benchmark' }}
         lede={t(
-          'The benchmark of DinHot puts every method of the ladder, classical, state of the art and beyond it, on the same geometries with the same seeds, devices and budgets, each at the default parameters of its paper and with a shared tuning grid, and the learned models against their classical baselines on held-out targets. Choose a device, a parameter set and a budget and every table and chart follows. Every number is read from the committed benchmark and model-metric documents when the page loads, and each claim of the beyond tier is shown with the measurement that supports it or the measured negative.',
-          'El benchmark de DinHot pone cada método de la escalera, clásico, de estado del arte y más allá de él, sobre las mismas geometrías con las mismas semillas, dispositivos y presupuestos, cada uno con los parámetros por defecto de su artículo y con una rejilla de ajuste común, y los modelos aprendidos frente a sus líneas base clásicas sobre objetivos reservados. Elija un dispositivo, un conjunto de parámetros y un presupuesto y cada tabla y cada gráfico lo siguen. Cada número se lee de los documentos versionados del benchmark y de las métricas de modelos cuando la página carga, y cada afirmación del nivel más allá se muestra con la medición que la sustenta o con el negativo medido.',
+          'The benchmark of DinHot puts every method of the ladder, the 19 published and the 5 proposed, on the same geometries with the same seeds, devices and budgets, each at the default parameters of its paper and with a shared tuning grid, and the learned models against their published baselines on held-out targets. Choose a device, a parameter set and a budget and every table and chart follows. Every number is read from the committed benchmark and model-metric documents when the page loads, and each claim about a proposed method is shown with the measurement that supports it or the measured negative.',
+          'El benchmark de DinHot pone cada método de la escalera, los 19 publicados y los 5 propuestos, sobre las mismas geometrías con las mismas semillas, dispositivos y presupuestos, cada uno con los parámetros por defecto de su artículo y con una rejilla de ajuste común, y los modelos aprendidos frente a sus líneas base publicadas sobre objetivos reservados. Elija un dispositivo, un conjunto de parámetros y un presupuesto y cada tabla y cada gráfico lo siguen. Cada número se lee de los documentos versionados del benchmark y de las métricas de modelos cuando la página carga, y cada afirmación sobre un método propuesto se muestra con la medición que la sustenta o con el negativo medido.',
         )}
       >
         <BenchProvider>
@@ -64,12 +64,12 @@ export function Benchmark() {
                 tabs: ['G5', 'G6', 'G7'].map(geo),
               },
               {
-                id: 'tiers',
-                label: t('Do the tiers differ?', '¿Difieren los niveles?'),
+                id: 'comparison',
+                label: t('Do the proposed methods improve on the published ones?', '¿Mejoran los métodos propuestos a los publicados?'),
                 tabs: [
-                  { id: 'tiers', label: t('Three tiers', 'Tres niveles'), content: <TiersTopic /> },
+                  { id: 'published-proposed', label: t('Published and proposed', 'Publicados y propuestos'), content: <PublishedProposedTopic /> },
                   { id: 'pareto', label: t('Pareto fronts', 'Frentes de Pareto'), content: <ParetoTopic /> },
-                  { id: 'claims', label: t('Beyond claims', 'Afirmaciones más allá'), content: <ClaimsTopic /> },
+                  { id: 'claims', label: t('Proposed-method claims', 'Afirmaciones de los métodos propuestos'), content: <ClaimsTopic /> },
                   { id: 'learned', label: t('Learned models', 'Modelos aprendidos'), content: <LearnedTopic /> },
                 ],
               },
