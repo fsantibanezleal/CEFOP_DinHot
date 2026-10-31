@@ -3,6 +3,17 @@
 All notable changes to this product. Versions are X.XX.XXX (VERSION is the single source); every release is
 tagged.
 
+## [0.02.001], 2026-10-31
+
+### Changed
+
+- Adopted CAOS_PRODUCT_TEMPLATE 0.14.000: each method is named by its name wherever a reader sees it. The app, the notebooks, the
+  README and both manuscripts present 19 published methods and 5 proposed methods; the Methodology page groups them by family, and
+  the Benchmark page compares published and proposed methods, each proposed method against the strongest published method of its cell.
+- The level 3 and 4 notebooks use the sections Comparison and Evidence.
+- The technical report v0.02.001 (10.5281/zenodo.23837873) is organized by method family, and the manuscript on device-aware weighted
+  GS and flicker-bounded sequences is at v0.02 (10.5281/zenodo.23837877). No result changes.
+
 ## [0.02.000], 2026-10-30
 
 ### Changed

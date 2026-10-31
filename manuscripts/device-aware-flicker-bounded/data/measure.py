@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Measure the two beyond-the-state-of-the-art claims of DinHot and write ``beyond.json`` and ``beyond_numbers.tex``.
+"""Measure the two proposed methods of DinHot and write ``beyond.json`` and ``beyond_numbers.tex``.
 
-BS-1 (device-aware weighted GS, engine id B1) and BS-2 (flicker-bounded phase-continuous sequence, engine id B2) are
+B1 (device-aware weighted GS) and B2 (flicker-bounded phase-continuous sequence) are
 run here with the real methods of ``data-pipeline/pipeline/model/holo`` on the task and the grids of their acceptance
 tests (``tests/methods/beyond/test_b1_device_wgs.py`` and ``test_b2_flicker_bounded.py``), over more seeds than the
 tests use. The committed baked artifacts (``data/derived/manifests``) are read for the second, smaller grid of the
@@ -83,7 +83,7 @@ def stats(values: list[float]) -> dict:
     return {"median": statistics.median(values), "min": min(values), "max": max(values), "n": len(values)}
 
 
-# ---------------------------------------------------------------- BS-1
+# ---------------------------------------------------------------- B1
 
 def measure_b1(seeds: list[int], device: Device, label: str, with_baselines: bool) -> dict:
     setup = make_setup(256)
@@ -149,7 +149,7 @@ def measure_b1(seeds: list[int], device: Device, label: str, with_baselines: boo
     }
 
 
-# ---------------------------------------------------------------- BS-2
+# ---------------------------------------------------------------- B2
 
 def lpi(setup: Setup, start: TrapSet, dest: TrapSet, rng: Rng, frames: int):
     """Linear phase interpolation as the test of B2 writes it from arXiv 2501.01391 (independent endpoint holograms)."""
@@ -278,7 +278,7 @@ def c10_plan():
 
 
 def measure_b2_scope(seeds_long: list[int], seeds_c10: list[int], c10_equal_frames: int = 25) -> dict:
-    """The measured limit of BS-2, as its test runs it on more seeds: (a) longer moves of the acceptance lattice (12 and 20 bins,
+    """The measured limit of B2, as its test runs it on more seeds: (a) longer moves of the acceptance lattice (12 and 20 bins,
     64 pixels), end phases from M07 at the destination, at the default frames and at the frames ``frames_for_move`` names; (b)
     case C10's sort on M16's plan (end phases from M07 per seed, LPI on the same assignment) at an equal number of frames and at
     the frames of the move, and the held phases at the equal frames for the first seed."""
@@ -360,7 +360,7 @@ def read_manifests() -> dict:
 
 
 def read_benchmark(budget: int = 100) -> dict:
-    """BS-1 in the studio's benchmark (``data/derived/benchmark/results.json``): on every geometry where both ran, the factor of
+    """B1 in the studio's benchmark (``data/derived/benchmark/results.json``): on every geometry where both ran, the factor of
     B1 over phase-fixed WGS (M07) on the relative standard deviation and the efficiency ratio, at ``budget`` iterations with the
     default parameters, on the C08 device and on the ideal device."""
     r = json.loads((ROOT / "data" / "derived" / "benchmark" / "results.json").read_text(encoding="utf-8"))
@@ -467,7 +467,7 @@ def write_macros(data: dict, path: Path) -> None:
     L.append(macro("bakeCeightSeedRatios", ", ".join(fmt(x, 3) for x in sr[:-1]) + f" and {fmt(sr[-1], 3)}"))
     L.append(macro("bakeCeightSeedsTwo", sum(1 for x in sr if x >= 2)))
     L.append(macro("bakeCeightSeedsN", len(sr)))
-    # BS-2
+    # B2
     s13 = b2["13"]
     L.append(macro("nSeedsTwo", str(s13["b2_min"]["n"])))
     L.append(macro("bTwoMin", fmt(s13["b2_min"]["min"], 3)))
@@ -487,7 +487,7 @@ def write_macros(data: dict, path: Path) -> None:
             L.append(macro(f"bTwoMin{nm}", fmt(b2[fr]["b2_min"]["min"], 3)))
             L.append(macro(f"lpiMed{nm}", fmt(b2[fr]["lpi_min"]["median"], 3)))
             L.append(macro(f"lpiMax{nm}", fmt(b2[fr]["lpi_min"]["max"], 3)))
-    # BS-2, the measured scope
+    # B2, the measured scope
     sc = data["bs2_scope"]
     L.append(macro("claimStepFu", f"{sc['claim_step_fu']:g}"))
     L.append(macro("scopeDefaultFrames", sc["default_frames"]))
@@ -551,7 +551,7 @@ def write_macros(data: dict, path: Path) -> None:
     L.append(macro("cTenPeak", fmt(c["peak_step"], 3)))
     bad = [r for r in rows if r["b2_enough"] < 0.9]
     L.append(macro("cTenFailList", "; ".join(f"seed {r['seed']} at {r['b2_enough']:.3f} against {r['lpi_enough']:.3f} for LPI" for r in bad) or "none"))
-    # BS-1 in the studio's benchmark, on the C08 device
+    # B1 in the studio's benchmark, on the C08 device
     bb = data["benchmark_bs1"]
     dev = bb["devices"]["device"]
     L.append(macro("benchOneBudget", bb["budget"]))
@@ -581,8 +581,8 @@ def main() -> int:
     ap.add_argument("--seeds-b1-full", type=int, default=3)
     ap.add_argument("--seeds-b2", type=int, default=5)
     ap.add_argument("--frames", type=int, nargs="+", default=[13, 7, 25])
-    ap.add_argument("--seeds-long", type=int, default=8, help="seeds of the long lattice moves (BS-2 scope)")
-    ap.add_argument("--seeds-c10", type=int, default=6, help="seeds of C10's sort on M16's plan (BS-2 scope)")
+    ap.add_argument("--seeds-long", type=int, default=8, help="seeds of the long lattice moves (B2 scope)")
+    ap.add_argument("--seeds-c10", type=int, default=6, help="seeds of C10's sort on M16's plan (B2 scope)")
     ap.add_argument("--parts", default="bs1,bs1_full,bs2,bs2_scope",
                     help="comma-separated parts to measure; the others are kept from the existing beyond.json")
     ap.add_argument("--out", default=str(HERE))

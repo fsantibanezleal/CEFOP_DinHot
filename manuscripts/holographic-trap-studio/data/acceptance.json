@@ -454,7 +454,7 @@
    "measure_seconds": 21.4
   },
   {
-   "id": "BS-4",
+   "id": "B4",
    "text": "95th percentile of the relative standard deviation a median 1.435 times below M07 (1.42 to 1.57) over a 200-sample aberration ensemble, at a median 0.982 of its efficiency; pointing errors 1.04 times (seed 1)",
    "seeds": "3 (pointing 1)",
    "source": "tests/methods/beyond/test_b4_robust.py",
@@ -486,7 +486,7 @@
    "measure_seconds": 113.2
   },
   {
-   "id": "BS-5",
+   "id": "B5",
    "text": "hypervolume 0.8190 against 0.8018 for the union of the M04, M05, M06 and M09 points; 7 front points dominate M04 and 8 dominate M05",
    "seeds": "1",
    "source": "tests/methods/beyond/test_b5_pareto.py",
