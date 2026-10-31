@@ -4,7 +4,7 @@ import { Cite, DocSection, Equation, useShellLang } from '@fasl-work/caos-app-sh
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { Note, Ready, TableWrap, useBench } from './shared';
 import { P } from '../bi';
-import { budgetText, budgetsOf, methodsIn, skippedIn, tierOf, TIER_NAME, TIER_ORDER } from './data';
+import { budgetText, budgetsOf, methodsIn, skippedIn, kindOf, KIND_ORDER, KIND_TEXT } from './data';
 
 function ProtocolBody({ res }: { res: BenchmarkResults }) {
   const lang = useShellLang();
@@ -26,7 +26,7 @@ function ProtocolBody({ res }: { res: BenchmarkResults }) {
     [es ? 'Métodos con filas ajustadas' : 'Methods with tuned rows', tuned.size ? list([...tuned].sort()) : '-', es ? 'Solo un método que declara una rejilla de ajuste tiene filas ajustadas, y con el mismo número de corridas de ajuste que los demás.' : 'Only a method that declares a tuning grid has tuned rows, with the same number of tuning runs as the others.'],
     [es ? 'Celdas no corridas' : 'Cells not run', String(skippedIn(res).length), es ? 'Cada una con la razón del método; aparecen en la tabla de la geometría y en la de procedencia.' : 'Each with the reason of the method; they are listed in the table of the geometry and in the provenance table.'],
   ];
-  const counts = TIER_ORDER.map((tier) => ({ tier, n: methods.filter((m) => tierOf(m) === tier).length }));
+  const counts = KIND_ORDER.map((kind) => ({ kind, n: methods.filter((m) => kindOf(m) === kind).length }));
   return (
     <>
       <TableWrap>
@@ -59,8 +59,8 @@ function ProtocolBody({ res }: { res: BenchmarkResults }) {
         {p.device[lang]}
       </p>
       <p className="caos-plot-note" lang={lang}>
-        {es ? 'Métodos por nivel en este documento: ' : 'Methods per tier in this document: '}
-        {counts.map((c) => `${TIER_NAME[c.tier][lang]} ${c.n}`).join('; ')}.
+        {es ? 'Métodos por tipo en este documento: ' : 'Methods per kind in this document: '}
+        {counts.map((c) => `${KIND_TEXT[c.kind][lang]} ${c.n}`).join('; ')}.
       </p>
     </>
   );
@@ -74,12 +74,12 @@ export function ProtocolTopic() {
       <P
         en={
           <>
-            The benchmark exists because no published comparison puts the methods of a hologram engine on one array with one set of seeds: the published tables report each method at the setting its authors chose, on grids of their own, at an iteration count or a search length that differs from method to method <Cite id="dileonardo2007" /> <Cite id="pasienski2008" />. DinHot therefore measures its own matrix. Every method of the ladder, in its three tiers, runs on every geometry that its target kind accepts, with the same random starts, the same metrics and the same budgets, and the page reads the result from the committed document, so a number on this page is a number of that document and of no other source.
+            The benchmark exists because no published comparison puts the methods of a hologram engine on one array with one set of seeds: the published tables report each method at the setting its authors chose, on grids of their own, at an iteration count or a search length that differs from method to method <Cite id="dileonardo2007" /> <Cite id="pasienski2008" />. DinHot therefore measures its own matrix. Every method of the ladder, published and proposed, runs on every geometry that its target kind accepts, with the same random starts, the same metrics and the same budgets, and the page reads the result from the committed document, so a number on this page is a number of that document and of no other source.
           </>
         }
         es={
           <>
-            El benchmark existe porque ninguna comparación publicada pone los métodos de un motor de hologramas sobre una misma matriz con un mismo conjunto de semillas: las tablas publicadas informan cada método con el ajuste que eligieron sus autores, sobre grillas propias y con un número de iteraciones o una longitud de búsqueda que cambia de un método a otro <Cite id="dileonardo2007" /> <Cite id="pasienski2008" />. DinHot mide entonces su propia matriz. Cada método de la escalera, en sus tres niveles, corre en cada geometría que su tipo de objetivo acepta, con los mismos arranques aleatorios, las mismas métricas y los mismos presupuestos, y la página lee el resultado del documento versionado, de modo que un número de esta página es un número de ese documento y de ninguna otra fuente.
+            El benchmark existe porque ninguna comparación publicada pone los métodos de un motor de hologramas sobre una misma matriz con un mismo conjunto de semillas: las tablas publicadas informan cada método con el ajuste que eligieron sus autores, sobre grillas propias y con un número de iteraciones o una longitud de búsqueda que cambia de un método a otro <Cite id="dileonardo2007" /> <Cite id="pasienski2008" />. DinHot mide entonces su propia matriz. Cada método de la escalera, publicado y propuesto, corre en cada geometría que su tipo de objetivo acepta, con los mismos arranques aleatorios, las mismas métricas y los mismos presupuestos, y la página lee el resultado del documento versionado, de modo que un número de esta página es un número de ese documento y de ninguna otra fuente.
           </>
         }
       />
@@ -98,12 +98,12 @@ export function ProtocolTopic() {
       <P
         en={
           <>
-            Two quantities decide most of the comparisons below. The uniformity factor of a challenger against its baseline is the ratio of their relative standard deviations, and the efficiency ratio is the ratio of their efficiencies; a claim of the beyond tier states a threshold on both, so a method that is uniform because it wastes the light does not pass. The efficiency-uniformity trade-off of a method that returns a whole front is compared by hypervolume against the point (0, 0), the area of the union of the rectangles under its points, which is the one scalar that grows when a front moves toward better efficiency, better uniformity or both. The medians over the seeds of the document, and not single runs, feed both.
+            Two quantities decide most of the comparisons below. The uniformity factor of a challenger against its baseline is the ratio of their relative standard deviations, and the efficiency ratio is the ratio of their efficiencies; a claim about a proposed method states a threshold on both, so a method that is uniform because it wastes the light does not pass. The efficiency-uniformity trade-off of a method that returns a whole front is compared by hypervolume against the point (0, 0), the area of the union of the rectangles under its points, which is the one scalar that grows when a front moves toward better efficiency, better uniformity or both. The medians over the seeds of the document, and not single runs, feed both.
           </>
         }
         es={
           <>
-            Dos cantidades deciden la mayor parte de las comparaciones siguientes. El factor de uniformidad de un retador frente a su línea base es el cociente de sus desviaciones estándar relativas, y la razón de eficiencia es el cociente de sus eficiencias; una afirmación del nivel más allá fija un umbral en ambos, de modo que un método uniforme porque desperdicia la luz no la cumple. El compromiso eficiencia-uniformidad de un método que entrega un frente completo se compara por hipervolumen respecto del punto (0, 0), el área de la unión de los rectángulos bajo sus puntos, que es el único escalar que crece cuando un frente se mueve hacia mejor eficiencia, mejor uniformidad o ambas. Las medianas sobre las semillas del documento, y no corridas sueltas, alimentan ambos.
+            Dos cantidades deciden la mayor parte de las comparaciones siguientes. El factor de uniformidad de un retador frente a su línea base es el cociente de sus desviaciones estándar relativas, y la razón de eficiencia es el cociente de sus eficiencias; una afirmación sobre un método propuesto fija un umbral en ambos, de modo que un método uniforme porque desperdicia la luz no la cumple. El compromiso eficiencia-uniformidad de un método que entrega un frente completo se compara por hipervolumen respecto del punto (0, 0), el área de la unión de los rectángulos bajo sus puntos, que es el único escalar que crece cuando un frente se mueve hacia mejor eficiencia, mejor uniformidad o ambas. Las medianas sobre las semillas del documento, y no corridas sueltas, alimentan ambos.
           </>
         }
       />

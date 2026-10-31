@@ -7,6 +7,9 @@ import { PLAN } from './plan';
 
 const sdd = readFileSync(new URL('../../../../docs/design/SDD.md', import.meta.url), 'utf8');
 
+/** The SDD names the proposed methods BS-1 to BS-5; the app names them by their engine ids B1 to B5. */
+const sddToLadder = (id: string) => id.replace(/^BS-/, 'B');
+
 function sddRows() {
   const start = sdd.indexOf('## Method ladder');
   const end = sdd.indexOf('\n## ', start + 5);
@@ -29,9 +32,9 @@ describe('the ladder on the Methodology page', () => {
   });
 
   it('has the same ids, tiers and names as the SDD', () => {
-    expect(LADDER.map((r) => r.id).sort()).toEqual(rows.map((r) => r.id).sort());
+    expect(LADDER.map((r) => r.id).sort()).toEqual(rows.map((r) => sddToLadder(r.id)).sort());
     for (const row of rows) {
-      const mine = LADDER.find((r) => r.id === row.id);
+      const mine = LADDER.find((r) => r.id === sddToLadder(row.id));
       expect(mine?.tier, row.id).toBe(row.tier);
       const name = row.method.replace(/ \(engine id (B\d)\)$/, '');
       expect(mine?.name.en, row.id).toBe(name);
@@ -40,25 +43,30 @@ describe('the ladder on the Methodology page', () => {
     }
   });
 
-  it('places every ladder method in exactly one topic, of its own tier', () => {
+  it('places every ladder method in exactly one topic', () => {
     const seen = new Map<string, string>();
     for (const topic of PLAN) {
       for (const id of topic.ids) {
         expect(seen.has(id), `${id} appears in ${seen.get(id)} and ${topic.id}`).toBe(false);
         seen.set(id, topic.id);
-        expect(topic.group, `${id} is in the ${topic.group} group`).toBe(LADDER.find((r) => r.id === id)?.tier);
+        expect(LADDER.find((r) => r.id === id), id).toBeDefined();
+        expect(topic.group === 'proposed', `${id} is in the ${topic.group} group`).toBe(LADDER.find((r) => r.id === id)?.tier === 'beyond');
       }
       if (topic.group === 'physics') expect(topic.ids).toEqual([]);
     }
     expect([...seen.keys()].sort()).toEqual(LADDER.map((r) => r.id).sort());
   });
 
-  it('shows, in the topic files, exactly the methods of the plan, by tier file', () => {
-    const files: Record<string, string> = { classical: 'classical.tsx', sota: 'sota.tsx', beyond: 'beyond.tsx' };
-    for (const [tier, file] of Object.entries(files)) {
+  it('shows, in the topic files, exactly the methods of the plan, by file', () => {
+    const files: Record<string, string[]> = {
+      'classical.tsx': ['analytic', 'gs', 'direct', 'aberration'],
+      'feedback-optimization.tsx': ['phase-fixed', 'shaped', 'gradient', 'loop', 'cnn'],
+      'proposed.tsx': ['device-aware-wgs', 'flicker-bounded', 'learned-warm-start', 'robust-hologram', 'pareto-front'],
+    };
+    for (const [file, topics] of Object.entries(files)) {
       const source = readFileSync(new URL(file, import.meta.url), 'utf8');
       const shown = [...source.matchAll(/<MethodTable ids=\{\[([^\]]*)\]\} \/>/g)].flatMap((m) => [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]));
-      const planned = PLAN.filter((topic) => topic.group === tier).flatMap((topic) => topic.ids);
+      const planned = PLAN.filter((topic) => topics.includes(topic.id)).flatMap((topic) => topic.ids);
       expect(shown.sort(), file).toEqual(planned.sort());
     }
     const physics = readFileSync(new URL('physics.tsx', import.meta.url), 'utf8');
@@ -67,6 +75,6 @@ describe('the ladder on the Methodology page', () => {
 
   it('keeps the page within six groups and names a design record file for every row', () => {
     expect(new Set(PLAN.map((t) => t.group)).size).toBeLessThanOrEqual(6);
-    for (const row of LADDER) expect(row.record, row.id).toMatch(/^(M|BS-)\d+-.+\.md$/);
+    for (const row of LADDER) expect(row.record, row.id).toMatch(/^(M|B)\d+-.+\.md$/);
   });
 });

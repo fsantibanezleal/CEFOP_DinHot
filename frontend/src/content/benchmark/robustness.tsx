@@ -6,7 +6,7 @@ import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useState } from 'react';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import { budgetText, budgetsOf, geometryOf, nameOf, orderMethods, pickRows, shownId, tierOf, TIER_NAME, type Budget, type Lang } from './data';
+import { budgetText, budgetsOf, geometryOf, nameOf, orderMethods, pickRows, shownId, kindOf, KIND_TEXT, type Budget, type Lang } from './data';
 import { Note, Ready, TableWrap, useBench, useNum, useResolved, CellControls, spreadText } from './shared';
 
 const FLOOR = 1e-3;
@@ -86,7 +86,7 @@ function DeviceBody({ res }: { res: BenchmarkResults }) {
               <thead>
                 <tr>
                   <th className="caos-col-text">{es ? 'Método' : 'Method'}</th>
-                  <th className="caos-col-text">{es ? 'Nivel' : 'Tier'}</th>
+                  <th className="caos-col-text">{es ? 'Tipo' : 'Kind'}</th>
                   <th>{es ? 'Desv. est. rel. ideal (%)' : 'Rel. std ideal (%)'}</th>
                   <th>{es ? 'Desv. est. rel. C08 (%)' : 'Rel. std C08 (%)'}</th>
                   <th>{es ? 'Cociente de desviación' : 'Deviation ratio'}</th>
@@ -95,11 +95,11 @@ function DeviceBody({ res }: { res: BenchmarkResults }) {
               </thead>
               <tbody>
                 {pairs.map((p) => {
-                  const t = tierOf(p.method);
+                  const t = kindOf(p.method);
                   return (
                     <tr key={p.method}>
                       <td className="caos-col-text">{shownId(p.method)}</td>
-                      <td className="caos-col-text">{t ? TIER_NAME[t][lang] : '-'}</td>
+                      <td className="caos-col-text">{t ? KIND_TEXT[t][lang] : '-'}</td>
                       <td>{n(p.a.row.rel_std_pct.median)}</td>
                       <td>{n(p.b.row.rel_std_pct.median)}</td>
                       <td>{p.a.row.rel_std_pct.median > 0 ? n(p.b.row.rel_std_pct.median / p.a.row.rel_std_pct.median) : '-'}</td>
@@ -127,11 +127,11 @@ function BudgetBody({ res }: { res: BenchmarkResults }) {
   const { device } = useResolved(res);
   const fl = useFormat()(FLOOR, { digits: 3 });
   const [geo, setGeo] = useState('');
-  const [tier, setTier] = useState('all');
+  const [kind, setKind] = useState('all');
   const geometry = res.geometries.find((g) => g.id === geo)?.id ?? res.geometries[0]?.id ?? '';
   const iters: Budget[] = budgetsOf(res).filter((b) => b.kind === 'iterations');
   const methods = [...new Set(res.rows.filter((r) => r.geometry === geometry && r.device === device && r.budget_kind === 'iterations' && r.params === 'default').map((r) => r.method))]
-    .filter((m) => tier === 'all' || tierOf(m) === tier)
+    .filter((m) => kind === 'all' || kindOf(m) === kind)
     .filter((m) => iters.filter((b) => res.rows.some((r) => r.method === m && r.geometry === geometry && r.device === device && r.budget_kind === 'iterations' && r.budget === b.value && r.params === 'default')).length >= 2)
     .sort(orderMethods);
   const title = { en: `Relative standard deviation against the iteration budget, ${geometry}`, es: `Desviación estándar relativa contra el presupuesto de iteraciones, ${geometry}` };
@@ -140,16 +140,15 @@ function BudgetBody({ res }: { res: BenchmarkResults }) {
       <GeometryChips res={res} value={geometry} onChange={setGeo} id="budget-geometry" />
       <CellControls res={res} prefix="budget" showView={false} />
       <ChipGroup
-        id="budget-tier"
-        label={{ en: 'Tier', es: 'Nivel' }}
+        id="budget-kind"
+        label={{ en: 'Kind of method', es: 'Tipo de método' }}
         options={[
           { id: 'all', label: { en: 'All', es: 'Todos' } },
-          { id: 'classical', label: TIER_NAME.classical },
-          { id: 'sota', label: TIER_NAME.sota },
-          { id: 'beyond', label: TIER_NAME.beyond },
+          { id: 'published', label: KIND_TEXT.published },
+          { id: 'proposed', label: KIND_TEXT.proposed },
         ]}
-        value={tier}
-        onChange={setTier}
+        value={kind}
+        onChange={setKind}
       />
       {methods.length === 0 || iters.length < 2 ? (
         <p className="caos-pending" data-state="unavailable">

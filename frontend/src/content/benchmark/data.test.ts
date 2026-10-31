@@ -5,7 +5,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import {
-  bs5Cells,
+  b5Cells,
   budgetsOf,
   budgetText,
   CRITERIA,
@@ -20,7 +20,9 @@ import {
   pickRows,
   ratioCells,
   skippedIn,
-  tierOf,
+  kindOf,
+  bestPublished,
+  shownId,
   verdictOf,
 } from './data';
 import { RECORDED } from './recorded';
@@ -32,6 +34,7 @@ const fixture = JSON.parse(readFileSync(new URL('docs/contracts/fixtures/data/de
 
 /** The text of one row of the SDD method-ladder table. */
 function sddRow(id: string): string {
+  id = id.replace(/^B(\d)$/, 'BS-$1');
   const start = sdd.indexOf('## Method ladder');
   const end = sdd.indexOf('\n## ', start + 5);
   const line = sdd
@@ -95,14 +98,14 @@ describe('the recorded acceptance numbers equal the SDD', () => {
 
   it('the criteria equal the thresholds the SDD rows state', () => {
     expect(sddRow('BS-1')).toMatch(/at least two times below M07/);
-    expect(CRITERIA.bs1.sigmaFactor).toBe(2);
+    expect(CRITERIA.b1.sigmaFactor).toBe(2);
     expect(sddRow('BS-1')).toMatch(/efficiency at most 10 percent lower/);
-    expect(CRITERIA.bs1.effRatio).toBeCloseTo(0.9, 12);
+    expect(CRITERIA.b1.effRatio).toBeCloseTo(0.9, 12);
     expect(sddRow('BS-4')).toMatch(/at least 1\.25 times below M07/);
-    expect(CRITERIA.bs4.sigmaFactor).toBe(1.25);
+    expect(CRITERIA.b4.sigmaFactor).toBe(1.25);
     expect(sddRow('BS-4')).toMatch(/efficiency at most 10 percent lower/);
     expect(sddBeyond('BS-3') + sddRow('BS-3')).toMatch(/below the 2 times claimed/);
-    expect(CRITERIA.bs3.iterationFactor).toBe(2);
+    expect(CRITERIA.b3.iterationFactor).toBe(2);
     expect(sddRow('BS-2')).toMatch(/at least 0\.9 of its mean/);
     expect(sddRow('BS-5')).toMatch(/M04, M05, M09 and M06/);
   });
@@ -141,16 +144,26 @@ describe('the committed results document', () => {
   });
 });
 
-describe('the tier and the order of a method', () => {
-  it('reads the tier from the ladder and the engine id of a beyond method', () => {
-    expect(tierOf('M01')).toBe('classical');
-    expect(tierOf('M07')).toBe('sota');
-    expect(tierOf('B1')).toBe('beyond');
-    expect(tierOf('BS-1')).toBe('beyond');
-    expect(tierOf('M99')).toBeNull();
+describe('the kind and the order of a method', () => {
+  it('reads the kind from the ladder: M01 to M19 are published, B1 to B5 proposed', () => {
+    expect(kindOf('M01')).toBe('published');
+    expect(kindOf('M07')).toBe('published');
+    expect(kindOf('B1')).toBe('proposed');
+    expect(kindOf('M99')).toBeNull();
+    expect(shownId('B3')).toBe('B3');
   });
-  it('orders classical, state of the art, beyond, then by number', () => {
+  it('orders the published methods by number, then the proposed ones', () => {
     expect(['B1', 'M10', 'M07', 'M02', 'M01'].sort(orderMethods)).toEqual(['M01', 'M02', 'M07', 'M10', 'B1']);
+  });
+  it('takes the strongest published baseline among every published method of the cell, not a single group', () => {
+    const res = plant([
+      { method: 'M04', rel_std_pct: { median: 9, q1: 8, q3: 10 }, efficiency: { median: 0.8, q1: 0, q3: 1 } },
+      { method: 'M07', rel_std_pct: { median: 2, q1: 1, q3: 3 }, efficiency: { median: 0.8, q1: 0, q3: 1 } },
+      { method: 'M09', rel_std_pct: { median: 1, q1: 1, q3: 1 }, efficiency: { median: 0.7, q1: 0, q3: 1 } },
+      { method: 'B1', rel_std_pct: { median: 0.5, q1: 0, q3: 1 }, efficiency: { median: 0.8, q1: 0, q3: 1 } },
+    ]);
+    const rows = pickRows(res, 'G1', 'ideal', { kind: 'iterations', value: 30 }, 'default');
+    expect(bestPublished(rows)?.method).toBe('M09');
   });
 });
 
@@ -201,7 +214,7 @@ describe('ratio cells and verdicts', () => {
     expect(verdictOf([])).toBe('no-data');
   });
   it('the verdict is all, some or none of the cells', () => {
-    const t = CRITERIA.bs1;
+    const t = CRITERIA.b1;
     const ok = (c: { sigmaFactor: number; effRatio: number }) => c.sigmaFactor >= t.sigmaFactor && c.effRatio >= t.effRatio;
     const cells = ratioCells(res, 'B1', 'M07', 'device');
     expect(verdictOf(cells.map(ok))).toBe('partly');
@@ -229,7 +242,7 @@ describe('the Pareto arithmetic', () => {
     // a dominated point adds nothing
     expect(hypervolume([{ e: 1, u: 1 }, { e: 0.5, u: 0.5 }])).toBeCloseTo(1, 12);
   });
-  it('bs5Cells compares the front with the four classical points and lists the missing ones', () => {
+  it('b5Cells compares the front with the four published points and lists the missing ones', () => {
     const res = plant(
       [
         { method: 'M04', efficiency: { median: 0.8, q1: 0, q3: 1 }, uniformity: { median: 0.5, q1: 0, q3: 1 } },
@@ -237,9 +250,9 @@ describe('the Pareto arithmetic', () => {
       ],
       { pareto: [{ geometry: 'G1', method: 'B5', points: [{ lambda: 0, efficiency: 0.85, uniformity: 0.95 }, { lambda: 1, efficiency: 0.9, uniformity: 0.6 }] }] },
     );
-    const cells = bs5Cells(res, { kind: 'iterations', value: 30 });
+    const cells = b5Cells(res, { kind: 'iterations', value: 30 });
     expect(cells).toHaveLength(1);
-    expect(cells[0].hvFront).toBeGreaterThan(cells[0].hvClassical);
+    expect(cells[0].hvFront).toBeGreaterThan(cells[0].hvPublished);
     expect(cells[0].dominated.sort()).toEqual(['M04', 'M06']);
     expect(cells[0].missing.sort()).toEqual(['M05', 'M09']);
   });

@@ -25,9 +25,9 @@
 % Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
 % publishing tool when the version DOI is reserved.
 \newcommand{\doctype}{Technical report}
-\newcommand{\docversion}{v0.02.000}
-\newcommand{\docdate}{30 October 2026}
-\newcommand{\versiondoi}{10.5281/zenodo.23788732}
+\newcommand{\docversion}{v0.02.001}
+\newcommand{\docdate}{31 October 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.23837873}
 \newcommand{\conceptdoi}{10.5281/zenodo.23788731}
 \newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
 \newcommand{\headerblock}{%
@@ -44,7 +44,7 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 
 \begin{document}
 
-\title{DinHot: A Holographic Optical Trap Studio Comparing Classical, State-of-the-Art\\ and Beyond-State-of-the-Art Hologram Methods on a Device Model}
+\title{DinHot: A Holographic Optical Trap Studio Comparing Hologram Methods on a Device Model}
 \author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
 \small CAOS open-research programme, Santiago, Chile\\
 \small \texttt{fsantibanez@gmail.com}}
@@ -57,12 +57,12 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 A phase-only spatial light modulator in the pupil of a microscope objective can form hundreds to thousands of optical
 traps at once, but only if the phase pattern it displays is computed well: the pattern fixes how much light reaches the
 traps, how equal the traps are, where stray light goes, how the pattern survives a real device, and how fast it can be
-recomputed when traps move. DinHot is an open studio that runs \nLadder{} ladder methods (\nClassical{} classical,
-\nSota{} state of the art, \nBeyond{} beyond it) on the same task, with the same seeds, metrics and device model, in
+recomputed when traps move. DinHot is an open studio that runs \nLadder{} methods (\nPublished{} published ones and
+\nProposed{} proposed here) on the same task, with the same seeds, metrics and device model, in
 Python as the reference and in a TypeScript port that runs live in a browser. We describe the optical and device model,
 the methods with the measured acceptance of each, \nCases{} cases from a $3\times3$ array to a disordered
-\nDisordered-trap array and shaped potentials, the benchmark protocol, two learned models, and the \nBeyond{} proposals past the
-published state of the art, three of which meet their ladder criteria on their acceptance tasks, each within a scope that the
+\nDisordered-trap array and shaped potentials, the benchmark protocol, two learned models, and the \nProposed{} proposed methods,
+three of which meet their acceptance criteria on their acceptance tasks, each within a scope that the
 benchmark or the scope measurements narrow (a device-aware weighted Gerchberg--Saxton update, a flicker-bounded phase-continuous sequence and an
 efficiency--uniformity front), one of which meets a narrowed criterion
 (an aberration-robust hologram) and one of which is refuted by measurement (a learned warm start for phase-fixed
@@ -95,8 +95,8 @@ array, and no public tool that runs them side by side with a device model and th
 DinHot provides that comparison. It began at CEFOP, Universidad de Concepci\'on, as DinHotSys, a C++ desktop tool for dynamic
 holographic optical tweezers dated 2010; it was rewritten in Python and FastAPI and is rebuilt here as a static
 browser application whose numbers are computed by the engine or baked offline and replayed. This report describes the
-problem, the optical model and the device, the three tiers of methods, the cases and the protocols, the results, the learned
-models, the proposals beyond the published state of the art, the live engine and the limits. Every number in the tables and
+problem, the optical model and the device, the published methods, the cases and the protocols, the results, the learned
+models, the proposed methods, the live engine and the limits. Every number in the tables and
 the text is generated from the committed artifacts of the repository or measured by the scripts kept with this report; the browser
 timings are quoted from the product's record of measured resources.
 
@@ -176,42 +176,27 @@ C14 & \voluLambda & \voluFocal & \voluNa & $\voluNpix^2$ & \voluPitch & \voluPad
 \footnotesize The bead setup is in water of index \beadNimm; C14 is the volume of the released learned model. C08 device: \devcBits-bit phase, crosstalk $\sigma=\devcXtSigma$, $q=\devcXtQ$ on $3\times3$ sub-pixels, fill factor \devcFill, flicker \devcFlicker{} rad.
 \end{table}
 
-\section{The three tiers of methods}\label{sec:tiers}
+\section{Published methods}\label{sec:published}
 
-The design document fixes, before any code, a ladder of \nLadder{} rows: \nClassical{} classical methods (the established
-methods of the problem), \nSota{} state-of-the-art methods (current solutions, replicated or implemented, never only cited) and
-\nBeyond{} proposals beyond the state of the art. Each row has one measurable acceptance criterion and one test. Table~\ref{tab:ladder}
-lists them; Table~\ref{tab:acceptance} gives what each test measured on DinHot's own grids, with the seeds stated.
+The design document fixes, before any code, \nLadder{} methods: \nPublished{} published methods, each replicated or implemented here
+and never only cited, and the \nProposed{} methods of Section~\ref{sec:proposed}. Each has one measurable acceptance criterion and one test.
+Table~\ref{tab:ladder} lists them; Table~\ref{tab:acceptance} gives what each test measured on DinHot's own grids, with the seeds stated.
 
-\subsection{Classical tier}
+\subsection{Superposition and Gerchberg--Saxton methods}
 
-\textbf{Analytic baselines (M01 to M03).} The superposition of prisms and lenses, random superposition (each trap's phase
-drawn at random) and the random mask (each pixel assigned to one trap) are the references for the other methods. On the
-calibration task of Di Leonardo et al.~\cite{dileonardo} they show the published order: superposition is efficient only by
-accident and nearly non-uniform, random superposition gains efficiency at a spread, and the random mask has an efficiency of
-about the inverse of the number of traps. \textbf{Gerchberg--Saxton family (M04 to M06).} GS iterates between the SLM and the
-trap fields; the generalized adaptive additive form (GAA) adapts the update; weighted GS (GSW)
-rescales the target weights by the ratio of the mean to the achieved trap amplitude, $w_m\leftarrow w_m\langle r\rangle/r_m$,
-and reaches uniformity close to one~\cite{dileonardo}. \textbf{Direct search (M09)} minimizes the cost
-$C=-\langle I\rangle+f\sigma$ pixel by pixel over eight phase levels~\cite{polin}. \textbf{Zernike correction (M14)} recovers
-injected aberrations by a sensorless modal search~\cite{noll}. \textbf{Laguerre--Gaussian vortex traps (M15)} wind the
-ring phase by $2\pi l$. \textbf{Multi-plane GS (M19)} propagates plane by plane with an amplitude constraint per plane~\cite{whyte}.
+\textbf{Analytic baselines (M01 to M03).} The superposition of prisms and lenses, random superposition (each trap's phase drawn at random) and the random mask (each pixel assigned to one trap) are the references for the other methods. On the calibration task of Di Leonardo et al.~\cite{dileonardo} they show the published order: superposition is efficient only by accident and nearly non-uniform, random superposition gains efficiency at a spread, and the random mask has an efficiency of about the inverse of the number of traps. \textbf{Gerchberg--Saxton family (M04 to M06).} GS iterates between the SLM and the trap fields; the generalized adaptive additive form (GAA) adapts the update; weighted GS (GSW) rescales the target weights by the ratio of the mean to the achieved trap amplitude, $w_m\leftarrow w_m\langle r\rangle/r_m$, and reaches uniformity close to one~\cite{dileonardo}. \textbf{Multi-plane GS (M19)} propagates plane by plane with an amplitude constraint per plane~\cite{whyte}. \textbf{Phase-fixed weighted GS (M07)} freezes the focal-plane phase after $N$ iterations so that later iterations adjust only amplitudes~\cite{kim2019}; the source reports 1500 foci at 91.2 percent modulation efficiency and camera correction to 1.59 percent in three steps against 6.47 percent for conventional weighted GS. DinHot finds that the source default of $N=12$ stalls on a crowded $50\times30$ array and uses $N=60$ there (Table~\ref{tab:acceptance}). \textbf{Closed-loop weighted GS (M12)} corrects trap amplitudes from a camera; DinHot runs it on an emulated camera whose errors are stated parameters, after Nogrette et al.~\cite{nogrette}; the emulator reproduces the published feedback curves in the browser within the factor set in the design document (Table~\ref{tab:acceptance}) and serves as a validation tool, not as a proposal.
 
-\subsection{State-of-the-art tier}
+\subsection{Search and gradient methods}
 
-\textbf{Phase-fixed weighted GS (M07)} freezes the focal-plane phase after $N$ iterations so that later iterations adjust only
-amplitudes~\cite{kim2019}; the source reports 1500 foci at 91.2 percent modulation efficiency and camera correction to
-1.59 percent in three steps against 6.47 percent for conventional weighted GS. DinHot finds that the source default of
-$N=12$ stalls on a crowded $50\times30$ array and uses $N=60$ there (Table~\ref{tab:acceptance}). \textbf{MRAF (M08)} frees
-a region outside the signal and trades efficiency for accuracy on shaped potentials~\cite{pasienski}. \textbf{Conjugate-gradient
-minimization (M10)} uses powered intensity costs and an analytic gradient obtained from two FFTs~\cite{harte}.
-\textbf{Wirtinger gradient descent with Adam (M11)} differentiates any forward model through the complex gradient~\cite{chakra}.
-\textbf{Closed-loop weighted GS (M12)} corrects trap amplitudes from a camera; DinHot runs it on an emulated camera whose
-errors are stated parameters, after Nogrette et al.~\cite{nogrette}; the emulator reproduces the published feedback curves in the browser within the factor set in the design document (Table~\ref{tab:acceptance}) and serves as a validation tool, not as a proposal. \textbf{Device-aware conjugate gradient (M13)} places the
-crosstalk kernel in the loop~\cite{schroff}. \textbf{Hungarian assignment and linear phase interpolation (M16)} sorts atoms with a
-cost $\sum d^\alpha$, $\alpha>1$, which avoids crossings, and moves them along interpolated holograms~\cite{lee2017,lpi}.
-\textbf{An unsupervised convolutional network refined by GS (M17)} follows DeepCGH~\cite{eybposh}. \textbf{Optimal-transport
-initialization of MRAF (M18)} seeds the phase from a transport map~\cite{swan,torchylo}.
+\textbf{Direct search (M09)} minimizes the cost $C=-\langle I\rangle+f\sigma$ pixel by pixel over eight phase levels~\cite{polin}. \textbf{Conjugate-gradient minimization (M10)} uses powered intensity costs and an analytic gradient obtained from two FFTs~\cite{harte}. \textbf{Wirtinger gradient descent with Adam (M11)} differentiates any forward model through the complex gradient~\cite{chakra}. \textbf{Device-aware conjugate gradient (M13)} places the crosstalk kernel in the loop~\cite{schroff}.
+
+\subsection{Shaped potentials, vortices, aberrations and rearrangement}
+
+\textbf{MRAF (M08)} frees a region outside the signal and trades efficiency for accuracy on shaped potentials~\cite{pasienski}. \textbf{Optimal-transport initialization of MRAF (M18)} seeds the phase from a transport map~\cite{swan,torchylo}. \textbf{Laguerre--Gaussian vortex traps (M15)} wind the ring phase by $2\pi l$. \textbf{Zernike correction (M14)} recovers injected aberrations by a sensorless modal search~\cite{noll}. \textbf{Hungarian assignment and linear phase interpolation (M16)} sorts atoms with a cost $\sum d^\alpha$, $\alpha>1$, which avoids crossings, and moves them along interpolated holograms~\cite{lee2017,lpi}.
+
+\subsection{Learned holography}
+
+\textbf{An unsupervised convolutional network refined by GS (M17)} follows DeepCGH~\cite{eybposh}.
 
 Of the \benchNProtocol{} engine methods, \nMethodsBaked{} ran in the bake of the cases: \notBakedSentence. The two learned slots answer
 with the released graph (M17, on C14) or, with no model released, with their baseline (B3; Section~\ref{sec:learned}).
@@ -263,7 +248,7 @@ Table~\ref{tab:results} summarizes the baked cases. Where both ran, phase-fixed 
 standard deviation of \medSigmaMseven{} percent against \medSigmaMfour{} percent for plain GS (M04) over \nBothFourSeven{} cases,
 at efficiencies between \minEffMseven{} and \maxEffMseven. On the device-limited case C08 phase-fixed weighted GS (M07), which ignores the
 device, keeps a spread of \bakeCeightMsevenSigma{} percent, and the device-aware weighted GS (B1) lowers it to \bakeCeightBOneSigma{} percent, a factor of
-\bakeCeightRatio{} on the bake's own seed (\bakeCeightRatioThree{} on the ratio of the means of its \bakeCeightSeedsN{} seeds), on that small grid (the larger task of Section~\ref{sec:beyond} gives a larger factor; both are reported in the companion
+\bakeCeightRatio{} on the bake's own seed (\bakeCeightRatioThree{} on the ratio of the means of its \bakeCeightSeedsN{} seeds), on that small grid (the larger task of Section~\ref{sec:proposed} gives a larger factor; both are reported in the companion
 manuscript). On the aberrated case C09, correction of the Zernike modes (M14) restores efficiency and uniformity that
 the uncorrected methods lose.
 
@@ -298,7 +283,7 @@ whose corner frequency is the stiffness over $2\pi\gamma$~\cite{tolic}, which th
 
 \subsection{The benchmark protocol}
 
-The benchmark compares the tiers on one protocol. Its geometries are (\benchGeometries{}) a $10\times10$ square, a ring of 36 traps, 100 random
+The benchmark compares the methods on one protocol. Its geometries are (\benchGeometries{}) a $10\times10$ square, a ring of 36 traps, 100 random
 traps, a quasi-periodic set of 119, a $5\times5\times3$ lattice, a large array ($32\times32$ and the disordered 819 set) and shaped fields;
 the grids are \benchGrids{} pixels, the iteration budgets are \benchIters{} and the time budgets are \benchTimes{} s (the last is
 the converged row). A group runs up to \benchSeeds{} seeds, at least two, until a bound on its wall clock, and every cell reports the
@@ -311,15 +296,15 @@ recorded as skipped with the reason the file states (a method that does not acce
 three-dimensional lattice, or one that refuses the geometry). A cell runs between \benchSeedsMin{} and \benchSeedsMax{} seeds, the bound the protocol
 puts on the wall clock of a group. The \benchNNoRows{} methods without a row (\benchNoRows) refuse every geometry of the protocol by
 their specification (a vortex charge, a rearrangement block, the geometry the learned model was trained for); their tests and
-their cases measure them. Table~\ref{tab:benchmark} names, per geometry and device, the method of each tier with the lowest median spread at
+their cases measure them. Table~\ref{tab:benchmark} names, per geometry and device, the published method and the proposed method with the lowest median spread at
 100 iterations among those that reach at least half of the cell's best efficiency, and the best method at a time budget of 1~s;
 Table~\ref{tab:benchmethods} gives the medians of every method over the \benchNPoint{} point-trap geometries, and Fig.~\ref{fig:bench} every cell.
 
-On the ideal device the best method of a geometry is classical on \benchWinsIdealClassical, state of the art on \benchWinsIdealSota{} and beyond on
-\benchWinsIdealBeyond{} of the \benchGeoIdeal{} geometries, and on \benchTiesIdeal{} the best methods of two or more tiers tie below the resolution of
-the file (0.001 percent); on the C08 device the counts are \benchWinsDeviceClassical, \benchWinsDeviceSota{} and \benchWinsDeviceBeyond{} of
+On the ideal device the best method of a geometry is a published method on \benchWinsIdealPublished{} and a proposed method on
+\benchWinsIdealProposed{} of the \benchGeoIdeal{} geometries, and on \benchTiesIdeal{} the best published and proposed methods tie below the resolution of
+the file (0.001 percent); on the C08 device the counts are \benchWinsDevicePublished{} and \benchWinsDeviceProposed{} of
 \benchGeoDevice{} (the multi-plane geometry has no device rows), with \benchTiesDevice{} ties. B2 enters these cells as its static frame, a
-phase-locked weighted GS, and not as a sequence, which is the quantity of its claim (Section~\ref{sec:beyond}). Over the point-trap geometries the lowest median spread
+phase-locked weighted GS, and not as a sequence, which is the quantity of its claim (Section~\ref{sec:proposed}). Over the point-trap geometries the lowest median spread
 on the ideal device is that of \benchBestIdeal{} (\benchBestIdealSigma{} percent at a median efficiency of \benchBestIdealEff), and on the C08 device
 that of \benchBestDevice{} (\benchBestDeviceSigma{} percent at \benchBestDeviceEff). The medians of the \benchSpreadIdealN{} methods that keep at least
 half of the best efficiency span \benchSpreadIdealLow{} to \benchSpreadIdealHigh{} percent on the ideal device and \benchSpreadDeviceLow{} to
@@ -356,7 +341,7 @@ images, ghosts and blur included, which is what the network optimises; M19 optim
 The two-dimensional counterpart, a single-plane network followed by GS refinement, ties: on \cghTwoDN{} held-out targets the ratio at equal
 wall-clock is \cghTwoDMed{}, below the criterion, and that model is not released.
 
-\textbf{warmstart-model (BS-3).} A permutation-equivariant set network predicts initial trap phases for phase-fixed WGS. On \wsN{} held-out
+\textbf{warmstart-model (B3).} A permutation-equivariant set network predicts initial trap phases for phase-fixed WGS. On \wsN{} held-out
 geometries it needs a median of \wsModelIt{} iterations to reach 1 percent against \wsRandomIt{} from a random start (a factor of \wsRatio, below the
 factor of two set as the criterion), but only with the early phase freeze (after \wsNfixModel{} iterations, against \wsNfixRandom{} for the random arm). A control with
 no network, a random start and the same early freeze, needs a median of \wsControlIt{} iterations on the control subset, and \wsControlNever{} percent of its
@@ -372,30 +357,30 @@ freeze, not from the network, so the proposal is refuted and the model is not re
 \label{fig:learned}
 \end{figure}
 
-\section{Proposals beyond the published state of the art}\label{sec:beyond}
+\section{Proposed methods}\label{sec:proposed}
 
-Each proposal is DinHot's own, grounded in a stated gap, measured against the strongest baseline and reported whether or not it
+Each method is DinHot's own, grounded in a stated gap, measured against the strongest baseline and reported whether or not it
 succeeds.
 
-\textbf{BS-1, device-aware weighted GS.} The weights of weighted GS are kept and the phase update is replaced by conjugate-gradient steps through
+\textbf{B1, device-aware weighted GS.} The weights of weighted GS are kept and the phase update is replaced by conjugate-gradient steps through
 the crosstalk kernel and the quantizer. The gap is that the crosstalk model has only been used with conjugate gradient on shaped potentials~\cite{schroff},
 or inside a weighted GS that replaces amplitudes only~\cite{persson}. On the crosstalk device, the relative standard deviation is lower than
 that of phase-fixed WGS by the factor reported in the companion manuscript; on the small C08 grid the baked factor is \bakeCeightRatio{} on the bake's own seed, at an
 efficiency ratio of \bakeCeightEffRatio, and \bakeCeightRatioThree{} on the ratio of the means of the \bakeCeightSeedsN{} seeds of its expected ranges. In the benchmark on the C08 device it meets both thresholds on \benchOnePass{} of
 \benchOneN{} geometries (\benchOnePassList; the companion manuscript gives the factor on each). B1 returns its best iterate that keeps \bOneFloor{} of
-its warm start's efficiency, so a run whose weights wind up never returns worse than its start. \textbf{BS-2, flicker-bounded phase-continuous sequences.} Each intermediate hologram of a moving-trap
+its warm start's efficiency, so a run whose weights wind up never returns worse than its start. \textbf{B2, flicker-bounded phase-continuous sequences.} Each intermediate hologram of a moving-trap
 sequence is optimized with the trap phases locked to a smooth trajectory; the gap is that linear phase interpolation does not
 optimize its intermediate frames~\cite{lpi}. On the acceptance task, and on most seeds of the longer moves with the frames that keep the peak step per frame at most \bTwoStep{}
 Fourier units, the moving traps keep a higher minimum intensity than under linear phase interpolation; at an equal number of frames on the long
-sort of case C10 linear phase interpolation leads (the companion manuscript quantifies both). \textbf{BS-3, learned warm start:} refuted (Section~\ref{sec:learned}).
-\textbf{BS-4, aberration-robust hologram:} the expected cost over residual aberrations is minimized; over a 200-sample ensemble of residual Noll modes 4 to 11
+sort of case C10 linear phase interpolation leads (the companion manuscript quantifies both). \textbf{B3, learned warm start:} refuted (Section~\ref{sec:learned}).
+\textbf{B4, aberration-robust hologram:} the expected cost over residual aberrations is minimized; over a 200-sample ensemble of residual Noll modes 4 to 11
 the 95th percentile of the relative standard deviation is a median of \accBFourRatio{} times below that of M07 (\accBFourRatioLo{} to \accBFourRatioHi{} over
 \accBFourSeeds{} seeds), with a median efficiency \accBFourEffDrop{} percent lower (Table~\ref{tab:acceptance}); robustness to pointing errors does not follow (\accBFourPointing{} times), because the spot width bounds
 it, and is reported as a negative result. The gap is that corrections are
-global or per site, never robust~\cite{machu}. \textbf{BS-5, efficiency--uniformity Pareto front} by continuation of a weighted cost: the front's hypervolume (\accBFiveHv) exceeds
+global or per site, never robust~\cite{machu}. \textbf{B5, efficiency--uniformity Pareto front} by continuation of a weighted cost: the front's hypervolume (\accBFiveHv) exceeds
 that of the points of the GS family and direct search (\accBFiveHvBase), and \accBFiveDomFour{} front points dominate M04 and \accBFiveDomFive{} dominate M05
 (Table~\ref{tab:acceptance}), where published methods report single trade-off points~\cite{dileonardo}. In the benchmark the stored front, B5's converged run of the first seed, reaches at least
-the hypervolume of those classical points on \benchFivePass{} of the \benchFiveN{} geometries with a front against their medians at 100 iterations, and on
+the hypervolume of those published points on \benchFivePass{} of the \benchFiveN{} geometries with a front against their medians at 100 iterations, and on
 \benchFivePassThirty{} against their medians at 30, on the ideal device; at 100 iterations it does not on \benchFiveLost.
 
 \section{The live engine and the product}\label{sec:live}
@@ -415,8 +400,8 @@ benchmark counts its skipped cells as not run; the dormant API serves GET reques
 DinHot computes and evaluates holograms in simulation: it does not drive an SLM or a camera, and its camera-in-the-loop method runs on an emulated
 camera whose errors are stated parameters. Device and set-up parameters come from published experiments, so absolute numbers belong to the stated model and not to a measured instrument.
 The engine is scalar (Fraunhofer and angular spectrum); the high-numerical-aperture case carries a validity flag and the vectorial lane is not built. The fill-factor, 4-bit and flicker effects of the
-device have no published source in this build and are computed only. The crosstalk kernel's frequency unit is carried over from the engine and is not verified against the source. The transient-intensity model of BS-2 is
-the engine's own (Section~\ref{sec:beyond} and the companion manuscript) and the linear-phase-interpolation baseline is DinHot's implementation of a published description, not the authors' code. The
+device have no published source in this build and are computed only. The crosstalk kernel's frequency unit is carried over from the engine and is not verified against the source. The transient-intensity model of B2 is
+the engine's own (Section~\ref{sec:proposed} and the companion manuscript) and the linear-phase-interpolation baseline is DinHot's implementation of a published description, not the authors' code. The
 unit measurements of Table~\ref{tab:acceptance} use between one and six seeds; the benchmark repeats the methods on its geometries with \benchSeedsMin{} to \benchSeedsMax{} seeds per cell. The cgh-net advantage is on a plane-image accuracy measure over generated volumes and
 the benchmark's volumetric layouts, not on a hardware experiment. The learned warm start is refuted and the two-dimensional network ties with GS. The executive figures of the introduction are taken from the cited publications and not re-measured.
 
@@ -424,7 +409,7 @@ the benchmark's volumetric layouts, not on a hardware experiment. The learned wa
 
 The source code, the baked artifacts (manifests, traces, benchmark results, model cards, the ONNX graph and its held-out metrics) and the scripts that regenerate every table and figure of this report from them are in the repository
 \url{https://github.com/fsantibanezleal/CEFOP_DinHot} (Apache-2.0), under \texttt{manuscripts/holographic-trap-studio/}; the studio runs at \url{https://dinhot.fasl-work.com}.
-Unit measurements quoted in Table~\ref{tab:acceptance} are produced by the tests named in Table~\ref{tab:ladder}.
+Unit measurements quoted in Table~\ref{tab:acceptance} are produced by the tests of each method in the repository.
 
 \begin{thebibliography}{99}\small\raggedright
 \bibitem{manetsch} Manetsch \emph{et al.}, ``A tweezer array with 6100 highly coherent atomic qubits,'' \emph{Nature} 647, 60--67, 2025. arXiv:2403.12021.

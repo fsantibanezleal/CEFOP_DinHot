@@ -50,6 +50,8 @@ jobs:
         run: python scripts/check_sdd.py
       - name: The notebooks, layout, English and Spanish mirror, levels, anatomy, metadata and cleanliness (static; the execution is a local gate, ADR-0074)
         run: python scripts/check_notebooks.py
+      - name: The tier names stay internal, never in a notebook, a manuscript, the README or the app (CAOS_MANAGE method-tiers rule, section 0)
+        run: python scripts/check_internal_names.py
       - name: The manuscripts, product.json declares the Zenodo technical report (static; the online read is a local release step, ADR-0074)
         run: python scripts/check_manuscripts.py
       - name: The README states the repository by areas

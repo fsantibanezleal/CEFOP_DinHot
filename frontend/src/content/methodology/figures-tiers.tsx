@@ -1,6 +1,6 @@
-// The figures that the tier restructure of the Methodology page added: M07, M09, M14 and M15, the trapped particle, BS-2 and BS-4. Same rules as figures.tsx:
+// The figures that the tier restructure of the Methodology page added: M07, M09, M14 and M15, the trapped particle, B2 and B4. Same rules as figures.tsx:
 // theme tokens only (the `dg-*` classes and the shell colour tokens), bilingual labels through the translator, no measured DinHot number written in a figure.
-// The curves of the BS-2 and BS-4 figures are schematic and say so on the figure.
+// The curves of the B2 and B4 figures are schematic and say so on the figure.
 import { Arrow, ArrowDefs, Box, Label, PathArrow, Svg, type Tr } from './svg';
 
 /** M07: the focal phase follows the field up to iteration N and is frozen afterwards, while the weights keep updating. */
@@ -95,7 +95,7 @@ export function ParticleFigure({ t }: { t: Tr }) {
   );
 }
 
-/** BS-2: the transient intensity of a moving trap between frames, schematic. */
+/** B2: the transient intensity of a moving trap between frames, schematic. */
 export function TransientFigure({ t }: { t: Tr }) {
   const X0 = 70;
   const Y0 = 200;
@@ -116,7 +116,7 @@ export function TransientFigure({ t }: { t: Tr }) {
   );
 }
 
-/** BS-4: the spread against a residual aberration for a nominal and a robust hologram, schematic. */
+/** B4: the spread against a residual aberration for a nominal and a robust hologram, schematic. */
 export function RobustFigure({ t }: { t: Tr }) {
   const X0 = 70;
   const Y0 = 190;
