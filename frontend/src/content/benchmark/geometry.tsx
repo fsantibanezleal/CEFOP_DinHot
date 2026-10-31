@@ -1,29 +1,28 @@
 // One tab per geometry (area `results`): what every method scored on it at the cell the reader chose (device, parameter set, budget): the
 // table with the median and the inter-quartile range of each metric, the cells the document lists as not run with their reasons, and the
-// charts of efficiency, uniformity, relative standard deviation and time, coloured by tier. Everything is read from the benchmark document.
+// charts of efficiency, uniformity, relative standard deviation and time, coloured by kind. Everything is read from the benchmark document.
 import { BarChart, Cite, formatNumber, DocSection, PlotCard, ViewsRow, useFormat, useShellLang, type BarDatum } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import type { Tier } from '../methodology/ladder';
+import type { Kind } from '../methodology/ladder';
 import {
-  bestOfTier,
-  tierOf,
+  bestOfKind,
+  kindOf,
   budgetText,
   geometryOf,
   methodsIn,
   nameOf,
   shownId,
   skippedIn,
-  TIER_NAME,
-  TIER_ORDER,
-  TIER_SHORT,
+  KIND_ORDER,
+  KIND_TEXT,
   type Lang,
   type Picked,
   pickRows,
   type Stat,
 } from './data';
-import { barLabel, CellControls, Note, Ready, TableWrap, TIER_LEGEND, TIER_TONE, useBench, useNum, useResolved, WRAP } from './shared';
+import { barLabel, CellControls, Note, Ready, TableWrap, KIND_LEGEND, KIND_TONE, useBench, useNum, useResolved, WRAP } from './shared';
 
 /** The geometry tab -> the references of the published task it mirrors (the benchmark protocol's own sources). */
 const GEOMETRY_REFS: Record<string, string> = { G1: 'dileonardo2007', G4: 'polin2005', G5: 'whyte2005', G6: 'kim2019', G7: 'pasienski2008' };
@@ -69,7 +68,7 @@ export function MethodsTable({ res, geometry }: { res: BenchmarkResults; geometr
         </caption>
         <thead>
           <tr>
-            <th className="caos-col-text">{es ? 'Nivel' : 'Tier'}</th>
+            <th className="caos-col-text">{es ? 'Tipo' : 'Kind'}</th>
             <th className="caos-col-text">{es ? 'Método' : 'Method'}</th>
             <th className="caos-col-text">{es ? 'Parámetros' : 'Parameters'}</th>
             <th>{es ? 'Eficiencia' : 'Efficiency'}</th>
@@ -82,8 +81,8 @@ export function MethodsTable({ res, geometry }: { res: BenchmarkResults; geometr
         </thead>
         <tbody>
           {rows.map((p) => (
-            <tr key={`${p.method}-${p.params}`} data-method={p.method} data-tier={p.tier ?? 'none'} data-params={p.params}>
-              <td className="caos-col-text">{p.tier ? TIER_SHORT[p.tier][lang] : '-'}</td>
+            <tr key={`${p.method}-${p.params}`} data-method={p.method} data-tier={p.kind ?? 'none'} data-params={p.params}>
+              <td className="caos-col-text">{p.kind ? KIND_TEXT[p.kind][lang] : '-'}</td>
               <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
                 {shownId(p.method)} {nameOf(p.method, lang)}
               </td>
@@ -100,7 +99,7 @@ export function MethodsTable({ res, geometry }: { res: BenchmarkResults; geometr
           ))}
           {skipped.map((s) => (
             <tr key={`skip-${s.method}`} data-method={s.method} data-skipped="true">
-              <td className="caos-col-text">{tierShort(s.method, lang)}</td>
+              <td className="caos-col-text">{kindShort(s.method, lang)}</td>
               <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
                 {shownId(s.method)} {nameOf(s.method, lang)}
               </td>
@@ -116,43 +115,43 @@ export function MethodsTable({ res, geometry }: { res: BenchmarkResults; geometr
   );
 }
 
-const tierShort = (method: string, lang: Lang) => {
-  const t = tierOf(method);
-  return t ? TIER_SHORT[t][lang] : '-';
+const kindShort = (method: string, lang: Lang) => {
+  const t = kindOf(method);
+  return t ? KIND_TEXT[t][lang] : '-';
 };
 
-/** The bars of one metric, one per method, coloured by tier. */
+/** The bars of one metric, one per method, coloured by kind. */
 function MetricBars({ rows, pick, title, axis, view }: { rows: Picked[]; pick: (p: Picked) => number; title: { en: string; es: string }; axis: { en: string; es: string }; view: string }) {
   const data: BarDatum[] = rows.map((p) => ({
     id: `${p.method}-${p.params}`,
     label: barLabel(p, p.method, view as 'default' | 'tuned'),
     value: pick(p),
-    tone: TIER_TONE[p.tier ?? 'none'],
+    tone: KIND_TONE[p.kind ?? 'none'],
     hint: { en: `${shownId(p.method)} ${nameOf(p.method, 'en')}`, es: `${shownId(p.method)} ${nameOf(p.method, 'es')}` },
   }));
   return (
     <PlotCard title={title} lane="offline" provenance="synthetic">
-      <BarChart title={title} orientation="horizontal" axis={{ label: axis, format: { digits: 3 }, range: [0, 1] }} data={data} legend={TIER_LEGEND} />
+      <BarChart title={title} orientation="horizontal" axis={{ label: axis, format: { digits: 3 }, range: [0, 1] }} data={data} legend={KIND_LEGEND} />
     </PlotCard>
   );
 }
 
-/** Points on a log axis, one series per tier, the methods as named ticks: relative standard deviation and time span decades. */
+/** Points on a log axis, one series per kind, the methods as named ticks: relative standard deviation and time span decades. */
 function LogPoints({ rows, pick, title, axis, unit, floor, view }: { rows: Picked[]; pick: (p: Picked) => number; title: { en: string; es: string }; axis: { en: string; es: string }; unit?: { en: string; es: string }; floor?: number; view: string }) {
   const lang = useShellLang() as Lang;
   const fl = useFormat()(floor, { digits: 3 });
   if (!rows.length) return null;
   const xs = rows.map((_, i) => i + 1);
   const val = (p: Picked) => Math.max(pick(p), floor ?? Number.MIN_VALUE);
-  const tiers: (Tier | 'none')[] = [...TIER_ORDER, 'none'];
+  const tiers: (Kind | 'none')[] = [...KIND_ORDER, 'none'];
   const series = tiers
-    .filter((t) => rows.some((p) => (p.tier ?? 'none') === t))
+    .filter((t) => rows.some((p) => (p.kind ?? 'none') === t))
     .map((t) => ({
       id: t,
-      label: t === 'none' ? { en: 'not on the ladder', es: 'fuera de la escalera' } : TIER_NAME[t],
+      label: t === 'none' ? { en: 'not on the ladder', es: 'fuera de la escalera' } : KIND_TEXT[t],
       mode: 'points' as const,
       size: 9,
-      values: rows.map((p) => ((p.tier ?? 'none') === t ? val(p) : null)),
+      values: rows.map((p) => ((p.kind ?? 'none') === t ? val(p) : null)),
     }));
   const clamped = floor !== undefined && rows.some((p) => pick(p) < floor);
   return (
@@ -186,18 +185,19 @@ function Reading({ res, geometry }: { res: BenchmarkResults; geometry: string })
   const { device, view, budget } = useResolved(res);
   if (!budget) return null;
   const rows = pickRows(res, geometry, device, budget, view);
-  const parts = TIER_ORDER.map((tier) => {
-    const b = bestOfTier(rows, tier);
-    const nm = TIER_NAME[tier][lang];
-    if (!b) return es ? `en el nivel ${nm} no corrió ningún método en esta celda` : `no ${nm} method ran in this cell`;
+  const parts = KIND_ORDER.map((kind) => {
+    const b = bestOfKind(rows, kind);
+    const nm = KIND_TEXT[kind][lang];
+    const nmEs = kind === 'published' ? 'los métodos publicados' : 'los métodos propuestos';
+    if (!b) return es ? `entre ${nmEs} no corrió ninguno en esta celda` : `no ${nm} method ran in this cell`;
     return es
-      ? `en el nivel ${nm} el más uniforme es ${shownId(b.method)} (${pct(b.row.rel_std_pct.median)}, con eficiencia ${n(b.row.efficiency.median)})`
+      ? `entre ${nmEs} el más uniforme es ${shownId(b.method)} (${pct(b.row.rel_std_pct.median)}, con eficiencia ${n(b.row.efficiency.median)})`
       : `among the ${nm} methods the most uniform is ${shownId(b.method)} (${pct(b.row.rel_std_pct.median)}, at efficiency ${n(b.row.efficiency.median)})`;
   });
   return (
     <P
-      en={`At ${budgetText(budget).en} on the ${device === 'ideal' ? 'ideal' : 'C08'} device, with ${view === 'default' ? 'every method at the default parameters of its paper' : 'the tuned rows where a method has one and its labelled default row where it has not'}, ${parts.join('; ')}. A method counts as the most uniform only if it keeps at least half of the best efficiency of its tier in the cell, so that a hologram that is uniform because it wastes the light does not take the place. The ranking is the one cell chosen above; the other budgets and the other device are one control away, and the whole matrix is in the table.`}
-      es={`Con ${budgetText(budget).es} sobre el dispositivo ${device === 'ideal' ? 'ideal' : 'C08'}, con ${view === 'default' ? 'cada método en los parámetros por defecto de su artículo' : 'las filas ajustadas donde un método las tiene y su fila por defecto rotulada donde no'}, ${parts.join('; ')}. Un método cuenta como el más uniforme solo si conserva al menos la mitad de la mejor eficiencia de su nivel en la celda, de modo que un holograma uniforme porque desperdicia la luz no ocupa el lugar. La clasificación es la de la celda elegida arriba; los otros presupuestos y el otro dispositivo están a un control de distancia, y toda la matriz está en la tabla.`}
+      en={`At ${budgetText(budget).en} on the ${device === 'ideal' ? 'ideal' : 'C08'} device, with ${view === 'default' ? 'every method at the default parameters of its paper' : 'the tuned rows where a method has one and its labelled default row where it has not'}, ${parts.join('; ')}. A method counts as the most uniform only if it keeps at least half of the best efficiency of its kind of method in the cell, so that a hologram that is uniform because it wastes the light does not take the place. The ranking is the one cell chosen above; the other budgets and the other device are one control away, and the whole matrix is in the table.`}
+      es={`Con ${budgetText(budget).es} sobre el dispositivo ${device === 'ideal' ? 'ideal' : 'C08'}, con ${view === 'default' ? 'cada método en los parámetros por defecto de su artículo' : 'las filas ajustadas donde un método las tiene y su fila por defecto rotulada donde no'}, ${parts.join('; ')}. Un método cuenta como el más uniforme solo si conserva al menos la mitad de la mejor eficiencia de su tipo de método en la celda, de modo que un holograma uniforme porque desperdicia la luz no ocupa el lugar. La clasificación es la de la celda elegida arriba; los otros presupuestos y el otro dispositivo están a un control de distancia, y toda la matriz está en la tabla.`}
     />
   );
 }

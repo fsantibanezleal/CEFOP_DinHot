@@ -18,7 +18,7 @@ def test_committed_records_state_the_measured_values():
 def test_a_cell_is_the_mean_and_the_range_of_the_seeds():
     assert wrt.cell([0.5, 0.6, 0.7]) == "0.6 (0.5 to 0.7)"
     assert wrt.method_of(Path("M07-phase-fixed-wgs.md")) == "M07"
-    assert wrt.method_of(Path("BS-1-device-aware-wgs.md")) == "B1"
+    assert wrt.method_of(Path("B1-device-aware-wgs.md")) == "B1"
     assert wrt.method_of(Path("README.md")) is None
 
 

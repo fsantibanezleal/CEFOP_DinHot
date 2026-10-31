@@ -29,12 +29,12 @@ function Limits({ res }: { res: BenchmarkResults }) {
       es: tuned.length ? `Solo los métodos que declaran una rejilla de ajuste tienen filas ajustadas (${tuned.join(', ')} en este documento), de modo que una vista ajustada compara esos métodos en su mejor punto de la rejilla con los demás en su valor por defecto rotulado; no es una comparación de cada familia en su óptimo.` : 'Este documento no trae filas ajustadas, así que toda comparación es entre parámetros por defecto.',
     },
     {
-      en: `${skipped} cells were not run because a method does not accept the target or the dimension; they are listed, not zero, and a tier summary that skips them compares fewer methods on those geometries.`,
-      es: `${skipped} celdas no se corrieron porque un método no acepta el objetivo o la dimensión; están listadas, no son cero, y un resumen por nivel que las omite compara menos métodos en esas geometrías.`,
+      en: `${skipped} cells were not run because a method does not accept the target or the dimension; they are listed, not zero, and a summary by kind of method that skips them compares fewer methods on those geometries.`,
+      es: `${skipped} celdas no se corrieron porque un método no acepta el objetivo o la dimensión; están listadas, no son cero, y un resumen por tipo de método que las omite compara menos métodos en esas geometrías.`,
     },
     {
-      en: 'The quantities of BS-1, BS-2 and BS-4 that the matrix cannot reproduce are recorded values of the acceptance tests, labelled as such; BS-3 is refuted and BS-4 does not extend to pointing errors. The learned models are judged on generated held-out volumes and geometries, not on experimental data, against a baseline given the same wall-clock.',
-      es: 'Las cantidades de BS-1, BS-2 y BS-4 que la matriz no puede reproducir son valores registrados de las pruebas de aceptación, rotulados como tales; BS-3 está refutada y BS-4 no se extiende a errores de puntería. Los modelos aprendidos se juzgan sobre volúmenes y geometrías reservados generados, no sobre datos experimentales, contra una línea base con el mismo reloj.',
+      en: 'The quantities of B1, B2 and B4 that the matrix cannot reproduce are recorded values of the acceptance tests, labelled as such; B3 is refuted and B4 does not extend to pointing errors. The learned models are judged on generated held-out volumes and geometries, not on experimental data, against a baseline given the same wall-clock.',
+      es: 'Las cantidades de B1, B2 y B4 que la matriz no puede reproducir son valores registrados de las pruebas de aceptación, rotulados como tales; B3 está refutada y B4 no se extiende a errores de puntería. Los modelos aprendidos se juzgan sobre volúmenes y geometrías reservados generados, no sobre datos experimentales, contra una línea base con el mismo reloj.',
     },
   ];
   return (

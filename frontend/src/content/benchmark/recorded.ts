@@ -1,14 +1,14 @@
 // The acceptance measurements of the beyond-the-state-of-the-art rows that the benchmark matrix cannot reproduce, as the SDD records them.
 // The benchmark scores every method on the same geometries, devices and budgets; three claims are measured by a test that does something
-// the matrix does not: BS-1 over five seeds on the crosstalk device and on the full C08 device, BS-2 on the transient intensity of a moving
-// trap between frames, BS-4 over an ensemble of residual aberrations and over pointing errors. Their numbers are written here once, with the
+// the matrix does not: B1 over five seeds on the crosstalk device and on the full C08 device, B2 on the transient intensity of a moving
+// trap between frames, B4 over an ensemble of residual aberrations and over pointing errors. Their numbers are written here once, with the
 // SDD row each is read from, and `data.test.ts` fails when a number is no longer in that row of `docs/design/SDD.md`, so this file cannot
 // drift from the design record. The page shows them in a column of their own, labelled as recorded, apart from what it reads from the
 // benchmark document at run time.
 
 export interface RecordedClaim {
   /** The ladder row in the SDD ("Method ladder" table). */
-  row: 'BS-1' | 'BS-2' | 'BS-4';
+  row: 'B1' | 'B2' | 'B4';
   /** The test that measures it. */
   test: string;
   /** Every number the page shows from this record; each must appear in the SDD row. */
@@ -16,8 +16,8 @@ export interface RecordedClaim {
 }
 
 export const RECORDED: Record<string, RecordedClaim> = {
-  'BS-1': {
-    row: 'BS-1',
+  'B1': {
+    row: 'B1',
     test: 'tests/methods/beyond/test_b1_device_wgs.py',
     numbers: {
       /** Median of the factor by which B1 lowers the relative standard deviation below the corrected M07 on the crosstalk device. */
@@ -31,8 +31,8 @@ export const RECORDED: Record<string, RecordedClaim> = {
       fullDeviceFactor: 2.0,
     },
   },
-  'BS-2': {
-    row: 'BS-2',
+  'B2': {
+    row: 'B2',
     test: 'tests/methods/beyond/test_b2_flicker_bounded.py',
     numbers: {
       /** The acceptance task: the minimum transient intensity of a moving trap over its mean, B2 and LPI. */
@@ -67,8 +67,8 @@ export const RECORDED: Record<string, RecordedClaim> = {
       threshold: 0.9,
     },
   },
-  'BS-4': {
-    row: 'BS-4',
+  'B4': {
+    row: 'B4',
     test: 'tests/methods/beyond/test_b4_robust.py',
     numbers: {
       /** Median over three seeds of the factor on the 95th percentile of the relative standard deviation over a 200-sample ensemble of aberrations. */
