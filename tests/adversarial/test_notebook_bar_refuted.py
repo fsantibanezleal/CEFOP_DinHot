@@ -65,7 +65,7 @@ def test_adversarial_a_level_three_notebook_that_only_cites_the_state_of_the_art
     u = unit_module()
     doc = u.bar_doc("en", 3, sota_method=False, sota_figure=False)
     findings = floors_of(pipe, doc)
-    assert any("no method cell under State of the art" in f for f in findings) and any("no figure under State of the art" in f for f in findings)
+    assert any("no method cell under Comparison" in f for f in findings) and any("no figure under Comparison" in f for f in findings)
 
 
 def test_adversarial_the_spanish_tree_does_not_escape_a_floor_the_english_tree_meets(pipe: Path) -> None:
@@ -83,7 +83,7 @@ def test_adversarial_the_spanish_tree_does_not_escape_a_floor_the_english_tree_m
 
 def test_adversarial_a_level_four_notebook_without_a_figure_or_a_table_under_beyond_fails(pipe: Path) -> None:
     findings = floors_of(pipe, unit_module().bar_doc("en", 4, beyond="none"))
-    assert any("no figure or table under Beyond the state of the art" in f for f in findings), findings
+    assert any("no figure or table under Evidence" in f for f in findings), findings
 
 
 def test_adversarial_a_notebook_with_no_valid_level_is_measured_at_level_two(pipe: Path) -> None:

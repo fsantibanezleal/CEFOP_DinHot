@@ -1,7 +1,7 @@
 # Guide: write the product's notebooks
 
 The notebooks are the product's didactic layer: they teach a reader, step by step and on the product's own data, how
-its methods work, where each method stands against the state of the art, and what the product adds beyond it. They
+its methods work, how each one compares with the published methods, and what the methods the product proposes add. They
 import the product's methods and never re-implement them; logic that exists only in a notebook is incomplete. The
 rule is CAOS_MANAGE `conventions/product-notebooks.md`; this guide is how a product applies it, and it opens with the bar. DinHot's set is the
 eight topics of `notebooks/README.md`; none of the template's example set remains (`scripts/check_template_residue.py` checks it).
@@ -38,11 +38,12 @@ What every notebook of a product does:
    live in that cell or in the product's package, never redefined further down.
 7. **Keeps the tests in the tests.** Checking that the notebook reproduces a committed artifact is the test suite's job. A
    notebook holds at most one reproduction check, and it never counts as the lesson.
-8. **Shows the state of the art by running it.** A level 3 notebook runs the state-of-the-art method (the package's
+8. **Shows the published methods by running them.** A level 3 notebook runs the current published method (the package's
    implementation or a pinned reference implementation) on the same data as the product's method, and compares the two with
    numbers and a figure. The example's level 3 notebook runs SciPy's RK45 and DOP853 (pinned in `notebooks/requirements.txt`)
    on the engine's cases and compares error against step and against cost. A level 4 notebook measures the claim it
-   demonstrates, including the case where the state of the art fails.
+   demonstrates, including the case where the published method fails. Each method is called by its name, never by its
+   tier (section 4).
 9. **Reads as code a practitioner would write.** One idea per cell, at most 30 lines of logic, one statement per line, lines
    of at most 120 characters, names that say what they hold; comments say why, not what.
 10. **Earns its place.** The set follows the product's methods, not the coverage table: fewer, deeper notebooks over many
@@ -68,7 +69,7 @@ described above; they do not certify a lesson, the review does.
 | Generic filler sentences (the list in `notebook_bar.json`) | none | none |
 | Lines with two statements, code lines over 120 characters, cells over 30 lines of logic | none | none |
 | `**Question:**` in the first cell; `**Answer:**` in Results quoting a number that appears in an output | required | required |
-| Level 3: a method cell and a figure under State of the art. Level 4: a figure or a table under Beyond the state of the art | | required |
+| Level 3: a method cell and a figure under Comparison. Level 4: a figure or a table under Evidence | | required |
 | Not a copy of the template's example notebooks (`scripts/check_template_residue.py` finds them by content) | required | required |
 
 A notebook with no valid level is measured at level 2 (the missing level is a finding of its own). The Spanish tree is held to
@@ -135,8 +136,8 @@ notebooks/
 |---|---|---|
 | 1 | Fundamentals | the problem in its context, the data, the idea of the method, a first run on a small real slice |
 | 2 | The method in practice | the full algorithm step by step on the data, every intermediate shown, the product's validation of the result |
-| 3 | State of the art | the current methods the product's research found, with sources, run or reproduced and compared with level 2 on the same data |
-| 4 | Beyond the state of the art | the product's own components that go further, with the evidence |
+| 3 | Comparison with published methods | the current methods the product's research found, with sources, run or reproduced and compared with level 2 on the same data |
+| 4 | Proposed methods | the product's own components that go further, with the evidence |
 
 - Every topic has levels 1 and 2. The level never decreases with the notebook number.
 - A topic whose method has state-of-the-art research in the product's dossiers has a level 3 notebook. A topic without
@@ -155,8 +156,8 @@ each claim:
 
 1. State it in the SDD section with its identifier, what it adds, the measured evidence and the source it goes beyond.
 2. Write a level 4 notebook in each language whose `caos.beyond` lists the identifier, with the sections
-   `State of the art` and `Beyond the state of the art` and the evidence: measured size and power, a reconciliation, a
-   case the state of the art gets wrong.
+   `Comparison` and `Evidence` (`Comparación` and `Evidencia`) and the evidence: measured size and power, a
+   reconciliation, a case the published method gets wrong. The notebook names the proposed method by its name.
 3. `scripts/check_notebooks.py` fails an identifier no level 4 notebook covers in each language, and a notebook that
    claims one the SDD does not list.
 
@@ -171,12 +172,19 @@ sections, in this order, named in the tree's language:
 | Setup | Preparación | always |
 | Data | Datos | always |
 | Method | Método | always |
-| State of the art | Estado del arte | level 3 and 4 |
-| Beyond the state of the art | Más allá del estado del arte | level 4 |
+| Comparison | Comparación | level 3 and 4 |
+| Evidence | Evidencia | level 4 |
 | Results | Resultados | always |
 | Summary | Resumen | always |
 | References | Referencias | always |
 
+- **The tier names never reach a reader** (from 0.14.000; CAOS_MANAGE `conventions/method-tiers-and-manuscripts.md`
+  section 0, Felipe 2026-10-30). "State of the art", "beyond the state of the art", "classical approach", SOTA, the
+  claim ids `BS-<n>` and their Spanish forms sort the methods in the SDD and the gates; they are never a title, a
+  heading, a section or a file name of a notebook or an index, and never appear in its prose, its code comments, the text in its code
+  (plot titles, labels, legends) or its printed output. Name each method ("SciPy's RK45", "Dormand and Prince");
+  only a cited title in References keeps its own words. `scripts/check_internal_names.py` fails a notebook, an index,
+  a manuscript source, a manuscript title, the README or an app string that uses them.
 - **Setup:** the install line in a markdown code block with the exact pins of `notebooks/requirements.txt`
   (`pip install <package>==<version>`), then a code cell that imports the packages and prints their versions
   (`importlib.metadata.version`). A product's own package that is not yet on PyPI is installed from its release tag:
