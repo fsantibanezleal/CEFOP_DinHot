@@ -1,5 +1,5 @@
 {
- "engine_version": "0.02.000",
+ "engine_version": "0.02.001",
  "bs1_crosstalk": {
   "label": "crosstalk device",
   "device": {
@@ -1374,7 +1374,7 @@
  },
  "bake": {
   "C08_device_limited": {
-   "engine_version": "0.02.000",
+   "engine_version": "0.02.001",
    "seed": 20261028,
    "params": {
     "n_pix": 128,
@@ -1436,7 +1436,7 @@
    "seeds_mean_ratio": 2.0342637581760887
   },
   "C10_rearrangement": {
-   "engine_version": "0.02.000",
+   "engine_version": "0.02.001",
    "seed": 20261028,
    "params": {
     "n_pix": 256,
@@ -1702,48 +1702,48 @@
      "geometry": "G6",
      "n_seeds": 2,
      "n_seeds_b1": 2,
-     "n_seeds_m07": 5,
+     "n_seeds_m07": 10,
      "sigma_b1": 17.114947,
-     "sigma_m07": 29.648212,
-     "factor": 1.7322993755107743,
-     "eff_ratio": 1.0612483560640626
+     "sigma_m07": 19.469484,
+     "factor": 1.1375719714469463,
+     "eff_ratio": 0.9913519379789432
     }
    ],
    "ideal": [
     {
      "geometry": "G1",
-     "n_seeds": 7,
-     "n_seeds_b1": 7,
-     "n_seeds_m07": 20,
-     "sigma_b1": 0.0,
-     "sigma_m07": 1.478603,
-     "factor": 1478603.0,
-     "eff_ratio": 1.0000307414216063
-    },
-    {
-     "geometry": "G2",
      "n_seeds": 8,
      "n_seeds_b1": 8,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
-     "sigma_m07": 0.0,
-     "factor": 0.0,
-     "eff_ratio": 0.998532998870539
+     "sigma_m07": 1.478603,
+     "factor": 1478603.0,
+     "eff_ratio": 1.0007869803931213
     },
     {
-     "geometry": "G3",
-     "n_seeds": 6,
-     "n_seeds_b1": 6,
+     "geometry": "G2",
+     "n_seeds": 13,
+     "n_seeds_b1": 13,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 0.0,
      "factor": 0.0,
-     "eff_ratio": 0.9978574370469655
+     "eff_ratio": 0.9993898313886314
+    },
+    {
+     "geometry": "G3",
+     "n_seeds": 11,
+     "n_seeds_b1": 11,
+     "n_seeds_m07": 20,
+     "sigma_b1": 0.0,
+     "sigma_m07": 0.0,
+     "factor": 0.0,
+     "eff_ratio": 1.0007433674545692
     },
     {
      "geometry": "G4",
-     "n_seeds": 6,
-     "n_seeds_b1": 6,
+     "n_seeds": 12,
+     "n_seeds_b1": 12,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 0.011994,
@@ -1754,7 +1754,7 @@
      "geometry": "G6",
      "n_seeds": 2,
      "n_seeds_b1": 2,
-     "n_seeds_m07": 5,
+     "n_seeds_m07": 11,
      "sigma_b1": 0.0,
      "sigma_m07": 0.748233,
      "factor": 748233.0000000001,

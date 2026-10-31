@@ -6,8 +6,8 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 import { loadBenchmark, loadIndex, loadManifest, loadModelMetrics, useArtifact, type Loaded } from '../../api/artifacts';
 import type { BenchmarkResults, CaseIndex, CaseManifest, ModelMetrics } from '../../lib/contract.types';
 import { ReadinessNote } from '../../readiness/ReadinessNote';
-import { budgetId, budgetsOf, budgetText, parseBudget, type Budget, type Device, type Lang, type ParamsView, type Picked, TIER_NAME, TIER_SHORT } from './data';
-import type { Tier } from '../methodology/ladder';
+import { budgetId, budgetsOf, budgetText, parseBudget, type Budget, type Device, type Lang, type ParamsView, type Picked, KIND_TEXT } from './data';
+import type { Kind } from '../methodology/ladder';
 
 export interface BenchData {
   results: Loaded<BenchmarkResults>;
@@ -162,9 +162,9 @@ export function CellControls({ res, prefix, showView = true }: { res: BenchmarkR
   );
 }
 
-/** The tone of a bar by tier, with the legend that names it. */
-export const TIER_TONE: Record<Tier | 'none', BarDatum['tone']> = { classical: 'neutral', sota: 'accent', beyond: 'good', none: 'warn' };
-export const TIER_LEGEND = (['classical', 'sota', 'beyond'] as Tier[]).map((t) => ({ tone: TIER_TONE[t] as NonNullable<BarDatum['tone']>, label: TIER_NAME[t] }));
+/** The tone of a bar by kind of method, with the legend that names it. */
+export const KIND_TONE: Record<Kind | 'none', BarDatum['tone']> = { published: 'accent', proposed: 'good', none: 'warn' };
+export const KIND_LEGEND = (['published', 'proposed'] as Kind[]).map((k) => ({ tone: KIND_TONE[k] as NonNullable<BarDatum['tone']>, label: KIND_TEXT[k] }));
 
 /** A bar label that carries the parameter set it shows: a tuned result is never an unlabelled bar beside default ones. */
 export function barLabel(p: Picked, id: string, view: ParamsView): BiText {
@@ -197,4 +197,4 @@ export function useNum() {
 /** The note under a view that reads a catalog row: the readiness state, nothing when the row is available. */
 export const Note = ReadinessNote;
 
-export const tierText = (tier: Tier | null, lang: Lang, short = false): string => (tier === null ? '-' : (short ? TIER_SHORT : TIER_NAME)[tier][lang]);
+export const kindText = (kind: Kind | null, lang: Lang): string => (kind === null ? '-' : KIND_TEXT[kind][lang]);

@@ -6,7 +6,7 @@ those of ``data-pipeline/pipeline/cases/measured_ranges.json`` (``measured``, wr
 ranges``), so the rows are generated, never typed: this script rewrites the rows that follow the header
 ``| Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |`` of each record and leaves the rest
 of the record, the sentence that introduces the table included, untouched. The method of a record is the ladder id that
-starts its file name (``M07-...``); a beyond record (``BS-1-...``) reads its engine id (``B1``). A case appears when the
+starts its file name (``M07-...``); a proposed-method record (``B1-...``) reads its engine id (``B1``). A case appears when the
 measured values hold the three metrics of that method for it; the iterations are the budget of the case's record.
 
 Usage:
@@ -29,10 +29,10 @@ METRICS = ("efficiency", "uniformity", "rel_std_pct")
 
 
 def method_of(path: Path) -> str | None:
-    m = re.match(r"(M\d\d|BS-\d)-", path.name)
+    m = re.match(r"(M\d\d|B\d)-", path.name)
     if not m:
         return None
-    return m.group(1).replace("BS-", "B")
+    return m.group(1)
 
 
 def _g(x: float) -> str:

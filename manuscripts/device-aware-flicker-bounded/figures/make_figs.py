@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate the figures of the BS-1 / BS-2 manuscript from ``data/beyond.json`` (written by ``data/measure.py``).
+"""Regenerate the figures of the B1 and B2 manuscript from ``data/beyond.json`` (written by ``data/measure.py``).
 
   fig-b1.pdf  (a) trap intensities of one hologram on the crosstalk device, phase-fixed WGS and B1, sorted;
               (b) relative standard deviation per seed for the baselines and for B1 with and without the device model.

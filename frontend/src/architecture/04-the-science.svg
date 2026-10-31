@@ -87,8 +87,8 @@
   <text class="sub l-es" x="760" y="124">frecuencia de corte</text>
   <text class="sub l-en" x="760" y="140">Boltzmann law</text>
   <text class="sub l-es" x="760" y="140">ley de Boltzmann</text>
-  <text class="t-off l-en" x="20" y="196">THE LADDER OF METHODS: 24 methods, from analytic to beyond the state of the art</text>
-  <text class="t-off l-es" x="20" y="196">LA ESCALERA DE MÉTODOS: 24 métodos, de lo analítico a lo que supera el estado del arte</text>
+  <text class="t-off l-en" x="20" y="196">THE LADDER OF METHODS: 24 methods, 19 published and 5 proposed</text>
+  <text class="t-off l-es" x="20" y="196">LA ESCALERA DE MÉTODOS: 24 métodos, 19 publicados y 5 propuestos</text>
   <rect class="bx" x="20" y="208" width="134" height="104" rx="8"/>
   <text class="itb l-en" x="30" y="228">Analytic</text>
   <text class="itb l-es" x="30" y="228">Analíticos</text>
@@ -132,15 +132,15 @@
   <text class="sub l-es" x="610" y="284">arranque</text>
   <path class="flow" d="M734,260 H743" marker-end="url(#dh4-arrow)"/>
   <rect class="wn" x="745" y="208" width="134" height="104" rx="8"/>
-  <text class="itb l-en" x="755" y="228">Beyond</text>
-  <text class="itb l-es" x="755" y="228">Más allá</text>
+  <text class="itb l-en" x="755" y="228">Proposed</text>
+  <text class="itb l-es" x="755" y="228">Propuestos</text>
   <text class="cd mono" x="755" y="246">B1, B2, B4, B5</text>
   <text class="sub l-en" x="755" y="268">device WGS, flicker,</text>
   <text class="sub l-es" x="755" y="268">WGS con dispositivo,</text>
   <text class="sub l-en" x="755" y="284">robust, Pareto</text>
   <text class="sub l-es" x="755" y="284">parpadeo, robusto</text>
-  <text class="sub l-en" x="20" y="336">simple to beyond the published state of the art; every method returns a phase mask, scored the same way through the chain above</text>
-  <text class="sub l-es" x="20" y="336">de lo simple a lo que supera el estado del arte publicado; todo método devuelve una máscara de fase, evaluada igual por la cadena de arriba</text>
+  <text class="sub l-en" x="20" y="336">from the simplest published method to the five proposed ones; every method returns a phase mask, scored the same way through the chain above</text>
+  <text class="sub l-es" x="20" y="336">del método publicado más simple a los cinco propuestos; todo método devuelve una máscara de fase, evaluada igual por la cadena de arriba</text>
   <rect class="ok" x="20" y="354" width="860" height="80" rx="8"/>
   <text class="itb l-en" x="34" y="376">Oracles: none of them is a model judging a model</text>
   <text class="itb l-es" x="34" y="376">Oráculos: ninguno es un modelo juzgando a un modelo</text>

@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b1_device_wgs.py` |
 | Live port | none (lane `baked`; `getMethod('B1')` raises `NotLive`) |
 | Card | [B1](../../frameworks/B1_device-aware-wgs.md) |
-| Outcome | hypothesis confirmed on the ladder criterion (a median of 25.8 times below M07 over five seeds at 0.995 of its efficiency); in the benchmark on the C08 device it holds on the ring and the random set, not on the large set (1.73 times) nor on the two lattices, where it keeps its start (update of 2026-10-30) |
+| Outcome | hypothesis confirmed on the ladder criterion (a median of 25.8 times below M07 over five seeds at 0.995 of its efficiency); in the benchmark on the C08 device it holds on the ring and the random set, not on the large set (1.14 times) nor on the two lattices, where it keeps its start (update of 2026-10-30) |
 
 ## Tier and role
 
@@ -148,6 +148,6 @@ B1 now returns its best iterate that keeps 0.9 of its warm start's efficiency (T
 | G2 Ring of 36 traps | 7.45 | 17 | 2.28 | 0.965 | 2, 20 |
 | G3 Random 100 traps | 4.41 | 20.7 | 4.69 | 0.938 | 2, 20 |
 | G4 Quasi-periodic 119 | 81.1 | 85.2 | 1.05 | 0.996 | 2, 20 |
-| G6 Large: 32 x 32 and disordered 819 | 17.1 | 29.6 | 1.73 | 1.061 | 2, 5 |
+| G6 Large: 32 x 32 and disordered 819 | 17.1 | 19.5 | 1.14 | 0.991 | 2, 10 |
 
-So in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.061); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds. On the lattices of this device every iterate past the start gives up more than a tenth of the light, so B1 keeps its start; on the ideal device the spreads of B1 and of M07 are both below the resolution of the file on most geometries, which is a tie and not a gain.
+So in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.14 times at 0.991); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds. On the lattices of this device every iterate past the start gives up more than a tenth of the light, so B1 keeps its start; on the ideal device the spreads of B1 and of M07 are both below the resolution of the file on most geometries, which is a tie and not a gain.

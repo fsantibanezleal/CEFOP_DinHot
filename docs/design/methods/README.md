@@ -56,8 +56,8 @@ the test measures it), the evaluation that confirms or refutes it, the measured 
 
 | Record | Method | One line |
 |---|---|---|
-| [BS-1](BS-1-device-aware-wgs.md) | Device-aware weighted GS (B1) | hypothesis confirmed: spread 49 times below M07 on the crosstalk device at 0.997 of its efficiency |
-| [BS-2](BS-2-flicker-bounded-sequence.md) | Flicker-bounded phase-continuous sequence (B2) | hypothesis confirmed in DinHot's transient model: 0.92 against 0.54 to 0.72 for LPI |
-| [BS-3](BS-3-learned-warm-start.md) | Learned warm start for phase-fixed WGS (B3) | hypothesis refuted: 1.75 times against 2, and a control without the network gains as much |
-| [BS-4](BS-4-aberration-robust-hologram.md) | Aberration-robust hologram (B4) | confirmed for residual aberrations (a median of 1.435 times over three seeds); pointing errors not obtained (1.04 times) |
-| [BS-5](BS-5-pareto-front.md) | Efficiency-uniformity Pareto front (B5) | hypothesis confirmed by a small margin: hypervolume 0.8190 against 0.8018 (re-measured 2026-10-29) |
+| [B1](B1-device-aware-wgs.md) | Device-aware weighted GS (B1) | hypothesis confirmed: spread 49 times below M07 on the crosstalk device at 0.997 of its efficiency |
+| [B2](B2-flicker-bounded-sequence.md) | Flicker-bounded phase-continuous sequence (B2) | hypothesis confirmed in DinHot's transient model: 0.92 against 0.54 to 0.72 for LPI |
+| [B3](B3-learned-warm-start.md) | Learned warm start for phase-fixed WGS (B3) | hypothesis refuted: 1.75 times against 2, and a control without the network gains as much |
+| [B4](B4-aberration-robust-hologram.md) | Aberration-robust hologram (B4) | confirmed for residual aberrations (a median of 1.435 times over three seeds); pointing errors not obtained (1.04 times) |
+| [B5](B5-pareto-front.md) | Efficiency-uniformity Pareto front (B5) | hypothesis confirmed by a small margin: hypervolume 0.8190 against 0.8018 (re-measured 2026-10-29) |

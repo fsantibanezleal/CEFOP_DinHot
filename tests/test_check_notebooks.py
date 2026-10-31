@@ -34,8 +34,8 @@ RUNNER = load("run_notebooks")
 
 
 HEADINGS = {
-    "en": ["Objectives", "Setup", "Data", "Method", "State of the art", "Beyond the state of the art", "Results", "Summary", "References"],
-    "es": ["Objetivos", "Preparación", "Datos", "Método", "Estado del arte", "Más allá del estado del arte", "Resultados", "Resumen", "Referencias"],
+    "en": ["Objectives", "Setup", "Data", "Method", "Comparison", "Evidence", "Results", "Summary", "References"],
+    "es": ["Objetivos", "Preparación", "Datos", "Método", "Comparación", "Evidencia", "Resultados", "Resumen", "Referencias"],
 }
 LOW = [1, 1, 1, 1, 3, 4, 1, 1, 1]
 NO_L3 = {"en": "No level 3:", "es": "Sin nivel 3:"}
@@ -902,7 +902,7 @@ def bar_doc(lang: str = "en", level: int = 2, salt: str = "a", *, methods: int |
         b.md(f"An extra cell, number {n}.")
         b.code(source, "")
     if level >= 3:
-        b.md(f"## {h['State of the art']}\n\nThe reference implementation, run on the same data.")
+        b.md(f"## {h['Comparison']}\n\nThe reference implementation, run on the same data.")
         if sota_method:
             b.md("Run the reference.")
             b.code("# the pinned reference implementation\nfrom scipy.integrate import solve_ivp\n\nref = solve_ivp(lambda t, y: -y, (0, 1), [1.0])", "")
@@ -911,7 +911,7 @@ def bar_doc(lang: str = "en", level: int = 2, salt: str = "a", *, methods: int |
             b.code("# draw the comparison\nplt.plot([0, 1], [1, 0.4])\nplt.show()", "", figure=True)
             b.md(f"{words(after, salt + 'sf')}.")
     if level >= 4:
-        b.md(f"## {h['Beyond the state of the art']}\n\nThe claim, measured.")
+        b.md(f"## {h['Evidence']}\n\nThe claim, measured.")
         if beyond == "figure":
             b.md("Draw it.")
             b.code("# draw the claim\nplt.plot([0, 1], [0, 1])\nplt.show()", "", figure=True)
@@ -1183,8 +1183,8 @@ def test_nb058_the_answer_quotes_a_number_that_an_output_shows(bar_root: Path) -
 
 
 def test_nb059_level_three_runs_the_state_of_the_art_and_draws_it(bar_root: Path) -> None:
-    only(bar_of(bar_root, bar_doc("en", 3, sota_method=False)), "no method cell under State of the art")
-    only(bar_of(bar_root, bar_doc("en", 3, sota_figure=False)), "no figure under State of the art")
+    only(bar_of(bar_root, bar_doc("en", 3, sota_method=False)), "no method cell under Comparison")
+    only(bar_of(bar_root, bar_doc("en", 3, sota_figure=False)), "no figure under Comparison")
     # a method cell and a figure elsewhere do not stand in for the section
     findings = bar_of(bar_root, bar_doc("en", 3, sota_method=False, sota_figure=False))
     assert len(findings) == 2, findings
@@ -1193,7 +1193,7 @@ def test_nb059_level_three_runs_the_state_of_the_art_and_draws_it(bar_root: Path
 def test_nb060_level_four_shows_a_figure_or_a_table_under_beyond(bar_root: Path) -> None:
     assert bar_of(bar_root, bar_doc("en", 4, beyond="figure")) == []
     assert bar_of(bar_root, bar_doc("en", 4, beyond="table")) == []
-    only(bar_of(bar_root, bar_doc("en", 4, beyond="none")), "no figure or table under Beyond the state of the art")
+    only(bar_of(bar_root, bar_doc("en", 4, beyond="none")), "no figure or table under Evidence")
 
 
 def test_nb061_a_notebook_without_a_valid_level_is_measured_at_level_two(bar_root: Path) -> None:
