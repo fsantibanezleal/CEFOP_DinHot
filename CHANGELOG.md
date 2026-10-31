@@ -12,7 +12,8 @@ tagged.
   the Benchmark page compares published and proposed methods, each proposed method against the strongest published method of its cell.
 - The level 3 and 4 notebooks use the sections Comparison and Evidence.
 - The technical report v0.02.001 (10.5281/zenodo.23837873) is organized by method family, and the manuscript on device-aware weighted
-  GS and flicker-bounded sequences is at v0.02 (10.5281/zenodo.23837877). No result changes.
+  GS and flicker-bounded sequences is at v0.02 (10.5281/zenodo.23837877), both on the numbers of 0.02.000.
+- Re-baked at 0.02.001: the cases reproduce; the benchmark's cells run more seeds within the same wall-clock bound, so its medians move.
 
 ## [0.02.000], 2026-10-30
 
