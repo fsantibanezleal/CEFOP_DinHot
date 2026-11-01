@@ -565,6 +565,7 @@ def main() -> int:
     L.append(macro("benchFivePass", sum(1 for _, a, b in five if a >= b)))
     L.append(macro("benchFivePassThirty", sum(1 for _, a, b in five30 if a >= b)))
     L.append(macro("benchFiveLost", ", ".join(lost) if lost else "none"))
+    L.append(macro("benchFiveMargin", f"{max((b - a for _, a, b in five), default=0.0):.3f}"))
     no_rows = [m for m in bench["methods_in_protocol"] if m not in bench["methods_measured"]]
     # main.tex names the reasons of these three methods (a vortex charge, a rearrangement block, the learned model's geometry)
     if bench["rows"] > 100 and set(no_rows) != {"M15", "M16", "M17"}:

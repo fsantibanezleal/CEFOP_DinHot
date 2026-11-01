@@ -389,7 +389,7 @@
   },
   {
    "id": "M17",
-   "text": "three-plane network refined by M19: median accuracy ratio 1.140 (quartiles 1.102 and 1.160) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
+   "text": "three-plane network refined by M19: median accuracy ratio 1.140 (quartiles 1.103 and 1.163) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
    "seeds": "162 volumes",
    "source": "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json",
    "numbers": {
