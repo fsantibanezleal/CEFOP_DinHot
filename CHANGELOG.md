@@ -3,6 +3,14 @@
 All notable changes to this product. Versions are X.XX.XXX (VERSION is the single source); every release is
 tagged.
 
+## [0.02.002], 2026-10-31
+
+### Changed
+
+- Re-baked at 0.02.002, and the technical report v0.02.002 (10.5281/zenodo.23850386) and the manuscript v0.03 (10.5281/zenodo.23850389) generated from that
+  bake. The report now states that the benchmark's cell medians depend on the seeds a wall-clock bound admits, so the count of
+  geometries where the stored Pareto front meets the published hypervolume at 100 iterations moves between runs (margins at most 0.007).
+
 ## [0.02.001], 2026-10-31
 
 ### Changed
