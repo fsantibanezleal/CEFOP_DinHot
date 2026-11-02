@@ -134,17 +134,20 @@ def test_residue_guard_scans_the_helper_scripts_and_skips_its_own_tests(tmp_path
     assert "tests/test_guards.py" not in res.stdout
 
 
-def _instantiate_a_copy(tmp_path: Path) -> tuple[Path, subprocess.CompletedProcess]:
+def _instantiate_a_copy(tmp_path: Path, *, ci_edit=None, expected_exit: int = 0) -> tuple[Path, subprocess.CompletedProcess]:
     """A copy of the template, instantiated with --no-run: the copy and the script's result."""
     copy = tmp_path / "product"
     ignore = shutil.ignore_patterns(".git", "node_modules", ".venv*", "dist", "public/data", "__pycache__",
                                     ".pytest_cache", ".ruff_cache", "gate-output")
     shutil.copytree(ROOT, copy, ignore=ignore)
+    if ci_edit is not None:
+        ci = copy / ".github/workflows/ci.yml"
+        ci.write_text(ci_edit(ci.read_text(encoding="utf-8")), encoding="utf-8")
     # the script resolves its root from its own location: run the COPY's script, never this repository's
     res = subprocess.run([sys.executable, str(copy / "scripts" / "instantiate.py"), "--slug", "probe", "--name", "Probe",
                           "--repo", "CAOS_Probe", "--deploy", "pages", "--visibility", "public", "--tagline-en",
                           "A probe.", "--tagline-es", "Una sonda.", "--no-run"], capture_output=True, text=True, cwd=copy)
-    assert res.returncode == 0, res.stdout + res.stderr
+    assert res.returncode == expected_exit, res.stdout + res.stderr
     return copy, res
 
 
@@ -159,6 +162,19 @@ def test_adversarial_instantiate_removes_the_template_own_tests_and_says_so(tmp_
     # the template's CI runs the moved plants too; the product's workflow names no path that no longer exists
     assert "tests/template" in (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     assert "tests/template" not in (copy / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    source = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    generated = (copy / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    prefix = "pip install pytest==9.1.1 && python -m pytest "
+    def commands(text):
+        return re.findall(r"^\s*run: (.*python -m pytest.*)$", text, re.M)
+    assert commands(source) == [prefix + "tests/adversarial -q", prefix + "tests/template/adversarial -q"]
+    assert commands(generated) == [prefix + "tests/adversarial -q"]
+    assert "  template-plants:" not in generated and "TEMPLATE-ONLY PLANTS" not in generated
+    assert "python -m pytest -q" not in generated
+    assert "  product-plants:" in generated
+    for target in [ROOT, copy]:
+        budget = _run("check_ci_budget.py", str(target))
+        assert budget.returncode == 0 and "ci budget: OK" in budget.stdout, budget.stdout + budget.stderr
     # no feature row names a test that is gone, so the product's SDD guard is green from the first run (a feature left with
     # no requirement is removed with them)
     named = [f.as_posix() for f in (copy / "docs" / "design" / "features").rglob("*.md") if "tests/template/" in f.read_text(encoding="utf-8")]
@@ -173,6 +189,51 @@ def test_adversarial_instantiate_removes_the_template_own_tests_and_says_so(tmp_
         findings = [ln for ln in sdd.stdout.splitlines() if ln.startswith("  - ")]
         assert findings and all("method-tiers-and-manuscripts.md" in ln for ln in findings), sdd.stdout
         assert any("no beyond method" in ln for ln in findings) and any("None claimed" in ln for ln in findings), sdd.stdout
+
+
+@TEMPLATE_ONLY
+@pytest.mark.parametrize("defect", [
+    "missing", "duplicate", "reversed", "extra-job", "unmarked", "wrong-command",
+    "quoted-extra-job", "single-quoted-extra-job", "explicit-extra-job", "inline-extra-job", "punctuated-extra-job",
+    "prefixed-start", "indented-start", "prefixed-end", "continued-job",
+])
+def test_adversarial_instantiate_refuses_ambiguous_template_ci_before_identity_writes(tmp_path, defect):
+    start, end = "  # BEGIN TEMPLATE-ONLY PLANTS\n", "  # END TEMPLATE-ONLY PLANTS\n"
+
+    def mutate(text):
+        if defect == "missing":
+            return text.replace(start, "", 1)
+        if defect == "duplicate":
+            return text + start
+        if defect == "reversed":
+            return text.replace(start, "MARKER\n", 1).replace(end, start, 1).replace("MARKER\n", end, 1)
+        if defect == "extra-job":
+            return text.replace(end, "  unrelated-job:\n    timeout-minutes: 10\n" + end, 1)
+        foreign = "    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - run: echo retained-static-must-survive\n"
+        keys = {"quoted-extra-job": '  "retained-static":\n', "single-quoted-extra-job": "  'retained-static':\n",
+                "explicit-extra-job": "  ? retained-static\n  :\n", "punctuated-extra-job": "  retained.static:\n"}
+        if defect in keys:
+            return text.replace(end, keys[defect] + foreign + end, 1)
+        if defect == "inline-extra-job":
+            return text.replace(end, "  retained-static: {runs-on: ubuntu-latest, timeout-minutes: 10, steps: [{run: echo retained-static-must-survive}]}\n" + end, 1)
+        if defect == "prefixed-start":
+            return text.replace(start, "  # prefix" + start, 1)
+        if defect == "indented-start":
+            return text.replace(start, " " + start, 1)
+        if defect == "prefixed-end":
+            return text.replace(end, "  # prefix" + end, 1)
+        if defect == "continued-job":
+            return text.replace(end, end + "    if: false\n", 1)
+        if defect == "unmarked":
+            return text + "\n  leaked-job:\n    steps:\n      - run: python -m pytest tests/template/adversarial -q\n"
+        return text.replace("python -m pytest tests/template/adversarial -q", "python -m pytest -q", 1)
+
+    copy, result = _instantiate_a_copy(tmp_path, ci_edit=mutate, expected_exit=2)
+    assert "template-only" in result.stdout, result.stdout
+    assert (copy / ".template-source").exists()
+    assert (copy / "VERSION").read_bytes() == (ROOT / "VERSION").read_bytes()
+    assert (copy / "product.json").read_bytes() == (ROOT / "product.json").read_bytes()
+    assert (copy / "tests/template").is_dir()
 
 
 @TEMPLATE_ONLY

@@ -1,0 +1,38 @@
+# Adversarial validation: the README by areas and the numbered local workflow
+
+For each requirement of [`requirements.md`](requirements.md), the check that tries to break it: what was planted or
+refuted, and the test that plants it, on fixture READMEs and fixture repositories with the real guards and the real workflow.
+`scripts/check_sdd.py` fails when a requirement has no row here (or two), when a check is empty, and when a gate names a
+test that does not exist.
+
+| requirement | adversarial check | gate |
+|---|---|---|
+| RP-001 | the heading of the Areas section is renamed back to What is in it: the check fails | `tests/adversarial/test_readme_areas_refuted.py::test_adversarial_a_readme_without_areas_is_found` |
+| RP-002 | the Notebooks row is deleted from the README: the check names the area | `tests/adversarial/test_readme_areas_refuted.py::test_adversarial_a_dropped_area_row_is_found` |
+| RP-003 | the status of the Data row is replaced by a phrase that is neither active nor dormant, and the reason of the dormant API row is removed: both fail | `tests/adversarial/test_readme_areas_refuted.py::test_adversarial_a_row_with_no_status_is_found` |
+| RP-004 | the deploy folder is removed while its row still links it: the check names the dead link | `tests/adversarial/test_readme_areas_refuted.py::test_adversarial_a_dead_folder_link_is_found` |
+| RP-005 | the PyPI and repository links are removed from the Packages row: the check fails | `tests/adversarial/test_readme_areas_refuted.py::test_adversarial_a_packages_row_without_pypi_is_found` |
+| RP-008 | the Areas section of the template README is moved to just under the title, before the purpose and the live URLs: the check fails | `tests/adversarial/test_readme_areas_refuted.py::test_adversarial_the_areas_section_before_the_purpose_is_found` |
+| RP-009 | the What it holds cell of the Data row is replaced by a dash: the check names the area | `tests/adversarial/test_readme_areas_refuted.py::test_adversarial_a_row_that_holds_a_dash_is_found` |
+| RP-010 | the guide link of the Notebooks row is pointed at a document that does not exist: the check names the link | `tests/adversarial/test_readme_areas_refuted.py::test_adversarial_a_dead_document_link_in_a_row_is_found` |
+| RP-011 | Execute the shared workflow with isolated fixture repositories and fake external commands; require the positive operation and reject the corresponding invalid state without affecting an existing release. | `tests/test_local_bootstrap.py::test_adversarial_prerequisites_are_check_only` |
+| RP-012 | Execute the shared workflow with isolated fixture repositories and fake external commands; require the positive operation and reject the corresponding invalid state without affecting an existing release. | `tests/test_local_bootstrap.py::test_adversarial_init_preserves_env_and_installs_by_fingerprint` |
+| RP-013 | Execute the shared workflow with isolated fixture repositories and fake external commands; require the positive operation and reject the corresponding invalid state without affecting an existing release. | `tests/test_local_bootstrap.py::test_adversarial_generation_is_sandboxed_and_absence_is_actionable` |
+| RP-014 | Execute the shared workflow with isolated fixture repositories and fake external commands; require the positive operation and reject the corresponding invalid state without affecting an existing release. | `tests/test_local_bootstrap.py::test_adversarial_release_rejects_mixed_partial_and_rolls_back` |
+| RP-015 | Execute the shared workflow with isolated fixture repositories and fake external commands; require the positive operation and reject the corresponding invalid state without affecting an existing release. | `tests/test_local_bootstrap.py::test_adversarial_dev_supervises_api_and_frontend` |
+| RP-016 | Execute the shared workflow with isolated fixture repositories and fake external commands; require the positive operation and reject the corresponding invalid state without affecting an existing release. | `tests/test_local_bootstrap.py::test_adversarial_shell_entrypoints_propagate_failure` |
+| RP-017 | Challenge the actual helper/guard with the positive production contract and its matching malformed or failure case; require refusal or complete owned recovery. | `tests/test_bootstrap_regressions.py::test_adversarial_receipt_current_contract_and_recursive_pins` |
+| RP-018 | The real readiness producer runs on an empty stage; the inventory check accepts DinHot's 11 rows and refuses a dropped, a duplicated and an unknown row and a stale catalog. | `tests/test_bootstrap_regressions.py::test_adversarial_actual_readiness_inventory` |
+| RP-019 | Challenge the actual helper/guard with the positive production contract and its matching malformed or failure case; require refusal or complete owned recovery. | `tests/test_bootstrap_regressions.py::test_adversarial_actual_template_registry` |
+| RP-020 | Challenge the actual helper/guard with the positive production contract and its matching malformed or failure case; require refusal or complete owned recovery. | `tests/test_bootstrap_regressions.py::test_adversarial_rollback_continues_and_preserves_recovery` |
+| RP-021 | Challenge the actual helper/guard with the positive production contract and its matching malformed or failure case; require refusal or complete owned recovery. | `tests/test_bootstrap_regressions.py::test_adversarial_dev_python_initialization_admission` |
+| RP-022 | Challenge the actual helper/guard with the positive production contract and its matching malformed or failure case; require refusal or complete owned recovery. | `tests/test_bootstrap_regressions.py::test_adversarial_exited_parent_descendant_ownership` |
+| RP-023 | Challenge the actual helper/guard with the positive production contract and its matching malformed or failure case; require refusal or complete owned recovery. | `tests/test_bootstrap_regressions.py::test_adversarial_external_runtime_alias_and_cleanup` |
+| RP-024 | Challenge the actual helper/guard with the positive production contract and its matching malformed or failure case; require refusal or complete owned recovery. | `tests/test_bootstrap_regressions.py::test_adversarial_tracked_shell_modes` |
+| RP-025 | Exercise current matching package/lock range: accept22.12/24/26 without installation; refuse22.0/22.11/23/25, and refuse a mismatched lock declaration. | `tests/test_bootstrap_regressions.py::test_adversarial_locked_node_engines` |
+| RP-026 | The committed readiness is admitted; a scientific row set to missing, partial or no state, and a declared row moved to a state other than its declared one, are each refused. | `tests/test_bootstrap_regressions.py::test_adversarial_dinhot_readiness_admission` |
+| RP-027 | Run actual copy-data.mjs/declared.mjs through development preparation with a global raw store and declared local compact-tree override; verify copied bytes, frontend child/API/generation environments and caller preservation. Removing the declaration must retain the old raw-store failure; unset/default behavior must still work. | `tests/test_bootstrap_regressions.py::test_adversarial_frontend_environment_isolation` |
+
+Windows and POSIX cleanup address the recorded process group after leader exit; RP-022 exercises the existing
+venv and an independent HTTP control process. External venv directory aliases remain allowed
+for initialization and generation under RP-023. Actual generation and app launch remain owner integration gates.
