@@ -1,5 +1,5 @@
 {
- "engine_version": "0.02.001",
+ "engine_version": "0.02.002",
  "bs1_crosstalk": {
   "label": "crosstalk device",
   "device": {
@@ -1374,7 +1374,7 @@
  },
  "bake": {
   "C08_device_limited": {
-   "engine_version": "0.02.001",
+   "engine_version": "0.02.002",
    "seed": 20261028,
    "params": {
     "n_pix": 128,
@@ -1436,7 +1436,7 @@
    "seeds_mean_ratio": 2.0342637581760887
   },
   "C10_rearrangement": {
-   "engine_version": "0.02.001",
+   "engine_version": "0.02.002",
    "seed": 20261028,
    "params": {
     "n_pix": 256,
@@ -1702,28 +1702,28 @@
      "geometry": "G6",
      "n_seeds": 2,
      "n_seeds_b1": 2,
-     "n_seeds_m07": 10,
+     "n_seeds_m07": 9,
      "sigma_b1": 17.114947,
-     "sigma_m07": 19.469484,
-     "factor": 1.1375719714469463,
-     "eff_ratio": 0.9913519379789432
+     "sigma_m07": 29.63927,
+     "factor": 1.7317769082194645,
+     "eff_ratio": 1.0600270003734094
     }
    ],
    "ideal": [
     {
      "geometry": "G1",
-     "n_seeds": 8,
-     "n_seeds_b1": 8,
+     "n_seeds": 17,
+     "n_seeds_b1": 17,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 1.478603,
      "factor": 1478603.0,
-     "eff_ratio": 1.0007869803931213
+     "eff_ratio": 0.9990962022047747
     },
     {
      "geometry": "G2",
-     "n_seeds": 13,
-     "n_seeds_b1": 13,
+     "n_seeds": 17,
+     "n_seeds_b1": 17,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 0.0,
@@ -1732,33 +1732,33 @@
     },
     {
      "geometry": "G3",
-     "n_seeds": 11,
-     "n_seeds_b1": 11,
+     "n_seeds": 13,
+     "n_seeds_b1": 13,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 0.0,
      "factor": 0.0,
-     "eff_ratio": 1.0007433674545692
+     "eff_ratio": 0.9998981098662656
     },
     {
      "geometry": "G4",
-     "n_seeds": 12,
-     "n_seeds_b1": 12,
+     "n_seeds": 11,
+     "n_seeds_b1": 11,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 0.011994,
      "factor": 11994.0,
-     "eff_ratio": 0.9995581751569343
+     "eff_ratio": 0.9999893536182394
     },
     {
      "geometry": "G6",
      "n_seeds": 2,
      "n_seeds_b1": 2,
-     "n_seeds_m07": 11,
+     "n_seeds_m07": 10,
      "sigma_b1": 0.0,
-     "sigma_m07": 0.748233,
-     "factor": 748233.0000000001,
-     "eff_ratio": 0.9575527572314037
+     "sigma_m07": 0.592595,
+     "factor": 592595.0,
+     "eff_ratio": 0.9999194733291706
     }
    ]
   }

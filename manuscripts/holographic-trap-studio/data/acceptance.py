@@ -528,7 +528,7 @@ def measure_M19() -> dict:
 
 # ---------------------------------------------------------------- BS-4, BS-5
 
-def measure_BS4() -> dict:
+def measure_B4() -> dict:
     """test_b4_robust.py: 10x10 task, 200-sample aberration ensemble (seed 999), B4 at 40 iterations against the phase-fixed WGS
     of the GS family at 30 (p95 of the relative standard deviation and mean efficiency), on seeds 1 to 3 (the SDD row's median);
     pointing ensemble of 20 samples at 0.15 bin with B4 at 3 iterations and q = 2 on seed 1 (a finite-ratio check in the test, a
@@ -561,7 +561,7 @@ def measure_BS4() -> dict:
                 "pointing_sigma_p95_b4": rob_p["sigma_p95"], "pointing_sigma_p95_m07": nom_p["sigma_p95"]})
 
 
-def measure_BS5() -> dict:
+def measure_B5() -> dict:
     """test_b5_pareto.py: 10x10 task, seed 1; hypervolume of the continuation front (15 iterations, 20 lambdas) against the points of
     GS, GAA, GSW (GS family, 30 iterations) and one sweep of M09; fronts that dominate M04 and M05."""
     s = make_setup(256)
