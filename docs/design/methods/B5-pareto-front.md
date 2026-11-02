@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b5_pareto.py` |
 | Live port | none (lane `baked`; `getMethod('B5')` raises `NotLive`) |
 | Card | [B5](../../frameworks/B5_pareto-front.md) |
-| Outcome | hypothesis confirmed on the ladder criterion (hypervolume 0.8190 against 0.8018 after the 2026-10-29 rule corrections, 0.8201 against 0.8033 before; the front dominates M04 and M05, 16.6 s); the margin is small; in the benchmark the stored front (B5's converged run of the first seed) reaches the hypervolume of the classical points on 4 of the 6 geometries with a front against their medians at 100 iterations on the ideal device, 5 of 6 against those at 30, and not on G1 (by 0.002) nor G6 (0.791 against 0.804), 2026-10-30 |
+| Outcome | hypothesis confirmed on the ladder criterion (hypervolume 0.8190 against 0.8018 after the 2026-10-29 rule corrections, 0.8201 against 0.8033 before; the front dominates M04 and M05, 16.6 s); the margin is small; in the benchmark the stored front (B5's converged run of the first seed) reaches the hypervolume of the classical points on none of the 6 geometries with a front against their medians at 100 iterations on the ideal device, below them by at most 0.007, and on all 6 against those at 30 (the count at 100 iterations moves between runs of the benchmark, 3, 4 and 0, because a cell's medians depend on the seeds its wall-clock bound admits), 2026-10-31 run, 2026-10-30 |
 
 ## Tier and role
 

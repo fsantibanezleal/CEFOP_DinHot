@@ -25,9 +25,9 @@
 % Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
 % publishing tool when the version DOI is reserved.
 \newcommand{\doctype}{Technical report}
-\newcommand{\docversion}{v0.02.001}
+\newcommand{\docversion}{v0.02.002}
 \newcommand{\docdate}{31 October 2026}
-\newcommand{\versiondoi}{10.5281/zenodo.23837873}
+\newcommand{\versiondoi}{10.5281/zenodo.23850386}
 \newcommand{\conceptdoi}{10.5281/zenodo.23788731}
 \newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
 \newcommand{\headerblock}{%
@@ -381,7 +381,8 @@ global or per site, never robust~\cite{machu}. \textbf{B5, efficiency--uniformit
 that of the points of the GS family and direct search (\accBFiveHvBase), and \accBFiveDomFour{} front points dominate M04 and \accBFiveDomFive{} dominate M05
 (Table~\ref{tab:acceptance}), where published methods report single trade-off points~\cite{dileonardo}. In the benchmark the stored front, B5's converged run of the first seed, reaches at least
 the hypervolume of those published points on \benchFivePass{} of the \benchFiveN{} geometries with a front against their medians at 100 iterations, and on
-\benchFivePassThirty{} against their medians at 30, on the ideal device; at 100 iterations it does not on \benchFiveLost.
+\benchFivePassThirty{} against their medians at 30, on the ideal device; at 100 iterations it does not on \benchFiveLost. The stored front is at most \benchFiveMargin{} below those points, and the count at 100 iterations moves between runs of the
+benchmark, because the medians of a cell depend on the seeds its wall-clock bound admits.
 
 \section{The live engine and the product}\label{sec:live}
 
