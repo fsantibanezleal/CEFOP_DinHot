@@ -10,7 +10,11 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import openapiTS, { astToString } from 'openapi-typescript';
+import { prepareCodegenCompatibility } from './codegen-compatibility.mjs';
+
+prepareCodegenCompatibility();
+// A static consumer import is evaluated before preparation, even if placed below it.
+const { default: openapiTS, astToString } = await import('openapi-typescript');
 
 const here = dirname(fileURLToPath(import.meta.url));
 const contracts = join(here, '..', '..', 'docs', 'contracts');

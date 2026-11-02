@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from planting import NODE, NODE_MODULES, edit, guard, link_node_modules, unlink_node_modules
+from planting import NODE, NODE_MODULES, copy_node_modules, edit, guard, link_node_modules, unlink_node_modules
 
 needs_web = pytest.mark.skipif(NODE is None or not (NODE_MODULES / "@fasl-work").is_dir(),
                                reason="needs node and `npm ci` in frontend/")
@@ -26,10 +26,24 @@ def test_a_test_that_writes_a_committed_artifact_fails_the_session(repo: Path) -
     plant.write_text("from pathlib import Path\n\n\ndef test_writes():\n"
                      "    Path(__file__).resolve().parents[1].joinpath('data', 'derived', 'planted.txt').write_text('x')\n",
                      encoding="utf-8")
-    r = subprocess.run([sys.executable, "-m", "pytest", "tests/test_plant_writes_data.py", "-v", "-p", "no:cacheprovider"],
-                       capture_output=True, encoding="utf-8", errors="replace", cwd=repo, timeout=120)
+    env = os.environ.copy()
+    env.pop("PYTEST_ADDOPTS", None)
+    env.pop("PYTEST_CURRENT_TEST", None)
+    child_temp = repo.parent / "artifact-child-temp"
+    assert not child_temp.resolve().is_relative_to(repo.resolve()) and not repo.resolve().is_relative_to(child_temp.resolve())
+    control = repo / "tests/test_plant_clean.py"
+    control.write_text("def test_clean():\n    assert True\n", encoding="utf-8")
+    clean = subprocess.run([sys.executable, "-m", "pytest", "tests/test_plant_clean.py", "-v", "-p", "no:cacheprovider",
+                            "--basetemp", str(repo.parent / "artifact-clean-temp")],
+                           capture_output=True, encoding="utf-8", errors="replace", cwd=repo, env=env, timeout=120)
+    assert clean.returncode == 0 and "1 passed" in clean.stdout, clean.stdout + clean.stderr
+    assert not (repo / "data/derived/planted.txt").exists()
+    r = subprocess.run([sys.executable, "-m", "pytest", "tests/test_plant_writes_data.py", "-v", "-p", "no:cacheprovider",
+                        "--basetemp", str(child_temp)],
+                       capture_output=True, encoding="utf-8", errors="replace", cwd=repo, env=env, timeout=120)
     assert "1 passed" in r.stdout, r.stdout  # the planted test itself passes: only the session guard can fail the run
-    assert r.returncode != 0 and "changed committed artifacts" in r.stdout and "data/derived/planted.txt" in r.stdout, r.stdout
+    assert r.returncode == 1 and "changed committed artifacts" in r.stdout and "data/derived/planted.txt" in r.stdout, r.stdout
+    assert (repo / "data/derived/planted.txt").read_text(encoding="utf-8") == "x"
 
 
 def test_a_version_stated_twice_and_disagreeing_fails_the_coherence_guard(repo: Path) -> None:
@@ -66,19 +80,21 @@ def test_a_build_without_the_routes_or_the_theme_script_fails(repo: Path) -> Non
 
 @needs_web
 def test_a_schema_change_without_regenerated_types_fails_the_build_check(repo: Path) -> None:
-    link_node_modules(repo / "frontend")
-    try:
-        script = repo / "frontend" / "scripts" / "gen-contract-types.mjs"
-        clean = subprocess.run([NODE, str(script), "--check"], capture_output=True, encoding="utf-8", errors="replace", cwd=repo / "frontend")
-        assert clean.returncode == 0 and "contract types: current" in clean.stdout, clean.stderr
-        schema = repo / "docs" / "contracts" / "schemas" / "trace.schema.json"
-        doc = json.loads(schema.read_text(encoding="utf-8"))
-        doc["properties"]["planted_field"] = {"type": "number"}
-        schema.write_text(json.dumps(doc, indent=2), encoding="utf-8")
-        r = subprocess.run([NODE, str(script), "--check"], capture_output=True, encoding="utf-8", errors="replace", cwd=repo / "frontend")
-        assert r.returncode == 1 and "not current" in r.stderr, r.stderr
-    finally:
-        unlink_node_modules(repo / "frontend")
+    copy_node_modules(repo / "frontend")
+    generated = repo / "frontend/src/lib/contract.gen.ts"
+    before = generated.read_bytes()
+    script = repo / "frontend" / "scripts" / "gen-contract-types.mjs"
+    clean = subprocess.run([NODE, str(script), "--check"], capture_output=True, encoding="utf-8", errors="replace",
+                           cwd=repo / "frontend", timeout=120)
+    assert clean.returncode == 0 and "contract types: current" in clean.stdout, clean.stderr
+    schema = repo / "docs" / "contracts" / "schemas" / "trace.schema.json"
+    doc = json.loads(schema.read_text(encoding="utf-8"))
+    doc["properties"]["planted_field"] = {"type": "number"}
+    schema.write_text(json.dumps(doc, indent=2), encoding="utf-8")
+    r = subprocess.run([NODE, str(script), "--check"], capture_output=True, encoding="utf-8", errors="replace",
+                       cwd=repo / "frontend", timeout=120)
+    assert r.returncode == 1 and "contract.gen.ts is not current" in r.stderr, r.stderr
+    assert generated.read_bytes() == before, "the currency check must never regenerate the committed fixture types"
 
 
 @pytest.mark.skipif(NODE is None, reason="needs node")

@@ -151,6 +151,7 @@ resolves it to. The runtimes are Python 3.12 (CI; the device's venv may be newer
 | build | @vitejs/plugin-react | 6.1.1 | the React transform for vite | none |
 | build | typescript | 5.9.3 | type check of the web and the generated contract types | none |
 | build | openapi-typescript | 7.13.0 | generates `contract.gen.ts` from the OpenAPI document | hand-written types, rejected: they drift (the build checks them) |
+| build | minimatch | 11.0.1 | the override of Redocly's matcher under openapi-typescript (advisory GHSA-g3hv-75wg-m249), guarded by `frontend/scripts/codegen-compatibility.mjs` | Redocly 2.x, rejected: it breaks the private module the generator imports |
 | build | @types/node | 24.19.1 | types of the build scripts | none |
 | build | @types/react | 19.3.0 | types of React | none |
 | build | @types/react-dom | 19.3.0 | types of React DOM | none |

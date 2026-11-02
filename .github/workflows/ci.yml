@@ -69,8 +69,6 @@ jobs:
           base="$BEFORE"
           if [ -z "${base//0/}" ]; then base=origin/develop; fi  # a new branch or a manual run has no before SHA
           python scripts/check_contract_versions.py --base "$base"
-      - name: Every guard rejects a planted defect (spec area, cheap, standard library and pytest only)
-        run: pip install pytest==9.1.1 && python -m pytest tests/adversarial -q
       - name: The contract catalog, every row complete and every path it names present (ADR-0080)
         run: python scripts/check_contracts.py docs/contracts/catalog.md --repo-root .
       - name: The readiness document is current with the catalog and the bake (ADR-0080)
@@ -87,9 +85,29 @@ jobs:
             echo "::error::main is a release: every catalog row must be real"; exit 1; fi
           [ "$code" -eq 0 ] || [ "$code" -eq 2 ]
 
+  product-plants:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install the existing guard prerequisites
+        run: cd frontend && npm ci
+      - name: Install the existing schema validator
+        run: pip install jsonschema==4.26.0
+      - name: Every product guard rejects a planted defect
+        run: pip install pytest==9.1.1 && python -m pytest tests/adversarial -q
+
   web:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
