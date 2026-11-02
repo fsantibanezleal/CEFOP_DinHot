@@ -393,9 +393,9 @@
    "seeds": "162 volumes",
    "source": "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json",
    "numbers": {
-    "median": 1.140030806202326,
-    "q1": 1.1021964864718425,
-    "q3": 1.1603704751445811,
+    "median": 1.1401412890450848,
+    "q1": 1.1025395810209486,
+    "q3": 1.1633612187837123,
     "held_out_n": 162
    },
    "measure_seconds": 0.0
