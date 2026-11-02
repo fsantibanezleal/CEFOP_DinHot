@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -128,6 +129,22 @@ def unlink_node_modules(frontend: Path) -> None:
         target.unlink()  # a symlink: os.rmdir raises NotADirectoryError on it (Linux CI)
 
 
+def copy_node_modules(frontend: Path) -> None:
+    """Give a generator plant disposable local dependency bytes, never a borrowed writable store."""
+    frontend = frontend.resolve(strict=True)
+    assert frontend != ROOT and ROOT not in frontend.parents, "dependency copies belong outside the real checkout"
+    target = frontend / "node_modules"
+    assert not target.is_symlink() and not target.is_junction(), "refuse a borrowed fixture dependency tree"
+    assert target.resolve().is_relative_to(frontend), "fixture dependencies escape the fixture"
+    assert NODE_MODULES.is_dir(), "installed frontend/node_modules is required; no install is performed by the test"
+    # The template's complete install is about 156 MB; DinHot's is about 330 MB, 144 MB of it onnxruntime-web for the released
+    # learned model. Bound the simple copy rather than build another package resolver.
+    files = [p for p in NODE_MODULES.rglob("*") if p.is_file()]
+    assert len(files) <= 12_000 and sum(p.stat().st_size for p in files) <= 384 * 1024 * 1024, "dependency fixture exceeded its copy budget"
+    # Vendor test fixtures are not runtime dependencies and can exceed Windows path limits in a nested copy.
+    shutil.copytree(NODE_MODULES, target, dirs_exist_ok=True, ignore=shutil.ignore_patterns(".bin", "__tests__"))
+
+
 SDD = "docs/design/SDD.md"
 
 
@@ -141,7 +158,23 @@ def sdd_text(repo: Path) -> str:
 
 
 def section(text: str, name: str) -> tuple[int, int]:
-    """The span of the ``## name`` section of the SDD text."""
-    a = text.index(f"## {name}\n")
-    b = text.find("\n## ", a + 1)
-    return a, (len(text) if b == -1 else b + 1)
+    """A real level-2 section, retaining offsets for LF/CRLF text and optional numbered headings."""
+    # Mask comments without changing positions; match the guard's same-character fence rules.
+    visible = re.sub(r"<!--.*?(?:-->|\Z)", lambda m: re.sub(r"[^\r\n]", " ", m[0]), text, flags=re.S)
+    headings = []
+    fence = None
+    offset = 0
+    for line in visible.splitlines(keepends=True):
+        marker = re.match(r"^\s*(```+|~~~+)", line)
+        if fence is None:
+            if marker:
+                fence = marker[1]
+            elif heading := re.match(r"^## (?:\d+[.)]?\s+)?(?P<title>.+?)\s*$", line):
+                headings.append((offset, heading["title"].casefold()))
+        elif marker and marker[1][0] == fence[0] and len(marker[1]) >= len(fence) and not line.strip().lstrip(fence[0]).strip():
+            fence = None
+        offset += len(line)
+    hits = [i for i, (_, title) in enumerate(headings) if title == name.casefold()]
+    assert len(hits) == 1, f"SDD plant needs exactly one visible level-2 section {name!r}; found {len(hits)}"
+    i = hits[0]
+    return headings[i][0], (headings[i + 1][0] if i + 1 < len(headings) else len(text))

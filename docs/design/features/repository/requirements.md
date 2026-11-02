@@ -1,0 +1,45 @@
+# Requirements: the README states the repository by areas, and the numbered local workflow runs DinHot
+
+EARS (Mavin et al., RE'09, doi:10.1109/RE.2009.9). Every requirement names the gate that fails when it is violated.
+The README has a section `## Areas` with one row per area of the convention (CAOS_MANAGE
+`conventions/product-notebooks.md`, section 8): Web, API, Core pipelines, Packages, Notebooks, Data, Contracts,
+Documentation, Tests and gates, Deploy. Each row links its folder, says whether the area is active or dormant (with the
+reason) and says what the area holds. The check is `scripts/check_readme_areas.py`, run by CI and locally.
+
+| ID | Requirement | Gate |
+|---|---|---|
+| RP-001 | THE README SHALL have a section Areas. | `tests/test_check_readme_areas.py::test_a_readme_without_the_areas_section_is_found` |
+| RP-002 | THE Areas section SHALL have one row for each area of the convention. | `tests/test_check_readme_areas.py::test_an_area_without_its_row_is_found` |
+| RP-003 | EACH area row SHALL state its status, active or dormant, and a dormant one SHALL give its reason. | `tests/test_check_readme_areas.py::test_a_row_without_a_status_is_found` |
+| RP-004 | EACH area row SHALL link its folder, and the folder SHALL exist. | `tests/test_check_readme_areas.py::test_a_folder_link_that_does_not_exist_is_found` |
+| RP-005 | THE Packages row SHALL link each package on PyPI. | `tests/test_check_readme_areas.py::test_the_packages_row_must_link_pypi` |
+| RP-008 | THE Areas section SHALL come after the one-paragraph purpose and the live URLs. | `tests/test_check_readme_areas.py::test_the_areas_section_follows_the_purpose_and_the_live_urls` |
+| RP-009 | EACH area row SHALL say what the area holds in three words or more. | `tests/test_check_readme_areas.py::test_what_it_holds_is_more_than_a_dash` |
+| RP-010 | EVERY relative link of an area row, the area's own README or doc included, SHALL resolve to a path of the repository. | `tests/test_check_readme_areas.py::test_a_dead_link_in_what_it_holds_is_found` |
+| RP-011 | THE prerequisite entrypoint SHALL check Python, Node and git by default, accept newer compatible versions, and install missing system prerequisites only on explicit request. | `tests/test_local_bootstrap.py::test_adversarial_prerequisites_are_check_only` |
+| RP-012 | THE initializer SHALL preserve an existing ignored .env as literal data, provision only declared environments, and install locked frontend/requirements dependencies only when their fingerprints are absent or stale. | `tests/test_local_bootstrap.py::test_adversarial_init_preserves_env_and_installs_by_fingerprint` |
+| RP-013 | THE data entrypoint SHALL place every measured, checkpoint, model and process output under a fresh external temporary root by default. Initialization SHALL invoke that complete path only when required artifacts are absent. | `tests/test_local_bootstrap.py::test_adversarial_generation_is_sandboxed_and_absence_is_actionable` |
+| RP-014 | WHEN release promotion is explicitly requested, THE workflow SHALL revalidate a complete current-version staged set, reject partial/mixed or changed candidates before replacement, and restore all old targets on promotion failure. | `tests/test_local_bootstrap.py::test_adversarial_release_rejects_mixed_partial_and_rolls_back` |
+| RP-015 | THE dev entrypoint SHALL start the declared frontend and active API, refuse occupied ports, propagate failures and stop only its own child processes. A dormant API SHALL remain stopped. | `tests/test_local_bootstrap.py::test_adversarial_dev_supervises_api_and_frontend` |
+| RP-016 | THE numbered PowerShell and Bash entrypoints SHALL work from other directories and paths with spaces, propagate native exit codes without treating warnings as failures, and print actionable next/repair commands. | `tests/test_local_bootstrap.py::test_adversarial_shell_entrypoints_propagate_failure` |
+| RP-017 | Receipt identity SHALL bind recursive requirement/constraint pins and current catalog, schemas and validator sources; stale admission metadata SHALL refuse before promotion. | `tests/test_bootstrap_regressions.py::test_adversarial_receipt_current_contract_and_recursive_pins` |
+| RP-018 | Readiness admission SHALL match DinHot's actual producer inventory exactly: the 11 rows of its catalog less the excluded readiness row (`scripts/local/workflow.json` `readiness_excludes`). | `tests/test_bootstrap_regressions.py::test_adversarial_actual_readiness_inventory` |
+| RP-019 | The template inventory bridge SHALL use the actual pipeline.registry API and reject missing or duplicate case IDs. | `tests/test_bootstrap_regressions.py::test_adversarial_actual_template_registry` |
+| RP-020 | Rollback SHALL attempt every target despite restoration errors, preserve recovery trees if incomplete, and report original/rollback errors with recovery paths. | `tests/test_bootstrap_regressions.py::test_adversarial_rollback_continues_and_preserves_recovery` |
+| RP-021 | Development SHALL require current initialization fingerprints for every applicable Python runtime before preparation or service launch. | `tests/test_bootstrap_regressions.py::test_adversarial_dev_python_initialization_admission` |
+| RP-022 | Process ownership SHALL cover all descendants even after an immediate parent exits, without targeting pre-existing or unrelated processes. | `tests/test_bootstrap_regressions.py::test_adversarial_exited_parent_descendant_ownership` |
+| RP-023 | Declared ignored venv aliases MAY resolve outside the checkout; artifact and cleanup containment SHALL remain strict and lookup errors SHALL retain their cause. | `tests/test_bootstrap_regressions.py::test_adversarial_external_runtime_alias_and_cleanup` |
+| RP-024 | The existing CI base-integrity guard SHALL reject tracked shell entrypoints without mode100755. | `tests/test_bootstrap_regressions.py::test_adversarial_tracked_shell_modes` |
+| RP-025 | Prerequisite checks SHALL honor the matching package/lock Node range ^22.12.0 or ^24.0.0 or >=26.0.0, preserve compatible installations, and refuse 22.0/23/25 with repair advice. | `tests/test_bootstrap_regressions.py::test_adversarial_locked_node_engines` |
+| RP-026 | Admission SHALL accept DinHot's readiness with exactly its declared outcomes (params-record partial for the refused case C11, benchmark-results partial for the skipped cells, warmstart-model training for the refuted model, api missing for the dormant lane) and SHALL refuse any other non-available state. | `tests/test_bootstrap_regressions.py::test_adversarial_dinhot_readiness_admission` |
+| RP-027 | Development SHALL apply declared frontend-only environment overrides to preparation and frontend startup, preserving global storage settings for API/generation and the caller. Without that declaration, existing environment behavior SHALL remain unchanged. | `tests/test_bootstrap_regressions.py::test_adversarial_frontend_environment_isolation` |
+
+Windows and POSIX cleanup address the recorded process group after leader exit; RP-022 exercises the existing
+venv and an independent HTTP control process. External venv directory aliases remain allowed
+for initialization and generation under RP-023. Actual generation and app launch remain owner integration gates.
+
+DinHot's generation plan (`scripts/local/workflow.json`) runs its real producers into an external stage: `scripts/local/dinhot_bridge.py
+stage-learned` carries the released learned model and its committed evidence (the models are trained offline, never by generation), then
+`data-pipeline/run.py all`, `benchmark` and `readiness` with `--output`, and `dinhot_bridge.py finalize` moves the released files back to
+`models/`. The validators are `dinhot_bridge.py validate` (the released files unchanged, every authored case present), `check_artifacts.py` and
+`check_documents.py`. A complete generation runs the benchmark, which takes hours.
