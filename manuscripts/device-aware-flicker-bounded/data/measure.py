@@ -335,6 +335,188 @@ def measure_b2_scope(seeds_long: list[int], seeds_c10: list[int], c10_equal_fram
     return out
 
 
+# ---------------------------------------------------------------- ablation (content bar, 2026-11-03)
+
+T95 = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228}  # two-sided 95 percent t quantiles
+
+
+def stats2(values: list[float]) -> dict:
+    """Median, range, mean, sample standard deviation and the two-sided 95 percent t interval of the mean."""
+    n = len(values)
+    mean = statistics.fmean(values)
+    sd = statistics.stdev(values) if n > 1 else 0.0
+    half = T95.get(n - 1, 1.96) * sd / n ** 0.5 if n > 1 else float("nan")
+    return {"median": statistics.median(values), "min": min(values), "max": max(values), "n": n, "mean": mean, "sd": sd,
+            "ci_lo": mean - half, "ci_hi": mean + half}
+
+
+def geo_ci(values: list[float]) -> dict:
+    """Geometric mean of positive ratios with the 95 percent t interval on the log scale (the factor is a ratio)."""
+    import math  # noqa: PLC0415
+
+    st = stats2([math.log(v) for v in values])
+    return {"gm": math.exp(st["mean"]), "lo": math.exp(st["ci_lo"]), "hi": math.exp(st["ci_hi"]), "n": st["n"]}
+
+
+def b1_variant(setup: Setup, target: Target, device: Device | None, iters: int, rng: Rng, *, weights: bool = True,
+               device_step: bool = True, safeguard: bool = True, steps: int = B1.DEFAULT_STEPS,
+               warm: int = B1.DEFAULT_WARM) -> np.ndarray:
+    """The loop of ``B1.run`` with its components switchable: ``weights`` (the multiplicative weight update), ``device_step``
+    (the conjugate-gradient steps on the device-aware loss; off: the projection of weighted GS, with the weights read on the
+    device), ``safeguard`` (the best admissible iterate; off: the last one). All on is ``B1.run`` (checked by the ablation)."""
+    from pipeline.model.holo.methods.optim import _common as C  # noqa: PLC0415
+    from pipeline.model.holo.methods.optim._gs_family import weighted_gs  # noqa: PLC0415
+
+    traps = target.traps
+    phi, _ = weighted_gs(setup, traps, warm, rng, variant="gsw")
+    cost = C.TrapCost(setup, traps, device, t=2, efficiency=0.9)
+    a = np.sqrt(traps.weight / np.mean(traps.weight))
+    w = np.ones(len(traps))
+    v, _ = cost.fwd.fields(phi)
+    start = C.trap_history(0, v, traps.weight, 0.0)
+    floor = B1.EFFICIENCY_FLOOR * start["efficiency"]
+    best = (phi.copy(), start["rel_std"])
+    for it in range(1, iters + 1):
+        v, _ = cost.fwd.fields(phi)
+        if weights:
+            r = np.maximum(np.abs(v), 1e-300) / a
+            w = w * np.mean(r) / r
+        if device_step:
+            amp2 = (w * a) ** 2
+            cost.target = float(np.sum(np.abs(v) ** 2)) * amp2 / amp2.sum()
+            phi = C.cg_minimize(cost.value_grad, phi, steps).x
+        else:
+            phi = np.angle(point_trap_backproject(w * a * np.exp(1j * np.angle(v)), setup, traps))
+        v, _ = cost.fwd.fields(phi)
+        entry = C.trap_history(it, v, traps.weight, 0.0)
+        if entry["efficiency"] >= floor and entry["rel_std"] < best[1]:
+            best = (phi.copy(), entry["rel_std"])
+    return np.mod(best[0] if safeguard else phi, 2.0 * np.pi)
+
+
+B1_VARIANTS = {  # key: (label, keyword arguments of b1_variant, device used inside the loop)
+    "full": ("B1, all components", {}, True),
+    "no_weights": ("without the weight update", {"weights": False}, True),
+    "no_step": ("without the device-aware phase step", {"device_step": False}, True),
+    "no_guard": ("without the best-iterate safeguard", {"safeguard": False}, True),
+    "no_model": ("device model removed from the loop", {}, False),
+    "steps_1": ("1 conjugate-gradient step per iteration", {"steps": 1}, True),
+    "steps_6": ("6 conjugate-gradient steps per iteration", {"steps": 6}, True),
+}
+
+
+def ablate_b1(seeds: list[int], device: Device, variants: list[str], label: str) -> dict:
+    from pipeline.model.holo.methods.optim._gs_family import weighted_gs  # noqa: PLC0415
+
+    setup = make_setup(256)
+    traps = bin_grid(setup, 10, 10, 8)
+    target = Target.from_traps(traps)
+    rows = []
+    for seed in seeds:
+        t0 = time.perf_counter()
+        row: dict = {"seed": seed}
+        for key in variants:
+            _, kw, in_loop = B1_VARIANTS[key]
+            phi = b1_variant(setup, target, device if in_loop else None, B1.DEFAULT_OUTER, Rng(seed), **kw)
+            e, s = device_scores(phi, setup, traps, device)
+            row[key] = {"eff": e, "sigma": s}
+        p0, _ = weighted_gs(setup, traps, B1.DEFAULT_WARM, Rng(seed), variant="gsw")
+        e0, s0 = device_scores(p0, setup, traps, device)
+        row["warm_only"] = {"eff": e0, "sigma": s0}
+        ref = B1.run(setup, target, device=device, budget=Budget(B1.DEFAULT_OUTER), rng=Rng(seed))
+        row["check_full_vs_b1run"] = abs(device_scores(ref.phi, setup, traps, device)[1] - row["full"]["sigma"])
+        base = {its: device_scores(m07_phase_fixed_wgs.run(setup, target, budget=Budget(its), rng=Rng(seed)).phi, setup, traps, device)
+                for its in (30, 100)}
+        row["ref_sigma"] = min(base[30][1], base[100][1])
+        row["ref_eff"] = max(base[30][0], base[100][0])
+        row["seconds"] = time.perf_counter() - t0
+        rows.append(row)
+        print(f"[ablation B1 {label}] seed {seed}: " + ", ".join(f"{k} {row[k]['sigma']:.3f}" for k in variants)
+              + f" ({row['seconds']:.0f} s)", flush=True)
+    summary = {}
+    for key in [*variants, "warm_only"]:
+        fac = [r["ref_sigma"] / r[key]["sigma"] for r in rows]
+        summary[key] = {"sigma": stats2([r[key]["sigma"] for r in rows]), "factor": geo_ci(fac),
+                        "factor_median": statistics.median(fac),
+                        "eff_ratio": stats2([r[key]["eff"] / r["ref_eff"] for r in rows])}
+    return {"label": label, "variants": variants, "rows": rows, "summary": summary,
+            "max_check_full_vs_b1run": max(r["check_full_vs_b1run"] for r in rows)}
+
+
+def b2_variant(setup: Setup, start: TrapSet, dest: TrapSet, seed: int, frames: int, *, lock: bool = True,
+               frame_iterations: int = B2.DEFAULT_FRAME_ITERATIONS, linear_profile: bool = False) -> dict:
+    """The sequence of ``B2.run`` (held phases) with its components switchable: ``lock`` (the trap phases locked to the
+    trajectory; off: every iteration takes the trap phases of the current field, as weighted GS does), ``frame_iterations``
+    (0: one inversion of the locked field with unit weights per frame, no optimization), ``linear_profile`` (a linear time
+    profile for the positions in place of the minimal-jerk one). The defaults are ``B2.run`` (checked by the ablation)."""
+    from pipeline.model.holo.methods.optim._gs_family import weighted_gs  # noqa: PLC0415
+
+    at = B2.trajectory(start, dest, frames, profile=(lambda t: min(max(t, 0.0), 1.0)) if linear_profile else B2.min_jerk)
+    a = np.sqrt(start.weight / np.mean(start.weight))
+    phi0, _ = weighted_gs(setup, start, 30, Rng(seed), variant="pfwgs", n_fix=12)
+    v0 = point_trap_projection(slm_field(phi0, setup), setup, start)
+    theta0 = np.angle(v0)
+    phis, sig = [phi0], [rel_std(trap_intensities(v0, start.weight))]
+    w = np.ones(len(start))
+    phi = phi0
+    for s in range(1, frames):
+        traps_s = at(float(s))
+        theta = np.exp(1j * theta0)
+        if frame_iterations == 0:
+            phi = np.angle(point_trap_backproject(a * theta, setup, traps_s))
+        for _ in range(frame_iterations):
+            v = point_trap_projection(slm_field(phi, setup), setup, traps_s)
+            r = np.maximum(np.abs(v), 1e-300) / a
+            w = w * np.mean(r) / r
+            if not lock:
+                theta = np.exp(1j * np.angle(v))
+            phi = np.angle(point_trap_backproject(w * a * theta, setup, traps_s))
+        v = point_trap_projection(slm_field(phi, setup), setup, traps_s)
+        phis.append(np.mod(phi, 2.0 * np.pi))
+        sig.append(rel_std(trap_intensities(v, start.weight)))
+    mv = np.array([bool(np.hypot(e.x_m - t.x_m, e.y_m - t.y_m) > 0) for t, e in zip(start, dest)])
+    ratio = B2.transient_min_ratio(setup, phis, at)[mv]
+    return {"min": float(ratio.min()), "mean_of_min": float(ratio.mean()), "sigma_frame_max": float(max(sig))}
+
+
+B2_VARIANTS = {
+    "full": ("B2, all components", {}),
+    "no_lock": ("without the trajectory lock", {"lock": False}),
+    "no_opt": ("without the per-frame optimization", {"frame_iterations": 0}),
+    "iters_1": ("1 iteration per frame", {"frame_iterations": 1}),
+    "iters_3": ("3 iterations per frame", {"frame_iterations": 3}),
+    "linear": ("linear time profile for the positions", {"linear_profile": True}),
+}
+
+
+def ablate_b2(seeds: list[int], frames: int = 13) -> dict:
+    setup = make_setup(256)
+    start, dest = task_move(setup)
+    rows = []
+    for seed in seeds:
+        t0 = time.perf_counter()
+        row: dict = {"seed": seed}
+        for key, (_, kw) in B2_VARIANTS.items():
+            row[key] = b2_variant(setup, start, dest, seed, frames, **kw)
+        ref = B2.run(setup, Target.from_traps(start), budget=Budget(30), rng=Rng(seed), destination=dest, frames=frames)
+        row["check_full_vs_b2run"] = abs(float(ref.meta["transient_ratio"][ref.meta["moving"]].min()) - row["full"]["min"])
+        row["seconds"] = time.perf_counter() - t0
+        rows.append(row)
+        print(f"[ablation B2] seed {seed}: " + ", ".join(f"{k} {row[k]['min']:.3f}" for k in B2_VARIANTS)
+              + f" ({row['seconds']:.0f} s)", flush=True)
+    summary = {k: {"min": stats2([r[k]["min"] for r in rows]),
+                   "sigma_frame_max": stats2([r[k]["sigma_frame_max"] for r in rows])} for k in B2_VARIANTS}
+    return {"frames": frames, "task": "4 x 4 lattice at 8 bins, the two right columns move 4 bins in x, held phases",
+            "rows": rows, "summary": summary, "max_check_full_vs_b2run": max(r["check_full_vs_b2run"] for r in rows)}
+
+
+def measure_ablation(seeds_b1: int, seeds_b1_full: int, seeds_b2: int) -> dict:
+    return {"b1_crosstalk": ablate_b1(list(range(1, seeds_b1 + 1)), CROSSTALK_DEVICE, list(B1_VARIANTS), "crosstalk device"),
+            "b1_full": ablate_b1(list(range(1, seeds_b1_full + 1)), FULL_DEVICE,
+                                 ["full", "no_weights", "no_step", "no_guard", "no_model"], "full device"),
+            "b2": ablate_b2(list(range(1, seeds_b2 + 1)))}
+
+
 # ---------------------------------------------------------------- committed artifacts
 
 def read_manifests() -> dict:
@@ -366,6 +548,8 @@ def read_benchmark(budget: int = 100) -> dict:
     r = json.loads((ROOT / "data" / "derived" / "benchmark" / "results.json").read_text(encoding="utf-8"))
     cells = {(x["method"], x["geometry"], x["device"]): x for x in r["rows"]
              if x["budget_kind"] == "iterations" and x["budget"] == budget and x["params"] == "default"}
+    names = {g["id"]: g["name"]["en"] for g in r["geometries"]}
+    ntraps = {g["id"]: g["n_traps"] for g in r["geometries"]}
     out = {"budget": budget, "devices": {}}
     for device in ("device", "ideal"):
         rows = []
@@ -373,8 +557,11 @@ def read_benchmark(budget: int = 100) -> dict:
             if m != "B1" or d != device or ("M07", g, d) not in cells:
                 continue
             m7 = cells[("M07", g, d)]
-            rows.append({"geometry": g, "n_seeds": min(b1["n_seeds"], m7["n_seeds"]), "n_seeds_b1": b1["n_seeds"], "n_seeds_m07": m7["n_seeds"],
+            rows.append({"geometry": g, "name": names[g], "n_traps": ntraps[g],
+                         "n_seeds": min(b1["n_seeds"], m7["n_seeds"]), "n_seeds_b1": b1["n_seeds"], "n_seeds_m07": m7["n_seeds"],
                          "sigma_b1": b1["rel_std_pct"]["median"], "sigma_m07": m7["rel_std_pct"]["median"],
+                         "sigma_b1_iqr": [b1["rel_std_pct"]["q1"], b1["rel_std_pct"]["q3"]],
+                         "sigma_m07_iqr": [m7["rel_std_pct"]["q1"], m7["rel_std_pct"]["q3"]],
                          "factor": m7["rel_std_pct"]["median"] / max(b1["rel_std_pct"]["median"], 1e-6),
                          "eff_ratio": b1["efficiency"]["median"] / m7["efficiency"]["median"]})
         out["devices"][device] = rows
@@ -575,6 +762,169 @@ def write_macros(data: dict, path: Path) -> None:
     path.write_text("".join(L), encoding="utf-8")
 
 
+CAMEL = {"full": "Full", "no_weights": "NoWeights", "no_step": "NoStep", "no_guard": "NoGuard", "no_model": "NoModel",
+         "steps_1": "StepsOne", "steps_6": "StepsSix", "warm_only": "Warm", "no_lock": "NoLock", "no_opt": "NoOpt",
+         "iters_1": "ItersOne", "iters_3": "ItersThree", "linear": "Linear"}
+
+
+def write_extra_macros(data: dict, path: Path) -> None:
+    """Macros of the intervals of the main results and of the ablation, appended to ``beyond_numbers.tex``."""
+    L = ["% Intervals and ablation (data/measure.py, from beyond.json).\n"]
+    L.append(macro("engineRelease", data["engine_version"]))
+    import math  # noqa: PLC0415
+
+    def sinc2_half(delta: float) -> float:
+        x = math.pi * delta / 2.0
+        return 1.0 if x == 0 else (math.sin(x) / x) ** 2
+
+    lo, hi = 1e-9, 2.0  # sinc^2(delta / 2) falls from 1 to 0 on (0, 2): bisection for the shift at which it equals 0.9
+    for _ in range(80):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if sinc2_half(mid) > 0.9 else (lo, mid)
+    L.append(macro("deltaNine", fmt(0.5 * (lo + hi), 3)))
+    L.append(macro("sincAcc", fmt(sinc2_half(data["bs2_scope"]["acceptance_peak_step"]), 3)))
+    L.append(macro("sincClaim", fmt(sinc2_half(data["bs2_scope"]["claim_step_fu"]), 3)))
+    # B1 main result with its interval: the factor of each seed is the baseline's best spread over B1's, geometric mean
+    for key, pre in (("bs1_crosstalk", "ratioOne"), ("bs1_full_device", "ratioOneFull")):
+        rows = data[key]["rows"]
+        fac = [min(r["baselines"]["M07_30"]["sigma"], r["baselines"]["M07_100"]["sigma"]) / r["B1"]["sigma"] for r in rows]
+        g = geo_ci(fac)
+        L.append(macro(pre + "Gm", fmt(g["gm"], 1)))
+        L.append(macro(pre + "CiLo", fmt(g["lo"], 1)))
+        L.append(macro(pre + "CiHi", fmt(g["hi"], 1)))
+        sg = stats2([r["B1"]["sigma"] for r in rows])
+        L.append(macro(pre.replace("ratio", "sigma") + "Sd", fmt(sg["sd"], 3)))
+        L.append(macro(pre.replace("ratio", "sigma") + "Mean", fmt(sg["mean"], 3)))
+    s13 = [r for r in data["bs2"]["runs"] if r["frames"] == 13]
+    b, l = [r["b2_min"] for r in s13], [r["lpi_min"] for r in s13]
+    sb, sl, sd_ = stats2(b), stats2(l), stats2([x - y for x, y in zip(b, l)])
+    L.append(macro("bTwoMean", fmt(sb["mean"], 3)))
+    L.append(macro("bTwoSd", fmt(sb["sd"], 3)))
+    L.append(macro("bTwoCiLo", fmt(sb["ci_lo"], 3)))
+    L.append(macro("bTwoCiHi", fmt(sb["ci_hi"], 3)))
+    L.append(macro("lpiMean", fmt(sl["mean"], 3)))
+    L.append(macro("lpiSd", fmt(sl["sd"], 3)))
+    L.append(macro("lpiCiLo", fmt(sl["ci_lo"], 3)))
+    L.append(macro("lpiCiHi", fmt(sl["ci_hi"], 3)))
+    L.append(macro("diffTwoMean", fmt(sd_["mean"], 3)))
+    L.append(macro("diffTwoCiLo", fmt(sd_["ci_lo"], 3)))
+    L.append(macro("diffTwoCiHi", fmt(sd_["ci_hi"], 3)))
+    L.append(macro("bTwoSigmaFrameMed", fmt(data["bs2"]["summary"]["13"]["b2_sigma_frame_max"]["median"], 2)))
+    L.append(macro("lpiSigmaFrameMed", fmt(data["bs2"]["summary"]["13"]["lpi_sigma_frame_max"]["median"], 1)))
+    # the ablation
+    ab = data.get("ablation")
+    if ab:
+        for tag, key in (("B", "b1_crosstalk"), ("BF", "b1_full")):
+            for k, v in ab[key]["summary"].items():
+                n = f"abl{tag}{CAMEL[k]}"
+                L.append(macro(n + "Sig", fmt(v["sigma"]["median"], 3)))
+                L.append(macro(n + "SigMin", fmt(v["sigma"]["min"], 3)))
+                L.append(macro(n + "SigMax", fmt(v["sigma"]["max"], 3)))
+                L.append(macro(n + "Fac", fmt(v["factor"]["gm"], 1)))
+                L.append(macro(n + "FacLo", fmt(v["factor"]["lo"], 1)))
+                L.append(macro(n + "FacHi", fmt(v["factor"]["hi"], 1)))
+                L.append(macro(n + "Eff", fmt(v["eff_ratio"]["median"], 3)))
+            L.append(macro(f"abl{tag}N", ab[key]["summary"]["full"]["sigma"]["n"]))
+            L.append(macro(f"abl{tag}Check", f"{ab[key]['max_check_full_vs_b1run']:.1e}"))
+        for k, v in ab["b2"]["summary"].items():
+            n = f"ablT{CAMEL[k]}"
+            L.append(macro(n + "Med", fmt(v["min"]["median"], 3)))
+            L.append(macro(n + "Min", fmt(v["min"]["min"], 3)))
+            L.append(macro(n + "Max", fmt(v["min"]["max"], 3)))
+            L.append(macro(n + "Mean", fmt(v["min"]["mean"], 3)))
+            L.append(macro(n + "Sd", fmt(v["min"]["sd"], 3)))
+            L.append(macro(n + "Sig", fmt(v["sigma_frame_max"]["median"], 2)))
+        for tag, key in (("B", "b1_crosstalk"), ("BF", "b1_full")):
+            sm = ab[key]["summary"]
+            L.append(macro(f"abl{tag}WeightsRatio", fmt(sm["full"]["sigma"]["median"] / sm["no_weights"]["sigma"]["median"], 0)))
+            L.append(macro(f"abl{tag}StepRatio", fmt(sm["no_step"]["sigma"]["median"] / sm["full"]["sigma"]["median"], 0)))
+            L.append(macro(f"abl{tag}ModelRatio", fmt(sm["no_model"]["sigma"]["median"] / sm["full"]["sigma"]["median"], 0)))
+        L.append(macro("ablSeconds", fmt(sum(r["seconds"] for k in ("b1_crosstalk", "b1_full", "b2") for r in ab[k]["rows"]) / 60.0, 0)))
+        L.append(macro("ablTN", ab["b2"]["summary"]["full"]["min"]["n"]))
+        L.append(macro("ablTCheck", f"{ab['b2']['max_check_full_vs_b2run']:.1e}"))
+    path.open("a", encoding="utf-8").write("".join(L))
+
+
+def row_cells(cells: list[str]) -> str:
+    return " & ".join(cells) + " \\\\\n"
+
+
+def write_tables(data: dict, out: Path) -> None:
+    """The result tables of the manuscript as ``tabular`` files, written from ``beyond.json``."""
+    ab = data.get("ablation")
+    if ab:
+        for tag, key, fname in (("", "b1_crosstalk", "tab_abl_b1.tex"), ("F", "b1_full", "tab_abl_b1_full.tex")):
+            d = ab[key]
+            L = ["\\begin{tabular}{@{}l r r r r@{}}\n\\toprule\n",
+                 row_cells(["Variant", "$\\sigma$ median (\\%)", "$\\sigma$ range (\\%)", "Factor over M07, 95\\% interval", "$e$ ratio"]),
+                 "\\midrule\n"]
+            for k in [*d["variants"], "warm_only"]:
+                v = d["summary"][k]
+                label = "warm start only (no iteration)" if k == "warm_only" else B1_VARIANTS[k][0]
+                L.append(row_cells([label, fmt(v["sigma"]["median"], 3), f"{fmt(v['sigma']['min'], 3)} to {fmt(v['sigma']['max'], 3)}",
+                                    f"{fmt(v['factor']['gm'], 1)} ({fmt(v['factor']['lo'], 1)} to {fmt(v['factor']['hi'], 1)})",
+                                    fmt(v["eff_ratio"]["median"], 3)]))
+            L.append("\\bottomrule\n\\end{tabular}\n")
+            (out / fname).write_text("".join(L), encoding="utf-8")
+        d = ab["b2"]
+        l13 = [r["lpi_min"] for r in data["bs2"]["runs"] if r["frames"] == d["frames"]]
+        sl = stats2(l13)
+        L = ["\\begin{tabular}{@{}l r r r r r@{}}\n\\toprule\n",
+             row_cells(["Variant", "Minimum ratio, mean $\\pm$ s.d.", "Range", "Seeds at 0.9 or above", "Largest frame $\\sigma$ (\\%)"]),
+             "\\midrule\n"]
+        for k, (label, _) in B2_VARIANTS.items():
+            rows = [r[k]["min"] for r in d["rows"]]
+            v = d["summary"][k]
+            L.append(row_cells([label, f"{fmt(v['min']['mean'], 3)} $\\pm$ {fmt(v['min']['sd'], 3)}",
+                                f"{fmt(v['min']['min'], 3)} to {fmt(v['min']['max'], 3)}",
+                                f"{sum(x >= 0.9 for x in rows)} of {len(rows)}", fmt(v["sigma_frame_max"]["median"], 2)]))
+        L.append(row_cells(["linear phase interpolation (reference)", f"{fmt(sl['mean'], 3)} $\\pm$ {fmt(sl['sd'], 3)}",
+                            f"{fmt(sl['min'], 3)} to {fmt(sl['max'], 3)}", f"{sum(x >= 0.9 for x in l13)} of {len(l13)}",
+                            fmt(data['bs2']['summary'][str(d['frames'])]['lpi_sigma_frame_max']['median'], 1)]))
+        L.append("\\bottomrule\n\\end{tabular}\n")
+        (out / "tab_abl_b2.tex").write_text("".join(L), encoding="utf-8")
+    # benchmark, B1 against M07 on the C08 device, then on the ideal device
+    bb = data["benchmark_bs1"]
+    L = ["\\begin{tabular}{@{}l r r r r r r r@{}}\n\\toprule\n",
+         row_cells(["Geometry", "Traps", "Seeds (B1, M07)", "$\\sigma$ M07 (\\%)", "$\\sigma$ B1 (\\%)", "Factor", "$e$ ratio", "Both thresholds"]),
+         "\\midrule\n"]
+    for x in bb["devices"]["device"]:
+        ok = x["factor"] >= 2 and x["eff_ratio"] >= 0.9
+        L.append(row_cells([f"{x['geometry']} {x['name']}", str(x["n_traps"]), f"{x['n_seeds_b1']}, {x['n_seeds_m07']}",
+                            f"{fmt(x['sigma_m07'], 2)} ({fmt(x['sigma_m07_iqr'][0], 2)} to {fmt(x['sigma_m07_iqr'][1], 2)})",
+                            f"{fmt(x['sigma_b1'], 2)} ({fmt(x['sigma_b1_iqr'][0], 2)} to {fmt(x['sigma_b1_iqr'][1], 2)})",
+                            fmt(x["factor"], 2), fmt(x["eff_ratio"], 3), "yes" if ok else "no"]))
+    L.append("\\bottomrule\n\\end{tabular}\n")
+    (out / "tab_bench.tex").write_text("".join(L), encoding="utf-8")
+    # B2, the long moves and the rearrangement case
+    sc = data["bs2_scope"]
+    L = ["\\begin{tabular}{@{}l r r r r r r r@{}}\n\\toprule\n",
+         row_cells(["Move", "Frames", "Peak step (Fourier units)", "B2 median", "B2 range", "Seeds at 0.9 or above", "Linear phase interpolation range", "B2 above it"]),
+         "\\midrule\n"]
+    for key in ("12", "20"):
+        lg = sc["long"][key]
+        e = [r["enough"] for r in lg["rows"]]
+        lp = [r["lpi_enough"] for r in lg["rows"]]
+        L.append(row_cells([f"lattice, {lg['bins']} bins", str(lg["frames"]), fmt(lg["peak_step"], 3), fmt(statistics.median(e), 3),
+                            f"{fmt(min(e), 3)} to {fmt(max(e), 3)}", f"{sum(x >= 0.9 for x in e)} of {len(e)}",
+                            f"{fmt(min(lp), 3)} to {fmt(max(lp), 3)}", f"{sum(1 for r in lg['rows'] if r['enough'] > r['lpi_enough'])} of {len(e)}"]))
+    c = sc["c10"]
+    for tag, frames, peak in (("equal", c["equal_frames"], c["peak_step_equal"]), ("enough", c["frames"], c["peak_step"])):
+        e = [r[f"b2_{tag}"] for r in c["rows"]]
+        lp = [r[f"lpi_{tag}"] for r in c["rows"]]
+        L.append(row_cells([f"rearrangement C10, {c['moving']} moving traps", str(frames), fmt(peak, 3), fmt(statistics.median(e), 3),
+                            f"{fmt(min(e), 3)} to {fmt(max(e), 3)}", f"{sum(x >= 0.9 for x in e)} of {len(e)}",
+                            f"{fmt(min(lp), 3)} to {fmt(max(lp), 3)}", f"{sum(1 for a_, b_ in zip(e, lp) if a_ > b_)} of {len(e)}"]))
+    L.append("\\bottomrule\n\\end{tabular}\n")
+    (out / "tab_long.tex").write_text("".join(L), encoding="utf-8")
+
+
+def write_all(data: dict, out: Path) -> None:
+    write_macros(data, out / "beyond_numbers.tex")
+    write_extra_macros(data, out / "beyond_numbers.tex")
+    write_tables(data, out)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--seeds-b1", type=int, default=5)
@@ -583,18 +933,21 @@ def main() -> int:
     ap.add_argument("--frames", type=int, nargs="+", default=[13, 7, 25])
     ap.add_argument("--seeds-long", type=int, default=8, help="seeds of the long lattice moves (B2 scope)")
     ap.add_argument("--seeds-c10", type=int, default=6, help="seeds of C10's sort on M16's plan (B2 scope)")
-    ap.add_argument("--parts", default="bs1,bs1_full,bs2,bs2_scope",
+    ap.add_argument("--seeds-abl-b1", type=int, default=5)
+    ap.add_argument("--seeds-abl-b1-full", type=int, default=3)
+    ap.add_argument("--seeds-abl-b2", type=int, default=5)
+    ap.add_argument("--parts", default="bs1,bs1_full,bs2,bs2_scope,ablation",
                     help="comma-separated parts to measure; the others are kept from the existing beyond.json")
     ap.add_argument("--out", default=str(HERE))
     ap.add_argument("--macros-only", action="store_true", help="rewrite the macro file from an existing beyond.json")
     a = ap.parse_args()
     out = Path(a.out)
     if a.macros_only:
-        write_macros(json.loads((out / "beyond.json").read_text(encoding="utf-8")), out / "beyond_numbers.tex")
-        print("rewrote", out / "beyond_numbers.tex")
+        write_all(json.loads((out / "beyond.json").read_text(encoding="utf-8")), out)
+        print("rewrote", out / "beyond_numbers.tex", "and the tables")
         return 0
     parts = {x for x in a.parts.split(",") if x}  # --parts "" re-reads the bake and the benchmark only
-    known = {"bs1", "bs1_full", "bs2", "bs2_scope"}  # the benchmark and the bake are read every run
+    known = {"bs1", "bs1_full", "bs2", "bs2_scope", "ablation"}  # the benchmark and the bake are read every run
     if parts - known:
         ap.error(f"unknown parts {sorted(parts - known)}; known: {sorted(known)}")
     data = {} if parts == known else json.loads((out / "beyond.json").read_text(encoding="utf-8"))
@@ -607,11 +960,13 @@ def main() -> int:
         data["bs2"] = measure_b2(list(range(1, a.seeds_b2 + 1)), a.frames)
     if "bs2_scope" in parts:
         data["bs2_scope"] = measure_b2_scope(list(range(1, a.seeds_long + 1)), list(range(1, a.seeds_c10 + 1)))
+    if "ablation" in parts:
+        data["ablation"] = measure_ablation(a.seeds_abl_b1, a.seeds_abl_b1_full, a.seeds_abl_b2)
     data["bake"] = read_manifests()
     data["benchmark_bs1"] = read_benchmark()
     (out / "beyond.json").write_text(json.dumps(data, indent=1), encoding="utf-8")
-    write_macros(data, out / "beyond_numbers.tex")
-    print("wrote", out / "beyond.json", out / "beyond_numbers.tex")
+    write_all(data, out)
+    print("wrote", out / "beyond.json", out / "beyond_numbers.tex", "and the tables")
     return 0
 
 

@@ -4,19 +4,27 @@
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage[margin=2.3cm]{geometry}
-\usepackage{amsmath,amssymb}
+\usepackage{amsmath,amssymb,amsthm}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{url}
+\Urlmuskip=0mu plus 2mu\relax
 \usepackage{xcolor}
 \usepackage{microtype}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage[hidelinks]{hyperref}
 \usepackage{orcidlink}
 \usepackage{caption}
 \captionsetup{font=small,labelfont=bf}
 \setlength{\parskip}{0.4em}
 \setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
 
 \graphicspath{{../figures/}}
 \input{../data/beyond_numbers.tex}
@@ -43,7 +51,7 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 
 \begin{document}
 
-\title{Device-Aware Weighted Gerchberg--Saxton and Flicker-Bounded Phase-Continuous Sequences\\ for Holographic Optical Trap Arrays}
+\title{Device-Aware Weighted Gerchberg-Saxton and Flicker-Bounded Phase-Continuous Sequences\\ for Holographic Optical Trap Arrays}
 \author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
 \small CAOS open-research programme, Santiago, Chile\\
 \small \texttt{fsantibanez@gmail.com}}
@@ -53,98 +61,606 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 \headerblock
 
 \begin{abstract}
-Phase-fixed weighted Gerchberg--Saxton (WGS) is the practical method for large arrays of optical traps, but it
-optimizes the hologram on an ideal model of the spatial light modulator (SLM), and the sequences that move traps interpolate
-between holograms that were never optimized for the frames in between. We test two hypotheses against the strongest baselines
-on the same scalar Fourier model. First, keeping the WGS weights but replacing the phase update by conjugate-gradient steps through the
-pixel-crosstalk kernel and the phase quantizer of the device (device-aware WGS) lowers the trap-intensity spread on the device. On a
-$10\times10$ lattice behind a crosstalk device, the relative standard deviation falls from a median of \sigmaMsevenThirty{} percent for phase-fixed
-WGS at 30 iterations (\sigmaMsevenHundred{} percent at 100) to \sigmaBOne{} percent, a median factor of \ratioOneMed{} over
-\nSeedsOne{} seeds (range \ratioOneMin{} to \ratioOneMax) at a median \effRatioOne{} of the baseline's efficiency; the factor is \ratioOneFullMed{} with \parBits{}-bit
-phase and a fill factor of \parFill{} added, and \bakeCeightRatioThree{} on a smaller $8\times8$ grid with flicker added and a fixed \bakeCeightIters{}-iteration budget (the ratio of the means
-of \bakeCeightSeedsN{} seeds); over the \benchOneDevN{} geometries of the studio's benchmark on that device the median factor is \benchOneDevMed{}
-(\benchOneDevMin{} to \benchOneDevMax), and \benchOneDevPass{} of them meet both thresholds. A control that removes the device model from the loop gains nothing
-(\sigmaNoModel{} percent), so the gain comes from the model. Second, optimizing every intermediate hologram of a moving-trap sequence with the trap phases locked to a smooth
-trajectory (flicker-bounded sequence) keeps the minimum transient intensity of the moving traps at a median \bTwoMed{} of their mean (range \bTwoMin{} to \bTwoMax) over \nSeedsTwo{} seeds at \parFrames{} frames (below $0.9$ at seven frames),
-against \lpiMed{} (\lpiMin{} to \lpiMax) for linear phase interpolation. On longer moves, with the frames that keep the peak step per frame at most \claimStepFu{} Fourier units,
-the bound is met on \longAMet{} and \longBMet{} of \longSeeds{} seeds of two lattice moves and on \cTenMet{} of \cTenSeeds{} seeds of a rearrangement case; the seeds that
-miss it miss it on the phase path their end phases prescribe, and at an equal number of frames on the rearrangement linear phase interpolation leads. Both results hold in a model of a simulated device and in a transient model that we define; neither is a
-hardware measurement.
+Large arrays of optical traps are computed with phase-fixed weighted Gerchberg--Saxton (WGS) on an ideal model of the spatial
+light modulator (SLM), and sequences that move traps interpolate between holograms never optimized for the frames between them. We test two proposed methods against the strongest baselines on one scalar Fourier model.
+Device-aware WGS keeps the WGS weights and replaces the phase update by conjugate-gradient steps through the pixel-crosstalk kernel
+and the phase quantizer of the device. On a $10\times10$ lattice behind a crosstalk device it lowers the trap-intensity spread from a median of \sigmaMsevenThirty{} percent to \sigmaBOne{} percent, a geometric-mean factor of \ratioOneGm{}
+(95 percent interval \ratioOneCiLo{} to \ratioOneCiHi) over \nSeedsOne{} seeds at \effRatioOne{} of its efficiency. The gain does not carry to every
+geometry: on the device of the studio's benchmark, \benchOneDevPass{} of \benchOneDevN{} geometries meet both thresholds. An ablation shows that
+the device-aware phase step produces the gain and that removing the weights lowers the spread further. Flicker-bounded sequences
+optimize every frame with the trap phases locked to a smooth trajectory and keep the lowest moving trap at \bTwoMean{} of its mean
+intensity (95 percent interval \bTwoCiLo{} to \bTwoCiHi) against \lpiMean{} for linear phase interpolation over \nSeedsTwo{} seeds. With the frames that keep the peak step at most \claimStepFu{} Fourier units the bound extends to long
+moves; at equal frames on a long rearrangement, linear phase interpolation leads. Both
+results are simulated, on a device model and a transient model defined here, not measured on hardware.
 \end{abstract}
 
 \noindent\textbf{Keywords:} holographic optical tweezers, weighted Gerchberg--Saxton, pixel crosstalk, phase quantization, linear phase interpolation, atom rearrangement.
 
-\section{Introduction}
+\section{Introduction}\label{sec:intro}
 
-A phase-only SLM in the pupil plane of a lens forms an array of optical traps whose number reaches thousands. The hologram that does it is computed, not designed, and
-three families of method dominate large arrays. The Gerchberg--Saxton (GS) iteration and its weighted form~\cite{dileonardo} equalize the trap intensities in the ideal model;
-freezing the focal-plane phase after a few iterations (phase-fixed WGS)~\cite{kim2019} keeps the weights effective and reaches percent-level uniformity on arrays of 1500
-foci, and the same algorithm computes the holograms of the 256-atom and 6100-atom arrays~\cite{ebadi,manetsch}. Camera feedback then corrects the residual spread on the experiment~\cite{nogrette,kim2019}.
-Gradient methods with a device model exist for shaped potentials~\cite{schroff}, and a convolution of the phase inside a weighted GS has been used to reduce crosstalk
-while replacing amplitudes only~\cite{persson}.
+A phase-only SLM placed in the pupil plane of a lens forms an array of optical traps whose number now reaches the thousands. The largest
+published array holds about 6100 atoms in about 12,000 tweezers, and the same report states that the light field is one of the limits of
+the machine: the trap depth varies by 11.4 percent (standard deviation) across the sites after weighted GS optimization, the finite number of SLM pixels
+bounds the array, and aberrations grow with the tweezer power~\cite{manetsch}. A small calibrated array reaches a relative standard deviation
+of the intensity of 0.3 percent~\cite{chew}, so the spread grows with the size of the array and with the distance between the model that computes the hologram
+and the device that displays it. Error-corrected neutral-atom processors of hundreds of physical qubits~\cite{bluvstein} and hybrid architectures that keep more than 3000 atoms for hours with a
+static SLM array~\cite{chiu} make the quality and the speed of the hologram a question of the experiment's yield, not of its elegance.
 
-Two gaps follow. (i) The solver of the large-array methods has no model of the device. The pixel crosstalk, the phase quantization and the finite fill factor of a real SLM
-change the trap intensities after the hologram is computed, and the experiments absorb the change with camera iterations. A model of crosstalk was placed in
-conjugate-gradient minimization of shaped potentials~\cite{schroff}, but not inside a weighted GS for point traps. (ii) The sequences that rearrange atoms with an SLM
-interpolate the position, the amplitude and the optical phase of every trap between two endpoint holograms and invert the transform at every step~\cite{lpi};
-the intermediate holograms are never individually optimized, their trap intensities are uneven, and the interference of the transient spots makes the intensity dip.
+The hologram is computed, not designed, and three families of method dominate large arrays. The Gerchberg--Saxton iteration and its weighted form~\cite{dileonardo}
+equalize the trap intensities in the ideal model; freezing the focal-plane phase after a few iterations (phase-fixed WGS)~\cite{kim2019} keeps the weights effective and reaches
+percent-level uniformity on arrays of 1500 foci; the same algorithm computes the holograms of the arrays of about 1000 tweezers and of 11,998 sites~\cite{ebadi,manetsch}. Camera feedback then
+corrects the residual spread on the experiment~\cite{nogrette,kim2019}. The sequences that rearrange atoms with an SLM interpolate the position, the amplitude and the optical phase of
+every trap between two endpoint holograms and invert the transform at every step~\cite{lpi}.
 
-We propose and test a method for each gap. Section~\ref{sec:model} fixes the model, Section~\ref{sec:b1} defines the device-aware WGS (B1) and
-Section~\ref{sec:b2} the flicker-bounded sequence (B2), each with the hypothesis that would refute it, the baseline, the protocol and the results.
-Section~\ref{sec:limits} states what the results do not show.
+Two gaps follow. First, the solver of the large-array methods has no model of the device. The pixel crosstalk, the phase quantization and the finite fill factor of a real SLM change the trap
+intensities after the hologram is computed, and the experiments absorb the change with camera iterations. A model of crosstalk was placed in conjugate-gradient minimization of shaped potentials~\cite{schroff}
+and a convolution of the phase was placed in a weighted GS that replaces amplitudes only~\cite{persson}, but no source puts a crosstalk model and a quantizer inside the weighted GS for point traps and
+compares it with phase-fixed WGS. Second, the intermediate holograms of a moving-trap sequence are never individually optimized; their trap intensities are uneven and the interference of the transient
+spots makes the intensity of a moving trap dip, down to a level that the source of the baseline links to atom loss~\cite{lpi}.
 
-\section{Model and metrics}\label{sec:model}
+We propose and test one method for each gap and report them as they are: with their intervals, with the baselines run by the same code on the same data, with an ablation of their
+components, and with the conditions under which they fail. The contributions are the following.
+\begin{enumerate}
+\item Device-aware weighted GS (B1): the WGS weights, measured on the device's focal field, combined with conjugate-gradient steps on a device-aware loss whose gradient is closed form through the adjoint
+of the crosstalk operator, with a safeguard that returns the best admissible iterate (Section~\ref{sec:b1}).
+\item Flicker-bounded phase-continuous sequences (B2): every intermediate hologram optimized with the trap phases locked to a smooth trajectory, together with a closed form for the transient intensity of a trap in the
+blend model and the frame count that the closed form implies (Section~\ref{sec:b2}, Section~\ref{sec:theory}).
+\item A controlled comparison: both methods run against phase-fixed WGS and linear phase interpolation implemented in the same engine on the same tasks, with seeds, intervals, the benchmark geometries of the studio
+and long moves (Section~\ref{sec:design}, Section~\ref{sec:results}).
+\item An ablation measured by a committed script, whose main outcome reverses the expected role of a component: the device-aware phase step carries the gain of B1, and the weights lower it (Section~\ref{sec:ablation}).
+\item The scope of each claim, stated with the geometries and moves where it fails (Section~\ref{sec:discussion}, Section~\ref{sec:limits}).
+\end{enumerate}
+Section~\ref{sec:related} places the methods among the published ones, Section~\ref{sec:problem} fixes the model, the device and the metrics, Section~\ref{sec:methods} defines the two methods,
+Section~\ref{sec:theory} gives the propositions that explain them, and Sections~\ref{sec:design} to~\ref{sec:ablation} give the experiments. Section~\ref{sec:repro} lists the commands that rebuild every number.
 
-The SLM has $n_{\mathrm{pix}}\times n_{\mathrm{pix}}$ pixels of pitch $p$ and a Gaussian input beam normalised so that $\sum_jA_j^2=n_{\mathrm{pix}}^2$. For a trap $m$ at $(x_m,y_m)$ in the focal plane of a lens of
-focal length $f$ at wavelength $\lambda$, the field and the intensity are
-\begin{equation}
-V_m=\frac1{n_{\mathrm{pix}}^2}\sum_jA_je^{\,i(\phi_j-\Delta_j^m)},\qquad \Delta_j^m=\frac{2\pi}{\lambda f}(x_jx_m+y_jy_m),\qquad I_m=|V_m|^2,
-\end{equation}
-following Di Leonardo et al.~\cite{dileonardo}, and equal to the entries of the zero-padded FFT of the SLM field for traps on FFT bins. The efficiency is $e=\sum_mI_m$ and the
-spread is the relative standard deviation $\sigma=100\operatorname{std}(I)/\operatorname{mean}(I)$ in percent, with $I$ divided by the target weights.
+\section{Related work}\label{sec:related}
 
-\textbf{Device.} The displayed phase is wrapped, quantized to $2^b$ levels and blurred. Each SLM pixel is $u\times u$ computational pixels ($u=\parUp$) and the phase is convolved with the kernel
-\begin{equation}
-K=\mathcal F^{-1}\Big\{\exp\Big[-\frac{|k_x|^q+|k_y|^q}{\sigma_K^q}\Big]\Big\},\qquad \sigma_K=\parXtSigma,\ q=\parXtQ,
-\end{equation}
-the fitted values of Schroff et al.~\cite{schroff}. The focal field of what the device displays is the FFT of the blurred, upsampled phase on the finer grid, cropped to the
-same window, times the field envelope of a square pixel of fill factor $\mathrm{fill}$. The adjoint of the blur (convolution with the reversed kernel and a sum over each $u\times u$ block) is closed form.
-Two devices are used: the \emph{crosstalk device} (the kernel above, no quantization, fill factor one) and the \emph{full device} (the kernel, \parBits{}-bit phase and a fill factor of \parFill; random flicker is not applied).
-Every hologram is scored on the device with the same function, whatever model it was optimized on.
+\subsection{Analytic and iterative solvers for point traps}
 
-\textbf{Task and setup.} The task is a $10\times10$ square lattice of equal traps eight FFT bins apart on an SLM of $\parNpix^2$ pixels padded by \parPad, with $\lambda=\parLambda$~nm, $f=\parFocal$~mm, $p=\parPitch$~$\mu$m and
-NA $\parNa$ in air. All methods are deterministic given a seed.
+The point-trap model of Di Leonardo et al. computes the field at each trap as a sum over SLM pixels and compares the solvers on a ten by ten lattice on a 768 by 768 pixel SLM. In simulation,
+plain GS reaches an efficiency of 0.94 and a uniformity of 0.60, and the weighted form reaches 0.93 and 0.99 in about 30 steps, with efficiency above 90 percent already after 10 steps~\cite{dileonardo}. Bianchi and
+Di Leonardo moved the random-superposition start and the weighted iteration to a GPU~\cite{bianchi}. Direct search changes one pixel at a time: Polin et al. reached less than 5 percent deviation on 119 quasi-periodic
+traps where GS and the adaptive additive variant stayed above 50 percent~\cite{polin}, at a cost that Di Leonardo et al. measured as about three times that of GS for an eight-level phase~\cite{dileonardo}.
+For large arrays, Kim et al. observed that the weights lose their effect once the SLM-plane amplitude is replaced by the laser amplitude, and froze the focal-plane phases after an initial number of iterations; on 1500 foci they
+report a modulation efficiency of 91.2 percent and a non-uniformity below 0.5 percent in simulation~\cite{kim2019}. The same rule computed the holograms of the arrays of about 1000 tweezers~\cite{ebadi} and the weights of the
+array of 11,998 sites~\cite{manetsch}. The open library slmsuite implements the same weighted iteration with and without camera feedback and serves as an independent check of an implementation~\cite{slmsuite}. All of
+these solvers optimize on an ideal model: the field they equalize is not the field the device produces.
 
-\section{Device-aware weighted GS}\label{sec:b1}
+\subsection{Camera feedback}
 
-\subsection{Hypothesis and method}
+Feedback closes the gap between the model and the device by rescaling the target with the measured trap intensities. Nogrette et al. reduced the root-mean-square depth non-uniformity of ten by ten traps from 19 percent to 1.4 percent in 20
+iterations with a gain of about 0.7~\cite{nogrette}. Kim et al. reduced a 22 percent non-uniformity to 1.59 percent in three steps with the phase-fixed rule, against 6.47 percent for conventional WGS~\cite{kim2019}. Chew et al. report a
+relative standard deviation of 0.3 percent on a small array~\cite{chew}, and Wang et al. a non-uniformity below 1.1 percent for arrays above 1000 traps~\cite{wang}; both numbers are taken from abstracts. Feedback needs the experiment
+and several camera exposures, and it starts from the hologram that the solver returns. A solver whose output is already flat on the device would shorten the loop; this is an expectation that the present paper does not test, since no
+camera is in the loop here. The two loops start from different spreads, 19 and 22 percent, and both end at about one percent, so a start that is flat on the device model would begin the loop closer to its end than a start that is flat only on the ideal model.
 
-\emph{Hypothesis.} If the crosstalk kernel and the quantizer are inside the weighted GS loop, the trap intensities on the device are at least twice as uniform as those of phase-fixed WGS,
-which optimizes on the ideal model, at an efficiency no more than ten percent lower. The hypothesis is refuted if the factor is below two or the efficiency drops by more than ten percent.
+\subsection{Cost-function, shaped-field, optimal-transport and learned holography}
 
-\emph{Method.} Keep the weight update of weighted GS, $w_m\leftarrow w_m\langle r\rangle/r_m$ with $r_m=|V_m|/a_m$ the trap amplitude relative to its design amplitude~\cite{dileonardo}, but measure $r_m$ on the
-device's focal field, and replace the projection of the phase update by $K_{\mathrm{cg}}=\parCgSteps$ conjugate-gradient steps on the device-aware loss
-\begin{equation}
-L(\phi)=\frac{\sum_m\big(|V_m(\phi)|^2-T_m\big)^2}{\sum_mT_m^2},\qquad T_m=\eta\,\frac{(w_ma_m)^2}{\sum_k(w_ka_k)^2},\qquad \eta=\sum_m|V_m|^2,
-\end{equation}
-where $V=\mathrm{Op}(\phi)$ runs through the straight-through quantizer, the crosstalk operator, the FFT of the upsampled grid and the pixel envelope. The target level is the current efficiency $\eta$, so the steps flatten the traps without
-trading efficiency away; the weights supply the integral feedback that few steps per iteration lack. The gradient is the closed form through the crosstalk adjoint, so no automatic differentiation is needed.
-The conjugate-gradient steps are Fletcher--Reeves with a strong-Wolfe line search, restarted at every outer iteration because the target changes with the weights. The start is \parWarm{} iterations of weighted GS on the ideal model,
-and there are \parOuter{} outer iterations. The weight update is an integrator that a few gradient steps may not follow on a device they
-cannot fit, so B1 returns its best iterate, the warm start included: the phase of lowest spread on its device model among the iterates that keep
-at least \parFloor{} of the warm start's efficiency, the bound of the hypothesis. A run whose weights wind up therefore never returns worse than its start.
+Methods that minimize a cost over the full field serve shaped targets. The mixed-region amplitude freedom method of Pasienski and DeMarco lowers the error on six shaped targets to 0.015 to 0.039 against 0.21 to 0.36 for GS, at an efficiency of 0.18 to 0.45
+against 0.96 to 0.99~\cite{pasienski}. Conjugate-gradient minimization of a power of the intensity error removes the vortices that the basic cost leaves, reaching 0.07 percent after 13,000 iterations on a ring~\cite{harte}, and a later variant controls phase and
+amplitude together~\cite{bowman}. Optimal-transport initialization lowers the error of GS and of the mixed-region method on the same six targets, for example to 0.17 to 0.96 percent with an efficiency of 53 to 85 percent for the latter~\cite{swan}, and a dual
+formulation reduces the memory to a linear order so that a 1024 by 1024 problem runs in 76 s on a CPU~\cite{torchylo}. Gradient methods with Wirtinger derivatives optimize any differentiable propagation model~\cite{chakravarthula}, and neural holography adds a calibrated
+model and a camera in the loop~\cite{peng}. Learned generators are faster: DeepCGH is at least ten times faster than GS and 9 to 43 percent more accurate on multi-plane volumes~\cite{eybposh}, a network below 620 KB runs at video rate~\cite{shi}, and a network for about 20 tweezers
+needs 0.16 s per hologram against about 6 s for GS, with about 10 percent variation across sites~\cite{ren}. None of these reports the uniformity of hundreds of point traps against phase-fixed WGS on the same array.
 
-\subsection{Baselines and protocol}
+\subsection{Device models inside the solver}
 
-The strongest baseline is phase-fixed WGS (M07)~\cite{kim2019}, run on the ideal model for \parBaseIters{} iterations and scored on the device; the lower spread of the two runs is the reference, because more iterations cannot remove a
-crosstalk the model does not contain. Plain GS (M04) and weighted GS (M06) at 30 iterations are reported for context. As a control, the same B1 loop is run with the device model removed (the ideal model in the loop), and scored on the device.
-Each configuration runs on \nSeedsOne{} seeds; the full device runs on \nSeedsOneFull{}.
+The device appears in the optimization in three ways. Schroff et al. model the pixel crosstalk by upscaling each SLM pixel to three by three computational pixels and convolving the phase with a kernel fitted to a device, and minimize a normalized
+intensity error with conjugate gradients and automatic differentiation; the model lowered the error of a large disc by a factor of about 0.4, lowered the efficiency by about 20 percent, made the run about six times longer (about 10 minutes per hologram), and was
+not compared with a weighted GS~\cite{schroff}. Persson et al. modify a weighted GS for crosstalk, modelled as a low-pass filter of the phase retardation, and report more than 100 percent improvement of the spot uniformity on a device with large crosstalk; as far as the
+abstract shows, the correction replaces amplitudes only~\cite{persson}. The flicker of a liquid-crystal device is a measured property: a twisted-nematic device shows phase fluctuations of about 120 degrees at one gray level~\cite{lizana}. Aberrations are the other device
+effect: a position-dependent correction extends the aberration-free field of view~\cite{machu,christen}. No source found combines a crosstalk model and a quantizer with the weights of a weighted GS on point traps.
 
-\subsection{Results}
+\subsection{Moving traps and rearrangement}
+
+Atoms are sorted by moving traps. The hybrid architectures use acousto-optic deflectors for the fast moves of a few atoms on top of a static SLM array~\cite{endres,barredo,chiu}, and an SLM-only approach was proposed with GS, zero padding and weighted feedback~\cite{kim2019oe}.
+The linear phase interpolation of the source of our baseline computes two endpoint WGS holograms, interpolates the position, amplitude and optical phase of each trap and inverts the transform at each step; with 13 holograms in about 40 ms it sorts a six by six array into
+four by four, observes that the spot of independent WGS holograms nearly vanished several times at 11 kHz sampling while the interpolated spot stayed above 70 percent, and links phase slips near $\pi$ to atom loss~\cite{lpi}. The assignment of atoms to sites is a Hungarian matching whose exponent
+on the distance avoids trespassing~\cite{lee2017}. No source optimizes the intermediate frames of a trap trajectory. The 3D extension of GS propagates plane by plane~\cite{whyte}; the present paper stays in two dimensions.
+
+\subsection{Position of the proposed methods}
+
+Table~\ref{tab:related} lists the works that matter for the two gaps with what each assumes and where it falls short. Device-aware WGS takes the weights of Di Leonardo et al.\ and the device model of Schroff et al.\ and joins them in a point-trap solver, which neither source does, and it is
+compared with phase-fixed WGS, the method that computes the holograms of the largest arrays. Flicker-bounded sequences take the phase-fixed rule of Kim et al.\ and the interpolation insight of the linear-phase source, and optimize each frame, which the source does not. Both are
+combinations of published pieces and are not claimed as new algorithms in isolation; the contribution is the combination, the closed forms that explain it, and the measurement of where it holds and fails.
 
 \begin{table}[t]
 \centering\small
-\caption{Device-aware WGS on the $10\times10$ task, scored on the device. Medians over the seeds; $\sigma$ is the relative standard deviation of the trap intensities (\%), $e$ the efficiency.}
+\caption{Published methods that bound the two gaps: what each assumes and where it falls short for the task of the paper (uniform point traps on a device, and moving traps with bounded intensity dips). The last two rows are the proposed methods.}
+\label{tab:related}
+\begin{tabular}{@{}p{3.4cm} p{4.2cm} p{6.4cm}@{}}
+\toprule
+Work & Assumes & Falls short for the two gaps\\
+\midrule
+Weighted GS~\cite{dileonardo} & ideal SLM model & equalizes the model; no crosstalk or quantizer in the loop\\
+Phase-fixed WGS~\cite{kim2019} & ideal model; camera feedback afterwards & spread set by the device; needs the experiment to close the gap\\
+Direct search~\cite{polin} & ideal model; one pixel at a time & cost scales with the pixel count; no device model\\
+Mixed-region amplitude freedom~\cite{pasienski} & shaped field; noise region & efficiency 0.18 to 0.45; not for sparse point traps\\
+Conjugate gradient~\cite{harte} & ideal model; full field & thousands of iterations; no device model\\
+Crosstalk with conjugate gradient~\cite{schroff} & shaped potentials; autodiff & about 10 minutes per hologram; no weighted GS comparison\\
+Crosstalk in weighted GS~\cite{persson} & crosstalk as phase low-pass & replaces amplitudes only; no quantizer; no point-trap comparison\\
+Learned generators~\cite{ren,eybposh} & training set per geometry class & about 10 percent variation at 20 traps; no comparison at hundreds\\
+Linear phase interpolation~\cite{lpi} & two endpoint WGS holograms & intermediate frames never optimized; dips and phase slips\\
+Device-aware WGS (B1) & device model, traps on bins & baked cost; scope measured in this paper\\
+Flicker-bounded sequence (B2) & locked trap phases, end phases given & frames grow with the move; blend model unverified\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Problem formulation}\label{sec:problem}
+
+\subsection{Forward model of the traps}
+
+The SLM has $n_{\mathrm{pix}}\times n_{\mathrm{pix}}$ pixels of pitch $p$ and a Gaussian input beam of amplitude $A_j$ normalized so that $\sum_jA_j^2=n_{\mathrm{pix}}^2$. A hologram is a phase $\phi_j\in[0,2\pi)$ per pixel $j$ at
+position $(x_j,y_j)$. For a trap $m$ at $(x_m,y_m)$ in the focal plane of a lens of focal length $f$ at wavelength $\lambda$, with $z_m=0$ and no vortex, the field and the intensity are
+\begin{equation}
+V_m=\frac1{n_{\mathrm{pix}}^2}\sum_jA_je^{\,i(\phi_j-\Delta_j^m)},\qquad \Delta_j^m=\frac{2\pi}{\lambda f}(x_jx_m+y_jy_m),\qquad I_m=|V_m|^2,\label{eq:forward}
+\end{equation}
+following Di Leonardo et al.~\cite{dileonardo}. For traps on the bins of the zero-padded fast Fourier transform (FFT) of the SLM field, $V_m$ is the corresponding entry of that transform. The traps are on bins throughout: the lattices
+are spaced a whole number of bins apart, and the focal bin is $\lambda f/(\mathrm{pad}\,n_{\mathrm{pix}}\,p)$ with a padding factor $\mathrm{pad}$. The unit of length in the focal plane for moves is the Fourier unit $\lambda f/(n_{\mathrm{pix}}p)$, equal to
+$\mathrm{pad}$ bins. Each trap has a design weight $\omega_m$ (equal for all traps in every task of the paper), a design amplitude $a_m=\sqrt{\omega_m/\langle\omega\rangle}$ and a relative amplitude $r_m=|V_m|/a_m$. Equation~\ref{eq:forward} is the model that every hologram of the paper is computed on in the ideal case and scored on when the device is the ideal one; the device of the next subsection changes what is displayed and leaves the equation as the definition of what a displayed phase produces at a trap. The equation is linear in the unit phasors $e^{i\phi_j}$, which is what makes the gradient of the intensity loss available in closed form later.
+
+\subsection{The device}
+
+A real SLM displays something other than the hologram that is computed. The displayed phase is wrapped, quantized to $2^b$ levels and blurred by the crosstalk between neighbouring pixels, and the pixel covers only part of its area. We use the device model
+of the studio~\cite{schroff}: each SLM pixel is $u\times u$ computational pixels, and the phase is convolved with the kernel
+\begin{equation}
+K=\mathcal F^{-1}\Big\{\exp\Big[-\frac{|k_x|^q+|k_y|^q}{\sigma_K^q}\Big]\Big\},\qquad \sigma_K=\parXtSigma,\ q=\parXtQ,\label{eq:kernel}
+\end{equation}
+the values fitted by Schroff et al.\ on one device (Fig.~\ref{fig:b1model}a). With $U$ the replication of each pixel into $u\times u$ blocks and $\tilde\phi=K*(U\phi)$ the blurred phase on the fine grid, the focal field of what the device displays is
+\begin{equation}
+E=\mathrm{crop}\,\mathcal F\{\tilde A\,e^{i\tilde\phi}\}\cdot\mathcal E_{\mathrm{fill}},\qquad V_m=E[\text{bin of }m]/\mathrm{scale},\label{eq:devicefield}
+\end{equation}
+where $\tilde A$ is the amplitude on the fine grid, the crop returns the field to the window of the ideal FFT and $\mathcal E_{\mathrm{fill}}$ is the field envelope of a square pixel of fill factor $\mathrm{fill}$. Two devices are used. The
+\emph{crosstalk device} has the kernel above, no quantization and a fill factor of one. The \emph{full device} adds a \parBits{}-bit quantizer and a fill factor of \parFill. The device of the studio's benchmark and of case C08 adds a random flicker of \bakeCeightFlicker{} rad rms
+to the displayed phase. Every hologram in the paper is scored on the device with the same function, whatever model it was optimized on, so a method is never scored on its own model unless the device and the model coincide.
+
+\subsection{Figures of merit}
+
+The efficiency is the light in the traps, and the spread is the relative standard deviation of the intensities divided by the design weights, in percent:
+\begin{equation}
+e=\sum_mI_m,\qquad \sigma=100\,\frac{\operatorname{std}_m(I_m/\omega_m)}{\operatorname{mean}_m(I_m/\omega_m)}.\label{eq:metrics}
+\end{equation}
+The comparison of a method with the reference solver on the same seed uses two ratios, the factor on the spread and the ratio of the efficiencies,
+\begin{equation}
+F=\frac{\min\{\sigma_{30},\sigma_{100}\}}{\sigma_{\mathrm{B1}}},\qquad R_e=\frac{e_{\mathrm{B1}}}{\max\{e_{30},e_{100}\}},\label{eq:factor}
+\end{equation}
+where the subscripts 30 and 100 name the iteration budgets of phase-fixed WGS, so the reference is the best of the two runs on the spread and on the efficiency, and the comparison is never taken against a baseline that more iterations would improve. The spread of Eq.~\ref{eq:metrics} is the quantity that the experiments of the sources report as non-uniformity or as relative standard deviation, which makes the numbers of the paper comparable in kind with theirs; the uniformity defined through the maximum and the minimum intensity is not used, because it depends on two traps only. Dividing the intensity by the design weight lets the same formula serve arrays whose traps are meant to differ, although every task here has equal traps. The efficiency ratio of Eq.~\ref{eq:factor} protects the factor from a trivial gain: a hologram that sent light to the zero order would flatten the traps at a low efficiency, and the ratio would show it.
+
+\subsection{Moving traps and the transient intensity}
+
+A sequence has $S+1$ frames $s=0,\dots,S$ and a trap position $x_m(s)$ that follows a time profile $h(\tau)$ with $\tau=s/S$. The SLM does not jump from one hologram to the next, and a trap that moves is read at its position between the frames. We model the
+displayed field between frames $s$ and $s+1$ as the blend of the two holograms, $f_\alpha=A[(1-\alpha)e^{i\phi_s}+\alpha e^{i\phi_{s+1}}]$ with $\alpha\in[0,1]$ ($\parSubsteps$ sub-frames), and read trap $m$ at its trajectory point $x_m(s+\alpha)$. With
+$I_m(s,\alpha)=|V_m(f_\alpha;x_m(s+\alpha))|^2$ the transient ratio of a trap is
+\begin{equation}
+\rho_m=\frac{\min_{s,\alpha}I_m(s,\alpha)}{\operatorname{mean}_sI_m(s)}.\label{eq:transient}
+\end{equation}
+The blend model is our own definition: the source of the baseline gives a measurement, not an equation, so the absolute value of $\rho_m$ is a property of the model and the methods are compared with each other only. Both sequences are scored by the same function. The numerator of Eq.~\ref{eq:transient} is the lowest intensity that trap $m$ takes over the frames and over the blend instants, and the denominator is its mean intensity at the frames, so $\rho_m=1$ means that the trap never dips below its mean and a value of $0.9$ means that the lowest transient is a tenth below it. The blend represents the liquid crystal relaxing between two holograms; the refresh rate and the temporal response of the device are not modelled, so $\rho_m$ is a property of the pair of holograms and of the trajectory and not of an instrument.
+
+\subsection{Notation and assumptions}
+
+Table~\ref{tab:notation} collects the symbols. The assumptions are the following. The model is scalar and monochromatic; the traps lie on FFT bins in one plane; the crosstalk parameters are those fitted on another device by the source, and their frequency unit is
+carried over from the model and is not verified against the source; the quantizer is differentiated as the identity (straight-through) in the optimization, and the random flicker is scored but not modelled by the optimizer; the transient model is the blend above. Each of these limits is revisited in Section~\ref{sec:limits}. A further assumption concerns the baselines: phase-fixed WGS is run on the ideal model and scored on the device, which is the practice of the large-array experiments, where the solver is not given a device model and the device is corrected afterwards by camera feedback. The comparison is therefore the one that matters before feedback, and the weights, the starts and the random numbers of every method come from the same seeded generator.
+
+\begin{table}[t]
+\centering\small
+\caption{Notation: every symbol of the formulation with its meaning and unit. Dimensionless quantities are marked as such.}
+\label{tab:notation}
+\begin{tabular}{@{}l p{8.2cm} l@{}}
+\toprule
+Symbol & Meaning & Unit\\
+\midrule
+$n_{\mathrm{pix}}$, $p$ & SLM pixels per side, pixel pitch & 1, m\\
+$\lambda$, $f$ & wavelength, focal length of the lens & m\\
+$A_j$, $\phi_j$ & input amplitude and displayed phase of pixel $j$ & 1, rad\\
+$\Delta_j^m$ & delay from pixel $j$ to trap $m$ & rad\\
+$V_m$, $I_m=|V_m|^2$ & trap field and intensity (fraction of the SLM flux) & 1\\
+$\omega_m$, $a_m$, $r_m$ & design weight, design amplitude, relative amplitude $|V_m|/a_m$ & 1\\
+$w_m$ & multiplicative weight of the iteration & 1\\
+$e$, $\sigma$ & efficiency, relative standard deviation of the intensities & 1, percent\\
+$F$, $R_e$ & spread factor and efficiency ratio against phase-fixed WGS & 1\\
+$K$, $\sigma_K$, $q$, $u$ & crosstalk kernel, its width and exponent, upsampling factor & 1\\
+$\tilde\phi$ & blurred phase on the fine grid & rad\\
+$L$, $T_m$, $\eta$ & device-aware loss, its target intensity, current efficiency & 1\\
+$K_{\mathrm{cg}}$ & conjugate-gradient steps per outer iteration & 1\\
+$x_m(s)$, $\theta_m(s)$ & trap position and locked optical phase at frame $s$ & Fourier unit, rad\\
+$h(\tau)$ & minimal-jerk time profile & 1\\
+$S$ & number of frame intervals of a sequence & 1\\
+$\delta$ & shift of the pattern between two frames & Fourier unit\\
+$\rho_m$ & transient ratio of trap $m$ & 1\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Proposed methods}\label{sec:methods}
+
+The two methods share the point-trap model of Section~\ref{sec:problem}, the weighted update of Di Leonardo et al.~\cite{dileonardo} and the phase-fixed rule of Kim et al.~\cite{kim2019}, and they differ in the gap they close. Device-aware weighted GS closes the gap between the model
+that computes a static hologram and the device that displays it. Flicker-bounded sequences close the gap between consecutive holograms of a moving array. Both run offline: they are baked into the studio's artifacts, and the live engine of the studio does not
+carry them, because the cost of one iteration exceeds the budget of an interactive frame. Each subsection gives the idea, the derivation, the algorithm, the parameters with their values and the way they were chosen, the complexity and the implementation.
+
+\subsection{Device-aware weighted GS}\label{sec:b1}
+
+\subsubsection{Idea}
+
+Weighted GS equalizes the trap intensities because its weights integrate the relative error of each trap: a trap that is too bright has its weight lowered at the next iteration, and the fixed point of the update is the set of equal amplitudes. On an ideal SLM the equalization is exact
+to the precision of the arithmetic. On a device the intensities that the weights see are those of the ideal model, so the weights equalize a field that the device does not produce. Two changes follow from this observation. First, the amplitudes $r_m$ that drive the weights are read
+on the device's focal field (Eq.~\ref{eq:devicefield}), so the integral action acts on the quantity that is scored. Second, the projection that produces the new phase from the weighted trap fields is an ideal-model operation, and no choice of weights can make the projection invert the crosstalk;
+we replace it by a few steps of gradient descent on a loss that is evaluated on the device and differentiated through it. The weights remain, because they supply a target that moves with the error, and the safeguard keeps the method from ever returning a hologram worse than its start.
+
+\subsubsection{Derivation}
+
+Let $V_m(\phi)$ be the trap fields of the device (Eq.~\ref{eq:devicefield}) as a function of the SLM phase. Writing the blurred phase on the fine grid as $\tilde\phi=K*(U\phi)$, the field of trap $m$ is linear in the unit phasors $e^{i\tilde\phi_p}$ of the fine pixels $p$,
+\begin{equation}
+V_m=\sum_pG_{mp}\,e^{i\tilde\phi_p},\qquad G_{mp}=c_m\tilde A_p\,e^{-i\tilde\Delta_p^m},\label{eq:linear}
+\end{equation}
+where $\tilde\Delta_p^m$ is the delay of Eq.~\ref{eq:forward} on the fine grid and $c_m$ collects the readout scale and the pixel envelope of trap $m$. The loss compares the trap intensities with a target $T_m$ that depends on the weights,
+\begin{equation}
+L(\phi)=\frac{\sum_m\big(|V_m(\phi)|^2-T_m\big)^2}{\sum_mT_m^2},\label{eq:loss}
+\end{equation}
+\begin{equation}
+T_m=\eta\,\frac{(w_ma_m)^2}{\sum_k(w_ka_k)^2},\qquad \eta=\sum_m|V_m|^2.\label{eq:target}
+\end{equation}
+The level $\eta$ is the current efficiency, so the target has the same total light as the hologram: the steps redistribute the light among the traps and do not trade efficiency for uniformity. The weights follow the rule of Di Leonardo et al., with the relative amplitudes read on the device,
+\begin{equation}
+w_m\leftarrow w_m\frac{\langle r\rangle}{r_m},\qquad r_m=\frac{|V_m|}{a_m}.\label{eq:weights}
+\end{equation}
+The gradient of $L$ is obtained in two steps. Let $N_T=\sum_mT_m^2$, $d_m=|V_m|^2-T_m$ and $h_p=\sum_mG_{mp}d_m\overline{V_m}$. Differentiating $L$ with respect to the blurred phase of the fine pixel $p$ gives
+\begin{equation}
+\tilde g_p=\frac{\partial L}{\partial\tilde\phi_p}=\frac{4}{N_T}\operatorname{Re}\!\big(i\,e^{i\tilde\phi_p}\,h_p\big),\label{eq:gradfine}
+\end{equation}
+and the chain rule through the replication and the blur gives the gradient with respect to the SLM phase,
+\begin{equation}
+\nabla_\phi L=U^{\top}\!\big(\bar K*\tilde g\big),\qquad (U^{\top}z)_j=\sum_{p\in\text{block }j}z_p,\label{eq:gradphi}
+\end{equation}
+with $\bar K$ the reversed kernel. The matrix $G$ never needs to be formed: $h$ is one inverse transform of the readout of the weighted residual, and Eq.~\ref{eq:gradphi} is a convolution followed by a sum over each $u\times u$ block. This is the adjoint of the crosstalk operator, which the
+engine tests against the inner-product identity to $10^{-12}$, so no automatic differentiation is needed and the gradient is exact for the smooth part of the model. The quantizer is treated as the identity in the backward pass and is applied in the forward pass (straight-through), and the random flicker is not
+modelled. The minimization of $L$ over $\phi$ with $T$ fixed uses the Fletcher--Reeves conjugate-gradient recursion with a strong-Wolfe line search,
+\begin{equation}
+d_i=-g_i+\beta_id_{i-1},\quad \beta_i=\frac{g_i^{\top}g_i}{g_{i-1}^{\top}g_{i-1}},\quad \phi_{i+1}=\phi_i+\alpha_id_i,\label{eq:cg}
+\end{equation}
+with $\alpha_i$ satisfying $L(\phi_i+\alpha_id_i)\le L(\phi_i)+c_1\alpha_ig_i^{\top}d_i$ and $|g(\phi_i+\alpha_id_i)^{\top}d_i|\le c_2|g_i^{\top}d_i|$ for $c_1=10^{-4}$ and $c_2=0.1$; the choice $c_2<1/2$ keeps the Fletcher--Reeves direction a descent direction.
+The recursion restarts at every outer iteration, because the target of Eq.~\ref{eq:target} changes with the weights and the conjugacy of the old directions no longer holds.
+
+The weight update acts as an integrator and a few gradient steps may not follow it on a device that quantizes and blurs the response. The method therefore keeps every iterate $\phi^k$, $k=0,\dots,K_{\mathrm{out}}$, with $\phi^0$ the start, and returns the iterate of lowest spread on its own device model among those that keep a fraction $\gamma$ of the start's efficiency,
+\begin{equation}
+k^\star=\arg\min_{k\in\mathcal A}\sigma\big(\phi^k\big),\qquad \mathcal A=\{k:\ e(\phi^k)\ge\gamma\,e(\phi^0)\}\ni0,\label{eq:safeguard}
+\end{equation}
+with $\gamma=\parFloor$, the bound of the efficiency in the hypothesis of Section~\ref{sec:design}. Because the start belongs to $\mathcal A$, the returned hologram is never worse than the start on the model of the method.
+
+Three remarks read the equations. First, Eq.~\ref{eq:loss} is a loss on intensities, not on amplitudes: the intensities are what the scoring of Eq.~\ref{eq:metrics} compares, and the loss does not change under a global phase of the field, so the optimization has no gauge freedom to fix. Second, the normalization by $\sum_mT_m^2$ makes the loss independent of the scale of the target, so the line search can start from a step that moves the largest pixel by a fixed fraction of a radian whatever the number of traps. Third, Eq.~\ref{eq:target} fixes the total of the target to the current efficiency $\eta$: when a step lowers the light in the traps the next target is lower, so the loss never rewards efficiency that is lost to the zero order or to ghost orders, and the efficiency is guarded only by the floor of Eq.~\ref{eq:safeguard}. In the ideal model, with $K$ the identity, $u=1$ and no quantizer, Eq.~\ref{eq:gradphi} reduces to the gradient of the intensity-error cost that conjugate-gradient hologram generation minimizes~\cite{harte}, so B1 contains that cost as its special case without a device.
+
+The construction has limits that follow from the equations. The quantizer is a staircase: its derivative vanishes almost everywhere, so the straight-through gradient is a good direction for the smooth part of the model and carries no information about the steps of the staircase, and the full device gains less than the crosstalk device (Section~\ref{sec:results}). The readout takes the nearest FFT bin, so a trap off a bin would be read with an error, and the method refuses traps off the focal plane and vortex traps. The loss is not convex, the conjugate-gradient steps find a local descent and the result depends on the start; the start is therefore fixed to the weighted iterations from the random superposition of the seed, and the seeds of the experiments sample it.
+
+\subsubsection{Algorithm}
+
+Algorithm~\ref{alg:b1} states the procedure. The start is $K_{\mathrm{warm}}$ iterations of weighted GS on the ideal model from the random superposition of prisms and lenses, which is the number of weighted iterations that Kim et al.\ run before they freeze the phases~\cite{kim2019}.
+Each outer iteration reads the trap fields on the device, updates the weights, sets the target and takes $K_{\mathrm{cg}}$ steps.
+
+\begin{algorithm}[t]
+\caption{Device-aware weighted GS (B1). The device model $\mathcal D$ is the composition of replication, blur, FFT on the fine grid, crop and pixel envelope; $\mathcal D=\mathrm{id}$ gives the ideal model.}
+\label{alg:b1}
+\begin{algorithmic}[1]
+\Require traps $\{x_m,\omega_m\}$ on FFT bins, device $\mathcal D$, outer iterations $K_{\mathrm{out}}$, steps $K_{\mathrm{cg}}$, warm iterations $K_{\mathrm{warm}}$, floor $\gamma$, seed
+\Ensure phase $\phi^\star\in[0,2\pi)$ per SLM pixel
+\State $\phi^0\gets K_{\mathrm{warm}}$ iterations of weighted GS on the ideal model from the random superposition (seeded)
+\State $w_m\gets1$; compute $V(\phi^0)$ on $\mathcal D$; $e_0\gets e(\phi^0)$; $\sigma_0\gets\sigma(\phi^0)$; best $\gets(\phi^0,\sigma_0)$
+\For{$k=1,\dots,K_{\mathrm{out}}$}
+  \State $V\gets V(\phi^{k-1})$ on $\mathcal D$; $r_m\gets|V_m|/a_m$; $w_m\gets w_m\langle r\rangle/r_m$ \Comment{Eq.~\ref{eq:weights}}
+  \State $T_m\gets\eta(w_ma_m)^2/\sum_l(w_la_l)^2$ with $\eta=\sum|V_m|^2$ \Comment{Eq.~\ref{eq:target}}
+  \State $\phi^k\gets K_{\mathrm{cg}}$ Fletcher--Reeves steps on $L$ from $\phi^{k-1}$ with strong-Wolfe search \Comment{Eqs.~\ref{eq:loss},~\ref{eq:gradphi},~\ref{eq:cg}}
+  \State compute $e(\phi^k)$, $\sigma(\phi^k)$ on $\mathcal D$
+  \If{$e(\phi^k)\ge\gamma e_0$ \textbf{and} $\sigma(\phi^k)<\sigma_{\mathrm{best}}$} best $\gets(\phi^k,\sigma(\phi^k))$ \EndIf
+\EndFor
+\State \Return the phase of best, wrapped to $[0,2\pi)$ \Comment{Eq.~\ref{eq:safeguard}}
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Parameters}
+
+Table~\ref{tab:params} lists the values of both methods and where each came from. The weighted-GS warm start of \parWarm{} iterations is the number that Kim et al.\ use before freezing the phase. The number of conjugate-gradient steps per outer iteration, \parCgSteps, is a choice of the engine:
+few steps keep the hologram close to the previous one and let the weights supply the integral action. The number of outer iterations, \parOuter, is the budget of the acceptance test of the engine. The floor $\gamma=\parFloor$ is the efficiency bound of the hypothesis, so that an iterate that the hypothesis would reject is never returned.
+The crosstalk parameters $\sigma_K$ and $q$ are the values fitted by Schroff et al.\ on one device, and the upsampling factor $u$ is the one of that fit. The sensitivity to the number of steps is measured in the ablation (Section~\ref{sec:ablation}): one step is not enough, six steps are better than
+three on the crosstalk device, so the default is a compromise of cost and not an optimum. The sensitivity to the crosstalk parameters themselves is not measured.
+
+\begin{table}[t]
+\centering\small
+\caption{Parameters of the two methods and of the tasks, with their values as the engine uses them, and the origin of each value. The device values are those of the crosstalk device and the full device; the flicker belongs to the benchmark's device.}
+\label{tab:params}
+\begin{tabular}{@{}p{4.3cm} p{3.4cm} p{7.2cm}@{}}
+\toprule
+Parameter & Value & Origin\\
+\midrule
+SLM pixels, padding & $\parNpix^2$, \parPad & acceptance tasks of the engine\\
+Wavelength, focal length, pitch, NA & \parLambda{} nm, \parFocal{} mm, \parPitch{} $\mu$m, \parNa & acceptance tasks of the engine\\
+Crosstalk $\sigma_K$, $q$, upsampling $u$ & \parXtSigma, \parXtQ, \parUp & fit of Schroff et al.~\cite{schroff}\\
+Quantizer, fill factor (full device) & \parBits{} bits, \parFill & parameters of the studio's device cases, no published fit\\
+Flicker (benchmark device) & \bakeCeightFlicker{} rad rms & parameter of the studio's device case, no published fit\\
+B1 warm iterations $K_{\mathrm{warm}}$ & \parWarm & number of weighted iterations before the phase freeze of Kim et al.\\
+B1 steps $K_{\mathrm{cg}}$ per outer iteration & \parCgSteps & engine choice; sensitivity in Section~\ref{sec:ablation}\\
+B1 outer iterations $K_{\mathrm{out}}$ & \parOuter & budget of the acceptance test\\
+B1 efficiency floor $\gamma$ & \parFloor & efficiency bound of the hypothesis\\
+B2 frames, iterations per frame & \parFrames, \parFrameIters & sort of a six by six into a four by four array in the source; engine choice\\
+B2 cold start iterations & \parColdIters & budget of the first frame\\
+B2 phase step bound per frame & \parPhaseVel{} rad & slips of several tenths of $\pi$ barely mattered in the source; engine choice\\
+B2 step bound of the claim & \claimStepFu{} Fourier units & frame count at which the lowest moving trap of the rearrangement case first reached $0.9$\\
+Transient sub-frames per interval & \parSubsteps & engine choice\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Complexity}
+
+One conjugate-gradient step evaluates the forward model on the fine grid and its adjoint once per line-search trial, about $u^2$ times the pixels of the plain FFT, and the weights add a pass over the traps. With $N_{\mathrm{fine}}=u^2n_{\mathrm{pad}}^2$ the number of fine samples, a step costs
+$O(N_{\mathrm{fine}}\log N_{\mathrm{fine}})$ in the FFT form, and the readout at the traps is $O(M)$. An outer iteration costs $K_{\mathrm{cg}}$ steps plus the line-search trials, and a run costs $K_{\mathrm{warm}}$ ideal iterations plus $K_{\mathrm{out}}$ outer iterations. The pruned transform
+that the engine uses for the device-aware cost makes the transform about 2.4 times cheaper than the full one, and the source of the crosstalk model reports that the model alone makes a hologram about six times slower. A requirement of the research plan was that the time per iteration
+stay within a factor of three of the baseline; this ratio was not measured, so it is not claimed. The acceptance test of the engine takes about half a minute on the development machine, which is why the method is baked and not live. The line search dominates the cost of a step: each trial evaluates the forward model once, the strong-Wolfe search may use several trials per step, and the engine caps the evaluations of one search at 25, so the cost of an outer iteration is $K_{\mathrm{cg}}$ steps times a number of evaluations between one and the cap. The evaluations are counted and returned in the metadata of a run, so the cost of a hologram can be read afterwards and not only estimated.
+
+\subsubsection{Implementation}
+
+The method is the module \texttt{b1\_device\_wgs.py} of the engine in the repository of the studio, release \engineRelease. The device model is the module \texttt{device.py}, whose adjoint passes the inner-product identity to $10^{-12}$ for three devices, and the conjugate-gradient routine is shared with the other
+optimization methods of the studio. The traps must lie on FFT bins with $z=0$ and no vortex when a device is given, and the method refuses a shaped-field target. The ablation script of Section~\ref{sec:ablation} re-implements the loop with switchable components and checks that, with all components on, it returns the
+phase of the module to a difference of \ablBCheck{} on the spread for every seed, so the ablated variants are the module with parts removed and not a second method. The result of a run carries the phase, a history with one entry per outer iteration (the loss, the efficiency and the spread), the trap fields on the device and the metadata of the run: the number of steps, the warm iterations, the evaluations, the final weights, the iteration that was returned, the floor and the spread and efficiency of the start. The history keeps every iterate so that a run that winds up can be inspected, and the convergence curve of Fig.~\ref{fig:b1model}b is read from it. The routine accepts an initial phase that replaces the warm start and raises an error for fewer than one step or a negative number of warm iterations. The random superposition of the start is drawn from the portable generator of the engine, so the result is a function of the seed.
+
+\subsection{Flicker-bounded phase-continuous sequences}\label{sec:b2}
+
+\subsubsection{Idea}
+
+Linear phase interpolation builds the intermediate holograms of a move from two endpoint holograms and never optimizes them: a frame is the inverse transform of interpolated spots, so its trap intensities are uneven and the transient spots interfere. A weighted GS that is run independently at every
+frame equalizes each frame but leaves the optical phase of every trap free, so the phases may jump between frames and the blend of two frames dips, which is the flicker that the source of the baseline observed. The proposed sequence combines the two remedies: it optimizes every frame, which equalizes the trap intensities, and it locks the
+optical phase of every trap to a smooth trajectory, which removes the phase jumps. With both, the target field changes slowly from one frame to the next, so the holograms change slowly and so does the blend. The bound on the phase step per frame refuses a trajectory whose phases would have to slip too fast.
+
+The relation to the two parents is as follows. Linear phase interpolation has smooth phases and unoptimized frames; weighted GS at every frame has optimized frames and free phases. In the engine's earlier measurement on a nine-trap sort, weighted GS at every step equalized each frame and showed no flicker (a median transient ratio of 0.96 in that model), unlike the 11 kHz camera observation of the source; that measurement is recorded in the design record and is not repeated here, and we do not use weighted GS at every frame as a baseline for that reason, comparing instead with the baseline that the source of the problem uses. The sequence we propose is not a claim that free phases always flicker; it is a construction whose phase path is controlled by design, with a measurement of what that control is worth in an ablation (Section~\ref{sec:ablation}).
+
+\subsubsection{Derivation}
+
+Positions follow the minimal-jerk profile, the polynomial that has zero velocity and acceleration at both ends,
+\begin{equation}
+x_m(s)=x_m(0)+\big(x_m(S)-x_m(0)\big)\,h(\tau),\qquad h(\tau)=10\tau^3-15\tau^4+6\tau^5,\qquad \tau=\frac sS.\label{eq:minjerk}
+\end{equation}
+The optical phases of the traps follow the same profile between the phases $\theta_m(0)$ of the first frame and end phases $\theta_m^{\mathrm{end}}$ that are given (by default the phases are held, $\theta^{\mathrm{end}}=\theta(0)$),
+\begin{equation}
+\theta_m(s)=\theta_m(0)+\operatorname{wrap}\big(\theta_m^{\mathrm{end}}-\theta_m(0)\big)\,h(\tau).\label{eq:phaseprofile}
+\end{equation}
+Every frame $s\ge1$ is a phase-fixed weighted GS step with the trap phases locked to Eq.~\ref{eq:phaseprofile}: with the trap set $x_m(s)$ and the coefficients $c_m=w_ma_me^{i\theta_m(s)}$,
+\begin{equation}
+\phi_j^{(s)}=\arg\sum_mc_m\,e^{+i\Delta_j^m(x_m(s))},\qquad w_m\leftarrow w_m\frac{\langle r\rangle}{r_m},\label{eq:frame}
+\end{equation}
+started from the hologram and the weights of frame $s-1$ and iterated $K_{\mathrm{f}}$ times. Frame 0 is a cold phase-fixed WGS of $K_0$ iterations whose trap phases give $\theta_m(0)$. The hard lock is the limit $\lambda\to\infty$ of a penalty $\lambda\sum_m(\arg V_m-\theta_m)^2$ added to the amplitude error, which the engine does not
+form. The sequence is refused when the phase step per frame, the largest change of $\theta_m(s)$ between consecutive frames, exceeds a bound $\dot\theta_{\max}$,
+\begin{equation}
+\max_{m,s}\big|\theta_m(s+1)-\theta_m(s)\big|\le\dot\theta_{\max},\label{eq:phasebound}
+\end{equation}
+and the bound has a direct meaning for the target of the optimization: the coefficients of two consecutive frames differ by
+\begin{equation}
+\big|c_m(s+1)-c_m(s)\big|\le w_ma_m\,\big|\theta_m(s+1)-\theta_m(s)\big|+a_m\,\big|w_m(s+1)-w_m(s)\big|,\label{eq:targetstep}
+\end{equation}
+so a bounded phase step and weights that change little make the target field, and therefore the hologram that inverts it, change slowly from frame to frame. The number of frames that a move needs follows from the same profile. The velocity of $h$ is $h'(\tau)=30\tau^2(1-\tau)^2$, maximal at $\tau=\tfrac12$ where it equals $15/8$, so the largest shift between two consecutive frames of a trap that travels $L$ Fourier units in $S$ intervals is, to first order in $1/S$,
+\begin{equation}
+\delta_{\max}=\frac{15}{8}\,\frac{L}{S},\qquad S\ge\frac{15}{8}\,\frac{L}{\delta_{\mathrm{claim}}},\label{eq:frames}
+\end{equation}
+with $\delta_{\mathrm{claim}}=\claimStepFu{}$ Fourier units the step bound of the claim. The engine returns the smallest number of frames that satisfies the second relation and is at least the default number of frames $F_0$,
+\begin{equation}
+F(L)=\max\Big\{F_0,\ \Big\lceil\frac{15}{8}\frac{L}{\delta_{\mathrm{claim}}}\Big\rceil+1\Big\}.\label{eq:framecount}
+\end{equation}
+The origin of $\delta_{\mathrm{claim}}$ is the closed form of Section~\ref{sec:theory} and a calibration on the rearrangement case, reported with
+its limits in Section~\ref{sec:limits}.
+
+The equations read as follows. Equation~\ref{eq:minjerk} fixes where each trap is at each frame, and Eq.~\ref{eq:phaseprofile} fixes the optical phase that it must have there. Equation~\ref{eq:frame} is the usual weighted back-projection with one difference: the phase of each coefficient comes from the prescribed path and not from the current field, and this is the difference that gives the method its name. The weights and the hologram are carried from frame to frame, so every frame is a few iterations away from the previous one and not a new solution: with held phases and small steps, the problem of frame $s$ is a small perturbation of the problem of frame $s-1$. The weights integrate the amplitude error across frames as well as across iterations, which is the integral action of B1 again. In the penalty form the lock would be a soft constraint, and the optimizer could trade phase error for amplitude error; the hard lock refuses the trade. When end phases are given, Eq.~\ref{eq:phaseprofile} follows the wrapped difference, which is the short path on the circle and can differ from the path that the hologram at the destination would take on its own: the end phases are an input of the method and not a result of it. Between frames the displayed field is the blend of two holograms; the lock bounds the phase step, the optimization equalizes the frames, and the blend is then close to a hologram of an intermediate trap set.
+
+\subsubsection{Algorithm}
+
+Algorithm~\ref{alg:b2} states the procedure. The transient ratios of Eq.~\ref{eq:transient} are computed after the last frame on the blend model, and they are the figure of merit of the sequence; they are not used inside the optimization.
+
+\begin{algorithm}[t]
+\caption{Flicker-bounded sequence (B2) for a move from traps $X(0)$ to $X(S)$ with end phases $\theta^{\mathrm{end}}$ (held by default).}
+\label{alg:b2}
+\begin{algorithmic}[1]
+\Require traps $X(0)$, destination $X(S)$ with the same ids, frames $S+1$, iterations $K_0$ and $K_{\mathrm{f}}$, bound $\dot\theta_{\max}$, seed
+\Ensure holograms $\phi^{(0)},\dots,\phi^{(S)}$ and transient ratios $\rho_m$
+\State $\phi^{(0)}\gets$ phase-fixed WGS of $K_0$ iterations on $X(0)$; $\theta_m(0)\gets\arg V_m(\phi^{(0)})$
+\State $\theta_m(s)\gets$ Eq.~\ref{eq:phaseprofile}; \textbf{if} Eq.~\ref{eq:phasebound} fails \textbf{then} refuse the sequence
+\State $w_m\gets1$; $\phi\gets\phi^{(0)}$
+\For{$s=1,\dots,S$}
+  \State place the traps at $x_m(s)$ (Eq.~\ref{eq:minjerk}); $c_m\gets w_ma_me^{i\theta_m(s)}$
+  \For{$t=1,\dots,K_{\mathrm{f}}$}
+    \State $V_m\gets V_m(\phi)$ at $x_m(s)$; $w_m\gets w_m\langle r\rangle/r_m$; $\phi\gets\arg\sum_mw_ma_me^{i\theta_m(s)}e^{+i\Delta^m}$ \Comment{Eq.~\ref{eq:frame}}
+  \EndFor
+  \State $\phi^{(s)}\gets\phi\bmod2\pi$
+\EndFor
+\State compute $\rho_m$ from the blend of consecutive frames (Eq.~\ref{eq:transient}); \Return holograms and $\rho$
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Parameters}
+
+The number of frames, \parFrames, is the number of holograms that the source of the baseline uses to sort a six by six array into a four by four array. The number of iterations per frame, \parFrameIters, is an engine choice: the engine's acceptance test fails with no iteration, and the ablation of Section~\ref{sec:ablation}
+shows that the lowest transient ratio is already above the bound with three iterations and below it with one. The bound on the phase step per frame, \parPhaseVel{} rad, is an engine choice taken from the observation in the source that phase slips of several tenths of $\pi$ barely mattered for atom survival while slips near $\pi$ lost atoms; it is
+a bound on the phase path and not a claim about atoms. The step bound of the claim, \claimStepFu{} Fourier units, is derived in Section~\ref{sec:theory}. The \parSubsteps{} sub-frames per interval of the transient model are a numerical resolution of the blend. Two parameters interact. With held phases the phase step is zero and the bound never binds, whereas with end phases the largest step is $\frac{15}{8}|\Delta\theta|/S$ for a phase difference $\Delta\theta$ (the same profile as Proposition~\ref{prop:frames}), which is why the experiments with end phases on long moves lift the bound from \parPhaseVel{} to \scopePhaseVel{} rad and why the default bound refuses a long move at the default number of frames. The state of the weights is carried across frames and not reset, because resetting it would discard the integral action. The freeze iteration of the phase-fixed rule at frame 0 is the smaller of the freeze iteration of Kim et al.\ and the cold-start budget.
+
+\subsubsection{Complexity}
+
+A sequence is $S$ warm-started runs of $K_{\mathrm{f}}$ iterations, each iteration being one forward projection and one back-projection of the point-trap form, $O(N_{\mathrm{pix}}M)$ for $M$ traps and $N_{\mathrm{pix}}$ SLM pixels, so the cost of the sequence is $O(SK_{\mathrm{f}}N_{\mathrm{pix}}M)$ after the cold start of frame 0. The frame count grows linearly with the length of the move (Eq.~\ref{eq:frames}),
+and therefore so does the cost; this is the price of the bound and one of the limits of the method. The scoring of the transient ratio costs $\parSubsteps$ projections per interval. The source of the baseline reports a computation of under 200 microseconds per hologram on a GPU for its own method; we do not rely on that figure, and our runs are offline. The sequence also stores every hologram, so the memory of a run grows with the number of frames as well, and the transient scoring evaluates the blend at every sub-frame of every interval; for the longest move of the paper, with \cTenFrames{} frames, the scoring is a larger share of the run than for the acceptance move.
+
+\subsubsection{Implementation}
+
+The method is the module \texttt{b2\_flicker\_bounded.py} of the engine, which provides the profile, the trajectory, the transient scoring and the frame-count rule, and which takes the destination, the number of frames, the iterations per frame, the end phases and the bound as arguments. It works in the point-trap form, so the traps need not lie on bins, in two or three dimensions, on the
+ideal device. The phase-fixed rule of the first frame and the weighted iteration are those of the ladder methods of the studio, so a correction of one reaches the other at once. The ablation script re-implements the sequence with switchable components and checks that with all components on it reproduces the lowest transient ratio of the module to a difference of \ablTCheck{} for every seed. The call returns the last hologram as the phase, a history with one entry per frame (efficiency, uniformity and spread), the trap fields of the last frame and, in the metadata, every frame, the transient ratio per trap, the mask of the moving traps (those with a displacement), the phases of the first frame, the iterations per frame and the number of frames. It raises an error for a shaped target, for a destination that does not hold the same trap identifiers in the same order, for end phases whose number differs from the number of traps, and for a phase step above the bound. The experiments read the lowest value over the moving traps, which is the quantity of the hypothesis, and score the traps that hold still through the per-frame spread.
+
+\section{Theory}\label{sec:theory}
+
+The propositions below explain why each method should work and under which conditions; where a statement could not be proved we state it as a conjecture with the evidence for it. They are used in the experiments: Proposition~\ref{prop:floor} predicts the floor that the baseline meets on the device, Proposition~\ref{prop:weights} and
+Proposition~\ref{prop:guard} define what the weights and the safeguard guarantee, and Proposition~\ref{prop:blend} gives the closed form against which the measured transient ratios are read.
+
+\subsection{Why an ideal-model solver leaves a floor on the device}
+
+\begin{proposition}\label{prop:floor}
+Let $\phi$ be a hologram whose ideal-model trap fields are exactly equal, $|V_m^0|=a_m$, and let the device display the phase $U\phi+\delta$ on the fine grid, with $\delta=K*(U\phi)-U\phi$ the residual of the blur. To first order in $\delta$ the relative intensity error of trap $m$ on the device is
+\begin{equation}
+\varepsilon_m=\frac{I_m-I_m^0}{I_m^0}=2\operatorname{Re}\frac{\Delta V_m}{V_m^0},\qquad \Delta V_m=i\sum_pG_{mp}\,e^{iU\phi_p}\,\delta_p,\label{eq:firstorder}
+\end{equation}
+and $\varepsilon_m=0$ for all traps if and only if the blur leaves the trap fields unchanged, in particular if $K$ is the identity.
+\end{proposition}
+\begin{proof}
+With the linear form of Eq.~\ref{eq:linear}, $V_m=\sum_pG_{mp}e^{i(U\phi_p+\delta_p)}=\sum_pG_{mp}e^{iU\phi_p}(1+i\delta_p+O(\delta^2))=V_m^0+\Delta V_m+O(\delta^2)$. Then $I_m=|V_m^0|^2+2\operatorname{Re}(\overline{V_m^0}\Delta V_m)+O(\delta^2)$, and dividing by $I_m^0$ gives Eq.~\ref{eq:firstorder}. The error vanishes for every trap exactly when
+$\operatorname{Re}(\Delta V_m/V_m^0)=0$ for all $m$, which holds for $\delta=0$.
+\end{proof}
+
+The proposition has two consequences. First, an ideal-model solver cannot remove $\varepsilon_m$: the weights of weighted GS are computed from $|V_m^0|$, which is already equal, so the iteration has converged on the ideal model and has no information about $\varepsilon_m$. More iterations improve the ideal-model spread and leave $\varepsilon_m$ unchanged, which is the control that
+the baseline at 100 iterations provides. Second, the size of $\delta$ is set by the spectrum of the hologram: in the Fourier domain the blur multiplies the phase spectrum by the transfer function of Eq.~\ref{eq:kernel}, $\hat\delta(k)=(\hat K(k)-1)\widehat{U\phi}(k)$, which is small where the hologram is smooth and large where it carries
+pixel-scale structure. A lattice of traps far from the zero order needs a hologram with such structure, so the floor is expected to depend on the geometry of the array; the measured spreads of the baseline on the lattice and on the other geometries are read against this expectation in Section~\ref{sec:results}.
+
+\subsection{What the weights, the steps and the safeguard guarantee}
+
+\begin{proposition}\label{prop:weights}
+The weight update of Eq.~\ref{eq:weights} is an integrator of the logarithmic relative amplitude: $\log w_m^{k+1}=\log w_m^k-(\log r_m^k-\log\langle r^k\rangle)$. A fixed point $w^\star$ of the update satisfies $r_m(w^\star)=\langle r\rangle$ for every trap, that is, equal relative amplitudes on the device, and conversely.
+\end{proposition}
+\begin{proof}
+Taking logarithms of Eq.~\ref{eq:weights} gives the first statement. The update leaves $w_m$ unchanged if and only if $\langle r\rangle/r_m=1$, which is $r_m=\langle r\rangle$ for every $m$; equal relative amplitudes mean $\sigma=0$ for equal design weights.
+\end{proof}
+
+The proposition says what the weights can do and what they cannot: they drive the device to equal amplitudes if the iteration converges, and they act with the memory of an integrator, which is the reason why they are prone to overshoot when the plant that they control, a hologram that moves by a few gradient steps per iteration, does not follow. The next two statements make this precise.
+
+\begin{proposition}\label{prop:descent}
+Within one outer iteration, with $T$ fixed, every accepted conjugate-gradient step lowers $L$, so $L(\phi^k)\le L(\phi^{k-1};T^k)$. Across outer iterations nothing bounds $L$: the target $T^{k+1}$ differs from $T^k$, and $L(\phi^k;T^{k+1})$ may exceed $L(\phi^k;T^k)$.
+\end{proposition}
+\begin{proof}
+The strong-Wolfe line search accepts a step only under the sufficient-decrease condition of Eq.~\ref{eq:cg}, so $L$ decreases along the steps for a fixed $T$. The target is a function of the weights and of $\eta$, both of which are updated between outer iterations; the loss with the new target is a different function.
+\end{proof}
+
+\begin{proposition}\label{prop:guard}
+The iterate returned by Eq.~\ref{eq:safeguard} satisfies $\sigma(\phi^{k^\star})\le\sigma(\phi^0)$ and $e(\phi^{k^\star})\ge\gamma\,e(\phi^0)$, both measured on the model of the method. If the model of the method is the scoring device, as for the crosstalk device and the full device, the same holds on the score.
+\end{proposition}
+\begin{proof}
+The start belongs to $\mathcal A$ by definition, so the set is not empty and the minimum is over a set that contains the start. The minimizer has a spread no larger than the start's and, being in $\mathcal A$, an efficiency of at least $\gamma e(\phi^0)$. When the scoring device differs from the model, for example by random flicker that is scored and not modelled, the
+statement holds on the model and not on the score.
+\end{proof}
+
+\begin{conjecture}\label{conj:windup}
+When the conjugate-gradient steps per outer iteration cannot follow the change of the target, the weights wind up and the loss rises across outer iterations; fixing the weights, or giving the steps more freedom, removes the windup.
+\end{conjecture}
+The evidence for the conjecture is of two kinds. A run on the square lattice of the benchmark on the device with flicker, recorded in the design record of the method, ran away on one seed in two inside the method's own model: the loss rose from 0.044 to 0.53 between the second and the fourth outer iteration, the weights spread to a ratio of about 1000 and the efficiency fell from 0.50 to 0.03;
+that run is the reason of the safeguard and is not re-run here. The ablation of Section~\ref{sec:ablation} measures the second kind: with the weights fixed to one, or with six steps per outer iteration, the spread on the crosstalk device is lower than with the default. The conjecture is not proved, and the conditions under which the weights help are not characterized.
+
+\subsection{Transient intensity of a shifted pattern}
+
+\begin{proposition}\label{prop:blend}
+Consider a single trap read in the blend model of Section~\ref{sec:problem}, with a flat input amplitude over $n$ pixels along one axis, and two consecutive holograms $\phi^{(s)}$ and $\phi^{(s+1)}=\phi^{(s)}+2\pi\delta\,j/n$ that display the same pattern shifted by $\delta$ Fourier units, with $\phi_j^{(s)}-\Delta_j^{(s)}$ constant over the pixels (a hologram of one trap in phase at all pixels). At the half-way instant $\alpha=\tfrac12$, read at the position $\delta/2$ from the trap of frame $s$, the
+intensity as a fraction of the frame's own intensity is
+\begin{equation}
+\frac{I(s,\tfrac12)}{I(s)}=\operatorname{sinc}^2\!\Big(\frac\delta2\Big),\qquad \operatorname{sinc}x=\frac{\sin\pi x}{\pi x},\label{eq:sinc}
+\end{equation}
+in the limit of many pixels, and it equals the value $\rho_{0.9}=0.9$ at the shift $\delta_{0.9}=\deltaNine{}$ Fourier units.
+\end{proposition}
+\begin{proof}
+Let $j$ run over $n$ pixels centred on zero. The blend field is $\tfrac12e^{i\phi_j^{(s)}}(1+e^{2\pi i\delta j/n})$. The read-out at the shifted position adds the delay $\Delta_j^{(s)}+\pi\delta j/n$ to the trap's own delay, so the amplitude is $\frac1n\sum_j\tfrac12e^{i(\phi_j^{(s)}-\Delta_j^{(s)})}\big(e^{-i\pi\delta j/n}+e^{+i\pi\delta j/n}\big)=\frac1n\sum_je^{i(\phi_j^{(s)}-\Delta_j^{(s)})}\cos(\pi\delta j/n)$.
+With the phase constant the sum is $\frac1n\sum_j\cos(\pi\delta j/n)\to\int_{-1/2}^{1/2}\cos(\pi\delta u)\,du=\operatorname{sinc}(\delta/2)$, and the intensity is its square. The value $\delta_{0.9}$ is the root of $\operatorname{sinc}^2(\delta/2)=0.9$, which the measurement script solves by bisection.
+\end{proof}
+
+The closed form is a reference for a single trap. In a multi-trap hologram the other traps change between frames as well, and the lowest moving trap can lie below the single-trap value. Two comparisons show how the measurements stand against it: at the peak step of the acceptance task, \accPeakStep{} Fourier units, Eq.~\ref{eq:sinc} gives \sincAcc{}, and the measured lowest transient ratio is \bTwoMean{} on average; at the step bound
+of the claim, \claimStepFu{} Fourier units, it gives \sincClaim{}, and the lattice moves of Table~\ref{tab:long}, at peak steps of \longAPeak{} and \longBPeak{} Fourier units, measure medians of \longAMed{} and \longBMed{}. The bound of the claim is therefore not the shift at which the single-trap form reaches $0.9$, which is \deltaNine{} Fourier units, but a more conservative step that was
+calibrated on the rearrangement case where the lowest moving trap first reached $0.9$.
+
+\begin{proposition}\label{prop:frames}
+For the minimal-jerk profile the largest shift between consecutive frames of a trap that travels $L$ Fourier units in $S$ intervals is $\delta_{\max}\approx\frac{15}{8}L/S$, and a step bound $\delta_{\mathrm{claim}}$ requires $S\ge\frac{15}{8}L/\delta_{\mathrm{claim}}$ intervals; the number of frames of a sequence, and so its cost, grows linearly with the length of the move.
+\end{proposition}
+\begin{proof}
+The profile of Eq.~\ref{eq:minjerk} has $h'(\tau)=30\tau^2(1-\tau)^2$, which is maximal at $\tau=\tfrac12$ with value $\tfrac{30}{16}=\tfrac{15}{8}$. For large $S$ the shift between frames $s$ and $s+1$ is $L(h(\tfrac{s+1}S)-h(\tfrac sS))\approx Lh'(\tfrac sS)/S\le\frac{15}8L/S$. Solving $\frac{15}8L/S\le\delta_{\mathrm{claim}}$ for $S$ gives the bound.
+\end{proof}
+
+For the moves of the paper, Eq.~\ref{eq:framecount} gives \accFramesForMove{} frames for the acceptance move, \longAFrames{} and \longBFrames{} frames for the two lattice moves and \cTenFrames{} frames for the longest move of the rearrangement case (Fig.~\ref{fig:b2theory}b), which are the frame counts used in Section~\ref{sec:results}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-b2-theory.pdf}
+\caption{Theory of the transient intensity. (a) Closed form $\mathrm{sinc}^2(\delta/2)$ of the intensity of a single trap read half way between two frames shifted by $\delta$ Fourier units, with the step bound of the claim and the peak step of the acceptance task. (b) Frames that the bound requires against the length of the move, with the moves of the experiments marked.}
+\label{fig:b2theory}
+\end{figure}
+
+Figure~\ref{fig:b2theory} shows both statements. Panel (a) shows that the closed form falls slowly at first, so a small shift costs little and the bound on the step is what keeps the intensity above $0.9$; it does not show the effect of the other traps, which is measured, not derived. Panel (b) shows that the frame count rises
+linearly with the move, so the longest rearrangement move needs several times the frames that the bound names for the acceptance move, which is the practical limit of the method discussed in Section~\ref{sec:discussion}.
+
+\subsection{Phase locking and the phase path}
+
+The lock turns the free optical phases into a prescribed path. Eq.~\ref{eq:targetstep} shows that with a bounded phase step the target of the optimization changes slowly between frames, which a free phase does not guarantee: the fixed point of the weighted iteration determines the trap phases only through the interference of the pixels, and nothing prevents them from jumping between consecutive
+frames when the traps move. The ablation measures the consequence (Section~\ref{sec:ablation}). The lock has a price: the path of the phases is prescribed by the end phases, and a path along which no hologram can make the traps equal cannot be repaired by the per-frame optimization.
+
+\begin{conjecture}\label{conj:phasepath}
+When B2 misses the bound on a long move with the frames of Eq.~\ref{eq:framecount}, the cause is the phase path that the end phases prescribe, not the number of frames or the number of iterations per frame.
+\end{conjecture}
+The evidence is that the seeds that miss the bound on the lattice moves stay below it when the frames are doubled (the lists of Section~\ref{sec:results}), and that on the rearrangement case a seed collapses to \cTenLowest{} of the mean with the frames of the move while the others reach \cTenMetMin{} to \cTenMetMax{}. The conjecture would be refuted by a seed that misses the bound with the frames of the move and
+reaches it with more frames or iterations; the data of this paper contain none. The conditions under which the end phases from phase-fixed WGS give a good path are not characterized.
+
+\section{Experimental design}\label{sec:design}
+
+\subsection{Hypotheses}
+
+The hypotheses are stated here, before the results, with the condition that refutes each. Every hypothesis is taken from the design records of the two methods, from the research plan or from the acceptance tests of the engine, which were written before the experiments reported here, and the numbers in the statements are the thresholds of those records. Table~\ref{tab:hyp} lists them. H1 is the hypothesis of the method: the spread on the crosstalk device is at
+least two times below that of phase-fixed WGS at an efficiency at most ten percent lower. H2 is the control that excludes the other explanation of H1, that more iterations or a different optimizer give the gain without the device model. H3 is the fuller acceptance criterion of the research plan of the method, applied to the geometries and the device of the studio's benchmark: the factor of at least two at an
+efficiency ratio of at least $0.9$ on the square lattice and on the large array. It is stricter than H1, which concerns one lattice behind a crosstalk-only device, and it uses a harsher device, with quantization, a fill factor and flicker; the part of the criterion that concerns camera feedback and the time per iteration is not tested here. H4 is the hypothesis of the second method on the acceptance task. H5 is the transfer of the step bound from the case where it was calibrated to
+moves that did not take part in the calibration. H6 to H8 are the rationales of the components of the methods, stated in the design records: the weights supply an integral action that few steps lack, and both the lock and the per-frame optimization are necessary.
+
+\begin{table}[t]
+\centering\small
+\caption{Hypotheses with the condition that refutes each, stated before the experiments. The thresholds are those of the design records of the methods and of the acceptance criteria of the engine.}
+\label{tab:hyp}
+\begin{tabular}{@{}l p{6.4cm} p{6.0cm}@{}}
+\toprule
+ID & Statement & Refuted if\\
+\midrule
+H1 & On the crosstalk device, B1 lowers the spread of a $10\times10$ lattice at least two times against phase-fixed WGS, at an efficiency at most ten percent lower & the factor is below two or the efficiency ratio below $0.9$ on a seed\\
+H2 & The gain disappears when the device model is removed from the loop & the control keeps a factor of two or more, or more iterations of the baseline close the gap\\
+H3 & On the benchmark's device, B1 meets both thresholds of H1 on the square lattice and on the large array & either geometry fails either threshold\\
+H4 & On the acceptance task, B2 keeps the lowest moving trap at $0.9$ of its mean or more, above linear phase interpolation, with a per-frame spread no worse & the ratio is below $0.9$ or not above that of the baseline on a seed, or the per-frame spread is larger\\
+H5 & With the frames of Eq.~\ref{eq:framecount}, B2 keeps the lowest moving trap at $0.9$ or more on longer moves of the lattice & a majority of seeds below $0.9$\\
+H6 & Removing the weights raises the spread of B1 & the spread without the weights is not higher\\
+H7 & Removing the trajectory lock brings the lowest moving trap of B2 below $0.9$ & the variant stays at $0.9$ or more on a majority of seeds\\
+H8 & Removing the per-frame optimization brings the lowest moving trap of B2 below $0.9$ & the variant stays at $0.9$ or more on a majority of seeds\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Data and provenance}
+
+All data are generated by the engine from seeds; no measured hologram or camera image enters the paper. The tasks are the following. The lattice task is a $10\times10$ square lattice of equal traps eight FFT bins apart on an SLM of $\parNpix^2$ pixels padded by \parPad, at \parLambda{} nm, with a lens of \parFocal{} mm, a pitch of \parPitch{} $\mu$m and a numerical aperture of
+\parNa{} in air, and a Gaussian input beam; it is scored on the crosstalk device (\nSeedsOne{} seeds) and on the full device (\nSeedsOneFull{} seeds). The benchmark geometries are those of the studio's benchmark file: a square lattice, a ring of 36 traps, 100 random traps, a quasi-periodic set of 119 traps and a large set of a $32\times32$ lattice and a disordered set of
+819 traps, on the device of case C08; the benchmark's runs for B1 hold \benchOneDevSeeds{} seeds per cell and those for phase-fixed WGS \benchOneDevSeedsMseven{}, within a wall-clock bound per group, so the intervals on those cells are interquartile ranges of two seeds and are read as ranges. The smaller grid of the studio's case C08 is an $8\times8$ array on a $\bakeCeightPix^2$-pixel SLM; its baked scores come from
+the committed manifest and the committed ranges over \bakeCeightSeedsN{} seeds. The sequence tasks are a $4\times4$ lattice eight bins apart in which the two right-hand columns, eight traps, move four bins (the acceptance task, \nSeedsTwo{} seeds, \parFrames{} frames), the same lattice with the two columns moved \longABins{} and \longBBins{} bins on $64^2$ pixels (\longSeeds{} seeds), and the rearrangement case C10 of the studio, with \cTenTraps{}
+target sites of which \cTenMoving{} are reached by a move on the assignment of the Hungarian method (\cTenSeeds{} seeds). The assignment of C10 is that of the rearrangement method of the studio~\cite{lee2017}, shared by B2 and the baseline so that the two methods move the same traps along the same paths.
+
+\subsection{Methods compared}
+
+The published methods are run by the product on the same data, not quoted. For B1 the baselines are plain GS, weighted GS and phase-fixed WGS, the last at 30 and at 100 iterations, scored on the device; the reference of the comparison is the better of the two phase-fixed runs on the spread and on the efficiency (Eq.~\ref{eq:factor}), because more iterations cannot remove a crosstalk that the model does not contain (Proposition~\ref{prop:floor}).
+The ladder methods of the studio are the implementations of the cited algorithms and are checked against the independent library slmsuite~\cite{slmsuite} in the engine's tests. For B2 the baseline is linear phase interpolation as described in its source~\cite{lpi}: two independent phase-fixed WGS holograms of $K_0$ iterations, the position, amplitude and optical phase of each trap read from their fields, interpolated linearly over the same frames (the phase by its wrapped difference), and the
+transform inverted at every frame by the superposition of the interpolated spots without optimization. It is our implementation of a published description, not the authors' code. The controls are B1 with the device removed from the loop and the ablated variants of Section~\ref{sec:ablation}.
+
+\subsection{Metrics and statistics}
+
+The metrics are the efficiency and the spread of Eq.~\ref{eq:metrics}, the factor and the efficiency ratio of Eq.~\ref{eq:factor}, the transient ratio of Eq.~\ref{eq:transient} and the per-frame spread, the largest of the relative standard deviations of the trap intensities over the frames of a sequence. The factor of a seed is a ratio, so its mean and interval are
+taken on the logarithmic scale: for $n$ seeds with factors $F_i$,
+\begin{equation}
+\bar F=\exp\Big(\frac1n\sum_i\log F_i\Big),\qquad \bar F\,e^{\pm t_{n-1}s/\sqrt n},\quad s^2=\frac1{n-1}\sum_i\big(\log F_i-\overline{\log F}\big)^2,\label{eq:geomean}
+\end{equation}
+with $t_{n-1}$ the two-sided 95 percent quantile of Student's $t$ distribution. The transient ratio of a method is summarized by the mean, the sample standard deviation and the interval of the mean, $\bar\rho\pm t_{n-1}s/\sqrt n$, and the comparison of B2 with the baseline is a paired difference,
+\begin{equation}
+\Delta_i=\rho_i^{\mathrm{B2}}-\rho_i^{\mathrm{LPI}},\qquad \bar\Delta\pm t_{n-1}\,\frac{s_\Delta}{\sqrt n},\label{eq:paired}
+\end{equation}
+over the seeds, where the pairing is by seed index only: B2 draws its random start from the seed, and the endpoints of the baseline are drawn from an offset seed, so the two methods do not share a random start and the paired interval is not a matched-start comparison. With five seeds the intervals are wide and the tests that they imply are of low power; no $p$-value is reported, and a claim rests on the interval and on the count of seeds that meet a threshold. The medians and ranges are
+reported as well, because the distributions are not normal (the factor of B1 is bounded below by zero and skewed). The benchmark cells report the median and the interquartile range of the studio's protocol.
+
+\subsection{Protocol and ablations}
+
+All methods are deterministic given a seed through the portable generator of the engine, so a rerun reproduces the numbers up to the floating point of the machine's FFT. The seeds are $1,\dots,n$ with $n$ stated per experiment: \nSeedsOne{} for the crosstalk device, \nSeedsOneFull{} for the full device, \nSeedsTwo{} for the acceptance task, \longSeeds{} for the long lattice moves, \cTenSeeds{} for the rearrangement case, and \ablBN{}, \ablBFN{} and \ablTN{}
+for the ablation of B1 on the crosstalk device, of B1 on the full device and of B2. The budget of B1 is \parOuter{} outer iterations after \parWarm{} warm iterations; that of B2 is \parFrames{} frames of \parFrameIters{} iterations after a cold start of \parColdIters{}. The ablation is planned for the components that the design records name as the rationale of each method (H6 to H8): the weight update, the device-aware phase step, the safeguard and the number of steps for B1;
+the trajectory lock, the per-frame optimization, the number of iterations per frame and the time profile for B2. Each variant removes one component and keeps the others, on the same seeds and tasks as the main result, and the variant with all components on is checked against the engine's module.
+
+\section{Results}\label{sec:results}
+
+\subsection{Device-aware weighted GS on the lattice task}
+
+\begin{table}[t]
+\centering\small
+\caption{Device-aware WGS on the $10\times10$ lattice task, scored on the device. Medians over \nSeedsOne{} seeds for the crosstalk device and \nSeedsOneFull{} for the full device; $\sigma$ is the relative standard deviation of the trap intensities in percent and $e$ the efficiency. Rows marked n/a have no entry for that device or metric.}
 \label{tab:b1}
 \begin{tabular}{@{}l r r r@{}}
 \toprule
@@ -160,117 +676,262 @@ B1 (device-aware WGS) & \sigmaBOne & \sigmaBOneFull & \effBOne\\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:b1} and Fig.~\ref{fig:b1} give the result. On the crosstalk device, phase-fixed WGS leaves a spread of \sigmaMsevenThirty{} percent at 30 iterations and \sigmaMsevenHundred{} percent at 100 although it
-reaches \sigmaMsevenIdeal{} percent on the ideal model: the crosstalk costs a factor of about \costXtalk{}. B1 reduces the spread to a median of \sigmaBOne{} percent (largest value \sigmaBOneMax{} percent), a median factor of
-\ratioOneMed{} (range \ratioOneMin{} to \ratioOneMax) against the better of the two baseline runs, at a median \effRatioOne{} of the baseline's efficiency (smallest ratio \effRatioOneMin). The factor varies from seed to seed with the baseline's own spread, so the distribution, not one seed, is the result (Fig.~\ref{fig:b1}b). The control that keeps B1's structure but removes the device model from the loop stays at \sigmaNoModel{} percent, the level of the baseline, so the gain comes from the device model and
-not from the extra iterations or the gradient steps. B1 pays for this on the ideal model: scored without the device, its spread is \sigmaBOneIdeal{} percent, because its hologram is built to cancel the crosstalk, not to be uniform before it.
+Table~\ref{tab:b1} and Fig.~\ref{fig:b1} give the main comparison. On the crosstalk device, phase-fixed WGS leaves a spread of \sigmaMsevenThirty{} percent at 30 iterations and \sigmaMsevenHundred{} percent at 100, although it reaches \sigmaMsevenIdeal{} percent on the ideal model: the crosstalk costs a factor of about \costXtalk{}, as Proposition~\ref{prop:floor} anticipates, and the baseline at
+100 iterations is no better than at 30, which excludes more iterations as the explanation of any gain. B1 reduces the spread to a median of \sigmaBOne{} percent (mean \sigmaOneMean{} with a standard deviation of \sigmaOneSd{} over the seeds, largest value \sigmaBOneMax{} percent). Against the better of the two baseline runs the factor of Eq.~\ref{eq:factor} has a geometric mean of \ratioOneGm{} with a 95 percent interval of \ratioOneCiLo{} to \ratioOneCiHi{}, a median of \ratioOneMed{} and a range of \ratioOneMin{} to \ratioOneMax{}, and the
+efficiency ratio has a median of \effRatioOne{} with a smallest value of \effRatioOneMin{}. H1 therefore holds on every seed with a wide margin on the factor and a narrow one on the efficiency: the loss of efficiency is about half a percent against the allowed ten. The factor varies from seed to seed with the baseline's own spread, so the distribution and not one seed is the result (Fig.~\ref{fig:b1}b).
 
-With \parBits{}-bit phase and a fill factor of \parFill{} added, the baseline spread is \sigmaMsevenFull{} percent and B1 reaches \sigmaBOneFull{} percent, a median factor of \ratioOneFullMed{} (range \ratioOneFullMin{} to \ratioOneFullMax) at \effRatioOneFull{} of the efficiency; the model-free control stays at \sigmaNoModelFull{} percent.
-On the small $8\times8$ array on a $\bakeCeightPix^2$-pixel SLM with \parBits{}-bit phase, crosstalk, a fill factor of \parFill{} and \bakeCeightFlicker{} rad of flicker and a fixed budget of \bakeCeightIters{} iterations (the device-limited case of the studio), the baked scores are \bakeCeightBOneSigma{} percent for B1 and
-\bakeCeightMsevenSigma{} percent for M07 on the bake's seed, a factor of \bakeCeightRatio{}, with an efficiency ratio of \bakeCeightEffRatio; over the
-\bakeCeightSeedsN{} seeds of its expected ranges the factors are \bakeCeightSeedRatios{} (\bakeCeightSeedsTwo{} of them at two or more), and the ratio of the means
-is \bakeCeightRatioThree. The factor is therefore not a constant: it depends on the grid, the device and the budget, and on the seed (Fig.~\ref{fig:b1}b).
+The control that keeps the structure of B1 and removes the device model from the loop stays at \sigmaNoModel{} percent, the level of the baseline, so H2 holds: the gain comes from the device model and not from the extra iterations or from the gradient steps. B1 pays for this on the ideal model: scored without the device its spread is \sigmaBOneIdeal{} percent, because its hologram is built to cancel the crosstalk and not to be uniform before it. Figure~\ref{fig:b1tradeoff}
+shows the same result as a trade-off: the baselines and the control sit together at a spread of several percent, B1 sits two orders of magnitude lower at the same efficiency, and no point of B1 buys its uniformity with light. The curve of Fig.~\ref{fig:b1model}b shows how B1 gets there on seed 1: the spread falls during the outer iterations and the best iterate is the last or one of its tail.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig-b1.pdf}
-\caption{Device-aware WGS. (a) Sorted trap intensities of one hologram (seed 1) on the crosstalk device: phase-fixed WGS leaves a spread, B1 is flat. (b) Relative standard deviation on the device for every seed (log scale): the baselines, B1 with the device
-model removed from the loop, and B1.}
+\caption{Device-aware WGS on the crosstalk device. (a) Sorted trap intensities of one hologram (seed 1): phase-fixed WGS leaves a spread, B1 is flat. (b) Relative standard deviation on the device for every seed on a logarithmic scale: the baselines, B1 with the device model removed from the loop, and B1.}
 \label{fig:b1}
 \end{figure}
 
-\section{Flicker-bounded phase-continuous sequences}\label{sec:b2}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.5\textwidth]{fig-b1-tradeoff.pdf}
+\caption{Efficiency against relative standard deviation on the crosstalk device, one marker per seed: phase-fixed WGS at 30 and 100 iterations, B1 with the device model removed from the loop, and B1. The vertical axis is logarithmic.}
+\label{fig:b1tradeoff}
+\end{figure}
 
-\subsection{Hypothesis and method}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-b1-model.pdf}
+\caption{Device model and convergence of B1. (a) Transfer function of the crosstalk kernel of Eq.~\ref{eq:kernel} along one axis and along the diagonal, in the model's frequency unit, which is not verified against the source of the fit. (b) Relative standard deviation of B1 after each outer iteration on seed 1 against the two baseline levels.}
+\label{fig:b1model}
+\end{figure}
 
-\emph{Hypothesis.} If every frame of a sequence is optimized with the optical phases of the traps locked to a smooth trajectory, a moving trap never drops below $0.9$ of its mean intensity, where interpolating independent
-endpoint holograms does not achieve it. The hypothesis is refuted if the minimum transient ratio is below $0.9$ or not above that of linear phase interpolation (LPI).
+\subsection{Full device and the small grid of the studio}
 
-\emph{Method.} Positions follow the minimal-jerk profile $x_m(s)=x_m(0)+(x_m(S)-x_m(0))(10\tau^3-15\tau^4+6\tau^5)$, $\tau=s/S$. The phases are $\theta_m(s)=\theta_m(0)+\operatorname{wrap}(\theta_m^{\mathrm{end}}-\theta_m(0))h(\tau)$ with the same profile $h$
-(default: phases held), and the sequence is refused if the phase step per frame exceeds \parPhaseVel{} rad. Each frame is a phase-fixed WGS step with the trap phases locked,
-\begin{equation}
-c_m=w_ma_me^{i\theta_m(s)},\qquad w_m\leftarrow w_m\langle r\rangle/r_m,\qquad \phi_j=\arg\sum_mc_me^{+i\Delta_j^m(x_m(s))},
-\end{equation}
-started from the previous frame's hologram and weights and run for \parFrameIters{} iterations; frame 0 is a cold phase-fixed WGS of \parColdIters{} iterations. The hard lock is the limit of a penalty on the phase deviation. The default sequence has \parFrames{} frames.
+With a \parBits{}-bit quantizer and a fill factor of \parFill{} added, the baseline spread is \sigmaMsevenFull{} percent and B1 reaches \sigmaBOneFull{} percent (mean \sigmaOneFullMean{}, standard deviation \sigmaOneFullSd{}, over \nSeedsOneFull{} seeds). The geometric-mean factor is \ratioOneFullGm{} with a 95 percent interval of \ratioOneFullCiLo{} to \ratioOneFullCiHi{} (median \ratioOneFullMed{}, range \ratioOneFullMin{} to \ratioOneFullMax{}) at \effRatioOneFull{} of the efficiency, and the model-free control stays at
+\sigmaNoModelFull{} percent. The interval is wider than on the crosstalk device because the quantizer is differentiated as the identity and the three seeds are few; the factor is still above two on every seed, so H1 holds on this device as well.
 
-\emph{Transient intensity.} Between frames $s$ and $s+1$ the displayed field is modelled as the blend $f_a=A[(1-a)e^{i\phi_s}+ae^{i\phi_{s+1}}]$, $a\in[0,1]$ (\parSubsteps{} sub-frames), and trap $m$ is read at its trajectory point $x_m(s+a)$, giving $I_m(s,a)=|V_m(f_a;x_m(s+a))|^2$. The
-transient ratio of a trap is $\min_{s,a}I_m(s,a)/\operatorname{mean}_sI_m(s)$. This blend model is our own; the source of the baseline gives a measurement, not an equation, so the absolute ratios are properties of the model and are compared between methods only.
+The small $8\times8$ array on a $\bakeCeightPix^2$-pixel SLM, with \parBits{}-bit phase, crosstalk, a fill factor of \parFill{}, \bakeCeightFlicker{} rad of flicker and a fixed budget of \bakeCeightIters{} iterations, is the device-limited case of the studio. Its committed scores are \bakeCeightBOneSigma{} percent for B1 and \bakeCeightMsevenSigma{} percent for phase-fixed WGS on the bake's seed, a factor of \bakeCeightRatio{} at an efficiency ratio of \bakeCeightEffRatio{}; over the \bakeCeightSeedsN{}
+seeds of the committed ranges the factors are \bakeCeightSeedRatios{}, of which \bakeCeightSeedsTwo{} is two or more, and the ratio of the means is \bakeCeightRatioThree{}. The factor is not a constant: it depends on the grid, the device, the budget and the seed. The benefit shrinks as the device departs from what the optimizer models, since flicker is scored and not modelled and the quantizer is only straight-through.
 
-\subsection{Baseline and protocol}
+\subsection{B1 on the geometries of the benchmark}
 
-LPI follows the published description~\cite{lpi}: two independently computed endpoint holograms (phase-fixed WGS, \parColdIters{} iterations), each trap's position, amplitude and optical phase read from them, linearly interpolated over the same frames (the phase by its wrapped
-difference), and the transform inverted at every frame (the superposition of the interpolated spots, no per-frame optimization). Both sequences are scored by the same function. The task is a $4\times4$ lattice eight bins apart in which the two right-hand columns, eight traps, move four bins. Each condition runs on \nSeedsTwo{} seeds.
+Table~\ref{tab:bench} and Fig.~\ref{fig:bench} repeat the comparison on the geometries of the studio's benchmark, on the device with flicker, at \benchOneBudget{} iterations with the default parameters. Over the \benchOneDevN{} geometries where both methods ran, the median factor is \benchOneDevMed{} (range \benchOneDevMin{} to \benchOneDevMax{}) at a median efficiency ratio of \benchOneDevEff{}, and \benchOneDevPass{} of them meet both
+thresholds: the ring and the random set. On the square lattice and the quasi-periodic set B1 keeps its start, with a factor near one (the list of factors is \benchOneDevList{}), because on those geometries every iterate beyond the start gives up more than the allowed share of the light, so the safeguard returns the start. On the large set it lowers the spread by less than the factor of two. H3 therefore does not hold: the square lattice and the large array fail the factor. The failure is the opposite of what the lattice
+task of the previous subsections would suggest, and it is the main limit of the method.
 
-\subsection{Results}
+\begin{table}[t]
+\centering\small
+\caption{B1 against phase-fixed WGS on the geometries of the studio's benchmark, on the device with flicker, at the stated iteration budget with default parameters. The spreads are medians over the seeds of each cell with the interquartile range of the cell in parentheses; B1 cells hold two seeds. The factor is the ratio of the median spreads, the efficiency ratio the ratio of the median efficiencies, and the last column states whether both thresholds of H1 are met.}
+\label{tab:bench}
+\resizebox{\textwidth}{!}{\input{../data/tab_bench.tex}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-bench.pdf}
+\caption{B1 on the benchmark geometries of the device with flicker. (a) Factor of the spread over phase-fixed WGS with the threshold of two. (b) Ratio of the efficiencies with the floor of $0.9$. Filled bars meet the threshold; the benchmark has no geometry G5, which is three-dimensional and outside the scope of B1.}
+\label{fig:bench}
+\end{figure}
+
+Two reasons keep the reading cautious. The B1 cells hold two seeds, so the interquartile ranges in the table are ranges of two values and the factor of a geometry is a ratio of medians with no interval. And the device of the benchmark differs from the one of H1 in the quantizer, the fill factor and the flicker, so a failure on the square lattice there is not a contradiction of H1 on the crosstalk device; it is the measurement of the scope.
+
+\subsection{Flicker-bounded sequences on the acceptance task}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig-b2.pdf}
-\caption{Flicker-bounded sequence. (a) Intensity of the moving trap with the lowest minimum, divided by its frame mean, along the 13-frame sequence (seed 1): LPI dips and overshoots, the flicker-bounded sequence stays close to one. The dotted line is $0.9$. (b) Minimum transient ratio of the moving traps against the length of the sequence, one marker per seed.}
+\caption{Flicker-bounded sequence on the acceptance task. (a) Intensity of the moving trap with the lowest minimum, divided by its frame mean, along the 13-frame sequence (seed 1): linear phase interpolation dips and overshoots, the sequence of B2 stays close to one; the dotted line is $0.9$. (b) Minimum transient ratio of the moving traps against the length of the sequence, one marker per seed.}
 \label{fig:b2}
 \end{figure}
 
-With \parFrames{} frames the minimum transient ratio of the moving traps is a median \bTwoMed{} (range \bTwoMin{} to \bTwoMax) for the flicker-bounded sequence, above $0.9$ for every seed, against \lpiMed{} (\lpiMin{} to \lpiMax) for LPI, which is below $0.9$ for every seed. The
-per-frame uniformity differs by a factor of \sigmaFrameFactorLo{} to \sigmaFrameFactorHi: the largest per-frame relative standard deviation is at most \bTwoSigmaFrame{} percent for the flicker-bounded sequence and between \lpiSigmaFrameMin{} and \lpiSigmaFrameMax{} percent for LPI, because the intermediate frames of LPI are not optimized. Fig.~\ref{fig:b2}a shows the
-trajectory of the worst trap. With seven frames the bound of $0.9$ is not met: the medians are \bTwoMedSeven{} (B2, smallest \bTwoMinSeven) and \lpiMedSeven{} (LPI, largest \lpiMaxSeven), so B2 stays above LPI but the hypothesis as stated is refuted at that length, where each frame moves the traps farther. With twenty-five frames the medians are \bTwoMedTwentyFive{} (B2) and \lpiMedTwentyFive{} (LPI); the smallest value of B2 is \bTwoMinTwentyFive{} and the largest value of LPI \lpiMaxTwentyFive{} (Fig.~\ref{fig:b2}b).
+With \parFrames{} frames the lowest transient ratio of the moving traps is a mean of \bTwoMean{} (standard deviation \bTwoSd{}, interval \bTwoCiLo{} to \bTwoCiHi{}, median \bTwoMed{}, range \bTwoMin{} to \bTwoMax{}) for B2 over \nSeedsTwo{} seeds, above $0.9$ for every seed, against a mean of \lpiMean{} (standard deviation \lpiSd{}, interval \lpiCiLo{} to \lpiCiHi{}, range \lpiMin{} to \lpiMax{}) for linear phase interpolation, which is below $0.9$ for every seed.
+The paired difference of Eq.~\ref{eq:paired} has a mean of \diffTwoMean{} with a 95 percent interval of \diffTwoCiLo{} to \diffTwoCiHi{}, so the interval excludes zero. The per-frame uniformity differs by a factor of \sigmaFrameFactorLo{} to \sigmaFrameFactorHi{}: the largest per-frame relative standard deviation is at most \bTwoSigmaFrame{} percent for B2 (median \bTwoSigmaFrameMed{}) and between \lpiSigmaFrameMin{} and \lpiSigmaFrameMax{} percent for linear phase interpolation (median \lpiSigmaFrameMed{}), because the intermediate frames of linear phase interpolation are not optimized. H4 therefore holds
+on the acceptance task. Figure~\ref{fig:b2}a shows the trajectory of the worst trap, which stays near its mean for B2 and dips for the baseline; it does not show the other traps. The measured mean of B2 matches the single-trap closed form of Eq.~\ref{eq:sinc} at the peak step of this task, \sincAcc{}, which suggests that at this step the interference of the other traps adds little.
 
-\subsection{Scope: long moves}\label{sec:b2scope}
+The bound depends on the number of frames (Fig.~\ref{fig:b2}b). With seven frames the bound of $0.9$ is not met: the medians are \bTwoMedSeven{} for B2 (smallest \bTwoMinSeven{}) and \lpiMedSeven{} for linear phase interpolation (largest \lpiMaxSeven{}), so B2 stays above the baseline and the hypothesis as stated is refuted at that length, where each frame moves the traps farther. With twenty-five frames the medians are \bTwoMedTwentyFive{} for B2 and \lpiMedTwentyFive{} for linear phase interpolation, and the smallest value of B2 is \bTwoMinTwentyFive{} against a largest value of \lpiMaxTwentyFive{} for the baseline. The baseline does not improve with more frames, because its frames are interpolations of two fixed endpoints and not optimized holograms; B2 improves with
+every added frame, until the closed form of Eq.~\ref{eq:sinc} approaches one.
 
-The task above moves the traps four bins in \parFrames{} frames, a peak step of \accPeakStep{} Fourier units per frame (the method would name \accFramesForMove{} frames
-for it). The method names the fewest frames whose peak step under the minimal-jerk profile is at most \claimStepFu{} Fourier units, a bound set where the lowest
-moving trap of case C10 first reached $0.9$. The scope of the claim is measured on longer moves with the end phases taken from phase-fixed WGS at the destination, and
-with the method's bound on the phase step per frame lifted from \parPhaseVel{} to \scopePhaseVel{} rad for every run, so that the runs at the default
-frames, whose step the default bound refuses on the longer move, can be compared; at the frames of the move the default bound holds. On the same
-lattice with the two columns moved \longABins{} and \longBBins{} bins (\longAFu{} and \longBFu{} Fourier units, $64^2$ pixels padded by 2), the \scopeDefaultFrames{} default
-frames leave the lowest moving trap at most at \longDefaultMax{} over \longSeeds{} seeds; with the \longAFrames{} and \longBFrames{} frames of the move the medians are
-\longAMed{} and \longBMed{} (peak steps \longAPeak{} and \longBPeak{} Fourier units), and \longAMet{} and \longBMet{} of the \longSeeds{} seeds reach $0.9$. The seeds that
-miss it (\longFailList) miss it on the phase path their end phases prescribe: with twice the frames they reach \longTwiceList. Linear phase interpolation on the same moves,
-assignment and frames reaches \longALpiMin{} to \longALpiMax{} and \longBLpiMin{} to \longBLpiMax{}, so B2 leads it on \longABLeads{} and \longBBLeads{} of the \longSeeds{} seeds.
+\subsection{Long moves and the rearrangement case}
 
-On the rearrangement case of the studio (C10: \cTenTraps{} target sites, \cTenMoving{} of them reached by a move on the assignment of the Hungarian method, the longest
-\cTenFu{} Fourier units), held phases dim the moving traps to \cTenHeld{} at \cTenEqual{} frames (first seed). With the end phases at \cTenEqual{} frames, a peak step of
-\cTenPeakEqual{} Fourier units, LPI on the same assignment leads on \cTenLpiLeads{} of \cTenSeeds{} seeds (B2 at most \cTenBEqualMax, LPI \cTenLEqualMin{} to \cTenLEqualMax).
-With the \cTenFrames{} frames of the move (a peak step of \cTenPeak{} Fourier units), B2 reaches \cTenMetMin{} to \cTenMetMax{} (median \cTenMetMed) on \cTenMet{} of the \cTenSeeds{} seeds and leads LPI
-(\cTenLpiMin{} to \cTenLpiMax) on \cTenBLeads; the seed that misses it is \cTenFailList. With the frames that keep the step at most \claimStepFu{} Fourier units the
-bound is therefore met on most seeds and not on all, and at an equal number of frames on a long move LPI leads.
+The acceptance task moves the traps four bins in \parFrames{} frames, a peak step of \accPeakStep{} Fourier units per frame, whereas the step bound of the claim is \claimStepFu{} and would name \accFramesForMove{} frames. The scope of the claim is measured on longer moves, with the end phases taken from phase-fixed WGS at the destination and the bound on the phase step per frame lifted from \parPhaseVel{} to \scopePhaseVel{} rad for every run, so that
+runs at the default frames, whose step the default bound refuses on the longer move, can be compared (at the frames of the move the default bound holds). On the same lattice with two columns moved \longABins{} and \longBBins{} bins (\longAFu{} and \longBFu{} Fourier units), the \scopeDefaultFrames{} default frames leave the lowest moving trap at most at \longDefaultMax{} over \longSeeds{} seeds, so the default frames do not suffice. With the \longAFrames{} and \longBFrames{} frames of the move
+(peak steps of \longAPeak{} and \longBPeak{} Fourier units) the medians are \longAMed{} and \longBMed{}, and \longAMet{} and \longBMet{} of the \longSeeds{} seeds reach $0.9$ (Table~\ref{tab:long}, Fig.~\ref{fig:b2long}a,b). H5 holds on a majority of seeds. The seeds that miss the bound (\longFailList{}) miss it on the phase path that their end phases prescribe: with twice the frames they reach \longTwiceList{}, so the frame count is not the cause (Conjecture~\ref{conj:phasepath}).
+Linear phase interpolation on the same moves, assignment and frames reaches \longALpiMin{} to \longALpiMax{} and \longBLpiMin{} to \longBLpiMax{}, and B2 is above it on \longABLeads{} and \longBBLeads{} of the \longSeeds{} seeds.
 
-\section{Limits}\label{sec:limits}
+\begin{table}[t]
+\centering\small
+\caption{B2 and linear phase interpolation on long moves: the lattice with two columns moved 12 and 20 bins, and the rearrangement case C10 at an equal number of frames and at the frames of the move. The frame counts are those of Eq.~\ref{eq:framecount} except the equal-frames row; the minimum ratio is that of the lowest moving trap per seed, over eight seeds for the lattice and six for C10, and the last column counts the seeds where B2 is above linear phase interpolation.}
+\label{tab:long}
+\resizebox{\textwidth}{!}{\input{../data/tab_long.tex}}
+\end{table}
 
-\textbf{Model, not instrument.} Both results are computed on a scalar Fourier model with the device effects stated above. The crosstalk parameters come from a published fit on another device; the \parBits{}-bit, fill-factor and flicker effects have no published source in this model, and random flicker is not applied in the scoring. The frequency unit of the kernel is
-carried over from the model and is not verified against the source. An instrument with a different kernel would give a different factor, and the sensitivity of B1 to a mismatched kernel was not tested.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-b2-long.pdf}
+\caption{Lowest moving trap of B2 and of linear phase interpolation per seed on long moves. (a) and (b) Lattice with two columns moved 12 and 20 bins, with the frames of the move. (c) Rearrangement case C10 with the frames of the move (filled markers) and with 25 frames (open markers). The dotted line is $0.9$.}
+\label{fig:b2long}
+\end{figure}
 
-\textbf{Variation.} The factor of B1 ranges over the seeds from \ratioOneMin{} to \ratioOneMax{} on one task, and falls to \ratioOneFullMed{} on the full device without flicker and to \bakeCeightRatioThree{} on the smaller grid with flicker and a fixed budget. The result is a large improvement on this task, not a constant. The number of seeds is \nSeedsOne{} for the crosstalk device and \nSeedsOneFull{} for the full device; on the \benchOneDevN{} geometries of the studio's benchmark, on its C08 device (which adds flicker) at \benchOneBudget{} iterations with the
-default parameters, with \benchOneDevSeeds{} seeds per cell for B1 and \benchOneDevSeedsMseven{} for M07, the factor over phase-fixed WGS is \benchOneDevList{}, a median of \benchOneDevMed{}
-(\benchOneDevMin{} to \benchOneDevMax) at a median efficiency ratio of \benchOneDevEff, and \benchOneDevPass{} of them meet both thresholds of the hypothesis:
-the gain is that of the task and devices above, and it does not carry to every geometry.
-B1 is built for traps on FFT bins at the focal plane without vortices, and is more expensive than the baseline by about the square of the upsampling factor per step; it is a baked method, not a live one.
+On the rearrangement case of the studio (C10: \cTenTraps{} target sites, \cTenMoving{} of them reached by a move on the assignment of the Hungarian method, the longest \cTenFu{} Fourier units), held phases dim the moving traps to \cTenHeld{} at \cTenEqual{} frames on the first seed. With the end phases at \cTenEqual{} frames, a peak step of \cTenPeakEqual{} Fourier units, linear phase interpolation on the same assignment leads on \cTenLpiLeads{} of \cTenSeeds{} seeds (B2 at most \cTenBEqualMax{}, the baseline \cTenLEqualMin{} to \cTenLEqualMax{}). With the \cTenFrames{} frames of the move (a peak step of \cTenPeak{} Fourier units), B2 reaches
+\cTenMetMin{} to \cTenMetMax{} (median \cTenMetMed{}) on \cTenMet{} of the \cTenSeeds{} seeds and leads linear phase interpolation (\cTenLpiMin{} to \cTenLpiMax{}) on \cTenBLeads{}; the seed that misses is \cTenFailList{}. The step bound was calibrated on this case, so the result on C10 is not an independent test; the lattice moves are, and they support the bound on a majority of seeds and not on all. At an equal number of frames on a long move linear phase interpolation leads, which Fig.~\ref{fig:b2long}c shows seed by seed.
 
-\textbf{Transient model.} The ratio of B2 is defined by our blend model of the SLM field between frames. It omits the temporal response and the refresh of the device, and the LPI baseline is our implementation of a published description, not the authors' code. In the source of the baseline, LPI on hardware stays above $0.70$ of its intensity, whereas it scores lower here
-under our model, so the absolute values are not comparable between the two. The result establishes the ordering of the two methods under one model, on the acceptance task and, within the step bound, on most seeds of the longer moves of Section~\ref{sec:b2scope}, whose
-failing seeds fail on their phase path and are not recovered by more frames; at an equal number of frames on a long sort, LPI leads. It does not show that atoms are rearranged with fewer losses.
+\subsection{Outcome of each hypothesis}
 
-\textbf{What is not claimed.} Neither method is shown to improve a camera-corrected experiment. B1 is not compared with conjugate gradient on the same point-trap task, whose gradient-based shaped-potential variant needs ten minutes per hologram in its source~\cite{schroff}.
+Table~\ref{tab:outcome} summarizes the outcome of the hypotheses of Section~\ref{sec:design} with the evidence for each. Of the eight hypotheses, five hold in the form stated (H1, H2, H4, H5, H8) and three are refuted by their own conditions (H3, H6, H7); H6 and H7 are measured in the ablation of Section~\ref{sec:ablation}. The refutations are the findings with the most consequence: B1 does not meet its thresholds on the square lattice and the
+large array of the benchmark's device, the weights that the design of B1 keeps are not what produces its gain, and the lock is not necessary on a majority of the seeds of the acceptance task, although it removes the worst of them. The holding hypotheses are the ones that the design records stated for the methods on their own tasks: the factor of B1 on the lattice behind a crosstalk device with its control, and the transient ratio of B2 on its acceptance task, both with the intervals reported above. Every refutation concerns a scope or a rationale: a geometry, a device, or a component of the method.
 
-\section{Conclusion}
+\begin{table}[t]
+\centering\small
+\caption{Outcome of the hypotheses of Table~\ref{tab:hyp} with the evidence from the experiments. The numbers are those of Tables~\ref{tab:b1} to~\ref{tab:long} and Section~\ref{sec:ablation}.}
+\label{tab:outcome}
+\begin{tabular}{@{}l l p{9.2cm}@{}}
+\toprule
+ID & Outcome & Evidence\\
+\midrule
+H1 & holds & factor \ratioOneMin{} to \ratioOneMax{} on \nSeedsOne{} seeds, efficiency ratio at least \effRatioOneMin{}; \ratioOneFullMin{} to \ratioOneFullMax{} on the full device\\
+H2 & holds & control at \sigmaNoModel{} percent against \sigmaMsevenThirty{} percent for the baseline\\
+H3 & refuted & factors \benchOneDevList{} on the benchmark device\\
+H4 & holds & ratio \bTwoMin{} to \bTwoMax{} against \lpiMin{} to \lpiMax{}; frame spread at most \bTwoSigmaFrame{} against \lpiSigmaFrameMin{} to \lpiSigmaFrameMax{} percent\\
+H5 & holds on a majority & \longAMet{} and \longBMet{} of \longSeeds{} seeds at $0.9$ or more with the frames of the move\\
+H6 & refuted & spread \ablBNoWeightsSig{} percent without the weights against \ablBFullSig{} with them\\
+H7 & refuted & without the lock the lowest moving trap is at $0.9$ or more on three of five seeds (mean \ablTNoLockMean{}, worst \ablTNoLockMin{})\\
+H8 & holds & without per-frame optimization \ablTNoOptMean{} on average, below $0.9$ on every seed\\
+\bottomrule
+\end{tabular}
+\end{table}
 
-Putting the pixel-crosstalk kernel and the phase quantizer inside the weighted GS loop lowers the trap-intensity spread on the device by a median factor of \ratioOneMed{} on a $10\times10$ lattice at \effRatioOne{} of the baseline efficiency, and the gain disappears when the device model is removed from the loop. Optimizing each intermediate frame with locked, smoothly varying trap phases keeps the moving traps of the acceptance task above \bTwoMin{} of their mean
-intensity at \parFrames{} frames (but not at seven) where linear phase interpolation falls to \lpiMed{}; on longer moves, with the frames that keep the peak step
-at most \claimStepFu{} Fourier units, it meets the bound on most seeds and not on all, and at an equal number of frames on a long sort LPI leads. Both are demonstrated in simulation with the limits above; the experiments that would confirm or refute them need the camera-in-the-loop measurement on an SLM with a fitted device model.
+\section{Ablation}\label{sec:ablation}
 
-\section*{Data and code availability}
+\subsection{Components of device-aware weighted GS}
 
-The methods (B1 and B2), the baselines, the measurement script that regenerates every number, table and figure reported here (\texttt{manuscripts/device-aware-flicker-bounded/data/measure.py}) and the committed baked artifacts it reads are in the repository
-\url{https://github.com/fsantibanezleal/CEFOP_DinHot} (Apache-2.0). The studio runs at \url{https://dinhot.fasl-work.com}. The acceptance tests of the two methods are \texttt{test\_b1\_device\_wgs.py} and \texttt{test\_b2\_flicker\_bounded.py}.
+The ablation removes one component of B1 at a time on the lattice task and the seeds of the main result. All variants share the start, the budget and the scoring, and the variant with all components on reproduces the module of the engine to a difference of \ablBCheck{} on the spread for every seed, so the rows are the module with components removed. Table~\ref{tab:ablb1} gives the crosstalk device and Table~\ref{tab:ablb1full} the full device; Fig.~\ref{fig:ablation}a shows the per-seed spreads. The statistics are the median and the
+range of the spread, the geometric-mean factor over the reference of Eq.~\ref{eq:factor} with its 95 percent interval, and the median efficiency ratio, for \ablBN{} seeds on the crosstalk device and \ablBFN{} on the full device.
+
+\begin{table}[t]
+\centering\small
+\caption{Ablation of device-aware WGS on the crosstalk device, $10\times10$ lattice task, \nSeedsOne{} seeds. Each row removes one component or changes one parameter; $\sigma$ is the relative standard deviation on the device, the factor is the geometric mean over the better of the two phase-fixed baseline runs with its 95 percent interval, and the last column is the median ratio of the efficiencies.}
+\label{tab:ablb1}
+\resizebox{\textwidth}{!}{\input{../data/tab_abl_b1.tex}}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\caption{Ablation of device-aware WGS on the full device ($\parBits$-bit phase, crosstalk, fill factor \parFill{}), \nSeedsOneFull{} seeds, same task and statistics as Table~\ref{tab:ablb1} for the components that matter; the intervals use only three seeds and are wide.}
+\label{tab:ablb1full}
+\resizebox{\textwidth}{!}{\input{../data/tab_abl_b1_full.tex}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-ablation.pdf}
+\caption{Ablation per seed. (a) Relative standard deviation on the crosstalk device of the variants of B1 (logarithmic axis). (b) Lowest transient ratio on the acceptance task of the variants of B2 with the line at $0.9$. Filled blue markers are the full methods; one marker per seed.}
+\label{fig:ablation}
+\end{figure}
+
+The device-aware phase step carries the gain. Without it, the weights read on the device alone leave a median spread of \ablBNoStepSig{} percent, a factor of \ablBNoStepFac{} (interval \ablBNoStepFacLo{} to \ablBNoStepFacHi{}) over the baseline: measuring the amplitudes on the device is worth about two times, and the phase step is worth the remaining factor, which is \ablBStepRatio{} between the variant without the step and the full method. With the device model removed from the loop the spread returns to the level of the baseline, \ablBNoModelSig{} percent, \ablBModelRatio{} times above the full method.
+The gain therefore comes from putting the device in the phase update; the weights alone do not provide it.
+
+The weights do not help, they hurt. Without the weight update the median spread is \ablBNoWeightsSig{} percent (range \ablBNoWeightsSigMin{} to \ablBNoWeightsSigMax{}), \ablBWeightsRatio{} times lower than the \ablBFullSig{} percent of the full method, at an efficiency ratio of \ablBNoWeightsEff{}; the geometric-mean factor over the baseline rises from \ablBFullFac{} (interval \ablBFullFacLo{} to \ablBFullFacHi{}) to \ablBNoWeightsFac{} (interval \ablBNoWeightsFacLo{} to \ablBNoWeightsFacHi{}). On the full device the
+spread without the weights is \ablBFNoWeightsSig{} percent against \ablBFFullSig{} percent with them, \ablBFWeightsRatio{} times lower. H6 is therefore refuted on both devices: the integral action of the weights, which the design of the method gives as its reason, is not needed when three conjugate-gradient steps follow the target on this task, and it costs spread. This is in line with Conjecture~\ref{conj:windup}, since six steps per outer iteration reach \ablBStepsSixSig{} percent and one step leaves \ablBStepsOneSig{} percent, so the number of steps, and not the weights, sets the quality; the conjecture itself, that the weights wind up, is compatible with these data and
+is not proved by them. The ablation was not run on the lattices of the benchmark's device, where the weights wind up in the record of the method, so it does not say whether the variant without weights would pass H3.
+
+The safeguard did not act on these seeds: with and without it the spreads are identical (\ablBNoGuardSig{} percent), as Proposition~\ref{prop:guard} allows, since the last iterate is the best admissible one on the crosstalk device. Its value is on the geometries of the benchmark where the last iterate would have lost too much light. The warm start alone, \parWarm{} weighted iterations on the ideal model, leaves a median spread of \ablBWarmSig{} percent, a factor of \ablBWarmFac{} against the baseline of 30 and 100 iterations, so the device-aware iterations, not the start, produce the result.
+
+\subsection{Components of flicker-bounded sequences}
+
+Table~\ref{tab:ablb2} gives the ablation of B2 on the acceptance task with \nSeedsTwo{} seeds, again with all components on reproducing the module of the engine to \ablTCheck{}. Removing the per-frame optimization, that is, one inversion of the locked field with unit weights per frame, leaves the lowest moving trap at a mean of \ablTNoOptMean{} (range \ablTNoOptMin{} to \ablTNoOptMax{}), below $0.9$ on every seed, and the largest per-frame spread of \ablTNoOptSig{} percent is that of an unoptimized sequence, close to the baseline;
+H8 holds. One iteration per frame is not enough either (mean \ablTItersOneMean{}), and three iterations already reach a mean of \ablTItersThreeMean{} (range \ablTItersThreeMin{} to \ablTItersThreeMax{}), above $0.9$ on every seed, so the default of \parFrameIters{} iterations is more than the acceptance task needs; the per-frame spread with three iterations is \ablTItersThreeSig{} percent against \ablTFullSig{} for the default, so the extra iterations buy uniformity of the frames and not transient intensity.
+
+\begin{table}[t]
+\centering\small
+\caption{Ablation of flicker-bounded sequences on the acceptance task ($4\times4$ lattice, two columns moved four bins, \parFrames{} frames, \nSeedsTwo{} seeds). Minimum ratio is that of the lowest moving trap; the last column is the median over the seeds of the largest per-frame relative standard deviation. The last row is linear phase interpolation on the same seeds.}
+\label{tab:ablb2}
+\resizebox{\textwidth}{!}{\input{../data/tab_abl_b2.tex}}
+\end{table}
+
+Removing the trajectory lock lowers the mean to \ablTNoLockMean{} (standard deviation \ablTNoLockSd{}, range \ablTNoLockMin{} to \ablTNoLockMax{}) and raises the per-frame spread to \ablTNoLockSig{} percent; it stays at $0.9$ or more on three of five seeds, so H7 is refuted by its own condition: the lock is not necessary on a majority of seeds, but it removes the seed-to-seed variation that a free phase brings, with a worst seed of \ablTNoLockMin{} against \ablTFullMin{} for B2. The minimal-jerk profile of the positions
+costs transient intensity on this metric: a linear time profile, which moves the traps at constant speed, gives a mean of \ablTLinearMean{} (range \ablTLinearMin{} to \ablTLinearMax{}), above the full method, because the peak step of the minimal-jerk profile is $15/8$ times the mean step and the transient ratio is limited by the peak step (Proposition~\ref{prop:frames}). The minimal-jerk profile is retained in the method for the smoothness of the acceleration, which the transient model does not score, and this is a
+choice that the ablation does not support in the metric of the paper.
+
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Why the methods behave as they do}
+
+The ideal-model solver equalizes a field that the device does not produce (Proposition~\ref{prop:floor}), and the device-aware step equalizes the field that is scored. The ablation separates two contributions: the amplitudes read on the device give a factor of about two on their own, and the gradient steps through the crosstalk adjoint give the rest. The control with the device removed from the loop confirms that the steps are not the cause: the same steps on the ideal model leave the spread at the baseline.
+For B2 the transient ratio is limited by the shift between consecutive frames, as the closed form of Eq.~\ref{eq:sinc} states, and the optimization and the lock make the frames individually uniform and mutually continuous, so that a bound on the step is a bound on the dip. The no-optimization variant fails with the same closed-form shifts as the full method, so the gain of the per-frame optimization is the uniformity of the frames, not a smaller shift.
+
+\subsection{Failure cases and negative results}
+
+Four results are negative and they bound what the paper claims. First, B1 fails the factor on the square lattice and on the large array of the benchmark's device and keeps its start there, so the success on the lattice behind a crosstalk device is specific to that device (Section~\ref{sec:results}). Second, the weights of B1 hurt where they were supposed to help (Section~\ref{sec:ablation}). Third, on the rearrangement case at an equal number of frames linear phase interpolation leads B2 on every seed, and B2 needs the
+end phases and the frames of Eq.~\ref{eq:framecount} to be competitive there. Fourth, B2 collapses on a seed of the rearrangement case and on seeds of the lattice moves, and more frames do not recover them. The last result is the cleanest statement of the limit of the lock: where the end phases prescribe a bad path, the per-frame optimization cannot repair it. A method that chose the end phases jointly with the frames would remove the limit; we did not build one.
+
+\subsection{What the results imply for use}
+
+The results suggest a division of labour. For a static array behind a device whose crosstalk is modelled, the device-aware phase step is the part to adopt, and the evidence of this paper favours it without the weights; the safeguard is cheap insurance on geometries where the last iterate loses light. For a rearrangement with moves of a few Fourier units the sequence of B2 keeps the lowest trap near its mean with a number of frames that follows from Eq.~\ref{eq:framecount}; for long moves
+the number of frames, and with it the cost, grows linearly, and the choice of end phases decides the outcome seed by seed. Neither method replaces camera feedback: the paper measures hologram quality in a model, and a flat hologram on the device model is a better start for feedback, not a substitute for it. What would change these conclusions is a measured device model: with a different kernel, a different quantizer or a measured flicker the factors would change, and the sensitivity of B1 to a mismatched kernel was not tested.
+
+\section{Limitations}\label{sec:limits}
+
+\subsection{Threats to validity}
+
+\textbf{Internal validity.} The seeds are few: \nSeedsOne{} for the crosstalk device, \nSeedsOneFull{} for the full device and for the long-move statistics up to \longSeeds{}, so the intervals are wide and no significance test is reported. The B1 cells of the benchmark hold two seeds, so the geometry results are ranges. The step bound of B2 was calibrated on the rearrangement case and is tested out of sample only on the lattice moves. The baseline of linear phase interpolation is our implementation of a published
+description, scored by our own transient model, not the authors' code on their hardware; the reference value of the source (above $0.70$ of the intensity on hardware) is higher than the value that the baseline scores here, so the absolute values of the two are not comparable. The variants of the ablation are re-implementations of the loops of the modules and were verified to reproduce them, so the ablated rows are not a different method.
+
+\textbf{External validity.} Every result is simulated. The crosstalk parameters come from a published fit on another device, and their frequency unit is carried over from the model and is not verified against the source; the \parBits{}-bit quantizer, the fill factor and the flicker have no published fit in this model, and random flicker is scored and not modelled by the optimizer. An instrument with another kernel would give another factor. The tasks are lattices of equal traps on bins at one wavelength and one pitch, a Gaussian beam and no aberrations; the benchmark adds other geometries on one device, and the three-dimensional and shaped-field targets are outside the scope of B1.
+
+\textbf{Construct validity.} The spread and the efficiency are model quantities, and the factor measures them against phase-fixed WGS without camera feedback, whereas the experiments close the gap with feedback; a method that is two times flatter before feedback may or may not need fewer feedback steps, and that was not measured. The transient ratio is defined by the blend model of the SLM field between frames, which omits the temporal response and the refresh of the device; it establishes an ordering of the two methods under one model
+and is not a prediction of atom survival. A bound of $0.9$ on the transient ratio is a design threshold and is not derived from the survival of atoms.
+
+\subsection{Scope and what is not claimed}
+
+Neither method is shown to improve a camera-corrected experiment or the survival of atoms. B1 is built for traps on FFT bins at the focal plane without vortices and costs about $u^2$ times a plain iteration per step, so it is baked and not live. B1 is not compared with conjugate-gradient minimization of the point-trap cost on the same task, and the minimization with a crosstalk model of its source needs about ten minutes per hologram. B2 is shown on lattices and one rearrangement case in two dimensions, with end phases from phase-fixed WGS,
+and it does not choose the assignment of atoms to sites. The time per iteration of B1 against the baseline was not measured, and the claim that B1 is within a factor of three of the baseline in time is not made. The paper also does not test the sensitivity of B1 to a kernel that differs from the one the device displays, which is the case in any real instrument whose kernel is fitted with error; a hologram optimized on a wrong kernel would carry part of the crosstalk error that the method removes in the model.
+
+\section{Reproducibility}\label{sec:repro}
+
+The code, the data and the committed artifacts are in the repository \url{https://github.com/fsantibanezleal/CEFOP_DinHot} at release \engineRelease{} (Apache-2.0); the studio runs at \url{https://dinhot.fasl-work.com}. Every number, table and figure of the paper is produced by two scripts from the repository root. The measurement script \path{manuscripts/device-aware-flicker-bounded/data/measure.py} runs the methods of the engine and writes
+\texttt{beyond.json}, the macro file read by the text and the result tables; with no argument it measures every part, with \texttt{--parts=ablation} it measures only the ablation and keeps the stored parts (this run took about \ablSeconds{} minutes on the development machine, CPU only, with five seeds for B1 on the crosstalk device, three on the full device and five for B2), and with \texttt{--macros-only} it rewrites the macros and the tables from the stored measurements. The figure script \path{manuscripts/device-aware-flicker-bounded/figures/make_figs.py} writes every figure as a
+vector PDF from \texttt{beyond.json}. The document builds with three passes of \texttt{pdflatex} from \texttt{tex/}. The benchmark file and the committed manifests that the script reads are in \texttt{data/derived/}. The acceptance tests of the two methods are \texttt{test\_b1\_device\_wgs.py} and \texttt{test\_b2\_flicker\_bounded.py}, and the ablated variants are checked against the modules inside the measurement script. All methods are deterministic given a seed, so a rerun reproduces the numbers up to the floating point of the machine's FFT.
+
+\section{Conclusions}\label{sec:conclusions}
+
+Putting the pixel-crosstalk kernel and the phase quantizer inside the phase update of weighted GS lowers the trap-intensity spread on the device by a geometric-mean factor of \ratioOneGm{} (95 percent interval \ratioOneCiLo{} to \ratioOneCiHi{}) on a $10\times10$ lattice behind a crosstalk device, at \effRatioOne{} of the baseline efficiency, and the gain disappears when the device model is removed from the loop. The gain does not carry to every geometry: on the benchmark's device with flicker the method meets both thresholds on the ring and the random set and keeps its start on the lattices, and the ablation shows that the
+gradient step through the device, and not the weights, produces the gain, so the weights are the first component to reconsider. Optimizing each frame with locked, smoothly varying trap phases keeps the moving traps of the acceptance task at a mean of \bTwoMean{} of their intensity (interval \bTwoCiLo{} to \bTwoCiHi{}) where linear phase interpolation falls to \lpiMean{}; with the frames that keep the peak step at most \claimStepFu{} Fourier units it meets the bound on most seeds of longer moves and not on all, and at an equal number of frames on a long rearrangement linear phase interpolation leads.
+The next steps are the measurement on a device with a fitted model and a camera in the loop, the ablation of B1 on the benchmark lattices to test whether dropping the weights removes the failure, and a choice of end phases that is joint with the frames.
 
 \begin{thebibliography}{99}\small
 \bibitem{dileonardo} Di Leonardo, Ianni and Ruocco, ``Computer generation of optimal holograms for optical trap arrays,'' \emph{Opt. Express} 15, 1913, 2007. doi:10.1364/OE.15.001913.
+\bibitem{bianchi} Bianchi and Di Leonardo, GPU implementation (Python module wrapping CUDA) of the random superposition and weighted GS algorithms, arXiv:0907.4027, 2010.
+\bibitem{polin} Polin, Hovhannisyan and Sorensen, direct search and annealing for holographic optical trap arrays, \emph{Opt. Express} 13, 5831, 2005. doi:10.1364/OPEX.13.005831.
 \bibitem{kim2019} Kim, Kim, Lee and Ahn, ``Large-scale uniform optical focus array generation with a phase spatial light modulator,'' \emph{Opt. Lett.} 44, 3178, 2019. doi:10.1364/OL.44.003178.
 \bibitem{ebadi} Ebadi \emph{et al.}, ``Quantum phases of matter on a 256-atom programmable quantum simulator,'' arXiv:2012.12281, 2021.
 \bibitem{manetsch} Manetsch \emph{et al.}, ``A tweezer array with 6100 highly coherent atomic qubits,'' \emph{Nature} 647, 60--67, 2025. arXiv:2403.12021.
-\bibitem{nogrette} Nogrette \emph{et al.}, ``Single-atom trapping in holographic 2D arrays of microtraps with arbitrary geometries,'' arXiv:1402.5329, 2014.
-\bibitem{schroff} Schroff, La Rooij, Haller and Kuhr, ``Accurate holographic light potentials using pixel crosstalk modelling,'' \emph{Sci. Rep.}, 2023. doi:10.1038/s41598-023-30296-6.
+\bibitem{slmsuite} slmsuite, open-source Python library for holography with spatial light modulators (MIT licence), \url{https://github.com/slmsuite/slmsuite}.
+\bibitem{nogrette} Nogrette \emph{et al.}, ``Single-atom trapping in holographic 2D arrays of microtraps with arbitrary geometries,'' \emph{Phys. Rev. X} 4, 021034, 2014. arXiv:1402.5329.
+\bibitem{chew} Chew \emph{et al.}, SLM tweezer arrays with 0.3 percent relative intensity standard deviation (abstract), \emph{Phys. Rev. A} 110, 053518, 2024. arXiv:2407.20699.
+\bibitem{wang} Wang \emph{et al.}, feedback-equalised SLM arrays with non-uniformity below 1.1 percent (abstract), arXiv:2407.17049, 2024.
+\bibitem{pasienski} Pasienski and DeMarco, mixed-region amplitude freedom, \emph{Opt. Express} 16, 2176, 2008. doi:10.1364/OE.16.002176. arXiv:0712.0794.
+\bibitem{harte} Harte, Bruce, Belmonte and Arnold, conjugate-gradient minimization for holographic traps, \emph{Opt. Express} 22, 26548, 2014. doi:10.1364/OE.22.026548.
+\bibitem{bowman} Bowman \emph{et al.}, phase and amplitude control with a phase-only SLM by conjugate gradients, \emph{Opt. Express} 25, 11692, 2017. arXiv:1701.08620.
+\bibitem{swan} Swan, Torchylo, Van de Graaff, Rudolph and Hogan, optimal-transport initialization of GS and mixed-region holograms, arXiv:2408.17025, 2024.
+\bibitem{torchylo} Torchylo, Swan, Tellez and Hogan, dual formulation of optimal-transport holography, arXiv:2512.19072, 2025.
+\bibitem{chakravarthula} Chakravarthula \emph{et al.}, Wirtinger holography with stochastic-gradient computer-generated holography, \emph{ACM Trans. Graph.} 38(6), 213, 2019. doi:10.1145/3355089.3356539.
+\bibitem{peng} Peng, Choi, Padmanaban and Wetzstein, neural holography with camera-in-the-loop optimization, \emph{ACM Trans. Graph.} 39(6), 185, 2020. doi:10.1145/3414685.3417802.
+\bibitem{eybposh} Eybposh \emph{et al.}, DeepCGH, unsupervised network for multi-plane holograms, \emph{Opt. Express} 28, 26636, 2020. doi:10.1364/OE.399624.
+\bibitem{shi} Shi \emph{et al.}, tensor holography (network below 620 KB), \emph{Nature} 591, 2021. doi:10.1038/s41586-020-03152-0.
+\bibitem{ren} Ren \emph{et al.}, generative network for tweezer holograms, \emph{APL Quantum}, 2024. arXiv:2401.06014.
+\bibitem{schroff} Schroff, La Rooij, Haller and Kuhr, ``Accurate holographic light potentials using pixel crosstalk modelling,'' \emph{Sci. Rep.} 13, 3252, 2023. doi:10.1038/s41598-023-30296-6.
 \bibitem{persson} Persson, Engstr\"om and Goks\"or, ``Reducing the effect of pixel crosstalk in phase only spatial light modulators,'' \emph{Opt. Express} 20, 22334, 2012.
+\bibitem{lizana} Lizana \emph{et al.}, phase fluctuations of a twisted-nematic liquid-crystal-on-silicon device, \emph{Opt. Express} 16, 16711, 2008.
+\bibitem{machu} Machu, Creutzer, Sayrin and Brune, modified GS with position-dependent aberration correction, arXiv:2512.15967, 2025.
+\bibitem{christen} Christen, Panuski, Propson and Englund, per-site propagation kernels combined into one hologram, arXiv:2505.08777, 2025.
 \bibitem{lpi} ``Parallel assembly of neutral atom arrays with an SLM using linear phase interpolation,'' arXiv:2501.01391.
+\bibitem{lee2017} Lee, Kim and Ahn, Hungarian assignment of atoms to sites for rearrangement, \emph{Phys. Rev. A} 95, 053424, 2017. doi:10.1103/PhysRevA.95.053424. arXiv:1704.07074.
+\bibitem{kim2019oe} Kim, Kim, Lee and Ahn, GS with zero padding, weighted feedback and phase induction for rearrangement, \emph{Opt. Express} 27, 2184, 2019. doi:10.1364/OE.27.002184.
+\bibitem{endres} Endres \emph{et al.}, multi-tone acousto-optic deflector array for one-dimensional defect-free arrays, \emph{Science} 354, 1024, 2016. arXiv:1607.03044.
+\bibitem{barredo} Barredo \emph{et al.}, static SLM array with a moving deflector tweezer, \emph{Science} 354, 1021, 2016. arXiv:1607.03042.
+\bibitem{chiu} Chiu \emph{et al.}, crossed-deflector dynamic array feeding a static SLM array of 3240 tweezers, \emph{Nature} 646, 1075--1080, 2025. arXiv:2506.20660.
+\bibitem{bluvstein} Bluvstein \emph{et al.}, logical processor on up to 280 physical qubits, arXiv:2312.03982.
+\bibitem{whyte} Whyte and Courtial, three-dimensional Gerchberg--Saxton adapted from Shabtay, \emph{New J. Phys.} 7, 117, 2005. doi:10.1088/1367-2630/7/1/117.
 \end{thebibliography}
 
 \end{document}
