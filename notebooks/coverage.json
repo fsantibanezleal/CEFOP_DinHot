@@ -14,6 +14,7 @@
     "M12": ["07-feedback-and-dynamics/03-closed-loop-feedback.ipynb"],
     "M13": ["06-device-and-aberrations/03-crosstalk-aware-cg-against-cg.ipynb", "03-gerchberg-saxton/04-device-aware-wgs.ipynb"],
     "M14": ["06-device-and-aberrations/02-zernike-correction.ipynb"],
+    "M15": ["02-analytic-holograms/03-laguerre-gaussian-vortex-traps.ipynb"],
     "M16": ["07-feedback-and-dynamics/02-assigning-atoms-to-sites.ipynb", "07-feedback-and-dynamics/04-moving-atoms-by-linear-phase-interpolation.ipynb"],
     "M17": ["08-learned-holography/02-training-without-labels.ipynb", "08-learned-holography/03-a-network-start-for-volume-holograms.ipynb"],
     "M18": ["04-shaped-potentials/04-optimal-transport-start.ipynb"],
@@ -33,7 +34,10 @@
     "cgh-net": ["08-learned-holography/01-what-a-network-sees-of-a-hologram.ipynb"],
     "warmstart-model": ["08-learned-holography/04-is-a-learned-warm-start-worth-it.ipynb"],
     "model-metrics": ["08-learned-holography/03-a-network-start-for-volume-holograms.ipynb"],
-    "model-evidence": ["08-learned-holography/02-training-without-labels.ipynb"]
+    "model-evidence": ["08-learned-holography/02-training-without-labels.ipynb"],
+    "engine-reference": ["01-fourier-optics/03-engine-reference-and-readiness.ipynb"],
+    "readiness": ["01-fourier-optics/03-engine-reference-and-readiness.ipynb"],
+    "api": ["01-fourier-optics/03-engine-reference-and-readiness.ipynb"]
   },
   "stages": {
     "preprocess": ["01-fourier-optics/02-reading-a-trap-array.ipynb", "04-shaped-potentials/03-mraf-and-the-signal-region.ipynb"],
@@ -45,7 +49,8 @@
     "feedback": ["07-feedback-and-dynamics/03-closed-loop-feedback.ipynb"],
     "rearrangement": ["07-feedback-and-dynamics/02-assigning-atoms-to-sites.ipynb", "07-feedback-and-dynamics/04-moving-atoms-by-linear-phase-interpolation.ipynb"],
     "train": ["08-learned-holography/02-training-without-labels.ipynb"],
-    "evaluate": ["08-learned-holography/03-a-network-start-for-volume-holograms.ipynb"]
+    "evaluate": ["08-learned-holography/03-a-network-start-for-volume-holograms.ipynb"],
+    "engine_reference": ["01-fourier-optics/03-engine-reference-and-readiness.ipynb"]
   },
   "packages": {}
 }

@@ -29,9 +29,8 @@ del SDD (cubierto solo por un notebook de nivel 2 o superior), cada contrato de 
 pipeline de `data-pipeline/pipeline/stages/` y cada paquete de métodos (el producto no declara ninguno). Las rutas son relativas a un
 árbol de idioma y existen en ambos. Todo notebook de nivel 2 o superior tiene una sección de tercer nivel sobre dónde su método
 cambia o falla y otra sobre cómo usarlo con datos propios, y los notebooks de los topics 01 y 02 leen además los documentos
-comprometidos de los contratos que explican. El control es `tools/notebooks/check_notebook_depth.py` de CAOS_MANAGE. Las partes que
-ningún notebook enseña todavía quedan fuera del mapa, para que el control las liste: las trampas de vórtice (M15), los contratos
-engine-reference, readiness y api, y la etapa engine_reference.
+comprometidos de los contratos que explican. El control es `tools/notebooks/check_notebook_depth.py` de CAOS_MANAGE. Cada método de la escalera, cada contrato y cada etapa tiene un notebook en el mapa; una parte que
+más adelante no tuviera ninguno la listaría el control.
 
 ## Temas
 
@@ -54,8 +53,10 @@ Un tema sin notebook de nivel 3 dice por qué en su fila.
 |---|---|---|
 | [01-fourier-optics/01-where-the-light-goes.ipynb](01-fourier-optics/01-where-the-light-goes.ipynb) | 1 | adónde envía la luz un patrón de fase: bin y ventana focales, réplicas fuera de ella, la envolvente del píxel, niveles de fase y orden cero (caso C01) |
 | [01-fourier-optics/02-reading-a-trap-array.ipynb](01-fourier-optics/02-reading-a-trap-array.ipynb) | 2 | qué dicen la eficiencia, la uniformidad, la dispersión relativa y el balance de potencia de un arreglo de 10 por 10, dónde discrepan y por qué el balance necesita su radio (caso C12) |
+| [01-fourier-optics/03-engine-reference-and-readiness.ipynb](01-fourier-optics/03-engine-reference-and-readiness.ipynb) | 2 | cómo el motor del navegador se mantiene dentro del de Python con los documentos de referencia del motor, cómo leer el documento de disponibilidad y el contrato de la API, y cómo escribir una referencia para una función propia |
 | [02-analytic-holograms/01-superposition-and-random-mask.ipynb](02-analytic-holograms/01-superposition-and-random-mask.ipynb) | 1 | qué dan los tres hologramas de un paso (superposición, superposición aleatoria, máscara aleatoria) en C12 y qué limita a cada uno |
 | [02-analytic-holograms/02-the-ten-by-ten-benchmark.ipynb](02-analytic-holograms/02-the-ten-by-ten-benchmark.ipynb) | 2 | cómo se comparan las tres líneas base con la tabla publicada de 10 por 10 en cinco tamaños de SLM |
+| [02-analytic-holograms/03-laguerre-gaussian-vortex-traps.ipynb](02-analytic-holograms/03-laguerre-gaussian-vortex-traps.ipynb) | 2 | cómo un término agregado al retardo hace un anillo con el centro oscuro (M15): el enrollamiento de la fase, el radio del anillo, el momento angular por fotón, el arreglo del caso C06 y la carga en que la verificación del producto produce aliasing |
 | [03-gerchberg-saxton/01-the-gs-loop.ipynb](03-gerchberg-saxton/01-the-gs-loop.ipynb) | 1 | las dos mitades de una iteración de Gerchberg-Saxton hechas a mano con nueve trampas (caso C01), comprobadas contra M04 |
 | [03-gerchberg-saxton/02-weights-for-uniformity.ipynb](03-gerchberg-saxton/02-weights-for-uniformity.ipynb) | 2 | qué ganan el GS ponderado y el adaptativo sobre el GS simple en C12: los primeros pesos, iteraciones hasta 5, 2 y 1 por ciento, el barrido de alfa, la dependencia de la semilla |
 | [03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb](03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb) | 3 | cómo se comparan M06 y M07 con WGS-Leonardo y WGS-Kim de slmsuite 0.5.0 en las 1024 trampas de C03 con un mismo conjunto de métricas |

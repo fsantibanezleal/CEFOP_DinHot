@@ -29,8 +29,8 @@ and the notebooks cover the methods like this:
 `data-pipeline/pipeline/stages/` and each method package (the product declares none). The paths are relative to a language tree and
 exist in both. Every notebook of level 2 or above has a third-level section on where its method changes or breaks and one on using
 it on your own data, and the notebooks of topics 01 and 02 also read the committed documents of the contracts they explain. The
-check is `tools/notebooks/check_notebook_depth.py` of CAOS_MANAGE. Parts that no notebook teaches yet are left out of the map, so
-that the check lists them: the vortex traps (M15), the contracts engine-reference, readiness and api, and the stage engine_reference.
+check is `tools/notebooks/check_notebook_depth.py` of CAOS_MANAGE. Every method of the ladder, every contract and every stage has a notebook in the map; a part that
+later has none would be listed by the check.
 
 ## Topics
 
@@ -53,8 +53,10 @@ A topic without a level 3 notebook says why on its row.
 |---|---|---|
 | [01-fourier-optics/01-where-the-light-goes.ipynb](01-fourier-optics/01-where-the-light-goes.ipynb) | 1 | where a phase pattern sends the light: focal bin and window, replicas outside it, the pixel envelope, phase levels and the zero order (case C01) |
 | [01-fourier-optics/02-reading-a-trap-array.ipynb](01-fourier-optics/02-reading-a-trap-array.ipynb) | 2 | what efficiency, uniformity, relative spread and the power budget of a 10 by 10 array say, where they disagree and why the budget needs its radius (case C12) |
+| [01-fourier-optics/03-engine-reference-and-readiness.ipynb](01-fourier-optics/03-engine-reference-and-readiness.ipynb) | 2 | how the browser engine is held to the Python engine by the engine-reference documents, how to read the readiness document and the API contract, and how to write a reference for a function of your own |
 | [02-analytic-holograms/01-superposition-and-random-mask.ipynb](02-analytic-holograms/01-superposition-and-random-mask.ipynb) | 1 | what the three one-step holograms (superposition, random superposition, random mask) give on C12 and what limits each |
 | [02-analytic-holograms/02-the-ten-by-ten-benchmark.ipynb](02-analytic-holograms/02-the-ten-by-ten-benchmark.ipynb) | 2 | how the three baselines compare with the published 10 by 10 table on five SLM sizes |
+| [02-analytic-holograms/03-laguerre-gaussian-vortex-traps.ipynb](02-analytic-holograms/03-laguerre-gaussian-vortex-traps.ipynb) | 2 | how one added term in the delay makes a ring with a dark centre (M15): the winding of the phase, the radius of the ring, the angular momentum per photon, the array of case C06 and the charge at which the check of the product aliases |
 | [03-gerchberg-saxton/01-the-gs-loop.ipynb](03-gerchberg-saxton/01-the-gs-loop.ipynb) | 1 | the two halves of a Gerchberg-Saxton iteration done by hand on nine traps (case C01), checked against M04 |
 | [03-gerchberg-saxton/02-weights-for-uniformity.ipynb](03-gerchberg-saxton/02-weights-for-uniformity.ipynb) | 2 | what weighted and adaptive GS gain over plain GS on C12: the first weights, iterations to 5, 2 and 1 percent, the alpha sweep, seed dependence |
 | [03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb](03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb) | 3 | how M06 and M07 compare with slmsuite 0.5.0 WGS-Leonardo and WGS-Kim on the 1024 traps of C03 under one set of metrics |
