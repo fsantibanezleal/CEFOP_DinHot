@@ -1,0 +1,80 @@
+\section{Theory: why the expected cost should lower the spread}\label{sec:theory}
+
+\subsection{Setting and standing conditions}
+
+Let $f(a)=L_0(\phi+\psi(a))$ for a fixed hologram $\phi$. Because $\psi_j(a)$ is linear in $a$ and the forward map of Eq.~\eqref{eq:forward} is a finite sum of complex exponentials, $f$ is a real-analytic function of $a\in\mathbb R^K$, so every derivative exists and the Taylor series
+of $f$ at the origin has an infinite radius of convergence. The statements below are expansions in the prior scale $s$ with the hologram fixed, and they hold under three conditions that the experiments check and do not assume. (C1) The aberration phase is small enough for
+a low-order expansion of the field to describe the intensity: the Strehl ratio of the ensemble is near one, which for the design prior is about $0.88$, so that a first-order model of the traps has an error of the order of the squared phase offset. (C2) The coefficients are independent, centred and Gaussian with the common scale $s$, the assumption
+of Eq.~\eqref{eq:problem}. (C3) The traps have equal weights, so that the weighted intensity of Eq.~\eqref{eq:metrics} is the intensity itself; unequal weights change the constants and not the statements. The first two propositions concern the cost that the optimizer sees, the third the spread that the experimenter
+sees, and the fourth the first-order and second-order structure of the spread under displacements of the traps.
+
+\subsection{Proposition 1: the sigma points match the expectation to second order}
+
+\paragraph{Statement.} For any real-analytic $f$ on $\mathbb R^K$, the average of $f$ over the $2K$ sigma points of Eq.~\eqref{eq:sigma} and the expectation of $f(a)$ for $a\sim\mathcal N(0,s^2I_K)$ agree through the second order in $s$,
+\begin{equation}
+\frac1{2K}\sum_{\mathbf c\in\mathcal S}f(\mathbf c)-\mathbb E f(a)=\frac{s^4}8\Big[\frac K3\sum_k\partial_k^4f(0)-\sum_{k,l}\partial_k^2\partial_l^2f(0)\Big]+O(s^6),\label{eq:sigmaerror}
+\end{equation}
+and both equal $f(0)+\frac{s^2}2\sum_k\partial_k^2f(0)$ up to that error.
+
+\paragraph{Proof.} Expand $f(\mathbf c)=\sum_{r\ge0}\frac1{r!}(\mathbf c\!\cdot\!\nabla)^rf(0)$. A sigma point $\pm c\,\mathbf e_k$ with $c=s\sqrt K$ contributes $\sum_r\frac{(\pm c)^r}{r!}\partial_k^rf(0)$; the pair averages to $\sum_{r\text{ even}}\frac{c^r}{r!}\partial_k^rf(0)$ because the odd terms cancel. Averaging over the $K$ modes with equal weight gives
+$f(0)+\frac{c^2}{2K}\sum_k\partial_k^2f(0)+\frac{c^4}{24K}\sum_k\partial_k^4f(0)+O(c^6)$, and $c^2/K=s^2$, $c^4/K=Ks^4$. For the Gaussian, odd moments vanish and the moments of a centred Gaussian vector are $\mathbb E[a_ia_j]=s^2\delta_{ij}$ and $\mathbb E[a_ia_ja_ka_l]=s^4(\delta_{ij}\delta_{kl}+\delta_{ik}\delta_{jl}+\delta_{il}\delta_{jk})$, so
+$\mathbb Ef(a)=f(0)+\frac{s^2}2\sum_k\partial_k^2f(0)+\frac{s^4}8\sum_{k,l}\partial_k^2\partial_l^2f(0)+O(s^6)$. Subtracting the two series gives Eq.~\eqref{eq:sigmaerror}. \hfill$\square$
+
+\paragraph{Reading.} The sigma points are exact for the mean and the covariance and are blind to the mixed fourth derivatives; they weight the pure fourth derivatives by $K/3$, which is $8/3$ for the eight modes against the factor one of the Gaussian. The error is of the order of $s^4$ times fourth derivatives of the cost. The
+sigma-point cost is therefore a faithful stand-in for the expectation as long as the second-order terms dominate, which is condition (C1), and it is not a quadrature for tails of the prior: the points sit at a fixed distance $s\sqrt K$ from the origin, which is the typical radius of a draw of $K$ coefficients, and not at the rare large draws that set the upper tail of the spread.
+
+\subsection{Proposition 2: the robust cost is the nominal cost plus a curvature along the aberration modes}
+
+\paragraph{Statement.} Let $G_{mk}=\partial I_m/\partial a_k$ at $a=0$ and $T_{\Sigma}=\sum_nT_n^2$. Then
+\begin{equation}
+J_{\mathcal S}(\phi)=L_0(\phi)+\frac{s^2}{T_\Sigma}\Big[\sum_{m,k}G_{mk}^2+\sum_m(I_m-T_m)\sum_k\frac{\partial^2I_m}{\partial a_k^2}\Big]+O(s^4),\label{eq:curvature}
+\end{equation}
+where all quantities are evaluated at the nominal system. The first bracketed term is non-negative, and it is the only term that survives when the traps sit at their targets.
+
+\paragraph{Proof.} Apply Proposition 1 to $f=L_0(\phi+\psi(\cdot))$ to replace $J_{\mathcal S}$ by $L_0+\frac{s^2}2\sum_k\partial_k^2f(0)+O(s^4)$, and use Eq.~\eqref{eq:gaussnewton}, which follows from $L_0=T_\Sigma^{-1}\sum_m(I_m-T_m)^2$ by the product rule: $\partial_k^2L_0=\frac2{T_\Sigma}\sum_m\big[(\partial_kI_m)^2+(I_m-T_m)\partial_k^2I_m\big]$. Multiplying by $s^2/2$ gives Eq.~\eqref{eq:curvature}. \hfill$\square$
+
+\paragraph{Reading.} Minimizing $J_{\mathcal S}$ over $\phi$ lowers the first-order intensity variance $s^2\sum_{m,k}G_{mk}^2$ that the aberration prior induces, at the price of the nominal cost $L_0$. The nominal cost at the start is not zero, because the target level of Eq.~\eqref{eq:metrics} is a fraction $\ell$ of the efficiency of the start, so both bracketed terms of Eq.~\eqref{eq:curvature} matter and Section~\ref{sec:results} reports them separately. A hologram whose traps
+respond weakly to the eight modes is preferred; this is a property of the phase pattern among the many that equalize the traps, which is why the choice matters at all.
+
+\subsection{Proposition 3: the first-order spread and its bound by the penalty}
+
+\paragraph{Statement.} Let $\sigma_0$ be the spread at the nominal system, $\bar I$ the mean nominal intensity, $\mathbf G_c$ the matrix $G$ with the mean over traps subtracted from each column, and $\Gamma=\dfrac{100^2}{M\bar I^2}\,\mathbf G_c^{\top}\mathbf G_c$. To first order in $a$,
+\begin{equation}
+\sigma(a)^2\approx\sigma_0^2+2\,\mathbf b^{\top}a+a^{\top}\Gamma a,\qquad \mathbb E\,\sigma^2\approx\sigma_0^2+s^2\operatorname{tr}\Gamma\ \le\ \sigma_0^2+\frac{100^2s^2}{M\bar I^2}\sum_{m,k}G_{mk}^2=\sigma_0^2+100^2\,\frac{T_m^2}{\bar I^2}\,\frac{s^2\sum_{m,k}G_{mk}^2}{T_\Sigma},\label{eq:spreadbound}
+\end{equation}
+with $\mathbf b=\frac{100^2}{M\bar I^2}\mathbf G_c^{\top}(I-\bar I)$ a vector that vanishes when the nominal intensities are equal and, for equal weights, $T_m^2=T_\Sigma/M$. When the nominal spread is zero, $\sigma(a)^2=a^{\top}\Gamma a$ is a positive semidefinite quadratic form in a Gaussian vector, that is a weighted sum $s^2\sum_i\lambda_i\xi_i^2$ of independent unit chi-square variables with the eigenvalues $\lambda_i$ of $\Gamma$, and the 95th percentile of $\sigma$
+is the square root of the 95th percentile of that sum.
+
+\paragraph{Proof.} Write $I_m(a)\approx I_m+\sum_kG_{mk}a_k$; the mean over traps is $\bar I+\bar{\mathbf G}\!\cdot\!a$ and the centred intensity is $(I_m-\bar I)+(\mathbf G_c a)_m$. The squared spread is $100^2$ times the mean over traps of the squared centred intensity over the squared mean intensity; to first order in $a$ the denominator is $\bar I^2$ times a factor $1+O(a)$ that multiplies terms already of first or second order.
+Expanding the square gives a constant (the nominal variance $\sigma_0^2\bar I^2/100^2$), a term linear in $a$ proportional to $\sum_m(I_m-\bar I)(\mathbf G_ca)_m$, which is zero when the nominal intensities are equal, and the quadratic form $\frac1M\|\mathbf G_ca\|^2$. The expectation of $a^{\top}\Gamma a$ is $s^2\operatorname{tr}\Gamma$ by $\mathbb E[aa^{\top}]=s^2I$, and
+$\operatorname{tr}\Gamma\le\frac{100^2}{M\bar I^2}\|\mathbf G\|_F^2$ because subtracting the column means removes a non-negative amount of squared norm. The last equality in Eq.~\eqref{eq:spreadbound} is a rewriting with $T_\Sigma=MT_m^2$. The distribution of the quadratic form follows from the eigendecomposition of $\Gamma$ and the rotation invariance of the Gaussian. \hfill$\square$
+
+\paragraph{Reading.} The bound states that the expected squared spread caused by the aberration is at most a constant times the Gauss--Newton part of the robust penalty of Proposition 2, with the constant $100^2T_m^2/\bar I^2$ that is the squared ratio of the target to the achieved mean intensity. The optimizer therefore lowers a quantity that bounds the expected squared spread, and this is the sense in which the expected cost is the right
+cost for the metric. It is not a guarantee on the tail: the 95th percentile depends on the whole spectrum of $\Gamma$, and a hologram that lowers the trace can leave a large eigenvalue; the experiment measures the percentile.
+
+\subsection{Proposition 4: displacements of the traps, a slope term and a curvature floor}
+
+\paragraph{Statement.} Let trap $m$ be displaced by $d$ focal bins along $x$, and let $k_j$ be the phase gradient per bin that the displacement adds to pixel $j$, $k_j=2\pi x_j/(\mathrm{pad}\,N\,p)$ with $\mathrm{pad}$ the zero-padding factor of the focal sampling. For a displacement vector $\mathbf d=(d_x,d_y)$ the relative change of the intensity of trap $m$ is
+$\varepsilon_m(\mathbf d)=\mathbf s_m\!\cdot\!\mathbf d-\tfrac12\kappa_m|\mathbf d|^2+O(|\mathbf d|^3)$, with the slope $\mathbf s_m=\nabla_{\mathbf d}I_m/I_m$ and the curvature $\kappa_m$. If the phases of the pixels are aligned on trap $m$, that is $\phi_j-\Delta_j^m$ is the same for all $j$ up to a constant, then $\mathbf s_m=0$ and
+\begin{equation}
+\kappa_m=\kappa_{\mathrm{ap}}=2\operatorname{Var}_A(k)=2\Big[\sum_jw_jk_j^2-\Big(\sum_jw_jk_j\Big)^2\Big],\qquad w_j=\frac{A_j}{\sum_nA_n}.\label{eq:curv}
+\end{equation}
+For independent isotropic displacements of standard deviation $s_p$ bins in $x$ and $y$, and traps with slopes $\mathbf s_m$ and a common curvature $\kappa$, the relative standard deviation of the trap intensities is, to leading order,
+\begin{equation}
+\sigma_{\mathrm{point}}\approx100\sqrt{\overline{|\mathbf s|^2}\,s_p^2+\kappa^2s_p^4},\qquad\overline{|\mathbf s|^2}=\frac1M\sum_m|\mathbf s_m|^2.\label{eq:pointing}
+\end{equation}
+The curvature scales with the second moment of the beam over the SLM, hence with the inverse square of the width of the focused spot; the slope is a property of the hologram.
+
+\paragraph{Proof.} With aligned phases the field is $V(d)\propto\sum_jA_je^{-ik_jd}$, whose derivatives at zero are $V'=-i\sum_jA_jk_j$ and $V''=-\sum_jA_jk_j^2$ (up to the constant). The intensity $I=|V|^2$ has $I''=2\operatorname{Re}(\bar VV'')+2|V'|^2=-2(\sum A)(\sum Ak^2)+2(\sum Ak)^2$, so $-I''/I=2[\langle k^2\rangle-\langle k\rangle^2]$ with the average weighted by $A_j$, and
+$I'=0$ because $V'$ is purely imaginary while $V$ is real. For general phases the expansion of $\varepsilon_m$ is the Taylor expansion of $I_m(\mathbf d)/I_m(0)$. With independent displacements, $\varepsilon_m$ has mean $-\kappa s_p^2$ (since $\mathbb E|\mathbf d|^2=2s_p^2$) and variance $|\mathbf s_m|^2s_p^2+\tfrac14\kappa^2\operatorname{Var}(|\mathbf d|^2)=|\mathbf s_m|^2s_p^2+\kappa^2s_p^4$, because
+$|\mathbf d|^2=s_p^2\chi_2^2$ has variance $4s_p^4$ and the cross moment of the linear and the quadratic term vanishes by symmetry. Taking the standard deviation over the traps of one realization, with the displacements of the traps independent, gives Eq.~\eqref{eq:pointing}. \hfill$\square$
+
+\paragraph{Reading and status.} The aligned-phase value is exact only for that case. For a real hologram the pixel phases are not aligned on every trap, the slope does not vanish, and the statement that the curvature of an optimized hologram is close to $\kappa_{\mathrm{ap}}$ is a conjecture, which Section~\ref{sec:results} tests by finite differences on the holograms of phase-fixed WGS and of the robust hologram, together with the model of Eq.~\eqref{eq:pointing} against the measured spread.
+If both hold, a design can lower the spread under displacement by lowering the slope, and can go no lower than the floor $100\kappa s_p^2$ without changing the spot width; halving $\kappa$ needs a spot $\sqrt2\approx1.4$ times wider, which changes the beam and not the hologram. The expected-cost design for aberrations does not act on the slope, which is a different first-order response from the one it lowers, and the proposition therefore predicts that it gives no gain under displacements and
+that a design with a displacement prior can approach the floor but not pass it.
+
+\subsection{Conditions and what the theory leaves open}
+
+The four propositions are statements about a fixed hologram and a small prior. They do not say that the optimizer reaches a global minimum of $J_{\mathcal S}$ (the cost is non-convex in the phases, and the descent starts from phase-fixed WGS and ends where the budget ends); they do not give the improvement as a function of $s$, which depends on the Hessian of the cost at the start;
+and they do not bound the nominal spread that the optimizer is allowed to add, which is set by the target level $\ell$ and the iterations. Proposition 2 explains why the nominal cost may rise: the design moves to a point of lower response and higher nominal cost, and the target level decides how far. The conditions (C1) to (C3) are the places where the
+theory can fail: a prior far from small (C1), a correlated or non-Gaussian residual (C2), and unequal weights (C3). The ablation and the mismatch experiments of Section~\ref{sec:results} test the first two.

@@ -1,0 +1,12 @@
+{
+  "kind": "manuscript",
+  "title_support": [
+    "tab:main",
+    "fig:ecdf",
+    "fig:seeds",
+    "tab:mismatch"
+  ],
+  "claims": {
+    "BS-4": "sec:proposed-method"
+  }
+}

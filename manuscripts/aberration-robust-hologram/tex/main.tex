@@ -1,0 +1,76 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{siunitx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[hidelinks]{hyperref}
+\usepackage{orcidlink}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+\sloppy
+
+\graphicspath{{../figures/}}
+\input{../data/robust_numbers.tex}
+
+% Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
+% publishing tool when the version DOI is reserved.
+\newcommand{\doctype}{Preprint}
+\newcommand{\docversion}{v0.01}
+\newcommand{\docdate}{3 November 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.pending}
+\newcommand{\conceptdoi}{10.5281/zenodo.pending}
+\newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
+\newcommand{\headerblock}{%
+\begin{center}
+\fbox{\parbox{0.94\textwidth}{\small\raggedright
+\textbf{\doctype} \quad$\cdot$\quad \docversion, \docdate \quad$\cdot$\quad Licence CC BY 4.0\\[2pt]
+CAOS open-research programme \quad$\cdot$\quad CEFOP\_DinHot, holographic optical trap studio\\[2pt]
+Version DOI \href{https://doi.org/\versiondoi}{\texttt{\versiondoi}} \quad$\cdot$\quad
+concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptdoi}}\\[2pt]
+Not peer reviewed. Source code, data and computational records: \href{https://\docrepo}{\texttt{\docrepo}}
+}}
+\end{center}
+\vspace{4pt}}
+
+\begin{document}
+
+\title{Aberration-Robust Holograms for Optical Trap Arrays: Expected-Cost Optimization Lowers the Tail of the Intensity Spread Under Residual Aberrations in Simulation}
+\author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
+\small CAOS open-research programme, Santiago, Chile\\
+\small \texttt{fsantibanez@gmail.com}}
+\date{}
+\maketitle
+\vspace{-1.2em}
+\headerblock
+
+\input{sec_abstract}
+
+\input{sec_intro}
+\input{sec_related}
+\input{sec_problem}
+\input{sec_method}
+\input{sec_theory}
+\input{sec_design}
+\input{sec_results}
+\input{sec_ablation}
+\input{sec_discussion}
+\input{sec_limits}
+\input{sec_repro}
+\input{sec_conclusions}
+
+\input{sec_refs}
+
+\end{document}

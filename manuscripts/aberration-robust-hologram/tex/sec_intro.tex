@@ -1,0 +1,46 @@
+\section{Introduction}\label{sec:intro}
+
+A phase-only spatial light modulator (SLM) in the pupil plane of a lens turns a computed phase pattern into an array of optical traps. The first single-beam gradient-force trap
+demonstrated that a focused beam holds a dielectric particle~\cite{ashkin1986}; the holograms that make hundreds or thousands of such traps from one beam are computed, not designed, by
+iterative Fourier algorithms whose weighted form equalizes the trap intensities~\cite{dileonardo2007}. The same computation now sets the size of neutral-atom quantum machines. The
+256-atom simulator of Ebadi et al.\ computes its holograms with phase-fixed weighted Gerchberg--Saxton (WGS) for roughly one thousand tweezers and corrects the aberrations of the optics with
+Zernike polynomials set on the SLM~\cite{ebadi2021}; the array of Manetsch et al.\ holds 6,100 atoms in 11,998 sites and still shows a standard deviation of the trap depth across sites of 11.4
+percent after the WGS optimization, and the authors report that optical aberrations worsen at tweezer powers above the ones they used~\cite{manetsch2025}. The light field, not the
+atom physics, is a limit of the machine, and aberrations are one named part of that limit.
+
+The established remedy for an aberrated optical train is to measure the wavefront and display its opposite on the SLM. Nogrette et al.\ added the aberration phase to the hologram phase and
+reduced the root-mean-square (rms) wavefront error from 0.15 to 0.014 wavelengths, which raised the radial trap frequency from 68.0 to 86.5 kHz~\cite{nogrette2014}. A correction is a point estimate,
+however. The aberration of a tweezer array depends on the position in the field: a modified Gerchberg--Saxton algorithm that uses aberrations measured over the whole field extends the aberration-free
+field of view from 50 to 500 micrometres~\cite{machu2025}, and per-site propagation kernels grouped into about 50 isoplanatic patches enlarge the field of view of a tweezer array eightfold~\cite{christen2025}.
+Whatever the correction, a residual remains, it differs from site to site and from one calibration to the next, and the hologram that was optimized for the nominal system meets it unprepared. A hologram
+can be made less sensitive to what the correction leaves; the sources read for this paper correct the aberration per site or with one global set, and none optimizes the hologram for a distribution of residual
+aberration.
+
+We propose that distribution-level design and test it. The aberration-robust hologram minimizes the expected trap-intensity loss over a prior on the residual Zernike coefficients, instead of the loss at the
+nominal system. The expectation is taken by a deterministic set of sigma points, which gives the optimizer a cost without sampling noise, and the minimization is a conjugate-gradient descent started from the
+hologram of phase-fixed WGS, the method that computes the holograms of the largest arrays. The method is not a new optimizer: it is a choice of the cost that a gradient method minimizes, a derivation of why that cost
+lowers the spread of the trap intensities under aberration, and a measurement of where it helps and where it does not.
+
+The contributions are the following.
+\begin{enumerate}
+\item A formulation of the hologram design as the minimization of the expected loss over residual aberrations, with a sigma-point quadrature that matches the Gaussian expectation through the second order in the prior
+standard deviation, and a closed-form gradient (Sections~\ref{sec:problem} and~\ref{sec:proposed-method}).
+\item Three propositions with derivations: the accuracy of the sigma-point quadrature, the decomposition of the robust cost into the nominal cost plus a curvature term along the aberration modes, and a bound of the
+expected squared intensity spread by the Gauss--Newton part of that term; and a derived and measured limit, the curvature of a trap spot, that bounds what a design can gain under displacements of the traps
+(Section~\ref{sec:theory}).
+\item A measurement against the published methods run by the product on the same task and the same ensemble of 200 aberration draws, over \nSeedsAll{} seeds of the hologram, with bootstrap intervals, a paired sign test
+and a check of the first-order theory against the ensemble (Sections~\ref{sec:design} and~\ref{sec:results}).
+\item An ablation of the number and kind of design samples, the modes in the design, the design amplitude, the target level and the iterations, and a test on ensembles that differ from the design prior
+(Sections~\ref{sec:results} and~\ref{sec:ablation}).
+\end{enumerate}
+
+The main result is a spread result in a simulated device and not a hardware measurement. Over an ensemble of 200 draws of eight residual Zernike modes (Noll 4 to 11) of \parAb{} waves standard deviation each, the 95th percentile of the
+relative standard deviation of the trap intensities of a $10\times10$ array is a median of \ratioMed{} times lower for the robust hologram than for phase-fixed WGS (\ratioMin{} to \ratioMax{} over three seeds of the holograms; median
+\ratioAllMed{} over \nSeedsAll{} seeds, bootstrap interval \ratioAllCiLo{} to \ratioAllCiHi), at a median \effRatioMed{} of the efficiency of phase-fixed WGS. The gain does not follow for random displacements of the traps in the configuration of the acceptance test: the same cost
+extended with a displacement prior gives \ptAccMed{} times (\ptAccMin{} to \ptAccMax) and at most \ptASampleMax{} times with 20 steps (Table~\ref{tab:pointing}). With a displacement prior alone and five times the budget the ratio is \poBLong{} at 0.10 focal bins, at \poBLongEff{} of the efficiency, and we show that the spread under displacement has a first-order
+slope term, which a design can lower, and a curvature floor, which the width of the focused spot fixes.
+
+The paper is organized as follows. Section~\ref{sec:related} places the method among the published ones. Section~\ref{sec:problem} fixes the model, the metrics and the problem. Section~\ref{sec:proposed-method} derives the method and
+gives its algorithm, parameters and cost. Section~\ref{sec:theory} states and proves what can be proved. Section~\ref{sec:design} states the hypotheses and the protocol, Section~\ref{sec:results} reports the measurements and
+Section~\ref{sec:ablation} the ablation. Sections~\ref{sec:discussion} and~\ref{sec:limits} discuss the findings and the limits, Section~\ref{sec:repro} gives the commands that rebuild every number, and
+Section~\ref{sec:conclusions} concludes.
