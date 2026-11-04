@@ -1,0 +1,74 @@
+\section{Problem formulation}\label{sec:problem}
+
+\subsection{Forward model}\label{sec:forward}
+
+The SLM has $N\times N$ pixels with $N=\nPixGen$ and pitch $p$, and lies in the pupil plane of a lens of focal length $f$ illuminated at wavelength $\lambda$ by a Gaussian beam of amplitude $A_j$ normalised so that $\sum_jA_j^2=N^2$. We use the scalar
+Fourier model of Di Leonardo et al.~\cite{dileonardo}. A trap $m=1,\dots,M$ at lateral position $(x_m,y_m)$ and depth $z_m$ in the focal region, with a target weight $w_m>0$, sees a field and an intensity
+\begin{equation}
+V_m(\phi)=\frac{1}{N^2}\sum_{j}A_j\,e^{\,i(\phi_j-\Delta_j^m)},\qquad I_m=|V_m|^2,\qquad
+\Delta_j^m=\frac{\pi z_m}{\lambda f^2}\,(x_j^2+y_j^2)+\frac{2\pi}{\lambda f}\,(x_jx_m+y_jy_m),
+\label{eq:forward}
+\end{equation}
+where $\phi_j$ is the phase of pixel $j$ at position $(x_j,y_j)$ and $\Delta_j^m$ the single-trap delay (a prism for the lateral position and a lens for the depth). The adjoint operation
+$F_j=\sum_mc_m\,e^{+i\Delta_j^m}$ back-projects trap coefficients to the SLM plane; every weighted Gerchberg--Saxton update is the argument of such a sum. The lens term is written in units of the Rayleigh range that
+the SLM aperture focuses, $z_{\mathrm R}=\lambda f^2/(\pi R^2)$ with $R=Np/2$, so that the quadratic phase at the aperture edge equals $z_m/z_{\mathrm R}$ radians, and the lateral position in focal bins of the zero-padded transform, $\lambda f/(\mathrm{pad}\,Np)$. In these units the model
+does not depend on $\lambda$, $f$ or $p$, which is why the network of Section~\ref{sec:proposed-method} can take the trap list in bins and Rayleigh ranges as its only input.
+
+\subsection{Metrics and the quantity to minimize}\label{sec:metrics}
+
+The quality of a hologram is read on the trap intensities divided by the target weights, $r_m=I_m/w_m$. The efficiency, the relative standard deviation and the uniformity are
+\begin{equation}
+\eta(\phi)=\sum_{m=1}^{M}I_m,\qquad
+\relstd(\phi)=100\,\frac{\operatorname{std}_m(r_m)}{\operatorname{mean}_m(r_m)}\ \ [\%],\qquad
+u(\phi)=1-\frac{\max_m r_m-\min_m r_m}{\max_m r_m+\min_m r_m},
+\label{eq:metrics}
+\end{equation}
+with the population standard deviation. The efficiency is the fraction of the input power in the peaks of the traps; $\relstd$ is the quantity a camera-corrected experiment cares about and the one the methods of the family drive down. An iterative method produces a sequence of phases $\phi^{(k)}$, $k=1,2,\dots$, and the cost of the method on an instance is
+the number of iterations before the spread falls to a threshold,
+\begin{equation}
+k_1=\min\{\,k\ge1:\ \relstd(\phi^{(k)})\le1\,\},
+\label{eq:k1}
+\end{equation}
+which we take as $\budget+1$ when the threshold is not reached within the budget of $\budget$ iterations. The threshold of 1 percent is the level the acceptance test of the product sets for a hologram before camera feedback, a spread that the camera-corrected experiments~\cite{kim2019,nogrette} reach at 1.4 to 1.6 percent after feedback. The final values of $\eta$ and $\relstd$ at the end of the budget
+are read as well, because a start that saves iterations by degrading them has not saved anything.
+
+\subsection{The warm-start problem}\label{sec:warm-problem}
+
+Let $\mathcal A$ be an iterative method that, given a start phase $\phi^{(0)}$ and a trap set $\mathcal T=\{(x_m,y_m,z_m,w_m)\}_{m\le M}$, produces $\phi^{(k)}$. The random start of the literature draws one phase $\theta_m$ per trap uniformly in $[0,2\pi)$ and builds the superposition hologram of Section~\ref{sec:proposed-method}. A warm start is a map
+$g_\vartheta:\mathcal T\mapsto(\theta_1,\dots,\theta_M)$ with parameters $\vartheta$, learned from a distribution $\mathcal D$ of trap sets, such that the expected cost
+\begin{equation}
+J(\vartheta)=\mathbb E_{\mathcal T\sim\mathcal D}\ \mathbb E_{\text{seed}}\big[\,k_1\big(\mathcal A(\phi^{(0)}_{g_\vartheta(\mathcal T)},\mathcal T)\big)\big]
+\label{eq:warm-objective}
+\end{equation}
+is lower than with random phases. The quantity of interest is the ratio of the median $k_1$ of the random start to that of the learned start on trap sets that are not in the training distribution, so that a warm start that only
+memorizes the training geometries gains nothing. The acceptance criterion fixed before training asks for a ratio of at least two with the final efficiency and uniformity within 1 percent.
+
+The expectation of Eq.~\eqref{eq:warm-objective} is over two sources of randomness, the geometry and the seed of the random phases that the baseline uses, and the learned map is deterministic, so its run varies only with the geometry. The comparison therefore pairs each geometry and seed across arms: the random start of the baseline and the network start see the same trap set, and the baselines with different freeze indices see the same random phases. A warm start is useful when it lowers the median of $k_1$ over the geometries; it is harmful when it raises the share of runs that do not converge, a quantity that the median of $k_1$ alone cannot show and that we therefore report next to it.
+
+\subsection{Assumptions and notation}\label{sec:assumptions}
+
+We assume (i) the scalar Fourier model of Eq.~\eqref{eq:forward}, ideal pixels (no crosstalk, quantization or flicker), because the question concerns the iteration and not the device; (ii) point traps without vortex charge, with at most 1024 traps, the limit of the network input; (iii) a Gaussian input beam, one lens and an SLM of $\nPixGen^2$ pixels with a zero padding of two for the generated
+geometries; and (iv) a budget of $\budget$ iterations per run. Assumption (i) is the model of the engine of the product on which every method of the study runs; the effect of a real device on the question is outside the measurements (Section~\ref{sec:limits}). Two further conventions matter for what follows. The trap weights $w_m$ enter the iteration only through the target amplitudes $a_m=\sqrt{w_m}$ and through the division of the intensities by $w_m$ in the metrics, so a set with unequal weights is a different problem from a set with equal weights on the same positions. The spread $\relstd$ is computed on the intensities divided by the weights, which is the quantity a user of the array wants to equalize. Table~\ref{tab:notation} lists the symbols.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$N$, $p$, $f$, $\lambda$ & SLM pixels per side, pixel pitch, lens focal length, wavelength \\
+$A_j$, $\phi_j$, $\Delta_j^m$ & input amplitude, phase of pixel $j$, single-trap delay of trap $m$ at pixel $j$ \\
+$M$, $w_m$, $a_m=\sqrt{w_m}$ & number of traps, target weight, target amplitude \\
+$V_m$, $I_m=|V_m|^2$ & trap field and intensity; $r_m=I_m/w_m$ \\
+$\eta$, $\relstd$, $u$ & efficiency, relative standard deviation (\%), uniformity \\
+$k_1$ & iterations to $\relstd\le1\%$, with the value $\budget+1$ when never reached \\
+$\theta_m$, $\phi^{(0)}$ & initial trap phase and the superposition start hologram built from it \\
+$g_k$, $B_k(m)=|V_m|/a_m$ & weights of the update at iteration $k$ and the relative trap amplitude \\
+$\psi_k$, $\nfix$ & focal-plane phase used at iteration $k$; index at which it is frozen \\
+$g_\vartheta$ & the warm-start network with parameters $\vartheta$ \\
+$S_k$, $s_k$ & log-spread of the weights after iteration $k$ and the allowance of the iteration \\
+\bottomrule
+\end{tabular}
+\caption{Notation: the symbols of the forward model, the metrics, the iteration of phase-fixed WGS and the warm-start network used in Sections~\ref{sec:problem} to~\ref{sec:ablation}.}
+\label{tab:notation}
+\end{table}

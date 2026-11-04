@@ -1,0 +1,58 @@
+\section{Related work}\label{sec:related}
+
+We group the published methods by what they optimize and what they assume, and state for each what it gives and where it stops. The characterizations
+are those of the cited works; where a work was known to us through its abstract only, we say what the abstract states and no more.
+
+\subsection{Iterative and analytic hologram design for trap arrays}\label{sec:rel-gs}
+
+The iteration of Gerchberg and Saxton~\cite{gs1972} recovers a phase from two intensity measurements by alternating between the two planes and replacing the amplitude in each by the measured one; it
+became the standard way of computing a phase hologram for a target intensity. Di Leonardo, Ianni and Ruocco~\cite{dileonardo} compare, for arrays of optical traps in the focal plane of a lens, the random superposition of
+single-trap holograms (the SR hologram), the Gerchberg--Saxton iteration and a weighted form in which the amplitude imposed on every trap is multiplied by a weight that is updated to reduce the deviation of the trap amplitude from
+the average amplitude. The weighted form equalizes the trap intensities, and the SR hologram, one pass with one random phase per trap, is the usual start of the iterations. Bianchi and Di Leonardo~\cite{bianchi} give GPU implementations of the same
+two algorithms and report their timings, which established that the iteration can be run interactively. Whyte and Courtial~\cite{whyte} extend the iteration to three-dimensional targets by propagating the target plane by plane. All of
+these start from random trap phases, and all treat the start as a nuisance whose effect averages out: the iteration is run from a random start until the metric is reached.
+
+Polin et al.~\cite{polin} take a different route for the same task, direct search and simulated annealing on the phase of individual pixels with a cost that trades efficiency for uniformity; for 119 quasi-periodic traps they report a brightness variation of the iterative
+holograms above 50 percent against below 5 percent for direct search. The method does not need a start of any kind, but it is sequential and cost grows with the number of pixels and phase levels, so it does not meet the iteration budgets of large arrays.
+
+\subsection{Weights, phase freezing and camera feedback}\label{sec:rel-wgs}
+
+The two ingredients that make weighted GS reach percent-level uniformity on large arrays are a weight that is updated multiplicatively and, after a few iterations, a frozen focal-plane phase. Kim et al.~\cite{kim2019} show that replacing the SLM-plane amplitude by the laser amplitude
+perturbs the focal phase and makes the weights less effective, and that fixing the phase after an initial number of iterations removes the perturbation; on 1500 foci with twelve iterations before the freeze they obtain a modulation efficiency of 91.2 percent and a non-uniformity below 0.5 percent, and
+with three camera-corrected steps a non-uniformity of 1.59 percent. Nogrette et al.~\cite{nogrette} apply a closed-loop rescaling of the target with a gain of about 0.7 and bring the rms trap-depth non-uniformity of about one hundred traps from 19 to 1.4 percent in 20 iterations. Chew et al.~\cite{chew}
+report, in an abstract, an intensity relative standard deviation of 0.3 percent, shape variations below 0.5 percent and positioning errors within 70 nm for holographic arrays of an SLM, with a series of optimization methods fed by precise measurement. The experiments with the largest arrays use this family:
+Ebadi et al.~\cite{ebadi} compute their holograms with phase-fixed WGS and Manetsch et al.~\cite{manetsch} weight it with the measured loading probability. In every one of these works the start is a random-phase superposition, and the freeze index is a parameter whose value, twelve in~\cite{kim2019}, is taken as a given.
+
+\subsection{Gradient methods and models of the device}\label{sec:rel-grad}
+
+Harte et al.~\cite{harte} minimize a cost on the focal intensity by conjugate gradients with the gradient in closed form through the fast Fourier transform; they report errors of 0.07 percent on shaped targets after thousands of iterations and note that the method needs more iterations than mixed-region amplitude freedom but fewer
+random restarts. Bowman et al.~\cite{bowman} extend the conjugate-gradient approach to control of both phase and amplitude with a phase-only SLM. Chakravarthula et al.~\cite{wirtinger} treat the hologram as the minimizer of a loss through any differentiable propagation model with Wirtinger derivatives, and Schroff et al.~\cite{schroff} put a model of the
+pixel crosstalk of the SLM inside such a loop. These methods can reach lower errors than the Gerchberg--Saxton family and can include a device model, at the price of a higher cost per hologram; none of them is a warm start, and each of them is itself started from a random or a Gerchberg--Saxton phase, so a better start would help them as well.
+
+\subsection{Shaped targets: mixed-region freedom and optimal transport}\label{sec:rel-shape}
+
+For continuous targets, Pasienski and DeMarco~\cite{pasienski} let the amplitude float in a noise region (mixed-region amplitude freedom, MRAF), and Holland et al.~\cite{holland} compare rounding, error diffusion and MRAF for large periodic arrays on a phase SLM and on a binary mirror device. The one published place where the start of the iteration
+is treated as the object of the method is optimal transport. Swan et al.~\cite{swan} solve a quadratic-cost optimal-transport problem between the input and the target intensities and use the resulting phase as the start of GS or MRAF, which in their six targets lowers the MRAF error from the range of 1.5 to 3.9 percent to 0.17 to 0.96 percent
+and raises the efficiency; Torchylo et al.~\cite{torchylo} reduce the memory of the computation to a linear order with a separable cost, so a $1024\times1024$ problem takes 8.5 seconds on a GPU. These starts are computed from the target by an optimization, not predicted by a trained model, and they address shaped targets; the point-trap array is not their subject.
+
+\subsection{Learned holograms and learned warm starts}\label{sec:rel-learned}
+
+DeepCGH~\cite{eybposh} trains a convolutional network without labels by minimizing a differentiable accuracy of the reconstruction and reports volumetric holograms at least ten times faster than Gerchberg--Saxton and 9 to 43 percent more accurate on its metric. Tensor holography~\cite{shi}
+reports a network of under 620 KB that computes holograms at video rate (the abstract is what we read). Neural holography~\cite{peng} calibrates a differentiable propagation model with a camera in the loop. Ren et al.~\cite{ren} train a U-Net on 2000 hologram pairs produced by Gerchberg--Saxton to generate the phase of tweezer arrays in 0.16 s against about 6 s for the iteration at a
+comparable signal-to-noise ratio, with about 10 percent trap-depth variation on about 20 sites. All four replace the iteration with a network; none uses the network to start an iteration and none compares with weighted GS on the uniformity of hundreds of traps.
+
+Outside holography, learned warm starts for fixed-point solvers are an established idea. Sambharya et al.~\cite{sambharya} map the parameters of a problem to a warm start with a neural network followed by a fixed number of iterations of the solver, train it end to end on the downstream loss, and report a significant reduction in the number of iterations on control, statistics and signal-processing problems.
+Our network uses the same recipe, an unrolled solver as the training loss, on a solver (phase-fixed WGS) that differs in one respect from those of~\cite{sambharya}: its state includes weights that restart at one, and a phase that is frozen at an index of the user's choice.
+
+\subsection{Sequences and rearrangement}\label{sec:rel-seq}
+
+The holograms of rearrangement sequences are computed in large numbers, which is where a saving of iterations would count most. Kim et al.~\cite{kimoe} adapt the iteration to atom rearrangement with zero padding and weighted feedback, Lee et al.~\cite{lee} choose the assignment of atoms to sites by the Hungarian method, and Knottnerus et al.~\cite{lpi}
+interpolate position and optical phase between the first and last hologram to display new holograms every few milliseconds with a success probability of 0.996 per rearrangement cycle. The last method avoids the iteration for the intermediate frames by interpolating the phases of the endpoint holograms, a different way of re-using a computed start.
+
+A warm start would matter most in these sequences, where thousands of holograms are computed one after the other and each begins from the previous one. In that setting the natural start of a new hologram is the preceding hologram, not a random phase, which is why the sequence methods already re-use phases; the question for a learned warm start is therefore the case of a hologram computed for a new geometry, with no predecessor to start from, which is the case we test.
+
+\subsection{Position of the proposed method}\label{sec:rel-position}
+
+The proposed method sits between the learned generators and the iterative methods. Like~\cite{eybposh,ren} it trains a network on random geometries to learn a map from the trap list to phases; unlike them the output is not the hologram but the initial phase of an iteration that keeps
+its accuracy, so the final uniformity of phase-fixed WGS~\cite{kim2019} is retained by construction. Like~\cite{sambharya} it is a learned warm start trained through the unrolled solver; unlike it, the solver has a frozen phase and a weight state that restart. Like~\cite{swan} it treats the start as a design object; unlike it, the start is predicted in one forward
+pass from the trap list and does not solve a transport problem. Among the works above, only~\cite{sambharya} and~\cite{swan} treat the initialization of an iterative solver as the quantity to improve, and neither involves a solver with a frozen phase. The experiments that follow ask whether this position is worth anything in iterations, and the answer, with a control that none of the cited works needed, is no.

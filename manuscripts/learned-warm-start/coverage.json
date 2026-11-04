@@ -1,0 +1,10 @@
+{
+  "kind": "manuscript",
+  "title_support": [
+    "tab:ablation",
+    "fig:ablation"
+  ],
+  "claims": {
+    "BS-3": "sec:proposed-method"
+  }
+}
