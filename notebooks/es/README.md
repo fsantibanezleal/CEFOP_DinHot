@@ -22,6 +22,17 @@ y los notebooks los cubren así:
 - Los métodos propuestos son los notebooks de nivel 4, cada uno con la afirmación que prueba en `caos.beyond`
   (B1 en 03, B5 en 05, B4 en 06, B2 en 07, B3 en 08, un negativo medido).
 
+## Cobertura de toda la herramienta
+
+[`../coverage.json`](../coverage.json) asigna cada parte de la herramienta a los notebooks que la enseñan: cada método de la escalera
+del SDD (cubierto solo por un notebook de nivel 2 o superior), cada contrato de datos de `docs/contracts/catalog.md`, cada etapa del
+pipeline de `data-pipeline/pipeline/stages/` y cada paquete de métodos (el producto no declara ninguno). Las rutas son relativas a un
+árbol de idioma y existen en ambos. Todo notebook de nivel 2 o superior tiene una sección de tercer nivel sobre dónde su método
+cambia o falla y otra sobre cómo usarlo con datos propios, y los notebooks de los topics 01 y 02 leen además los documentos
+comprometidos de los contratos que explican. El control es `tools/notebooks/check_notebook_depth.py` de CAOS_MANAGE. Las partes que
+ningún notebook enseña todavía quedan fuera del mapa, para que el control las liste: las trampas de vórtice (M15), los contratos
+engine-reference, readiness y api, y la etapa engine_reference.
+
 ## Temas
 
 Un tema sin notebook de nivel 3 dice por qué en su fila.

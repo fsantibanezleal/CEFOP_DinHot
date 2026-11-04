@@ -28,6 +28,15 @@ Eight topics, from simple to complex, in two trees:
 Levels: 1 fundamentals, 2 the method in practice, 3 comparison with published methods (the published methods of the SDD's ladder,
 run against slmsuite 0.5.0 or as published), 4 proposed methods (the product's own claims, measured, including the negatives).
 
+## Coverage of the tool / Cobertura de la herramienta
+
+[`coverage.json`](coverage.json) maps each method of the SDD's ladder, each data contract, each pipeline stage and each method
+package to the notebooks that teach it (paths relative to a language tree, present in both); a method counts as covered only by a
+notebook of level 2 or above. The parts without a notebook yet are listed in the index of each tree.
+[`coverage.json`](coverage.json) asigna cada método de la escalera del SDD, cada contrato de datos, cada etapa del pipeline y cada
+paquete de métodos a los notebooks que lo enseñan (rutas relativas a un árbol de idioma, presentes en ambos); un método solo cuenta
+como cubierto por un notebook de nivel 2 o superior. Las partes que aún no tienen notebook se listan en el índice de cada árbol.
+
 ## The two trees / Los dos árboles
 
 | Language | Index | Folder |

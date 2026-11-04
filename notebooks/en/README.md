@@ -22,6 +22,16 @@ and the notebooks cover the methods like this:
 - The proposed methods are the level 4 notebooks, each named by the claim it tests in `caos.beyond` (B1 in 03, B5
   in 05, B4 in 06, B2 in 07, B3 in 08, a measured negative).
 
+## Coverage of the whole tool
+
+[`../coverage.json`](../coverage.json) maps every part of the tool to the notebooks that teach it: each method of the SDD's ladder
+(covered only by a notebook of level 2 or above), each data contract of `docs/contracts/catalog.md`, each pipeline stage of
+`data-pipeline/pipeline/stages/` and each method package (the product declares none). The paths are relative to a language tree and
+exist in both. Every notebook of level 2 or above has a third-level section on where its method changes or breaks and one on using
+it on your own data, and the notebooks of topics 01 and 02 also read the committed documents of the contracts they explain. The
+check is `tools/notebooks/check_notebook_depth.py` of CAOS_MANAGE. Parts that no notebook teaches yet are left out of the map, so
+that the check lists them: the vortex traps (M15), the contracts engine-reference, readiness and api, and the stage engine_reference.
+
 ## Topics
 
 A topic without a level 3 notebook says why on its row.
