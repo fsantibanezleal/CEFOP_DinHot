@@ -1,0 +1,91 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\Urlmuskip=0mu plus 2mu\relax
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[hidelinks]{hyperref}
+\usepackage{orcidlink}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{remark}{Remark}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\graphicspath{{../figures/}}
+\input{../data/b5_numbers.tex}
+
+% Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
+% publishing tool when the version DOI is reserved.
+\newcommand{\doctype}{Preprint}
+\newcommand{\docversion}{v0.01}
+\newcommand{\docdate}{3 November 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.pending}
+\newcommand{\conceptdoi}{10.5281/zenodo.pending}
+\newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
+\newcommand{\headerblock}{%
+\begin{center}
+\fbox{\parbox{0.94\textwidth}{\small\raggedright
+\textbf{\doctype} \quad$\cdot$\quad \docversion, \docdate \quad$\cdot$\quad Licence CC BY 4.0\\[2pt]
+CAOS open-research programme \quad$\cdot$\quad CEFOP\_DinHot, holographic optical trap studio\\[2pt]
+Version DOI \href{https://doi.org/\versiondoi}{\texttt{\versiondoi}} \quad$\cdot$\quad
+concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptdoi}}\\[2pt]
+Not peer reviewed. Source code, data and computational records: \href{https://\docrepo}{\texttt{\docrepo}}
+}}
+\end{center}
+\vspace{4pt}}
+
+\begin{document}
+
+\title{Tracing the Efficiency-Uniformity Pareto Front of Holographic Optical Trap Arrays\\ by Continuation of a Weighted Cost}
+\author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
+\small CAOS open-research programme, Santiago, Chile\\
+\small \texttt{fsantibanez@gmail.com}}
+\date{}
+\maketitle
+\vspace{-1.2em}
+\headerblock
+
+\begin{abstract}
+Every method that computes the hologram of an array of optical traps trades the light in the traps against their uniformity, and the literature reports one or two points of that trade-off per method and per task. We propose to compute the whole front by
+continuation: a weight $\lambda$ combines a normalized squared error of the trap intensities and the normalized light into one loss, the loss is minimized by conjugate gradients at increasing weights, and each solution starts the next. An identity shows that the loss at every weight is the
+squared error against a flat target raised uniformly, which gives the weight a reading and predicts the weight \lamSat{} (interval \lamSatLo{} to \lamSatHi) beyond which the target exceeds the efficiency that is reached. On a ten by ten lattice of 100 traps and \nSeeds{} seeds the front has a hypervolume of \hvFront{} against
+\hvPub{} for the union of the points of Gerchberg--Saxton, the adaptive additive iteration, weighted GS and direct search run on the same seeds, a paired difference of \hvDiff{} (95 percent interval \hvDiffLo{} to \hvDiffHi) that is positive in \hvGeCount{} of \nSeeds{} seeds,
+and it dominates the first two points in every seed. It dominates the weighted GS point in \domGSWSeeds{} and the phase-fixed point in \domPFSeeds{} of \nSeeds{} seeds, and \frontDomMin{} to \frontDomMax{} of its \nLambda{} points are dominated by iterates of weighted GS run for 100 iterations. In the benchmark of the studio the stored fronts meet the published union on \benchPassThirty{} of \benchNThirty{} geometries at 30 iterations and on \benchPassHundred{} of \benchNHundred{} at 100.
+An ablation of twelve variants shows that the warm start, the scaling of the loss and the start from phase-fixed WGS each raise the hypervolume by \ablStartGsAbs{} to \ablRawAbs{}. The front is computed on the ideal device.
+\end{abstract}
+
+\noindent\textbf{Keywords:} holographic optical tweezers, Pareto front, continuation, conjugate gradient, weighted Gerchberg--Saxton, hypervolume.
+
+\input{sec-intro}
+\input{sec-related}
+\input{sec-problem}
+\input{sec-method}
+\input{sec-theory}
+\input{sec-design}
+\input{sec-results}
+\input{sec-ablation}
+\input{sec-discussion}
+\input{sec-limits}
+\input{sec-repro}
+\input{sec-conclusions}
+
+\input{bibliography}
+
+\end{document}

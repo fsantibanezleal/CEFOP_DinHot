@@ -1,0 +1,36 @@
+\section{Introduction}\label{sec:intro}
+
+A phase-only spatial light modulator (SLM) placed in the pupil plane of a lens forms an array of optical traps whose number now reaches the thousands. The largest
+published array holds about 6100 atoms in about 12,000 tweezers, and the same report states that the light field is one of the limits of
+the machine: the trap depth varies by 11.4 percent (standard deviation) across the sites after weighted Gerchberg--Saxton optimization, while a small calibrated array reaches a relative
+standard deviation of the intensity of 0.3 percent~\cite{manetsch,chew}. The spread therefore grows with the size of the array, and the light that reaches the traps is a budget that the
+experiment spends on the uniformity of the sites. Programmable neutral-atom simulators of hundreds of atoms~\cite{ebadi} and the sorting of atoms into defect-free arrays make the quality of the hologram a question of the yield of the
+experiment, not of its elegance.
+
+The hologram is computed, not designed, and every method that computes it trades two quantities against each other. The efficiency $e$ is the fraction of the input power that lands in the traps. The uniformity $u$ measures how equal the traps are.
+The foundational comparison of Di Leonardo et al.\ runs the random superposition, the Gerchberg--Saxton (GS) iteration, its adaptive additive variant, direct search and the weighted GS iteration on one ten by ten lattice and lists one
+point of the plane $(e,u)$ for each: GS reaches an efficiency of 0.94 and a uniformity of 0.60 in 30 iterations, the adaptive additive variant 0.93 and 0.79, direct search 0.68 and 1.00 after $7.5\times10^{5}$ trial phases, and the weighted GS iteration 0.93 and 0.99~\cite{dileonardo}.
+Direct search owes its position to a scalar weight $f$ that multiplies the spread in its cost, and the source reports it at two values of that weight~\cite{dileonardo,polin}. The phase-fixed form of weighted GS, which freezes the
+phases of the traps after a few iterations, reaches a modulation efficiency of 91.2 percent and a non-uniformity below 0.5 percent on 1500 foci in simulation~\cite{kim2019}.
+
+The gap that this paper addresses is the following. Each source reports one point, or at most two, of a trade-off curve, and it reports it for its own task, so a reader cannot say what an extra percent of uniformity costs in light on a given array, nor whether
+a published point lies on the best attainable curve or inside it. The weights that appear in the cost of direct search and in the amplitude-freedom method of Pasienski and DeMarco~\cite{pasienski} are scalars fixed in advance. The
+literature of multiobjective optimization has methods that compute a whole Pareto front of a smooth problem by solving a family of weighted problems, each started from the solution of its neighbour, and the measures that compare fronts, such as the hypervolume~\cite{zitzler2003,beume}.
+No source of the holography literature read for this paper applies them to the trap-array hologram and reports a front for a given array against the points of the published methods run on the same array.
+
+The proposed method computes that front. A weight $\lambda\in[0,1]$ combines two dimensionless terms into one loss: the squared deviation of the trap intensities from a flat target, and the negative of the light in the traps, both scaled to be of order one.
+The problem is solved at $\lambda=0$, where the hologram is the refined output of phase-fixed weighted GS, and then at a sequence of increasing values of $\lambda$, each solved by conjugate-gradient iterations that start from the solution of the previous value. The gradient of the loss is closed form through the adjoint of the point-trap projection of the engine, so no automatic differentiation is needed. The set of points
+$(e,u)$ of the solutions is the front, and its hypervolume summarizes it in one number that can be compared with the area covered by the published points.
+
+The result on the ten by ten task of the engine is the following. Over \nSeeds{} seeds the front has a hypervolume of \hvFront{} (95 percent interval \hvFrontCi) against \hvPub{} (\hvPubCi) for the union of the points of the four published methods of the acceptance criterion, a difference of
+\hvDiff{} (interval \hvDiffLo{} to \hvDiffHi) that is positive in \hvGeCount{} of \nSeeds{} seeds. The front dominates the points of Gerchberg--Saxton and of the adaptive additive iteration in every seed, but it dominates the point of weighted GS in only \domGSWSeeds{} and the point of phase-fixed WGS in only \domPFSeeds{} of \nSeeds{} seeds, and \frontDomMin{} to \frontDomMax{} of its \nLambda{} points are dominated by iterates of weighted GS run for 100 iterations. Against the benchmark of the studio, the stored front meets the published union on \benchPassThirty{} of \benchNThirty{} geometries at 30 iterations and on \benchPassHundred{} of \benchNHundred{} at 100 iterations, so the result is limited to the task on which it was measured. The contributions are the following.
+\begin{enumerate}
+\item A front-tracing method for point-trap holograms: a normalized weighted loss, its closed-form gradient, and a continuation over the weight with a warm start from the neighbouring value (Section~\ref{sec:method}).
+\item An identity that rewrites the loss at every weight as the squared error against a uniformly raised target, which gives the weight a physical reading, predicts the weight beyond which the target exceeds the efficiency that is reached, and suggests a schedule of weights (Proposition~\ref{prop:shift}).
+\item Three further properties that are proved: the monotonicity of the light and of the error along the weights for global minimizers (Proposition~\ref{prop:mono}), two bounds that tie the measured spread and uniformity to the value of the loss (Proposition~\ref{prop:bound}), and the size of the starting gradient of a warm start (Proposition~\ref{prop:warm}).
+\item A controlled comparison with the published methods run by the same engine on the same task and seeds, including the one-parameter fronts that those methods generate when their own parameter or their iteration count is varied (Sections~\ref{sec:design} and~\ref{sec:results}).
+\item An ablation of twelve variants of the front, measured by a committed script, with the continuation, the schedule, the number of points, the steps per point, the start and the scaling of the loss each varied alone (Section~\ref{sec:ablation}).
+\item The scope of the result, stated with the cases where it fails: the weighted GS and phase-fixed WGS points are dominated in a minority of seeds, the stored fronts of the benchmark meet the published union only part of the time, and the front is computed for the ideal device (Sections~\ref{sec:discussion} and~\ref{sec:limits}).
+\end{enumerate}
+Section~\ref{sec:related} places the method among the published ones, Section~\ref{sec:problem} fixes the model, the metrics and the multiobjective problem, Section~\ref{sec:method} defines the method, Section~\ref{sec:theory} gives the propositions that explain it, and
+Sections~\ref{sec:design} to~\ref{sec:ablation} give the experiments. Section~\ref{sec:repro} lists the commands that rebuild every number and figure.

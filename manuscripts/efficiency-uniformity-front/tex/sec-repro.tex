@@ -1,0 +1,18 @@
+\section{Reproducibility}\label{sec:repro}
+
+The method, the engine, the benchmark and the scripts of this paper are in the repository named in the header block, at the release that carries the engine module \texttt{b5\_pareto} and the benchmark of \benchRows{} rows. Every number of the text is a macro of the file \texttt{data/b5\_numbers.tex}, every table is a file written by the same script, and every figure is a vector file written by a second script from the same data file. Nothing in the text is typed from a run.
+The numbers are rebuilt from the repository root with the pipeline environment of the engine by
+\begin{verbatim}
+.venv-pipeline/Scripts/python.exe \
+  manuscripts/efficiency-uniformity-front/data/measure.py \
+  --seeds 8 --seeds-abl 5 --seeds-timing 3
+.venv-notebooks/Scripts/python.exe \
+  manuscripts/efficiency-uniformity-front/figures/make_figs.py
+pdflatex -output-directory <build folder> \
+  manuscripts/efficiency-uniformity-front/tex/main.tex
+\end{verbatim}
+where the third command is run three times for the references. The measurement script runs the parts \texttt{main}, \texttt{rivals}, \texttt{ablation}, \texttt{identity}, \texttt{stored}, \texttt{diagnostic} and \texttt{timing} and writes \texttt{data/b5.json}; the option \texttt{--macros-only} rewrites the macro and table files from that file without running the engine, and \texttt{--only-variants} adds ablation variants to it.
+The first part checks that its own copy of the loop reproduces the module's front for the first seed; the largest absolute difference between the two fronts is \consistMax{}. The seeds are the integers $1,\dots,\nSeeds$ for the main experiment, $1,\dots,\nSeedsAbl$ for the ablation and $1,2,3$ for the timing, and each seed fixes the random superposition that starts every method.
+
+The run times are those of one machine with 32 logical processors that was shared with other jobs while the measurement ran. The parallel parts ran in processes of one thread each, and the time of a front in those processes is the \timePool{} seconds of the main experiment. The timing part runs the module's own entry alone, in one process with the threads of the machine, for three seeds, and the front takes \timeAloneMin{} to \timeAloneMax{} seconds, mean \timeAlone{}. The research record of the engine reports 16.6 seconds for the same task
+on a machine under contention, so the figure depends on the load of the machine more than on the method. The benchmark and the bake are read as committed: the file of the benchmark carries its own protocol, with 300 iterations or 20 seconds for its converged row and up to 600 seconds of wall clock per group of seeds, so its cell medians depend on the seeds that the bound admits, and a re-run of the benchmark can change the margins of Table~\ref{tab:bench}. The data of the main experiment, the front and the points of every seed are in \texttt{data/b5.json}, which is the archive of the measurement.
