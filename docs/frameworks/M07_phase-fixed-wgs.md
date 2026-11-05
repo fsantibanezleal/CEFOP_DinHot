@@ -6,7 +6,7 @@
 | Lane | live |
 | Targets, dimensions | traps, 2D only |
 | Module and entrypoint | `data-pipeline/pipeline/model/holo/methods/baseline/m07_phase_fixed_wgs.py`, `SPEC` line 21, `run` line 24; engine `_gs.py` |
-| Anchor | Kim, Kim, Lee and Ahn, Opt. Lett. 44, 3178 (2019) |
+| Anchor | Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund, Opt. Lett. 44, 3178 (2019) |
 
 ## Purpose
 
@@ -58,4 +58,4 @@ criterion; the criterion is measured with 60.
 
 ## References
 
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286

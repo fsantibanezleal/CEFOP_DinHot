@@ -4,7 +4,8 @@ Acceptance: over a 200-sample aberration-only ensemble (Noll 4 to 11, 0.02 waves
 deviation at least 1.25 times below M07's, mean efficiency at most 10 percent lower. The baseline M07 is this unit's
 ``_gs_family`` phase-fixed WGS (30 iterations, same equations; E2's M07 gives the same hologram statistics, see the
 report). Pointing robustness is not claimed: one test measures the pointing ensemble (0.15 bin) and asserts only that it
-runs and returns finite ratios; the measured value is a negative result (about 1.02x), limited by the spot width.
+runs and returns finite ratios; the measured value at this budget is a negative result (about 1.02x); a longer budget with a displacement prior alone
+reaches about 1.48x at 0.10 bins (the method's manuscript).
 """
 from __future__ import annotations
 

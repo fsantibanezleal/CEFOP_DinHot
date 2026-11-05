@@ -159,7 +159,7 @@
    "id": "B4",
    "tier": "beyond",
    "method": "Aberration-robust hologram",
-   "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.04 times)",
+   "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (1.04 times at the acceptance budget; 1.48 times at 0.10 bins with a displacement prior alone and five times the budget)",
    "gate": "tests/methods/beyond/test_b4_robust.py"
   },
   {

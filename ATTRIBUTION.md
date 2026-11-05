@@ -35,9 +35,9 @@ URLs, and the main ones are listed here so that the intellectual credit is in on
 
 - Di Leonardo, Ianni and Ruocco 2007 (superposition, random superposition, Gerchberg-Saxton, adaptive and weighted variants), https://doi.org/10.1364/OE.15.001913
 - Polin, Hovhannisyan and Sorensen 2005 (direct search), https://doi.org/10.1364/OPEX.13.005831
-- Kim, Kim, Lee and Ahn 2019 (phase-fixed weighted GS), https://doi.org/10.1364/OL.44.003178
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019 (phase-fixed weighted GS), https://doi.org/10.1364/OL.44.003178
 - Pasienski and DeMarco 2008 (MRAF), https://doi.org/10.1364/OE.16.002176
-- Harte, Bruce, Belmonte and Arnold 2014 (conjugate gradient), https://doi.org/10.1364/OE.22.026548
+- Harte, Bruce, Keeling and Cassettari 2014 (conjugate gradient), https://doi.org/10.1364/OE.22.026548
 - Chakravarthula et al. 2019 (Wirtinger holography), https://doi.org/10.1145/3355089.3356539
 - Nogrette et al. 2014 (camera feedback and aberration correction), https://arxiv.org/abs/1402.5329
 - Schroff, La Rooij, Haller and Kuhr 2023 (pixel crosstalk model and sampling), https://doi.org/10.1038/s41598-023-30296-6

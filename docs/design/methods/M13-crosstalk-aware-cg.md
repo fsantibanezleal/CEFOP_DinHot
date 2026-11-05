@@ -117,7 +117,7 @@ On C04 M13 has the lowest mean error in the bake (about 26 percent, with M18 at 
 ## References
 
 - Schroff, La Rooij, Haller and Kuhr 2023, Sci. Rep. 13, 3252, https://doi.org/10.1038/s41598-023-30296-6 ; arXiv 2212.10507
-- Harte, Bruce, Belmonte and Arnold 2014, Opt. Express 22, 26548, https://doi.org/10.1364/OE.22.026548 (the cost)
+- Harte, Bruce, Keeling and Cassettari 2014, Opt. Express 22, 26548, https://doi.org/10.1364/OE.22.026548 (the cost)
 
 ## Update after the corrections of 2026-10-29
 

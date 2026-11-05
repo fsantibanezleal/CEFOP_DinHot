@@ -121,4 +121,4 @@ the method's final hologram as the bake scores it; M16 is a sorting method and i
 
 - Lee, Kim and Ahn 2017, Phys. Rev. A 95, 053424, https://doi.org/10.1103/PhysRevA.95.053424 ; https://arxiv.org/abs/1704.07074
 - Linear phase interpolation, https://arxiv.org/abs/2501.01391
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the endpoint holograms)
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the endpoint holograms)

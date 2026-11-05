@@ -13,7 +13,7 @@
 ## Tier and role
 
 State of the art, replicated: minimize an intensity cost over all pixel phases at once with a gradient method. The solution replicated is
-Harte, Bruce, Belmonte and Arnold, Opt. Express 22, 26548 (2014), https://doi.org/10.1364/OE.22.026548 (arXiv 1408.0188), Eqs. (1) to (11),
+Harte, Bruce, Keeling and Cassettari, Opt. Express 22, 26548 (2014), https://doi.org/10.1364/OE.22.026548 (arXiv 1408.0188), Eqs. (1) to (11),
 which is the reference for smooth potentials with suppressed optical vortices and the parent of the device-aware variant M13 and of the
 gradient family M11, BS-1 and BS-4. The gradient costs two Fourier transforms, so it is cheap.
 
@@ -132,5 +132,5 @@ first-order optimizer and the bake does not run it to convergence; these rows ar
 
 ## References
 
-- Harte, Bruce, Belmonte and Arnold 2014, Opt. Express 22, 26548, https://doi.org/10.1364/OE.22.026548
+- Harte, Bruce, Keeling and Cassettari 2014, Opt. Express 22, 26548, https://doi.org/10.1364/OE.22.026548
 - Nocedal and Wright, Numerical Optimization, Algorithms 3.5 and 3.6 (the line search; not re-read)

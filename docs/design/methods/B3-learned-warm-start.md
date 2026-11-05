@@ -116,4 +116,4 @@ The committed canonical bake has no B3 rows: its manifests flag "methods not reg
 - Ren et al. 2024, https://arxiv.org/abs/2401.06014
 - Eybposh et al. 2020, Opt. Express 28, 26636, https://doi.org/10.1364/OE.399624
 - Shi et al. 2021, Nature 591, https://doi.org/10.1038/s41586-020-03152-0 (abstract only read)
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178

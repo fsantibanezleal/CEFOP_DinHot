@@ -14,7 +14,7 @@
 
 State of the art, replicated on an emulation: camera-in-the-loop correction of the trap intensities. Two published procedures are replicated:
 Nogrette et al., Phys. Rev. X 4, 021034 (2014), https://arxiv.org/abs/1402.5329 (19 percent rms trap-depth spread to 1.4 percent in 20
-iterations at gain $G = 0.7$), and Kim, Kim, Lee and Ahn, Opt. Lett. 44, 3178 (2019), https://doi.org/10.1364/OL.44.003178 (22 percent to
+iterations at gain $G = 0.7$), and Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund, Opt. Lett. 44, 3178 (2019), https://doi.org/10.1364/OL.44.003178 (22 percent to
 1.59 percent in three phase-fixed steps against 6.47 percent for conventional WGS). The camera is an emulation (`core/camera.py`: per-trap fixed
 gain error, additive noise, blur, roll-off): a result here shows that the loop works against those stated errors, not against an instrument
 (the measured hardware loop is a documented frontier of the product). The case feedback curves of the section below, formerly the claim BS-6 (withdrawn as a beyond claim), are built on this module and this camera.
@@ -129,7 +129,7 @@ so the module default camera applies; both were read from those files, not re-ru
 ## References
 
 - Nogrette et al. 2014, Phys. Rev. X 4, 021034, https://arxiv.org/abs/1402.5329
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913 (the open-loop start)
 
 ## The emulated camera against the published curves (formerly BS-6)
@@ -254,6 +254,6 @@ The M12 method itself, scored on the true fields in the bake, is listed in the M
 ### References
 
 - Nogrette et al. 2014, Phys. Rev. X 4, 021034, https://arxiv.org/abs/1402.5329
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286
 - Ebadi et al. 2021, https://arxiv.org/abs/2012.12281
 - Schroff, La Rooij, Haller and Kuhr 2023, Sci. Rep. 13, 3252, https://doi.org/10.1038/s41598-023-30296-6

@@ -115,7 +115,7 @@ frames; the measured file does not name the method of that driver, so it is not 
 ## References
 
 - Linear phase interpolation, https://arxiv.org/abs/2501.01391
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the phase-fixed WGS)
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the phase-fixed WGS)
 - Lee, Kim and Ahn 2017, Phys. Rev. A 95, 053424, https://doi.org/10.1103/PhysRevA.95.053424 (the assignment of the sort)
 
 ## Update after the corrections of 2026-10-29

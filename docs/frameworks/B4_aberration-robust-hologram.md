@@ -52,8 +52,9 @@ lower; pointing robustness is measured and reported, not claimed:
 | p95 with a 0.15 bin pointing error added | 8.492 | 8.152 | 1.04 times | `"sample"` design, 20 samples, re-measured 2026-10-29 (7.457, 7.309 and 1.02 before the rule corrections) |
 
 Level sensitivity: a target level of 0.937 gives 1.28 times, 0.95 with 80 iterations gives 1.23 times, 0.9 with 80 iterations gives 1.55 times; the level trades a little efficiency for
-robustness. The pointing result is a negative one: a displaced trap loses intensity in proportion to the curvature of its spot, which the spot width fixes, and halving the loss needs a
-spot 1.4 times wider, about half the peak efficiency (the implementer's reasoning, not a source). The test for pointing asserts only that it runs and returns finite ratios.
+robustness. The pointing result depends on the budget: the acceptance configuration gives 1.04 times; with a displacement prior alone and 100 steps the ratio is 1.48 at 0.10 bins at 0.91 of
+the efficiency, because the design lowers the first-order slope of the trap intensity with the displacement, and what remains is the curvature floor that the spot width fixes (measured in
+the method's manuscript, `manuscripts/aberration-robust-hologram`). The test for pointing asserts only that it runs and returns finite ratios.
 Tried and not adopted: ensemble WGS with per-iteration samples (worse), Adam on random samples (1.0 to 1.1 times), CG on 16 fixed random samples (1.05 times).
 
 ## Limits

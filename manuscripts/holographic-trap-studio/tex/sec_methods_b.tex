@@ -2,7 +2,7 @@
 
 \subsection{Phase-fixed weighted GS (M07)}\label{sec:m07}
 
-Phase-fixed weighted GS is the practical method for large arrays. The solution replicated is that of Kim, Kim, Lee and Ahn~\cite{kim2019}: after an initial number $N$ of weighted-GS iterations the focal-plane phase is frozen, so that later iterations adjust amplitudes only and the weights stay effective. The same procedure is used in the experiments with a thousand tweezers of Ebadi et al.~\cite{ebadi2021} and, through the references of Manetsch et al.~\cite{manetsch}, at the scale of thousands of sites. The source reports a modulation efficiency of 91.2 percent and a non-uniformity below 0.5 percent on $50\times30$ foci, and a camera correction from 22 percent to 1.59 percent in three steps against 6.47 percent for conventional weighted GS.
+Phase-fixed weighted GS is the practical method for large arrays. The solution replicated is that of Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund~\cite{kim2019}: after an initial number $N$ of weighted-GS iterations the focal-plane phase is frozen, so that later iterations adjust amplitudes only and the weights stay effective. The same procedure is used in the experiments with a thousand tweezers of Ebadi et al.~\cite{ebadi2021} and, through the references of Manetsch et al.~\cite{manetsch}, at the scale of thousands of sites. The source reports a modulation efficiency of 91.2 percent and a non-uniformity below 0.5 percent on $50\times30$ foci, and a camera correction from 22 percent to 1.59 percent in three steps against 6.47 percent for conventional weighted GS.
 
 \textbf{Derivation.} At iteration $i$ let $B_i(\mathbf u_m)=|V_m|/a_m$ be the focal amplitude and $T_m=a_m$ the target. With $\langle B_i\rangle_N$ the mean over the traps, the weights and the SLM field follow
 \begin{equation}
@@ -96,7 +96,7 @@ an update that costs $O(M)$ and holds for any trap depth and any vortex charge, 
 
 \subsection{Conjugate-gradient minimization (M10)}\label{sec:m10}
 
-Conjugate-gradient minimization optimizes all pixel phases at once against an intensity cost with a closed-form gradient. The solution replicated is that of Harte, Bruce, Belmonte and Arnold~\cite{harte}, the reference for smooth potentials with suppressed optical vortices and the parent of the device-aware variant of Section~\ref{sec:m13} and of the gradient family. The SLM field is $E_{\mathrm{in}}=A_je^{i\phi_j}$, the focal field $\tilde\psi$ is its zero-padded Fourier transform, and the cost over the signal region (the noise region is free) is
+Conjugate-gradient minimization optimizes all pixel phases at once against an intensity cost with a closed-form gradient. The solution replicated is that of Harte, Bruce, Keeling and Cassettari~\cite{harte}, the reference for smooth potentials with suppressed optical vortices and the parent of the device-aware variant of Section~\ref{sec:m13} and of the gradient family. The SLM field is $E_{\mathrm{in}}=A_je^{i\phi_j}$, the focal field $\tilde\psi$ is its zero-padded Fourier transform, and the cost over the signal region (the noise region is free) is
 \begin{equation}
 C_t=\sum_{nm}\big(T_{nm}-|\tilde\psi_{nm}|^2\big)^t,\qquad
 \frac{\partial C_t}{\partial\phi_{rs}}=2t\,\operatorname{Re}\big(i\,\psi_{rs}^*X_{rs}\big),
