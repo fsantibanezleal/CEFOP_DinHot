@@ -56,5 +56,5 @@ The loss scaling is DinHot's reading (UNVERIFIED); the front is computed with th
 ## References
 
 - Di Leonardo, Ianni and Ruocco 2007, https://doi.org/10.1364/OE.15.001913
-- Polin, Hovhannisyan and Sorensen 2005, https://doi.org/10.1364/OPEX.13.005831
+- Polin, Ladavac, Lee, Roichman and Grier 2005, https://doi.org/10.1364/OPEX.13.005831
 - Kim et al. 2019 (the phase-fixed start), https://doi.org/10.1364/OL.44.003178

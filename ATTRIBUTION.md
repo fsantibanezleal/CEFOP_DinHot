@@ -34,7 +34,7 @@ The engine implements the methods of the ladder from their published description
 URLs, and the main ones are listed here so that the intellectual credit is in one place:
 
 - Di Leonardo, Ianni and Ruocco 2007 (superposition, random superposition, Gerchberg-Saxton, adaptive and weighted variants), https://doi.org/10.1364/OE.15.001913
-- Polin, Hovhannisyan and Sorensen 2005 (direct search), https://doi.org/10.1364/OPEX.13.005831
+- Polin, Ladavac, Lee, Roichman and Grier 2005 (direct search), https://doi.org/10.1364/OPEX.13.005831
 - Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019 (phase-fixed weighted GS), https://doi.org/10.1364/OL.44.003178
 - Pasienski and DeMarco 2008 (MRAF), https://doi.org/10.1364/OE.16.002176
 - Harte, Bruce, Keeling and Cassettari 2014 (conjugate gradient), https://doi.org/10.1364/OE.22.026548

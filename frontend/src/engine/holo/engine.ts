@@ -476,7 +476,7 @@ export function simulateParticle(req: {
   if (d.particle === 'bead') {
     const r = (d.bead_radius_um as number) * 1e-6;
     const alpha = tp.rayleighPolarizabilityFm2(r, d.n_particle as number, nImm);
-    const depth = (alpha * iPeak) / (2 * tp.C_M_PER_S * tp.EPS0_F_PER_M);
+    const depth = (alpha * iPeak) / (2 * nImm * tp.C_M_PER_S * tp.EPS0_F_PER_M);
     const gamma = 6 * Math.PI * (d.viscosity_pa_s as number) * r;
     const kappa = depth * curv;
     fcExpected = kappa / (2 * Math.PI * gamma);

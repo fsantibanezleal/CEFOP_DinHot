@@ -1,9 +1,9 @@
 /**
  * Trap physics: gradient-force stiffness of a Rayleigh bead and dipole-trap depth and frequencies of an atom.
  *
- * Python counterpart: `core/trapphys.py` (equations and sources documented there: Bouloumis and Nic Chormaic arXiv 2001.07359
- * for the bead, Grimm, Weidemuller and Ovchinnikov 2000 for the atom). Names carry their units. Constants: SI 2019 exact
- * values and the CODATA 2018 value of eps0.
+ * Python counterpart: `core/trapphys.py` (equations and sources documented there: Harada and Asakura 1996 for the bead in a
+ * medium of index n_m, Bouloumis and Nic Chormaic arXiv 2001.07359 for the vacuum forms, Grimm, Weidemuller and Ovchinnikov
+ * 2000 for the atom). Names carry their units. Constants: SI 2019 exact values and the CODATA 2018 value of eps0.
  */
 export const C_M_PER_S = 299792458;
 export const KB_J_PER_K = 1.380649e-23;
@@ -16,28 +16,28 @@ function pos(name: string, v: number): number {
   return v;
 }
 
-/** `alpha_0 = 4 pi r^3 eps0 (eps_r - 1) / (eps_r + 2)` with `eps_r = (n_particle / n_medium)^2`. */
+/** `alpha = 4 pi eps0 n_m^2 r^3 (m^2 - 1) / (m^2 + 2)` with `m = n_particle / n_medium` (Harada and Asakura 1996). */
 export function rayleighPolarizabilityFm2(radiusM: number, nParticle: number, nMedium: number): number {
   const r = pos('radius_m', radiusM), np = pos('n_particle', nParticle), nm = pos('n_medium', nMedium);
   const er = (np / nm) ** 2;
-  return (4 * Math.PI * r ** 3 * EPS0_F_PER_M * (er - 1)) / (er + 2);
+  return (4 * Math.PI * nm ** 2 * r ** 3 * EPS0_F_PER_M * (er - 1)) / (er + 2);
 }
 
-/** `kappa = -alpha / (2 c eps0) d^2 I / dx^2` along one axis. */
-export const gradientStiffnessNPerM = (alphaFm2: number, curvatureWPerM4: number): number =>
-  (-alphaFm2 / (2 * C_M_PER_S * EPS0_F_PER_M)) * curvatureWPerM4;
+/** `kappa = -alpha / (2 n_m c eps0) d^2 I / dx^2` along one axis (`nMedium` = 1 is the vacuum form). */
+export const gradientStiffnessNPerM = (alphaFm2: number, curvatureWPerM4: number, nMedium = 1): number =>
+  (-alphaFm2 / (2 * pos('n_medium', nMedium) * C_M_PER_S * EPS0_F_PER_M)) * curvatureWPerM4;
 
 /** `I0 = 2 P / (pi w0^2)`. */
 export const gaussianPeakIntensityWPerM2 = (powerW: number, waistM: number): number =>
   (2 * pos('power_w', powerW)) / (Math.PI * pos('waist_m', waistM) ** 2);
 
-/** `kappa = 2 alpha I0 / (c eps0 w0^2)`. */
-export const gaussianStiffnessNPerM = (alphaFm2: number, peakWPerM2: number, waistM: number): number =>
-  (2 * alphaFm2 * peakWPerM2) / (C_M_PER_S * EPS0_F_PER_M * pos('waist_m', waistM) ** 2);
+/** `kappa = 2 alpha I0 / (n_m c eps0 w0^2)` (`nMedium` = 1 is the vacuum form). */
+export const gaussianStiffnessNPerM = (alphaFm2: number, peakWPerM2: number, waistM: number, nMedium = 1): number =>
+  (2 * alphaFm2 * peakWPerM2) / (pos('n_medium', nMedium) * C_M_PER_S * EPS0_F_PER_M * pos('waist_m', waistM) ** 2);
 
 /** Local stiffness `[kappa_xx, kappa_yy]` (N/m) at every pixel of a focal intensity map (3-point central differences). */
 export function stiffnessMap(
-  map: ArrayLike<number>, ny: number, nx: number, spacingM: number, intensityScaleWPerM2: number, alphaFm2: number,
+  map: ArrayLike<number>, ny: number, nx: number, spacingM: number, intensityScaleWPerM2: number, alphaFm2: number, nMedium = 1,
 ): [Float64Array, Float64Array] {
   if (map.length !== ny * nx || Math.min(ny, nx) < 3) throw new Error('intensity_map must be a finite 2D array of at least 3 x 3');
   for (let i = 0; i < map.length; i++) if (!Number.isFinite(map[i])) throw new Error('intensity_map must be a finite 2D array of at least 3 x 3');
@@ -54,7 +54,7 @@ export function stiffnessMap(
     d2y[ix] = d2y[nx + ix];
     d2y[(ny - 1) * nx + ix] = d2y[(ny - 2) * nx + ix];
   }
-  return [d2x.map((v) => gradientStiffnessNPerM(alphaFm2, v)), d2y.map((v) => gradientStiffnessNPerM(alphaFm2, v))];
+  return [d2x.map((v) => gradientStiffnessNPerM(alphaFm2, v, nMedium)), d2y.map((v) => gradientStiffnessNPerM(alphaFm2, v, nMedium))];
 }
 
 /** `z_R = pi w0^2 / lambda`. */
