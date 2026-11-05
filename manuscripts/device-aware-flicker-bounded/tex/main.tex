@@ -28,6 +28,7 @@
 
 \graphicspath{{../figures/}}
 \input{../data/beyond_numbers.tex}
+\input{../data/b1geo_numbers.tex}
 
 % Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
 % publishing tool when the version DOI is reserved.
@@ -107,7 +108,7 @@ of the crosstalk operator, with a safeguard that returns the best admissible ite
 blend model and the frame count that the closed form implies (Section~\ref{sec:b2}, Section~\ref{sec:theory}).
 \item A controlled comparison: both methods run against phase-fixed WGS and linear phase interpolation implemented in the same engine on the same tasks, with seeds, intervals, the benchmark geometries of the studio
 and long moves (Section~\ref{sec:design}, Section~\ref{sec:results}).
-\item An ablation measured by a committed script, whose main outcome reverses the expected role of a component: the device-aware phase step carries the gain of B1, and the weights lower it (Section~\ref{sec:ablation}).
+\item An ablation measured by a committed script, whose main outcome reverses the expected role of a component: the device-aware phase step carries the gain of B1, and the weights lower it on the acceptance task, while on the lattices of the benchmark's device neither form dominates (Section~\ref{sec:ablation}).
 \item The scope of each claim, stated with the geometries and moves where it fails (Section~\ref{sec:discussion}, Section~\ref{sec:limits}).
 \end{enumerate}
 Section~\ref{sec:related} places the methods among the published ones, Section~\ref{sec:problem} fixes the model, the device and the metrics, Section~\ref{sec:methods} defines the two methods,
@@ -832,7 +833,14 @@ The gain therefore comes from putting the device in the phase update; the weight
 
 The weights do not help, they hurt. Without the weight update the median spread is \ablBNoWeightsSig{} percent (range \ablBNoWeightsSigMin{} to \ablBNoWeightsSigMax{}), \ablBWeightsRatio{} times lower than the \ablBFullSig{} percent of the full method, at an efficiency ratio of \ablBNoWeightsEff{}; the geometric-mean factor over the baseline rises from \ablBFullFac{} (interval \ablBFullFacLo{} to \ablBFullFacHi{}) to \ablBNoWeightsFac{} (interval \ablBNoWeightsFacLo{} to \ablBNoWeightsFacHi{}). On the full device the
 spread without the weights is \ablBFNoWeightsSig{} percent against \ablBFFullSig{} percent with them, \ablBFWeightsRatio{} times lower. H6 is therefore refuted on both devices: the integral action of the weights, which the design of the method gives as its reason, is not needed when three conjugate-gradient steps follow the target on this task, and it costs spread. This is in line with Conjecture~\ref{conj:windup}, since six steps per outer iteration reach \ablBStepsSixSig{} percent and one step leaves \ablBStepsOneSig{} percent, so the number of steps, and not the weights, sets the quality; the conjecture itself, that the weights wind up, is compatible with these data and
-is not proved by them. The ablation was not run on the lattices of the benchmark's device, where the weights wind up in the record of the method, so it does not say whether the variant without weights would pass H3.
+is not proved by them. The same comparison on the lattices of the benchmark answers whether the variant without weights would do better there. Each cell is the benchmark's own record, run through the engine's runner and scored against the C08 device ($4$-bit phase, crosstalk, fill factor and flicker) at \geoIters{} outer iterations for \geoSeeds{} seeds, with the weight update switched by the module's \texttt{weights} option (Table~\ref{tab:ablb1geo}). On the ideal model the two forms coincide (spreads at most \geoAIdealMax{} percent). On the device the outcome depends on the geometry: on the square lattice the variant without weights halves the median spread, \geoANSig{} against \geoAWSig{} percent, with the lower spread on every seed, at a lower efficiency, \geoANEff{} against \geoAWEff{}; on the ring of 36 traps the weights are better on every seed, \geoBWSig{} against \geoBNSig{} percent; on the random set the two differ by a few percent of the spread (\geoCWSig{} and \geoCNSig{} percent); on the quasi-periodic set they are identical on two seeds out of three. Neither form dominates, so the method keeps the weight update of its definition and exposes the variant without it as an option; the reversal of Table~\ref{tab:ablb1} is a property of the acceptance task and of the crosstalk-only device, not of every lattice.
+
+\begin{table}[t]
+\centering\small
+\caption{B1 with and without the weight update on the lattices of the benchmark, C08 device, \geoIters{} outer iterations: median over \geoSeeds{} seeds of the relative standard deviation $\sigma$ and of the efficiency $e$ on the device, and the number of seeds on which the variant without weights has the lower spread.}
+\label{tab:ablb1geo}
+\resizebox{\textwidth}{!}{\input{../data/tab_abl_b1_geo.tex}}
+\end{table}
 
 The safeguard did not act on these seeds: with and without it the spreads are identical (\ablBNoGuardSig{} percent), as Proposition~\ref{prop:guard} allows, since the last iterate is the best admissible one on the crosstalk device. Its value is on the geometries of the benchmark where the last iterate would have lost too much light. The warm start alone, \parWarm{} weighted iterations on the ideal model, leaves a median spread of \ablBWarmSig{} percent, a factor of \ablBWarmFac{} against the baseline of 30 and 100 iterations, so the device-aware iterations, not the start, produce the result.
 
@@ -890,7 +898,7 @@ and it does not choose the assignment of atoms to sites. The time per iteration 
 
 The code, the data and the committed artifacts are in the repository \url{https://github.com/fsantibanezleal/CEFOP_DinHot} at release \engineRelease{} (Apache-2.0); the studio runs at \url{https://dinhot.fasl-work.com}. Every number, table and figure of the paper is produced by two scripts from the repository root. The measurement script \path{manuscripts/device-aware-flicker-bounded/data/measure.py} runs the methods of the engine and writes
 \texttt{beyond.json}, the macro file read by the text and the result tables; with no argument it measures every part, with \texttt{--parts=ablation} it measures only the ablation and keeps the stored parts (this run took about \ablSeconds{} minutes on the development machine, CPU only, with five seeds for B1 on the crosstalk device, three on the full device and five for B2), and with \texttt{--macros-only} it rewrites the macros and the tables from the stored measurements. The figure script \path{manuscripts/device-aware-flicker-bounded/figures/make_figs.py} writes every figure as a
-vector PDF from \texttt{beyond.json}. The document builds with three passes of \texttt{pdflatex} from \texttt{tex/}. The benchmark file and the committed manifests that the script reads are in \texttt{data/derived/}. The acceptance tests of the two methods are \texttt{test\_b1\_device\_wgs.py} and \texttt{test\_b2\_flicker\_bounded.py}, and the ablated variants are checked against the modules inside the measurement script. All methods are deterministic given a seed, so a rerun reproduces the numbers up to the floating point of the machine's FFT.
+vector PDF from \texttt{beyond.json}. The document builds with three passes of \texttt{pdflatex} from \texttt{tex/}. The benchmark file and the committed manifests that the script reads are in \texttt{data/derived/}. The acceptance tests of the two methods are \texttt{test\_b1\_device\_wgs.py} and \texttt{test\_b2\_flicker\_bounded.py}, and the ablated variants are checked against the modules inside the measurement script. The comparison of the weight update on the benchmark lattices (Table~\ref{tab:ablb1geo}) is written by \path{manuscripts/device-aware-flicker-bounded/data/b1_weights_geo.py}, one process per geometry (\texttt{run G1} to \texttt{run G4}, about half an hour each) and then \texttt{write}. All methods are deterministic given a seed, so a rerun reproduces the numbers up to the floating point of the machine's FFT.
 
 \section{Conclusions}\label{sec:conclusions}
 
