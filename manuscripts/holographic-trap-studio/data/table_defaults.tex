@@ -1,0 +1,38 @@
+\begin{table}[t]\centering\scriptsize\setlength{\tabcolsep}{4pt}
+\caption{Keyword defaults of every method, read from the signature of its \texttt{run} function by \texttt{params.py}, in two blocks; a default of \texttt{unset} is chosen at run time from the target, as the method section states, and methods with no keyword take only the interface arguments.}\label{tab:defaults}
+\begin{tabular}{@{}l l l @{\hskip 1.2em} l l l@{}}\toprule Id & Keyword & Default & Id & Keyword & Default\\\midrule
+B1 & \texttt{steps} & 3 &  & \texttt{levels} & 8\\
+ & \texttt{warm} & 12 &  & \texttt{max\_trials} & unset\\
+B2 & \texttt{destination} & unset & M10 & \texttt{t} & unset\\
+ & \texttt{frames} & 13 &  & \texttt{efficiency} & unset\\
+ & \texttt{frame\_iterations} & 10 & M11 & \texttt{lr} & 1\\
+ & \texttt{end\_phases} & unset &  & \texttt{efficiency} & unset\\
+ & \texttt{phase\_velocity\_max} & 0.3 & M12 & \texttt{variant} & nogrette\\
+ & \texttt{n\_fix} & 12 &  & \texttt{gain} & 0.7\\
+B3 & \texttt{n\_fix} & 12 &  & \texttt{camera} & unset\\
+ & \texttt{form} & point &  & \texttt{n\_inner} & unset\\
+ & \texttt{models\_dir} & unset &  & \texttt{n\_start} & 30\\
+B4 & \texttt{q} & 8 &  & \texttt{start} & gsw\\
+ & \texttt{lr} & 0.02 & M13 & \texttt{t} & unset\\
+ & \texttt{warm} & 30 &  & \texttt{efficiency} & unset\\
+ & \texttt{aberration} & 0.02 & M14 & \texttt{mode} & recover\\
+ & \texttt{pointing\_bins} & 0 &  & \texttt{injected} & unset\\
+ & \texttt{design} & unset &  & \texttt{known} & unset\\
+ & \texttt{level\_fraction} & 0.9 &  & \texttt{camera} & unset\\
+B5 & \texttt{n\_lambda} & 20 &  & \texttt{modes} & 4 to 11\\
+ & \texttt{warm} & 30 &  & \texttt{trial\_waves} & 0.06\\
+M01 & (none) &  &  & \texttt{base\_iterations} & 30\\
+M02 & (none) &  & M15 & \texttt{charge} & unset\\
+M03 & (none) &  & M16 & \texttt{atoms} & unset\\
+M04 & \texttt{form} & unset &  & \texttt{alpha} & 1.5\\
+ & \texttt{start\_waves} & 20 &  & \texttt{max\_step\_bins} & unset\\
+M05 & \texttt{alpha} & 0.5 &  & \texttt{n\_fix} & 12\\
+ & \texttt{form} & auto & M17 & \texttt{models\_dir} & unset\\
+ & \texttt{scale} & mean &  & \texttt{refine} & true\\
+M06 & \texttt{form} & auto & M18 & \texttt{mix} & 0.4\\
+M07 & \texttt{n\_fix} & 12 &  & \texttt{eps} & 0.001\\
+ & \texttt{form} & auto &  & \texttt{ot\_iterations} & 200\\
+M08 & \texttt{mixing} & 0.3 & M19 & \texttt{dz\_m} & unset\\
+ & \texttt{start\_waves} & 20 &  & \texttt{nz} & unset\\
+M09 & \texttt{f} & 0.5 &  &  & \\
+\bottomrule\end{tabular}\end{table}

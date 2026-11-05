@@ -1,0 +1,16 @@
+\begin{table}[t]\centering\footnotesize
+\caption{The data contracts of the build, from the catalog: identifier, version, owner (the module that produces the document or checks the boundary) and the committed documents the schema governs.}\label{tab:contracts}
+\begin{tabular}{@{}l l >{\raggedright\arraybackslash}p{0.34\textwidth} >{\raggedright\arraybackslash}p{0.34\textwidth}@{}}\toprule Contract & Version & Owner & Documents governed\\\midrule
+\texttt{params-record} & 1.0.0 & {\scriptsize\path{data-pipeline/pipeline/io/contract.py}} & {\scriptsize\path{run-time exchange, no document}}\\
+\texttt{case-index} & 1.0.0 & {\scriptsize\path{data-pipeline/pipeline/core/manifest.py}} & {\scriptsize\path{data/derived/manifests/index.json}}\\
+\texttt{case-manifest} & 1.0.0 & {\scriptsize\path{data-pipeline/pipeline/core/manifest.py}} & {\scriptsize\path{data/derived/manifests/*.json; !data/derived/manifests/index.json}}\\
+\texttt{trace} & 1.0.0 & {\scriptsize\path{data-pipeline/pipeline/core/trace.py}} & {\scriptsize\path{data/derived/*/trace.json}}\\
+\texttt{benchmark-results} & 1.0.0 & {\scriptsize\path{data-pipeline/pipeline/stages/benchmark.py}} & {\scriptsize\path{data/derived/benchmark/results.json}}\\
+\texttt{cgh-net} & 1.0.1 & {\scriptsize\path{data-pipeline/pipeline/stages/train.py}} & {\scriptsize\path{models/cgh-net.json; models/cgh-net.onnx}}\\
+\texttt{warmstart-model} & 1.0.1 & {\scriptsize\path{data-pipeline/pipeline/stages/train.py}} & {\scriptsize\path{models/warmstart.json; models/warmstart.onnx}}\\
+\texttt{model-metrics} & 1.0.1 & {\scriptsize\path{data-pipeline/pipeline/stages/evaluate.py}} & {\scriptsize\path{data/derived/models/metrics.json}}\\
+\texttt{model-evidence} & 1.0.0 & {\scriptsize\path{data-pipeline/pipeline/stages/train.py}} & {\scriptsize\path{data/derived/models/*-training.json; data/derived/models/*-rejected.json; data/derived/models/evaluation-detail.json}}\\
+\texttt{engine-reference} & 1.0.0 & {\scriptsize\path{data-pipeline/pipeline/stages/engine_reference.py}} & {\scriptsize\path{tests/fixtures/engine/*.json}}\\
+\texttt{readiness} & 1.0.0 & {\scriptsize\path{data-pipeline/pipeline/core/readiness.py}} & {\scriptsize\path{data/derived/readiness.json}}\\
+\texttt{api} & 1.0.0 & {\scriptsize\path{app/}} & {\scriptsize\path{docs/contracts/examples/api-unavailable.json#UnavailableBody}}\\
+\bottomrule\end{tabular}\end{table}

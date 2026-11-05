@@ -1,0 +1,11 @@
+\begin{table}[t]\centering\footnotesize
+\caption{Top-level fields of the contract \texttt{benchmark-results}, read from its schema file: type, requirement, unit (a dash marks an identifier, a count or a dimensionless quantity) and the range or constant the schema states.}\label{tab:contract-benchmark-results}
+\begin{tabular}{@{}l l c l >{\raggedright\arraybackslash}p{0.3\textwidth}@{}}\toprule Field & Type & Req. & Unit & Range\\\midrule
+\texttt{\scriptsize schema} & const & yes & - & = dinhot.benchmark/v1\\
+\texttt{\scriptsize engine\_version} & string & yes & - & pattern\\
+\texttt{\scriptsize protocol} & object & yes & - & -\\
+\texttt{\scriptsize geometries} & array of object & yes & - & -\\
+\texttt{\scriptsize rows} & array of object & yes & - & -\\
+\texttt{\scriptsize pareto} & array of object & yes & - & -\\
+\texttt{\scriptsize skipped} & array of object & no & - & -\\
+\bottomrule\end{tabular}\end{table}

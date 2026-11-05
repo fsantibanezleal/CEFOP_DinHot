@@ -1,0 +1,121 @@
+% Results.
+
+\section{Results}\label{sec:results}
+
+\subsection{Baked cases}\label{sec:results-bake}
+
+Each case is computed offline with every method valid for it (the seed is stated in each manifest), checked against its expected ranges, and committed as a manifest and a trace of at most \liveTraceKiB{} KiB. Table~\ref{tab:calibration} compares the calibration case with the published rows of Di Leonardo et al.~\cite{dileonardo}: the ordering of the six baselines and the weighted-GS uniformity are reproduced; the efficiencies of the GS family are lower than published because the engine's Gaussian input beam caps the efficiency, whereas the source uses a flat beam (the flat-beam test of M04 gives \accFourFlatEff{} efficiency and \accFourFlatUni{} uniformity; Table~\ref{tab:acceptance}). The uniformity of random superposition and of the random mask differs from the published values on the engine's smaller grid, as the acceptance test of those methods states: the order, not the value, transfers. The table also gives the phase-fixed weighted GS, which has no published row on this task and reaches a spread below the resolution of the second decimal.
+
+\input{../data/table_calibration.tex}
+\input{../data/table_results.tex}
+
+Table~\ref{tab:results} summarizes the baked cases. Where both ran, phase-fixed weighted GS (M07) leaves a median relative standard deviation of \medSigmaMseven{} percent against \medSigmaMfour{} percent for plain GS (M04) over \nBothFourSeven{} cases, at efficiencies between \minEffMseven{} and \maxEffMseven{}. The full matrix of the bake is Table~\ref{tab:bake-sigma} for the spread and Table~\ref{tab:bake-eff} for the efficiency, each cell the mean over the three seeds of the canonical bake. Over the \nTrapCases{} point-trap cases, the weighted GS (M06) has a lower mean spread than GS in \winsSixOverFour{} of the \nBothFourSix{} cases where both ran; the median over the cases of the mean spread is \medsig{M04} percent for GS (efficiency \medeff{M04}), \medsig{M06} percent for weighted GS (\medeff{M06}) and \medsig{M07} percent for the phase-fixed form (\medeff{M07}), so that the integral feedback of the weights removes more than an order of magnitude of the spread and the freeze of the phase a further factor of a few, at an efficiency that stays within a few hundredths. The analytic baselines show the reverse: the superposition and the random superposition leave the largest spreads, the random mask trades its efficiency (about the inverse of the trap count, Table~\ref{tab:bake-eff}) for a moderate spread that depends on the pixels per trap, and the gradient method M10 at the 30-iteration budget of the bake is far from converged, as its method section states. Direct search reaches the smallest spreads on the ideal-device lattices it runs on, at a lower efficiency than the weighted forms, while the knee of the proposed front reaches a spread of the order of the phase-fixed form at the efficiency of the weighted form; the flicker-bounded sequence is scored on its final hologram on the rearrangement case only.
+
+\input{../data/table_bake_sigma.tex}
+\input{../data/table_bake_eff.tex}
+
+The seed-to-seed uncertainty of the bake is read in Table~\ref{tab:seeds}. On the ideal-device grid C02 the weighted methods differ from seed to seed in a spread that is already near or below one percent (the range of the phase-fixed form spans more than an order of magnitude), so a one-seed ranking among them would be fragile; on the device-limited case C08 the ranges are narrow and the methods fall into groups: M06, M07 and B4 keep a spread of the order of ten percent, and the device-aware B1 lowers it. On C08 phase-fixed weighted GS (M07), which ignores the device, keeps a spread of \bakeCeightMsevenSigma{} percent, and the device-aware weighted GS (B1) lowers it to \bakeCeightBOneSigma{} percent, a factor of \bakeCeightRatio{} on the bake's own seed (\bakeCeightRatioThree{} on the ratio of the means of its \bakeCeightSeedsN{} seeds), on that small grid (the larger task of the acceptance gate gives a larger factor; both are reported in the companion manuscript~\cite{companion}). On the aberrated case C09, correction of the Zernike modes (M14) restores efficiency and uniformity that the uncorrected methods lose; the proposed aberration-robust hologram scores a lower mean spread than the nominal method on one realization per seed, a smaller factor than its ensemble criterion.
+
+\input{../data/table_seeds.tex}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{fig-cases.pdf}
+\caption{Relative standard deviation of the trap intensities, every method on every point-trap case of the bake (the shaped-potential case C04 is scored on its signal region and is omitted). Each cell is one method run at the case budget. Plain Gerchberg--Saxton (M04) leaves the largest spreads among the iterative methods; the weighted and phase-fixed forms (M06, M07), the direct search (M09), the Pareto front (B5) and the device-aware methods remove most of it where they apply.}
+\label{fig:cases}
+\end{figure}
+
+Figure~\ref{fig:cases} shows the same matrix as a heat map, which makes the structure visible: the rows of the weighted and optimization methods are dark (low spread) on every ideal-device case where they run, the rows of the analytic baselines are light, and the device-limited and aberrated columns are lighter for every method, which is the cost of the device and of the aberration that the device-aware and robust methods target. Figure~\ref{fig:convergence} follows the spread along the iterations from the baked traces. Each curve is the history that the method reports for itself, which is the quantity the method optimizes. On the ideal-device grid the curves of the weighted and phase-fixed forms fall by orders of magnitude over the budget, GS plateaus at a spread of the order of ten percent, the adaptive form plateaus a little lower, and the Wirtinger descent starts at a large spread and falls steadily. On the device-limited case the picture differs by what each method sees. The weighted and phase-fixed forms keep falling, because their history is measured on the ideal model that they optimize, while the scored spread on the device is the value of Table~\ref{tab:bake-sigma}, of the order of ten percent: this is the gap between equalizing the model and equalizing the device that the device-aware method addresses. The device-aware weighted GS reports its history on the device model and settles at a floor set by that model, and the conjugate-gradient methods are still far from converged at the budget of the bake.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-convergence.pdf}
+\caption{Relative standard deviation of the trap intensities against the iteration, read from the baked traces: (a) the ideal-device grid C02 for GS (M04), the adaptive form (M05), weighted GS (M06), phase-fixed weighted GS (M07) and Wirtinger descent (M11); (b) the device-limited array C08 for the same family, the conjugate gradient (M10), its device-aware form (M13) and the device-aware weighted GS (B1). Each curve is the history the method reports for itself: the ideal model for M04 to M07 and M10, the device model for M13 and B1. The vertical axis is logarithmic.}
+\label{fig:convergence}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-maps.pdf}
+\caption{(a) Phase mask of the reference method on C02. (b) Its focal intensity, in dB relative to the mean trap, on the ideal device: a regular lattice. (c) The focal intensity of the device-aware weighted GS on C08, scored on the device with 4-bit phase, crosstalk and a fill factor of \devcFill: the traps are visible and not equal.}
+\label{fig:maps}
+\end{figure}
+
+Figure~\ref{fig:maps} shows what the numbers describe in the focal plane: the hologram of the reference method on C02 is a quantized phase mask whose focal intensity is a regular lattice with a faint structure between the traps, and the device-aware hologram on the device-limited case forms traps that are visible but not equal, because the quantizer and the flicker are not modelled by the optimizer. The figure shows one hologram per panel and does not show how the maps change with the method, because the trace carries the maps of the reference method only.
+
+\subsection{Feedback and particles}\label{sec:results-feedback}
+
+The emulated camera loop reduces the spread as in the published curves. In the baked traces the relative standard deviation falls from \fbCOneStart{} to \fbCOneEnd{} percent in \fbCOneSteps{} steps on C01, from \fbCTwoStart{} to \fbCTwoEnd{} percent in \fbCTwoSteps{} steps on the $10\times10$ grid C02, from \fbCThreeStart{} to \fbCThreeEnd{} percent in \fbCThreeSteps{} steps on the large array C03, and from \fbCThirteenStart{} to \fbCThirteenEnd{} percent in \fbCThirteenSteps{} steps on the disordered array C13 (Figure~\ref{fig:feedback}). The published closed-loop result of Nogrette et al.~\cite{nogrette} is a trap-depth spread of 19 percent rms reduced to 1.4 percent in 20 iterations; the unit test of M12 reproduces it within the factor set in the design document (Table~\ref{tab:acceptance}). The loop of the cases differs from the method M12: it applies the same factor to the case's weight-aware method and reports the measured spread of the camera readings, which is why the curves of Figure~\ref{fig:feedback} reach a fraction of a percent while the true intensities keep the size of the camera's own gain error. The figure shows the measured spread and not the true one, so it shows that the loop equalizes what the camera sees, which is the property of the published procedure.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{fig-feedback.pdf}
+\caption{Emulated camera feedback: relative standard deviation of the trap intensities against the feedback step, on four cases (baked traces). The measured spread is that of the camera readings divided by the target weights, the quantity the experimenter sees.}
+\label{fig:feedback}
+\end{figure}
+
+The particle simulations act on the computed traps: C01 carries a bead in the central trap (stiffness \beadKappa{} pN/$\mu$m and a corner frequency of \beadFc{} Hz in the trace) and C03 an atom (a corner frequency of \atomFc{} Hz and a radial trap frequency of \atomOmega{} Hz in the trace); the trap depth follows the intensity~\cite{grimm}, and the bead's spectrum is a Lorentzian whose corner frequency is the stiffness over $2\pi\gamma$~\cite{tolic}, which the particle oracle checks. The bias of the linearised Lorentzian fit at low segment counts is a known effect, and the oracle test bounds it at ten percent for the run it uses~\cite{norrelykke}.
+
+\subsection{The benchmark}\label{sec:results-bench}
+
+The protocol of Section~\ref{sec:protocol-bench} gives the benchmark. Table~\ref{tab:benchmark} names, per geometry and device, the published method and the proposed method with the lowest median spread at 100 iterations among those that reach at least half of the cell's best efficiency, and the best method at a time budget of 1~s; Table~\ref{tab:benchmethods} gives the medians of every method over the \benchNPoint{} point-trap geometries, and Figure~\ref{fig:bench} every cell. On the ideal device the best method of a geometry is a published method on \benchWinsIdealPublished{} and a proposed method on \benchWinsIdealProposed{} of the \benchGeoIdeal{} geometries, and on \benchTiesIdeal{} the best published and proposed methods tie below the resolution of the file (0.001 percent); on the C08 device the counts are \benchWinsDevicePublished{} and \benchWinsDeviceProposed{} of \benchGeoDevice{} (the multi-plane geometry has no device rows), with \benchTiesDevice{} ties. The flicker-bounded sequence enters these cells as its static frame, a phase-locked weighted GS, and not as a sequence, which is the quantity of its claim (Section~\ref{sec:b2}). Over the point-trap geometries the lowest median spread on the ideal device is that of \benchBestIdeal{} (\benchBestIdealSigma{} percent at a median efficiency of \benchBestIdealEff{}), and on the C08 device that of \benchBestDevice{} (\benchBestDeviceSigma{} percent at \benchBestDeviceEff{}). The medians of the \benchSpreadIdealN{} methods that keep at least half of the best efficiency span \benchSpreadIdealLow{} to \benchSpreadIdealHigh{} percent on the ideal device and \benchSpreadDeviceLow{} to \benchSpreadDeviceHigh{} percent (\benchSpreadDeviceN{} methods) on the C08 device, where every method runs with its default parameters and only the device-aware ones model the device. The times are wall-clock seconds of the machine that ran the benchmark, under shared load.
+
+\input{../data/table_benchmark.tex}
+\input{../data/table_bench_methods.tex}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-bench.pdf}
+\caption{Benchmark: median relative standard deviation at 100 iterations with the default parameters, every method on every geometry, on the ideal device (a) and on the C08 device (b). Blank: the method does not accept the geometry or refuses it, or the geometry has no device row.}
+\label{fig:bench}
+\end{figure}
+
+Figure~\ref{fig:geometry} reads the same cells by geometry. On the ideal device the medians of the methods spread over several orders of magnitude within one geometry, from the analytic baselines to the optimization methods, and the proposed methods sit at the low end together with the phase-fixed and direct-search methods; on the C08 device the medians are compressed into a band of about one decade, with the geometry that has no device rows blank and no method below a few percent, a floor set by the quantizer and the flicker, which no method models completely. The figure does not show the efficiency of each point, which Table~\ref{tab:benchmethods} gives, and it does not show the seed-to-seed interval, which is in the results file.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-geometry.pdf}
+\caption{Median relative standard deviation at 100 iterations of every method on each point-trap geometry of the benchmark, on the ideal device (a) and on the C08 device (b); blue circles are the published methods and orange diamonds the methods proposed here. The vertical axis is logarithmic and the horizontal position within a geometry only separates the two groups.}
+\label{fig:geometry}
+\end{figure}
+
+\subsection{The learned models}\label{sec:learned}
+
+Two networks were trained offline with PyTorch, exported to ONNX with a list of operators the browser runtime supports, and evaluated on held-out sets written before the final training with other seeds. A model is released only if it meets its criterion; otherwise the baseline answers. The first network (Section~\ref{sec:m17}) maps three plane amplitudes at $-8$, $0$ and $+8$ SLM-limited Rayleigh ranges to one phase for the $128\times128$ SLM, in the setting of DeepCGH~\cite{eybposh}. It is trained without labels through the differentiable Fourier model with the loss $1-\mathrm{AC}$ of Eq.~\eqref{eq:m17} for \cghSteps{} steps. The exported graph is \cghBytes{} MB. The baseline is the volumetric three-dimensional GS (M19) on the same traps with a wall-clock budget of \cghBudgetS{} s, the median time of M19 at 30 iterations. On \cghN{} held-out volumes the network answers in about \cghNetMs{} ms with a median accuracy ratio of \cghMed{} (quartiles \cghQOne{} and \cghQThree{}), above the baseline on \cghShareAbove{} percent of the volumes; the median accuracy is \cghAcHybrid{} against \cghAcMnine{}. By kind the ratio is \cghLatticeRatio{} (lattices), \cghRandomRatio{} (random), \cghMixedRatio{} (mixed), \cghRingRatio{} (rings), \cghGfiveRatio{} (the $5\times5\times3$ benchmark lattice) and \cghPlaneRatio{} (the three-plane layout). The graph agrees with its training framework on the reconstructed plane intensities to $\cghParity$ relative to the maximum. The accuracy measure scores full plane images, ghosts and blur included, which is what the network optimises; M19 optimises trap uniformity, so the ratio is a statement about this measure. The two-dimensional counterpart, a single-plane network followed by GS refinement, ties: on \cghTwoDN{} held-out targets the ratio at equal wall-clock is \cghTwoDMed{}, below the criterion, and that model is not released.
+
+The second model is a permutation-equivariant set network that predicts initial trap phases for phase-fixed weighted GS (Section~\ref{sec:b3}). On \wsN{} held-out geometries it needs a median of \wsModelIt{} iterations to reach one percent against \wsRandomIt{} from a random start (a factor of \wsRatio{}, below the factor of two set as the criterion), but only with the early phase freeze (after \wsNfixModel{} iterations, against \wsNfixRandom{} for the random arm). A control with no network, a random start and the same early freeze, needs a median of \wsControlIt{} iterations on the control subset, and \wsControlNever{} percent of its geometries never reach one percent (\wsModelNever{} percent with the network); the final efficiency differs by \wsEffDiff{} percent between the arms. The gain comes from the freeze, not from the network, so the proposal is refuted and the model is not released (Figure~\ref{fig:learned}). The panel (b) of the figure shows the three arms, and does not show the share that never converges, which the text gives.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-learned.pdf}
+\caption{(a) The cgh-net accuracy ratio over its baseline at equal wall-clock, by target kind on the held-out volumes (G5: the $5\times5\times3$ lattice; 3-plane: the $5\times5$ three-plane layout), for the volume network (blue, green) and the two-dimensional single-plane network (red); the dashed line is the baseline. (b) The warm-start control: median iterations to 1 percent for a random start with the original and the early freeze and for the network start with the early freeze.}
+\label{fig:learned}
+\end{figure}
+
+\subsection{Ablations, sensitivities and the Pareto fronts}\label{sec:results-ablation}
+
+Three sensitivities were measured, one per method whose result depends on a parameter that the source sets differently. The first is the freeze index of the phase-fixed weighted GS on a crowded array (Table~\ref{tab:nfix}, Figure~\ref{fig:nfix}): the minimum spread reached in 150 iterations falls as the index rises, from a stall at the source value to a value below the target at the larger values, and with $N=60$ the phase-fixed form reaches 0.5 percent in fewer iterations than weighted GS on both seeds (\acc{M07}). The reading is that the phase frozen after a few iterations belongs to an unconverged hologram on this grid, and the weight update then cannot repair it; the table shows that the dependence is not monotone at the largest value, so the optimum depends on the grid and the budget. The second is the scale convention of the adaptive form (Section~\ref{sec:m05}): with the printed bracket the uniformity falls below GS, and with the scale convention it rises above it on every seed. The third is the target level of the aberration-robust hologram (Section~\ref{sec:b4}), which trades efficiency for robustness: a higher level gives a smaller improvement factor. Among the components of the device-aware weighted GS (Section~\ref{sec:b1}) the safeguard that returns the best admissible iterate is what makes the method never worse than its start, and the quantizer treated straight-through is the component that costs more than it gives on case C08.
+
+\input{../data/table_nfix.tex}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-nfix.pdf}
+\caption{Phase-fixed weighted GS on the crowded $50\times30$ array: (a) the minimum relative standard deviation in 150 iterations against the freeze index $N$, with the target of 0.5 percent dashed; (b) iterations to reach 0.5 percent for weighted GS (M06) and for the phase-fixed form (M07, $N=60$) on the two seeds of the acceptance test.}
+\label{fig:nfix}
+\end{figure}
+
+The fronts of the efficiency--uniformity method are the last measured outcome (Table~\ref{tab:pareto}, Figure~\ref{fig:pareto}). On the ideal device the stored fronts are short: they hold between one and seven non-dominated points, and from the first to the last stored point the efficiency changes by at most a few hundredths while the uniformity changes by a few hundredths at most on the lattice geometries and not at all where a single point is stored. The weighted-GS corner is already near the optimum of the trade-off, so the front is nearly flat in this region, which is the risk that the design had named. The figure shows the front against the single points of the published methods at 100 iterations, so that a reader sees which points the front dominates; it does not show the hypervolume, which the table of the benchmark counts per geometry in Section~\ref{sec:results-bench}.
+
+\input{../data/table_pareto.tex}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-pareto.pdf}
+\caption{Stored efficiency--uniformity fronts of the benchmark on the ideal device, one panel per geometry with a front, against the median efficiency and uniformity at 100 iterations of the published methods GS (M04), the adaptive form (M05), weighted GS (M06) and direct search (M09) on the same geometry.}
+\label{fig:pareto}
+\end{figure}
+
+\subsection{Summary of the proposed methods}\label{sec:results-proposed}
+
+Of the five proposed methods, three meet their acceptance criteria on their acceptance tasks, each within a scope that the benchmark or the scope measurements narrow (a device-aware weighted GS update, a flicker-bounded phase-continuous sequence and an efficiency--uniformity front), one meets a narrowed criterion (an aberration-robust hologram, whose pointing-error clause is not obtained) and one is refuted by measurement (a learned warm start for phase-fixed weighted GS). The device-aware method is measured on the device of C08 over \benchOnePass{} of \benchOneN{} geometries (\benchOnePassList), where it meets both thresholds, and the front's stored result reaches the hypervolume of the published points on \benchFivePass{} of the \benchFiveN{} geometries at 100 iterations and on \benchFivePassThirty{} at 30. The B1 and B2 details, with the factor on each geometry and the long moves of the sequence, are in the companion manuscript~\cite{companion}; the outcome of each of the five is the same one that its method section states, and none is reported as better than it measured. The summary does not rank the five against each other, because their criteria are different quantities on different tasks, and it does not extend any of them beyond the tasks and the device on which it was measured. The measured acceptance of B4 and B5 is in Table~\ref{tab:acceptance} (\acc{B5}).

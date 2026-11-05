@@ -1,0 +1,16 @@
+\begin{table}[t]\centering\footnotesize
+\caption{Top-level fields of the contract \texttt{cgh-net}, read from its schema file: type, requirement, unit (a dash marks an identifier, a count or a dimensionless quantity) and the range or constant the schema states.}\label{tab:contract-cgh-net}
+\begin{tabular}{@{}l l c l >{\raggedright\arraybackslash}p{0.3\textwidth}@{}}\toprule Field & Type & Req. & Unit & Range\\\midrule
+\texttt{\scriptsize schema} & const & yes & - & = dinhot.model-card/v1\\
+\texttt{\scriptsize slot} & enum & yes & - & \{cgh-net, warmstart-model\}\\
+\texttt{\scriptsize onnx} & string & yes & - & pattern\\
+\texttt{\scriptsize sha256} & string & yes & - & pattern\\
+\texttt{\scriptsize bytes} & integer & yes & - & 1 to\\
+\texttt{\scriptsize opset} & integer & yes & - & 1 to\\
+\texttt{\scriptsize inputs} & array of object & yes & - & 1 to items\\
+\texttt{\scriptsize outputs} & array of object & yes & - & 1 to items\\
+\texttt{\scriptsize grid} & const & no & - & = 128\\
+\texttt{\scriptsize trained\_on} & object & yes & - & -\\
+\texttt{\scriptsize held\_out} & object & yes & - & -\\
+\texttt{\scriptsize metrics\_path} & string & yes & - & length >= 1\\
+\bottomrule\end{tabular}\end{table}

@@ -1,0 +1,160 @@
+% Methods M01 to M06 (generated numbers come from ../data/*.tex; none is typed here).
+
+\subsection{Superposition of prisms and lenses (M01)}\label{sec:m01}
+
+The superposition of prisms and lenses is the oldest and cheapest hologram for a set of point traps, and it is the zero point of the ladder against which every other method is measured. A single trap at $(x_m,y_m,z_m)$ with vortex charge $l_m$ is formed by the delay $\Delta_j^m$ of Eq.~\eqref{eq:delay}: a prism for the lateral offset, a lens for the axial offset and a spiral for the charge. The hologram of $M$ traps is the phase of the sum of the single-trap fields,
+\begin{equation}
+\phi_j=\arg\sum_{m=1}^{M}\sqrt{w_m}\,e^{\,i\Delta_j^m},
+\label{eq:m01}
+\end{equation}
+with $w_m$ the target weight of trap $m$ (all equal to one in the source table of Di Leonardo et al.~\cite{dileonardo}, who call this row ``S''; the same form appears in Bianchi and Di Leonardo~\cite{bianchi2010}). The sum is the adjoint of the point-trap projection of Eq.~\eqref{eq:field} applied to amplitudes $\sqrt{w_m}$ with all trap phases equal to zero, so Eq.~\eqref{eq:m01} is the first half of one Gerchberg--Saxton step started from a flat focal phase. Because only the argument of the sum is kept, the amplitude information of the sum is thrown away, and the light that the discarded amplitude would have carried goes to the zero order and to the interference orders of the lattice.
+
+\textbf{Assumptions and parameters.} The method accepts point targets only, in two or three dimensions, and refuses a shaped field with an error that names the supported kind. It has no tunable parameter, uses no random number, ignores the device and the starting phase, and does not consume its iteration budget, so its output is identical for every seed. The module evaluates the sum with the point-trap back-projection of Eq.~\eqref{eq:field} and then recomputes the trap fields; the result carries a one-entry history, so that the common interface of Section~\ref{sec:methods} holds.
+
+\textbf{Complexity.} The cost is $N_{\mathrm{pix}}\times M$ complex terms and no iteration, the entry of the first row of Table 1 of Di Leonardo et al.~\cite{dileonardo}. The method runs in the browser worker, and its TypeScript port agrees with the Python fixtures to the tolerance of the parity tests of Section~\ref{sec:validation}. The benchmark protocol runs it as a one-pass method.
+
+\textbf{Acceptance criterion and gate.} The criterion fixes the zero point: on the $10\times10$ task with a flat beam the efficiency is within a stated band of the published value and the uniformity stays below a stated bound (Table~\ref{tab:ladder}). The gate runs the method on the $10\times10$ task of Section~\ref{sec:protocol} and asserts the two bounds; companion tests check that the output is deterministic and independent of the seed, that a single-trap hologram is a grating with unit field, and that a shaped target is refused. The measurement taken by the script of this report is: \acc{M01}. The published row is an efficiency of 0.29 and a uniformity of 0.01 on a larger grid~\cite{dileonardo}, so the engine reproduces the published low efficiency and the near-absence of uniformity that fix the zero point; the uniformity differs in the third decimal place because the grid has fewer pixels.
+
+\textbf{Reading the bake.} On the committed cases the method gives its worst scores on the symmetric lattices and its best on low-symmetry sets: Table~\ref{tab:bake-sigma} lists a relative standard deviation of several hundred percent on the lattices of cases C02, C03 and C12, and a spread of a few tens of percent on the ring-and-line case C06 and the disordered array C13, where there is no regular interference to concentrate the light. The reading is the one Di Leonardo et al. give: the superposition sends energy to ghost traps on symmetric layouts. It is therefore a baseline and not a method for arrays, and it is kept in the studio because its failure is the reference that makes the gain of every other method measurable.
+
+\textbf{Why the light is lost.} Write $S_j=\sum_k\sqrt{w_k}\,e^{i\Delta_j^k}$ for the sum inside Eq.~\eqref{eq:m01}. The field that the kept phase $\phi_j=\arg S_j$ gives at trap $m$ is Eq.~\eqref{eq:field} evaluated at that phase,
+\begin{equation}
+V_m=\frac1{N_{\mathrm{pix}}}\sum_jA_j\,\frac{S_j}{|S_j|}\,e^{-i\Delta_j^m}.
+\label{eq:m01-field}
+\end{equation}
+The term $k=m$ of $S_j$ contributes a positive real amount to $V_m$, the average over the pixels of $A_j\sqrt{w_m}/|S_j|$, and every term with $k\neq m$ contributes a cross term whose phase varies with the pixel as $\Delta_j^k-\Delta_j^m$. On a lattice these cross terms are gratings in their own right, and they add coherently at orders of the lattice that are not traps, which is the mechanism by which the method sends energy to ghost traps for symmetric layouts. Because the sum is divided by its own modulus, the amplitude information of the single-trap fields is not used to balance the traps, so the method has no handle on the intensity of any one of them.
+
+\textbf{Implementation.} The module \texttt{m01\_superposition} of the package \path{pipeline.model.holo.methods.baseline} holds the specification and the run function; the shared helper that refuses unsupported target kinds lives in the module \texttt{\_common} of the same package. The tests are in \texttt{tests/methods/baseline/}.
+
+\subsection{Random superposition (M02)}\label{sec:m02}
+
+Random superposition repairs the main defect of the plain superposition with one change: each trap receives a random phase before the sum. The random phases break the regular interference between the prisms, and the efficiency rises from a fraction of the input power to about three quarters of it. The hologram is
+\begin{equation}
+\phi_j=\arg\sum_{m=1}^{M}\sqrt{w_m}\,e^{\,i(\Delta_j^m+\theta_m)},\qquad \theta_m\sim\mathcal U[0,2\pi),
+\label{eq:m02}
+\end{equation}
+the row ``SR'' of Table 1 of Di Leonardo et al.~\cite{dileonardo}, drawn once per trap. Every random number comes from the portable generator of the engine (Section~\ref{sec:architecture}), through one call that returns $M$ phases, so the result is a pure function of the seed and the TypeScript port reproduces the generator bit for bit. The function that draws the phases and back-projects the amplitudes $\sqrt{w_m}e^{i\theta_m}$ is not only the method itself: it is the default starting phase of the iterative methods of the ladder, namely Gerchberg--Saxton and its adaptive and weighted forms, the phase-fixed weighted form, the direct search, the closed-loop method, the multi-plane method and the proposed methods that start from a weighted Gerchberg--Saxton iterate. Its quality therefore bounds the quality of the starts of most of the report.
+
+\textbf{Assumptions.} As for M01, the target must be a set of points and the device is ignored. The efficiency of Eq.~\eqref{eq:m02} is high because the phases of different traps add with random signs, which makes the amplitude of the sum close to the square root of the number of traps times the single-trap amplitude, so that the phase of the sum retains most of the light; the same randomness is the reason why the trap intensities are unequal. For $M$ traps with independent phases the trap amplitudes scatter by an amount that does not shrink with the number of pixels, which the measurement below confirms on two grid sizes.
+
+\textbf{Complexity and parameters.} The cost is $N_{\mathrm{pix}}\times M$ and no iteration; there is no parameter. On a graphics processor Bianchi and Di Leonardo report a cost per trap that DinHot does not rely on~\cite{bianchi2010}.
+
+\textbf{Acceptance criterion and gate.} The criterion requires an efficiency above that of M01 on the $10\times10$ task and a uniformity below a stated bound; the published uniformity of 0.01 is not the bar, because on this task the intensity spread of random superposition is intrinsic to the method (Table~\ref{tab:ladder}). The gate runs six seeds on the live grid and asserts the efficiency band per seed and the medians; a second test asserts that the efficiency exceeds that of M01 by a stated margin. The measurement of this report is: \acc{M02}. The efficiency clause holds, the published uniformity is not reproduced, and the acceptance bound is set at the measured ordering. The spread is about the same whatever the number of pixels (grids of two sizes were tried), so the published relative standard deviation is not reached on this task; the ordering of the methods, not the value, transfers.
+
+\textbf{Reading the bake.} Table~\ref{tab:bake-sigma} shows that the quality of a random start depends on the geometry: the low-symmetry sets (the ring-and-line case C06 and the disordered array C13) score a much lower spread than the lattices (C02, C03, C12), and the efficiency of every case stays in a narrow band (Table~\ref{tab:bake-eff}). No intensity control is available, so the method is a baseline and a start, never a recommended hologram.
+
+\textbf{Why the efficiency is high.} Over the random phases the cross terms of the sum in Eq.~\eqref{eq:m02} average to zero, so that for $S_j=\sum_m\sqrt{w_m}\,e^{i(\Delta_j^m+\theta_m)}$
+\begin{equation}
+\mathbb E_\theta\,|S_j|^2=\sum_mw_m,
+\label{eq:m02-power}
+\end{equation}
+independent of the pixel and of the geometry. The modulus of the sum is therefore nearly constant over the SLM, the division by it in the phase-only projection costs little amplitude, and most of the light is kept at the traps; with the regular sum of M01 the modulus fluctuates strongly between pixels, and the projection discards the light. The same randomness is the reason the trap intensities scatter, because each trap's field is a random sum of the contributions of the others.
+
+\textbf{Implementation.} The module \texttt{m02\_random\_superposition} and the start function of \texttt{\_common}; the default start of each iterative method calls the same function unless an initial phase is supplied.
+
+\subsection{Random mask (M03)}\label{sec:m03}
+
+The random mask encodes equal brightness by construction and pays for it in efficiency. The SLM pixels are partitioned into disjoint random subdomains $I_k$, one per trap, of equal share $N_{\mathrm{pix}}/M$ (a share proportional to the weight when the weights differ), and each pixel shows the phase of its own trap alone:
+\begin{equation}
+\phi_j=\Delta_j^{m(j)},\qquad I_l\cap I_m=\emptyset,\qquad \bigcup_k I_k=\text{SLM}.
+\label{eq:m03}
+\end{equation}
+The assignment rule is that of Montes-Usategui, Pleguezuelos, Andilla and Martin-Badosa~\cite{montes2006}, and the benchmark numbers are those of Table 1 of Di Leonardo et al.~\cite{dileonardo}. Each subdomain acts as a separate sparse grating that sends its light to its own trap, so that no trap competes with another for amplitude; the price is that a given trap receives only the light that falls on its share of the pixels, about $1/M$ of the input power, and that the remaining light of each sub-grating is diffracted into the other orders of the focal plane.
+
+\textbf{Construction.} The partition is a random permutation of the pixels cut at the cumulative weight edges, so that the shares are exact and not binomial; the independent per-pixel draw of Di Leonardo et al. is the same method with a binomial share. A trap whose weight is so small that its share rounds to zero is skipped. The delay of each pixel is built from the grating, lens and vortex terms of the delay of Eq.~\eqref{eq:delay}, evaluated only on the pixels the trap owns.
+
+\textbf{Physical bound.} A second display relation gives the bound that the SDD records as the oracle of the method: with $M$ equal traps the efficiency of the random mask is about
+\begin{equation}
+e\approx\frac{1}{M},\qquad u\ \text{depends on the number of pixels per trap}\ \frac{N_{\mathrm{pix}}}{M},
+\label{eq:m03-bound}
+\end{equation}
+and the uniformity is controlled by the pixels per trap because the interference of the sub-gratings of other traps behaves as speckle whose relative amplitude falls with the share.
+
+\textbf{Acceptance criterion and gate.} The ladder row states an efficiency near $1/M$ and, on the grid of the source, a uniformity within the published spread (Table~\ref{tab:ladder}). The gate has two parts: five seeds on the live grid assert that the efficiency lies within a factor of two of $1/M$ and that the uniformity is in a band, and two seeds on the published grid of $768\times768$ pixels assert that the published uniformity is reproduced within a stated tolerance and that the efficiency is in the published range. The measurement of this report is: \acc{M03}. The published numbers are reproduced on the grid on which they were measured; on the live grid there are nine times fewer pixels per trap, and the uniformity falls, which is the pixels-per-trap dependence of Eq.~\eqref{eq:m03-bound}. The larger grid validates the implementation of the encoding; the live grid shows the behaviour a reader of the studio sees.
+
+\textbf{Reading the bake.} In the committed cases the efficiency is about the inverse of the trap count whatever the geometry: the nine-trap case C01 reaches an efficiency near one tenth, the hundred-trap cases near one hundredth (Table~\ref{tab:bake-eff}). The method is only well behaved on large SLMs, and it is the counter-example to the superposition: equal traps at a low, known efficiency.
+
+\textbf{Why the light that remains is equal.} Each trap's own sub-grating is exact on its pixels, so the field it forms at its own trap is the same for every trap of equal share, and the only trap-to-trap difference is the interference of the other sub-gratings at that location. Those contributions are sums of many terms with unrelated phases, and their relative size falls as the number of pixels per trap rises, which is why the published grid, with nine times more pixels per trap than the live grid, gives the higher uniformity. A trap with a larger weight gets a proportionally larger share of pixels, so a requested intensity ratio is honoured to within the binomial or exact share, and the exact partition used here removes the random fluctuation of the share that the independent per-pixel draw would add.
+
+\textbf{Complexity and implementation.} The cost is linear in the number of pixels for the permutation plus linear per trap to build its delay on its own pixels. The module is \texttt{m03\_random\_mask}; it returns, besides the phase, the integer map of the trap that owns each pixel, which the figures of the studio use to show the partition.
+
+\subsection{Gerchberg--Saxton, point-trap and Fourier forms (M04)}\label{sec:m04}
+
+Gerchberg--Saxton (GS) alternates between the SLM plane and the trap plane, imposes the known amplitude in each and keeps the phase that comes back. It is the workhorse that the weighted variants modify, the reference of the learned and optimization methods, and, with an empty noise region, the baseline that mixed-region amplitude freedom improves for shaped targets. With the trap fields $V_m$ of Eq.~\eqref{eq:field}, target amplitudes $a_m=\sqrt{w_m}$ and the delay of Eq.~\eqref{eq:delay}, iteration $k$ is
+\begin{equation}
+\phi_j^{k}=\arg\sum_{m=1}^{M}a_m\,\frac{V_m^{k-1}}{|V_m^{k-1}|}\,e^{+i\Delta_j^m},
+\label{eq:m04}
+\end{equation}
+where the phasor $V/|V|$ is set to one where the field vanishes~\cite{dileonardo}. The start is the random superposition of M02 unless an initial phase is given.
+
+\textbf{Two forms of one map.} The point form is the direct sum of Eq.~\eqref{eq:field}. The Fourier form places the constraint on the bins of the zero-padded transform,
+\begin{equation}
+\phi\leftarrow\arg\,\mathcal F^{-1}\Big[\sum_{m}c_m\,\delta(\mathbf u-\mathbf u_m)\Big],\qquad c_m=a_m\frac{V_m}{|V_m|},
+\label{eq:m04-fft}
+\end{equation}
+and requires every trap to lie on a bin, at $z=0$ and without a vortex. For traps on bins the two forms are the same linear map up to a scale, so they agree to rounding; an automatic mode takes the Fourier form when the conditions hold and the point form otherwise, and records the choice. For shaped targets the field form iterates the same projection with the mixed-region rule of Section~\ref{sec:m08} at unit mixing, that is, with a zero noise region, after resetting the SLM amplitude to the beam and rescaling the target to the input power.
+
+\textbf{Parameters.} The form is chosen automatically for traps and the Fourier form for shaped fields (Table~\ref{tab:defaults}); the start of a shaped target is a Fresnel-lens phase of \defv{M04}{startwaves} waves at the aperture edge, because a random start leaves speckle (the choice is DinHot's, the original text states no start); a trap is accepted as on a bin within a tolerance of two thousandths of a bin, because case coordinates are rounded to a tenth of a micrometre.
+
+\textbf{Complexity.} The point form costs $K\times M\times N_{\mathrm{pix}}$ for $K$ iterations~\cite{dileonardo}; the Fourier form costs $O(P\log P)$ per iteration with $P=n_{\mathrm{fft}}^2$, which is the lane in which the browser runs the method.
+
+\textbf{Acceptance criterion and gate.} The ladder row has two parts (Table~\ref{tab:ladder}): the two forms agree to rounding, and 30 iterations on the $10\times10$ task with a flat beam reach an efficiency of at least 0.9 and a uniformity near 0.6. A Gaussian input beam caps the efficiency at $(\overline A)^2$, the square of the mean amplitude, so the bar of 0.9 holds for a flat beam; the Gaussian test therefore asserts 0.9 of the ceiling. The measurement of this report is: \acc{M04}. The published values are an efficiency of 0.94 and a uniformity of 0.60 after 30 iterations~\cite{dileonardo}, which the flat-beam run reproduces.
+
+\textbf{Role in the ladder and in the bake.} Gerchberg--Saxton is the method against which most others are measured, and the bake uses it at the same budget as every other iterative method, so that its row of Table~\ref{tab:bake-sigma} is the reference column. The spread it leaves is nearly the same on every lattice case of the bake and differs mostly on the low-symmetry sets, because the iteration imposes the target amplitudes in the trap plane and keeps only the phase that comes back, so that it has no mechanism that drives the achieved intensities to the target ones: the spread is set by the algorithm and the start more than by the geometry. The default form of the Python engine for traps is the automatic choice, while the browser port uses the point form unless told otherwise; the two are identical on bins, and the port does not choose the Fourier form on its own for this method. The input and output conventions are those of the common interface: a finite starting phase of the shape of the SLM may replace the random start, which is how the weighted variants and the refinement stages of the hybrid methods continue from a previous phase.
+
+\textbf{Limits.} The uniformity stalls near 0.6 because the iteration does not control the trap intensities; the weighted variants M05 to M07 do. The method stagnates in local minima, sends light to ghost traps, and leaves speckle in a shaped target, which is the reason for the mixed-region method. Table~\ref{tab:bake-sigma} shows a nearly constant spread over the lattices of the bake (a median of \medsig{M04} percent over the cases it ran on), which is the family trend. The module is \texttt{m04\_gs}, on the engine of \texttt{\_gs} (the rule, the trap loop and the field loop).
+
+\subsection{Generalized adaptive additive GS (M05)}\label{sec:m05}
+
+The generalized adaptive additive form (GAA) is the first published remedy for the poor uniformity of GS, and the rung between GS and the weighted form. It adds one feedback: the field of each trap is divided by a power of its own amplitude before it is sent back, so that a weak trap is boosted and a strong one is damped. Di Leonardo et al.~\cite{dileonardo} maximize $(1-\alpha)\sum_m|V_m|+\alpha\sum_m\log|V_m|$; the stationarity condition, iterated, gives
+\begin{equation}
+\phi_j=\arg\sum_m e^{+i\Delta_j^m}\,\frac{V_m}{|V_m|}\Big[(1-\alpha)+\frac{\alpha}{|V_m|}\Big],
+\label{eq:m05}
+\end{equation}
+and for $\alpha=0$ the iteration is GS (a test pins this). With target weights the phasor is scaled by $a_m$ and $|V_m|$ is replaced by $r_m=|V_m|/a_m$.
+
+\textbf{A stated deviation.} The bracket of Eq.~\eqref{eq:m05}, as printed, depends on the absolute scale of $|V_m|$, which is a fraction of the input power and of the order of a tenth on the $10\times10$ task; the term $\alpha/|V_m|$ then dominates and the iteration oscillates, with a uniformity below that of GS. DinHot expresses $|V_m|$ in units of its mean over the traps,
+\begin{equation}
+c_m=a_m\frac{V_m}{|V_m|}\Big[(1-\alpha)+\frac{\alpha}{\tilde r_m}\Big],\qquad \tilde r_m=\frac{r_m}{\langle r\rangle},
+\label{eq:m05-scale}
+\end{equation}
+which makes the iteration independent of the input power. The bracket of Eq.~\eqref{eq:m05} is the update of Di Leonardo et al.~\cite{dileonardo} as printed (their Eq.~16, with $\xi$ for the weight written $\alpha$ here, and $\xi=0.5$ their value); with $V_m$ normalized by the number of pixels as in their Eq.~3, $|V_m|$ is of order $0.1$ for $100$ traps. The source states no rescaling of $|V_m|$ and reports, for $\xi=0.5$, a uniformity of $0.79$ at the efficiency of GS; with the printed bracket the iteration measured here oscillates and falls below GS in uniformity, a difference the source does not explain. The division by the mean is therefore a modelling choice of this product, and the bracket as printed is kept as an option and is measured to fail.
+
+\textbf{Parameters.} The weight $\alpha$ has the default \defv{M05}{alpha}, the value of Di Leonardo et al. (an efficiency of 0.93 and a uniformity of 0.79 at 30 iterations in the source); the scale convention has the default \texttt{\defv{M05}{scale}}; the form is chosen as for M04. The benchmark tunes $\alpha$ over a grid of four values stored in the protocol (Section~\ref{sec:protocol}).
+
+With $\alpha$ at its two limits the method is easy to read: at $\alpha=0$ it is GS, and as $\alpha$ grows toward one the logarithmic term dominates, so that the update acts on the ratio of the amplitude to its own mean and the feedback on a weak trap is strongest, at the price of a larger risk of oscillation when the amplitudes change from one iteration to the next. The value of the source sits between the two, and the measurement of this report is at that value.
+
+\textbf{Complexity.} The cost is the same as GS, $K\times M\times N_{\mathrm{pix}}$ for the point form, with no extra state: the method has no integral memory of earlier corrections, which is what the weights of M06 add.
+
+\textbf{Acceptance criterion and gate.} The criterion is a uniformity above that of GS at equal iterations on the $10\times10$ task (Table~\ref{tab:ladder}). The gate runs five seeds of 30 iterations for both methods and asserts, per seed, a higher uniformity for GAA, a median gain of at least a stated amount, and an efficiency within five percent of GS. The measurement of this report is: \acc{M05}. GAA is above GS in every seed; the efficiency stays within a small fraction of GS; with the printed bracket the uniformity falls below GS, which is why the test fixes the reading of the formula.
+
+\textbf{Why the bracket helps.} Differentiating the objective $(1-\alpha)\sum_m|V_m|+\alpha\sum_m\log|V_m|$ with respect to the phase and keeping the stationarity condition gives the weight $(1-\alpha)+\alpha/|V_m|$ on the phasor of trap $m$. The first term is the plain GS weight; the second is inversely proportional to the amplitude already achieved, so a trap that is weak receives a larger coefficient in the back-projection, and a trap that is strong is relatively damped. The logarithm in the objective is what makes the correction multiplicative in the amplitude, and it is also the reason for the scale problem: $\log|V_m|$ is defined up to the unit of $|V_m|$, and a change of that unit moves the relative weight of the two terms, which the printed bracket does not fix. Expressing $|V_m|$ in units of its mean over the traps, as in Eq.~\eqref{eq:m05-scale}, removes that ambiguity, and it leaves the update invariant to the overall power of the input beam.
+
+\textbf{Limits.} The scale convention is DinHot's, not the source's. GAA stays below the weighted methods M06 and M07 in uniformity: on the lattices of the bake its spread is higher than that of M06 (Table~\ref{tab:bake-sigma}), as its missing integral memory predicts. The module is \texttt{m05\_gaa}, on the same engine as M04.
+
+\subsection{Weighted Gerchberg--Saxton (M06)}\label{sec:m06}
+
+Weighted GS (GSW) puts an integral feedback on the trap weights, so that dark traps are boosted and bright traps damped at every iteration. It is the method of Di Leonardo et al.~\cite{dileonardo} that reaches high efficiency and high uniformity together on the $10\times10$ task, the best row of the ladder among the classic methods for point arrays, and the weighted base of the phase-fixed, closed-loop, Zernike and vortex methods and of the starts of several optimizers. The maximum condition of the weighted objective is $\phi_j=\arg[\sum_m e^{i\Delta_j^m}w_mV_m/|V_m|]$, and the iteration, started from the random superposition with $w_m^0=1$, is
+\begin{equation}
+w_m^{k}=w_m^{k-1}\,\frac{\langle|V^{k-1}|\rangle}{|V_m^{k-1}|},\qquad
+\phi_j^k=\arg\sum_m e^{+i\Delta_j^m}\,w_m^k\,\frac{V_m^{k-1}}{|V_m^{k-1}|}.
+\label{eq:m06}
+\end{equation}
+The bar over $V$ in the numerator of the source was lost in the text extraction of the research record; the sentence of the source, which asks to adjust the weight so as to reduce the deviation from the average, defines it as the average trap amplitude. With target weights, $a_m=\sqrt{w_m^{\mathrm{target}}}$, the initial weight is $w_m^0=a_m$, and $|V_m|$ is replaced by $r_m=|V_m|/a_m$; the update is then the multiplication of the weight by the ratio of the mean of $r$ to $r_m$, which is identical to Eq.~\eqref{eq:m06} for equal weights. The history of the method reports the uniformity and the relative standard deviation of $I_m/w_m^{\mathrm{target}}$, so that a requested intensity ratio is the quantity equalized.
+
+\textbf{Why it works.} The weights are a running product of the corrections applied so far, so a trap that stays dark keeps being boosted, as an integral controller removes a constant error; GAA has only the proportional term. The update has the fixed point $r_m=\langle r\rangle$ for every trap, which is uniform intensity. The memory also explains the limit of the method on a crowded array, where later corrections are applied to a phase that keeps moving: this is the problem that freezing the phase solves in M07.
+
+Taking logarithms of the weight update shows the integral action explicitly,
+\begin{equation}
+\ln w_m^{k}=\ln w_m^{0}+\sum_{i=0}^{k-1}\Big(\ln\langle r^{i}\rangle-\ln r_m^{i}\Big),\qquad r_m^{i}=\frac{|V_m^{i}|}{a_m},
+\label{eq:m06-integral}
+\end{equation}
+so that the log-weight of a trap is the running sum of the log-errors of that trap, exactly the structure of an integral controller acting on the quantity $\ln r_m$, whose reference is the mean over the traps. A trap that is persistently below the mean accumulates a positive sum and its weight grows until its amplitude catches up; the accumulated weights are never reset, which is both the strength of the method (it removes a constant bias) and its weakness when the phase keeps changing under the weights.
+
+\textbf{Parameters.} Only the form (default \texttt{\defv{M06}{form}}) and the initial weights, set by the target weights; the benchmark tunes nothing for M06.
+
+\textbf{Complexity.} $K\times M\times N_{\mathrm{pix}}$ for the point form and $O(P\log P)$ per iteration for the Fourier form. The source reports a graphics-processor cost per trap and iteration at a larger grid~\cite{bianchi2010}; the studio relies on its own measurement in the browser (Section~\ref{sec:live}).
+
+\textbf{Acceptance criterion and gate.} The ladder row requires an efficiency and a uniformity both at least 0.9 within a median of 15 iterations on the $10\times10$ task with a flat beam (the source reports about 10), and the $3\times3\times3$ lattice above 0.9 and 0.98 (Table~\ref{tab:ladder}). The gate asserts for every seed that the first iteration with both quantities at 0.9 is at most 15, that the median uniformity at iteration 10 is at least 0.85, that the Gaussian beam reaches 0.9 of its ceiling and 0.9 in uniformity within 20 iterations, that the lattice reaches its two thresholds within 100 iterations, and that a requested 2:1 weight gives an intensity ratio of 2 within a tenth. The measurement of this report is: \acc{M06}. Convergence is slightly slower on the live grid than in the source because the grid has fewer pixels, and the bound is set accordingly; the lattice does not converge monotonically.
+
+\textbf{Limits.} The efficiency of a Gaussian beam is capped by the beam ceiling. On a device with crosstalk and few phase levels the weights equalize the ideal model and not the device: on the device-limited case C08 the bake leaves a relative standard deviation of the order of thirteen to fifteen percent for M06 and M07, which is the gap that the device-aware methods of this report address (Table~\ref{tab:bake-sigma}). The module is \texttt{m06\_gsw}, on the engine of \texttt{\_gs}.

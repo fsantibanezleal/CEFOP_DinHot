@@ -1,0 +1,55 @@
+% Experimental protocol.
+
+\section{Experimental protocol}\label{sec:protocol}
+
+\subsection{The cases}\label{sec:cases}
+
+A case is an optical setup, a device, a target (a list of traps or a shaped potential), an aberration, a method set, a seed and, for dynamic cases, a particle and a rearrangement. There are \nCases{} cases in four categories (Table~\ref{tab:cases}): arrays (a $3\times3$ grid, a $10\times10$ grid with camera feedback, a $32\times32$ array of \maxTraps{} traps, the calibration task of the analytic and Gerchberg--Saxton baselines, and a disordered array of \nDisordered{} traps on integer bins at least five bins apart), shaped and three-dimensional targets (a disc potential with the crosstalk model, a three-plane array with vortices, a vortex ring with a line, and a three-plane volume at the geometry of the released learned model), device and optics (high numerical aperture, a device-limited array, an aberrated array with and without correction) and dynamics and controls (an atom-rearrangement sequence and a trap outside the field, which is refused by the first contract and never computed). The baked cases span \minTraps{} to \maxTraps{} traps. The optical setups are listed in Table~\ref{tab:setups}; the bead setup is in water, and the setup of C14 is the volume of the released learned model.
+
+\input{../data/table_cases.tex}
+
+Every case states numeric expected ranges for its metrics, measured on three seeds, and the bake fails outside them. All cases are synthetic: the parameters are stated and no measured sample is used. The cases C01, C02, C03, C12 and C13 sit on integer-bin lattices so that the Fourier form applies and the live lane keeps its time budget; the cases C05 to C10 keep off-bin traps because they carry depth, vortices, a high numerical aperture, a device, an aberration or a rearrangement, which the Fourier form cannot represent. A device case excludes traps off the focal plane, vortex charge and an aberration, because the device model is read at one focal plane. The reference method of a case is the one whose maps the replay shows, and the method the reader picks among those valid for the case is a variant, as is the device (ideal or the case's own).
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{The optical setups of the cases, read from the committed manifests and traces. The device row of C08 is the device the benchmark also uses for its device cells.}
+\label{tab:setups}
+\begin{tabular}{@{}l r r r r r r r r@{}}
+\toprule
+Setup & $\lambda$ (nm) & $f$ (mm) & NA & SLM pixels & pitch ($\mu$m) & pad & bin ($\mu$m) & half field ($\mu$m)\\
+\midrule
+Atom (C01--C04, C09--C13) & \atomLambda & \atomFocal & \atomNa & $\atomNpix^2$ & \atomPitch & \atomPad & \atomBin & \atomHalf\\
+Bead (C05--C07, water) & \beadLambda & \beadFocal & \beadNa & $\beadNpix^2$ & \beadPitch & \beadPad & \beadBin & \beadHalf\\
+C08 & \devcLambda & \devcFocal & \devcNa & $\devcNpix^2$ & \devcPitch & \devcPad & \devcBin & \devcHalf\\
+C14 & \voluLambda & \voluFocal & \voluNa & $\voluNpix^2$ & \voluPitch & \voluPad & \voluBin & \voluHalf\\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\footnotesize The bead setup is in water of index \beadNimm; C14 is the volume of the released learned model. C08 device: \devcBits-bit phase, crosstalk $\sigma_K=\devcXtSigma$, $q=\devcXtQ$ on $3\times3$ sub-pixels, fill factor \devcFill, flicker \devcFlicker{} rad.
+\end{table}
+
+\subsection{Metrics, baselines and acceptance criteria}\label{sec:protocol-metrics}
+
+The metrics are those of Eq.~\eqref{eq:metrics}: the efficiency, the uniformity and the relative standard deviation of the trap intensities, plus the zero-order and ghost fractions of the power budget, all computed by the scorer from the final phase through the case's device. For a shaped target the two required slots carry the signal-region metrics: the relative-standard-deviation slot holds the root-mean-square fractional error of Eq.~\eqref{eq:m08-err} in percent after the scale fit, and the uniformity slot holds one minus its fraction, clipped at zero. For the learned volume network the metric is the accuracy of Eq.~\eqref{eq:m17}, and the comparison is the median per-volume ratio of the accuracies at equal wall-clock.
+
+The baselines are run by the product on the same task, never only quoted: the analytic and Gerchberg--Saxton methods M01 to M06 are the baselines of the weighted methods; GS is the baseline of the optimization methods at equal iterations; the volumetric Gaussian GS is the baseline of the learned network at equal wall-clock; the phase-fixed weighted GS is the baseline of every proposed method; and the random start is the baseline of the warm start. The published values that a method's acceptance criterion quotes are used as anchors, and the report states where the engine reproduces them and where it does not. The acceptance criterion of each method is one measurable statement with one test (Table~\ref{tab:ladder}); the measured value of each, with its seeds, is Table~\ref{tab:acceptance}. A criterion is confirmed when the test passes, and a method that fails its criterion on DinHot's grids is reported as measured, not hidden: the criterion of the warm start is refuted, the criterion of the aberration-robust hologram was narrowed after a measurement, and the criterion of the freeze index of the phase-fixed method is met only with a larger value than the source's.
+
+\input{../data/table_ladder.tex}
+\input{../data/table_acceptance.tex}
+
+\subsection{Seeds, repetitions, hardware and run times}\label{sec:protocol-hw}
+
+Every method of a case receives the same seed, so that all of them start from the same random numbers. The acceptance tests state their seeds in Table~\ref{tab:acceptance}: between one and six, the number a test needs to bound a measurement within the time of the test suite. The expected ranges of the cases are measured on three seeds. The benchmark repeats the methods on its geometries over up to \benchSeeds{} seeds; a group runs seeds until a bound on its wall clock, and at least two, so a cell carries between \benchSeedsMin{} and \benchSeedsMax{} seeds, which the file records per row. The uncertainty reported is the observed range over the seeds for the acceptance tests and the bake, and the median with the inter-quartile range for the benchmark; no parametric interval is claimed, because the seeds are few and the distributions are not Gaussian.
+
+The measuring machine is the development workstation recorded in the product's file of measured resources: a laptop processor with twelve cores, forty-eight gigabytes of memory and a laptop graphics processor, Python 3.13 and Node 24, with the browser measurements taken in Chromium driven by Playwright. The canonical bake of the eleven cases that run in parallel took \bakeIdleS{} s on an idle machine and \bakeLoadedS{} s while the machine ran other jobs, at a peak of \bakeCaseMB{} MB for one case process; the benchmark and the training are bounded by the design at hours and run locally, and the times in the benchmark are wall-clock seconds of the machine that ran it, under shared load, so they differ between runs and are used only to compare methods inside one run. The browser timings of Section~\ref{sec:live} are quoted from the same record.
+
+\subsection{The benchmark protocol}\label{sec:protocol-bench}
+
+The benchmark compares the methods on one protocol. Its geometries are (\benchGeometries{} in all) a $10\times10$ square, a ring of 36 traps, 100 random traps with a minimum spacing, a quasi-periodic set of 119 traps, a $5\times5\times3$ lattice, a large set (the $32\times32$ lattice and the disordered 819-trap set, pooled by seed parity) and four shaped fields (a ring, a disc, a line and a Laguerre--Gaussian ring, pooled by seed). The grids are \benchGrids{} pixels, with the benchmark optics keeping the Fourier unit and the focal bin fixed across grids; the iteration budgets are \benchIters{} and the time budgets are \benchTimes{} s, with a converged row run to a cap of iterations. For every method, geometry, device and parameter set and for every seed, six runs are made; every cell reports the median and the inter-quartile range of efficiency, uniformity, relative standard deviation, time and iterations, on the ideal device and on the C08 device (every hologram scored against its device). The device rows run with the default parameters only and not on the multi-plane geometries.
+
+A method that declares a tuning grid of four candidates, or has a fallback entry whose names its run function accepts, is tuned: each candidate runs on three other seeds at 30 iterations and the one with the lowest median relative standard deviation among those with at least half the best median efficiency gives the tuned rows. The number of tuning runs is the same for every tuned method, and no row mixes one method's tuned parameters with another's defaults, as the parameter field of each row states. The committed results file holds \benchRows{} rows of \benchNMeasured{} of the \benchNProtocol{} engine methods; \benchSkipped{} method--geometry cells are recorded as skipped with the reason the file states (a method that does not accept the target, such as a two-dimensional method on a three-dimensional lattice, or one that refuses the geometry), and the \benchNNoRows{} methods without a row (\benchNoRows) refuse every geometry of the protocol by their specification (a vortex charge, a rearrangement block, the geometry the learned model was trained for); their tests and their cases measure them.
+
+\subsection{Evaluation of the learned models}\label{sec:protocol-learned}
+
+The two learned methods are evaluated only on held-out geometries that the training never saw. The held-out set is written before training and its hash is recorded in the model card. The metrics document compares each model with its baseline: the volumetric GS at the same wall-clock budget for the network (the budget is the median time of the baseline at 30 iterations on those volumes), and the random start for the warm start, with the same early freeze as a control without the network. A model that does not meet its criterion is not released: the baseline answers, readiness says training, and the measured values are reported as they are. The rules that keep the evaluation sound are stated before the results: held-out means disjoint from calibration and training; the acceptance values of each method state seeds, grid and date; accurate means that the result agrees with the stated engine and device model, not that it matches a real instrument; and a published number is labelled with its source and conditions while a DinHot measurement is labelled as one.

@@ -1,0 +1,124 @@
+% Methods M13 to M16.
+
+\subsection{Device-aware conjugate gradient with pixel crosstalk (M13)}\label{sec:m13}
+
+A real SLM couples neighbouring pixels, so a hologram that is optimal for the ideal model is not optimal on the device. The solution replicated is that of Schroff, La Rooij, Haller and Kuhr~\cite{schroff}: each SLM pixel is upsampled to a block of computational pixels, and the phase is convolved with a fitted kernel before the Fourier transform. A method that optimizes through that blur reaches a lower error on the device than the same optimizer that ignores it. With each SLM pixel represented by $3\times3$ computational pixels and the phase kept in $[0,2\pi)$, the forward model of the source is
+\begin{equation}
+\tilde\phi=K*\phi_{\uparrow3},\qquad
+K=\mathcal F^{-1}\Big\{\exp\Big[-\frac{|\kappa_x|^q+|\kappa_y|^q}{\sigma^q}\Big]\Big\},
+\label{eq:m13}
+\end{equation}
+with the fitted values $\sigma=\devcXtSigma$ and $q=\devcXtQ$. The convolution is circular, so the phase wraps at the border of the SLM. The device that the optimizer sees is the crosstalk, the pixel-aperture envelope and the quantizer, with the quantizer treated straight-through (quantized in the forward pass, identity in the backward pass); flicker is dropped from the model. The cost is the powered intensity cost $C_t$ of Eq.~\eqref{eq:m10} evaluated on the focal field of the device, and it is minimized by the same Fletcher--Reeves conjugate gradient as M10. The source uses a Polak--Ribi\`ere search with automatic differentiation; DinHot's gradient is closed form, because the adjoint of the crosstalk operator is the convolution with the reversed kernel followed by the sum over each $3\times3$ block,
+\begin{equation}
+\frac{\partial C}{\partial\phi}=\big(K^{\star}*\cdot\big)^{\downarrow3}\Big[\frac{\partial C}{\partial\tilde\phi}\Big],\qquad K^{\star}(\mathbf r)=K(-\mathbf r),
+\label{eq:m13-adjoint}
+\end{equation}
+so the TypeScript port needs no automatic differentiation. A pruned zero-padded transform, which keeps only the nonzero rows and the wanted frequencies, makes the forward and the adjoint cheaper than the plain upsampled transform pair by a factor that the design record measures.
+
+\textbf{Pseudocode.} Algorithm~\ref{alg:m13} lists the procedure.
+
+\begin{algorithm}[t]
+\caption{Conjugate gradient through the device model (M13). The gradient is the adjoint of the crosstalk operator; a staircase line search replaces the strong-Wolfe search where the quantizer makes the cost a staircase.}
+\label{alg:m13}
+\begin{algorithmic}[1]
+\Require target $T$, device $\mathcal D$ (crosstalk kernel $K$, upsampling, aperture envelope, quantizer), power $t$, iteration budget $K$, start $\phi^0$
+\State $\phi\gets\phi^0$; evaluate $C_t(\phi)$ and $g\gets\nabla C_t(\phi)$ through the adjoint of Eq.~\eqref{eq:m13-adjoint}; $d\gets-g$
+\For{$k=1,\dots,K$}
+  \State find a step $\alpha$ by the line search along $d$ (strong Wolfe, or the staircase search on a quantizing device)
+  \State $\phi\gets\phi+\alpha d$; $g'\gets\nabla C_t(\phi)$
+  \State $\gamma\gets (g'\cdot g')/(g\cdot g)$; $d\gets -g'+\gamma d$; $g\gets g'$
+  \If{$d\cdot g\ge0$} \State $d\gets -g$ (restart from steepest descent) \EndIf
+\EndFor
+\State \Return $\phi$ wrapped to $[0,2\pi)$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Unit of the kernel variable.} The kernel of Schroff et al.~\cite{schroff} is $K=\mathcal F^{-1}\{\exp[-(|\kappa_x|^q+|\kappa_y|^q)/\sigma^q]\}$ with the fitted $\sigma=1.24\ \mathrm{px}^{-1}$ and $q=1.80$, applied to the phase up-scaled to $3\times3$ computational pixels per SLM pixel (their Methods, an unnumbered equation). The source gives $\sigma$ in inverse pixels and does not define the unit of $\kappa$ further. DinHot reads $\kappa$ in cycles per SLM pixel, so that the grid spans plus and minus one half; at the Nyquist frequency the transfer is then $\exp[-(0.5/1.24)^{1.8}]=0.80$, while a reading in radians per pixel would give a much stronger low-pass. The claim of the method is therefore relative to this device model and not to a measured instrument.
+
+\textbf{Parameters.} The device is the one passed, and the published kernel is available as a ready device with upsampling three. The power, the design efficiency and the line search are those of M10 (Table~\ref{tab:defaults}). Where the device quantizes, the cost is a staircase and the strong-Wolfe search failed after a few iterations whatever the budget; a staircase search used by this method only lets it run its budget. The scored spread on that device does not improve systematically with the budget (three seeds before and after the change give a spread that moves in both directions), which is a measured negative. From a weighted-GS start on the full C08 device the method scores lower than M10 on the ideal model, and a variant for the device without the quantizer and the flicker scores lower still, so on that case the straight-through quantizer costs more than it gives; the start matters, because from a random start the same run is far worse.
+
+\textbf{Complexity.} One iteration costs about the $3\times3$ upsampled transform pair against one pair for M10, and the source reports a run time several times longer than without the model. The method is baked and replayed, because the gradient on the upsampled grid is too heavy for the live budget at full size; in the bake the cases C04 (shaped disc) and C08 (device-limited array) run it. Traps with an axial offset or a vortex are refused on a device, and the trap fields are read at the nearest bin. With no device the method is M10 bit for bit, which a test checks.
+
+\textbf{Acceptance criterion and gate.} On the crosstalk device the method has a lower error than M10 without the model, on a large disc (Table~\ref{tab:ladder}). The gate runs a disc of 24 bins radius on a $64$-pixel SLM padded twice, with 100 iterations and one seed, scores both holograms through the device and requires the device-aware error to be below that of M10; companion tests check the gradient through the crosstalk operator against finite differences, the refusal of a vortex trap, and determinism. The measurement of this report is: \acc{M13}. Both errors are far above the published ones (1.9 percent with the model against 2.7 percent without, at an efficiency of 28 against 34 percent~\cite{schroff}), because the acceptance budget is 100 iterations and a single seed; the test claims the ordering, not the published level. In the bake the method has the lowest mean signal error on case C04 among the methods run, and on the trap array of C08 its 30 iterations are not converged.
+
+\textbf{Implementation.} The module is \texttt{m13\_crosstalk\_cg}, on the device model of \texttt{core/device} and the cost classes of \texttt{optim/\_common}.
+
+\subsection{Zernike correction and sensorless modal recovery (M14)}\label{sec:m14}
+
+The practice of removing the aberration of the optical system from a tweezer array is additive: the aberration phase is added to the final SLM phase, so a correction is the opposite wavefront added to the hologram. The additive model with a Zernike set is the one of the large-array experiments of Nogrette et al.~\cite{nogrette} and Ebadi et al.~\cite{ebadi2021}, and a global Zernike set is exactly what the aberration-robust hologram of Section~\ref{sec:b4} improves on. The sensorless search, which needs no wavefront sensor and uses only the camera, is DinHot's implementation of a merit-function modal search; no primary source for the parabola search was opened. The displayed hologram is the base hologram minus the correction, and the focal field includes the wavefront of the system,
+\begin{equation}
+\phi_{\mathrm{shown}}=\phi_{\mathrm{base}}-2\pi\sum_j\hat c_jZ_j,\qquad
+E=\mathcal F\Big[A\,e^{\,i(\phi_{\mathrm{shown}}+2\pi\sum_jc_jZ_j)}\Big],
+\label{eq:m14}
+\end{equation}
+where the unknown coefficients $c_j$ are in waves and the basis is orthonormal over the disc inscribed in the SLM, with unit root-mean-square value, so that the rms wavefront error is the root sum of squares of the coefficients. Indexing follows Noll~\cite{noll}; the ordering beyond mode 11 follows a rule of the engine that was not checked against the paper.
+
+\textbf{The merit and the search.} The merit is the summed measured trap intensity $M(\hat c)=\sum_mI_m$ from the emulated camera of Section~\ref{sec:m12}. Under the Mar\'echal approximation, quoted from the physics research record and not verified against the primary text, $M\propto\exp[-(2\pi\sigma)^2]$ with $\sigma$ the residual wavefront rms in waves, so $\ln M$ is a parabola in each coefficient. One sweep visits the searched modes; for each it evaluates $M$ at $\hat c_j-\delta$, $\hat c_j$ and $\hat c_j+\delta$, fits the parabola to $\ln M$ and moves to its vertex,
+\begin{equation}
+\hat c_j\leftarrow\hat c_j+\delta\,\frac{y_--y_+}{2\,(y_--2y_0+y_+)},\qquad y=\ln M,\quad\text{step clipped to }\pm2\delta,
+\label{eq:m14-step}
+\end{equation}
+or to the best of the three points when they are not concave. The modes are not exactly orthogonal under the Gaussian beam and the off-axis traps, so the sweep repeats and stops when the largest step of a sweep falls below a small tolerance or the sweep cap is reached. Tip, tilt and piston are excluded, because they move the traps or leave them unchanged. The camera cost is three frames per searched mode plus one.
+
+\textbf{Parameters and how they were chosen.} The mode of operation is recovery by default, and the modes are Noll 4 to 11 (defocus, astigmatism, coma, trefoil and primary spherical), the set of the ladder row. The trial step $\delta$ has the default \defv{M14}{trialwaves} waves, about the size of the injected modes of the acceptance set and not tuned against a source; the base hologram is the weighted GS of M06 with \defv{M14}{baseiterations} iterations, the count at which Di Leonardo et al. report the weighted row~\cite{dileonardo}. The default camera is ideal (no gain error, no noise, no roll-off) unless one is passed.
+
+\textbf{Complexity.} Each sweep costs 25 camera evaluations, each a focal field by a fast Fourier transform, $O(P\log P)$ with $P=n_{\mathrm{fft}}^2$. The method runs in the browser, and in the bake the aberrated case C09 runs it with the case's aberration as the injected set.
+
+\textbf{Acceptance criterion and gate.} The search recovers an injected set of Noll modes 4 to 11 within five percent of their amplitude (Table~\ref{tab:ladder}). The gate draws three seeds with random signs and amplitudes in a stated range of waves, runs six sweeps on the $10\times10$ task, and requires every searched mode within the bound, the unsearched coefficients exactly zero and a final efficiency at least 0.98 of the aberration-free base; companion tests check that a known aberration is subtracted exactly, that partial knowledge corrects partially, and that recovery with a noisy camera stays within ten percent of the injected rms. The measurement of this report is: \acc{M14}. Before correction the efficiency is a small fraction of the aberration-free base; after recovery it returns to it.
+
+\textbf{Limits.} The merit assumes a roughly Gaussian response in each coefficient, which strong aberrations break; the camera is an emulation, so the recovery is shown against stated errors and not against an instrument; and a global set cannot correct aberrations that vary across the field, the gap from which the aberration-robust hologram starts. The module is \texttt{m14\_zernike} on the polynomials of \texttt{core/zernike}.
+
+\subsection{Laguerre--Gaussian vortex traps (M15)}\label{sec:m15}
+
+The established way to give a trap orbital angular momentum is one more term in the delay of the point-trap model, so that vortex traps, rings of light with a dark centre, mix freely with plain traps in one hologram. The term is part of the first formulation of the point-trap model~\cite{dileonardo}, and vortices were demonstrated in a trap array by Polin, Hovhannisyan and Sorensen~\cite{polin}. The delay of a charged trap is Eq.~\eqref{eq:delay} with the azimuthal term $l_m\operatorname{atan2}(y_j,x_j)$. The field $V_m$ of a charged trap is the overlap of the focal field with the vortex mode of charge $l_m$; it is this projection that is equalized, and the intensity at the centre of the trap is dark, which a test checks. The hologram is the weighted GS of M06 with the charges carried by the back-projection,
+\begin{equation}
+\phi_j=\arg\sum_m e^{+i\Delta_j^m}\,w_m\frac{V_m}{|V_m|},\qquad \Delta_j^m\ \text{with}\ l_m\neq0,
+\label{eq:m15}
+\end{equation}
+so that the powers of the modes equalize. Only the point form exists, because charged traps are off the bins of the Fourier form, and there is no graphics-processor path.
+
+\textbf{The acceptance quantity.} On a ring of radius $r$ around the trap, sampled at 48 points, the focal phase $\psi_k$ is read, the total winding is the sum of the wrapped phase steps, which should be $2\pi l$ times a fixed sign, and the maximum error is the largest deviation of $\psi_k$ from the best-fit line,
+\begin{equation}
+\varepsilon_{\max}=\max_k\big|\psi_k-(\pm\,l\,\theta_k+c)\big|,\qquad \sum_k\operatorname{wrap}(\psi_{k+1}-\psi_k)=\pm2\pi l.
+\label{eq:m15-ring}
+\end{equation}
+The radius is the one of maximum mean intensity among a set of candidate radii, so that the measurement is made on the bright ring; the number of points and the radius rule are DinHot's choices and are not sourced. The convention is that the winding of the field has the sign of the charge. The field at a ring point is the plain point-trap projection there.
+
+\textbf{Why the equalization is on the mode power.} The intensity at the centre of a vortex trap is zero, so the quantity that can be equalized is not the peak of the focal intensity but the overlap of the focal field with the mode of the trap, which is the projection that Eq.~\eqref{eq:field} computes with the vortex term in the delay. The weights of Eq.~\eqref{eq:m15} therefore equalize the mode powers of the charged traps with those of the plain traps in the same hologram, and the ring of light of a vortex trap carries a power that is comparable to that of a plain trap of the same weight.
+
+\textbf{Parameters.} The charge defaults to the one carried by each trap, and a keyword overrides all traps with one integer; a target with no charged trap and no keyword is refused. The hologram rule is that of M06, in the point form.
+
+\textbf{Complexity.} The point form costs the number of pixels per trap per iteration, because the delay of a charged trap is dense and built one trap at a time. The method runs in the browser, and the port agrees with the Python fixtures to the tolerance stated in Section~\ref{sec:validation}; in the bake the cases C05 and C06 run it. For a target whose traps already carry charges M06 chooses the point form and runs the same weighted GS as M15, so the two methods give the same values in the bake.
+
+\textbf{Acceptance criterion and gate.} The ring phase winds by $2\pi l$ with an error below 0.1 rad (Table~\ref{tab:ladder}). The gate has an isolated vortex of charges 1, 2, 3 and $-2$, with the winding exact and the maximum deviation below the bound, and an array of four vortices 24 bins apart in one hologram, with the winding exact, the rms error below 0.1 rad and the maximum below 0.2 rad (the array bound is looser than the ladder, see below), plus tests of the sign convention, of the keyword and of determinism. The measurement of this report is: \acc{M15}. In the array one member, an off-axis trap with charge 2, exceeds 0.1 rad in its maximum, so the array test asserts the rms below 0.1 and the maximum below 0.2; the ladder's bound holds for the isolated case.
+
+\textbf{Limits.} Charged traps are point-form only. The vortex phase is a pure azimuthal term, so the model carries the charge but not a radial index. The model is scalar, and the high numerical aperture case carries a validity flag. The module is \texttt{m15\_vortex}; the ring-profile function is the measurement of the acceptance quantity and is the one the notebooks reuse.
+
+\subsection{Hungarian assignment and linear phase interpolation (M16)}\label{sec:m16}
+
+A loaded array of atoms has holes. Rearrangement moves loaded atoms into a defect-free target pattern: it decides which atom goes to which site, and it moves the traps smoothly with a sequence of holograms so that no moving trap dims enough to lose its atom. Two sources are replicated: the Hungarian assignment with the cost $d^\alpha$ of Lee, Kim and Ahn~\cite{lee2017}, and the linear phase interpolation (LPI) of the sequence of~\cite{lpi}, which reports that the weighted-GS spot nearly vanished several times when sampled at a high frame rate while the LPI spot stayed above 70 percent.
+
+\textbf{Assignment.} Each target site $t_i$ is matched to a distinct loaded atom $a_{f(i)}$ so as to minimize
+\begin{equation}
+C(f)=\sum_i d_{i,f(i)}^{\,\alpha},\qquad d_{i,j}=|t_i-a_j|,\quad\alpha>1,
+\label{eq:m16}
+\end{equation}
+so that paths do not cross; for a square lattice an exponent above 1.12 keeps the minimum interatomic distance of the lattice during moves~\cite{lee2017}. The solver is the Kuhn--Munkres algorithm with potentials, $O(n^2m)$ for an $n\times m$ cost with $n\le m$ (a rectangular case, whose unmatched atoms are released); it is tested against brute force on 96 random matrices. A routine counts the pairs of straight paths that intersect or overlap along a segment.
+
+\textbf{Hologram sequence.} The initial and final holograms are phase-fixed weighted GS (M07). From each, the position, amplitude and optical phase $\psi_m=\arg V_m$ of every tweezer are read and linearly interpolated over $S$ steps,
+\begin{equation}
+x_m(s)=x_m^{i}+\tfrac sS(x_m^{f}-x_m^{i}),\quad a_m(s)=a_m^{i}+\tfrac sS(a_m^{f}-a_m^{i}),\quad
+\psi_m(s)=\psi_m^{i}+\tfrac sS\operatorname{wrap}(\psi_m^{f}-\psi_m^{i}),
+\label{eq:m16-lpi}
+\end{equation}
+and the transform is inverted at each step, $\phi(s)=\arg\sum_ma_m(s)e^{i\psi_m(s)}e^{+i\Delta_j^m(s)}$, which is the point-trap back-projection, exact at fractional positions. The number of steps is set by the longest path, $S=\lceil d_{\max}/s_{\max}\rceil$. Because the amplitude is interpolated and the phase advances smoothly, no trap passes through zero intensity, unlike independent weighted-GS holograms whose free phases jump between steps. Knottnerus et al.~\cite{lpi} obtain the position, amplitude and optical phase of each tweezer from the transform of the initial and the final hologram, interpolate them linearly over $N$ steps and invert the transform at each step; $N$ is chosen so that the longest trajectory advances at most one Fourier unit, $\lambda f/L\approx0.45\ \mu\mathrm{m}$, per hologram (their Section~3, in prose). The engine uses the same step, one Fourier unit, so $s_{\max}$ is one bin of the unpadded grid. The source does not state how the phase difference is taken; DinHot interpolates the wrapped difference, the shortest phase path. The equations above write the described procedure in the notation of this report.
+
+\textbf{Why an exponent above one avoids crossings.} With a linear cost ($\alpha=1$) the total path length is minimized and two atoms may swap targets at no cost, so the optimal matching can contain paths that cross; a convex cost penalizes the long paths more than the short ones, which pushes the solution toward the matching in which every atom takes the nearest free target and the paths stay disjoint. The same convexity is what the lattice bound quoted above expresses: for a square lattice the minimum interatomic distance is kept during the moves only when the exponent exceeds the bound.
+
+\textbf{Parameters.} The exponent has the default \defv{M16}{alpha}, the paper value, above the lattice bound; the step bound defaults to one Fourier unit; the freeze index is that of M07 (default \defv{M16}{nfix}, whose grid dependence is discussed there).
+
+\textbf{Complexity.} The assignment costs $O(n^2m)$; the sequence costs two M07 runs plus $S+1$ point-trap back-projections of $O(N_{\mathrm{pix}}M)$ each. The method runs in the browser, and the port receives the loaded atoms of the case's rearrangement block, drawn with one random number per site.
+
+\textbf{Acceptance criterion and gate.} There are no crossing moves for the chosen exponent on a sort from a $7\times7$ lattice to a $3\times3$ pattern, and a moving trap stays above 70 percent of its mean intensity (Table~\ref{tab:ladder}). The gate draws 60 loadings of 21 atoms and asserts zero crossings in every one; a second test runs five loadings of the sequence and requires no crossing, a stated minimum number of moving traps, and a worst minimum-ratio of at least 0.7. The measurement of this report is: \acc{M16}. A comparison against independent weighted-GS holograms per step was planned and dropped from the criterion, because with nine traps the weighted GS equalizes every step and shows no flicker, unlike the camera observation of the paper; the proposed flicker-bounded sequence of Section~\ref{sec:b2} takes over that comparison.
+
+\textbf{Limits.} LPI does not optimize its intermediate frames, which is the gap that the flicker-bounded sequence addresses, and the transient measure of this module is simplified, since each frame is scored at its own positions and not in the blend model of that method. The assignment needs at least as many atoms as targets. The success rate of the source is a different quantity and is not reproduced here. The module is \texttt{m16\_rearrangement}.

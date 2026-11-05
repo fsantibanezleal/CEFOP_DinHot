@@ -1,0 +1,38 @@
+\begin{table}[t]\centering\footnotesize
+\caption{Notation: every symbol of the report with its meaning and its unit; a unit of 1 marks a dimensionless quantity or a count, and the intensities are fractions of the input power.}\label{tab:notation}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth} >{\raggedright\arraybackslash}p{0.56\textwidth} >{\raggedright\arraybackslash}p{0.16\textwidth}@{}}\toprule Symbol & Meaning & Unit\\\midrule
+$\lambda$ & vacuum wavelength of the laser & nm\\
+$f$ & focal length of the lens in the pupil of which the SLM sits & mm\\
+$\mathrm{NA}$ & numerical aperture of the objective & 1\\
+$n_{\mathrm{imm}}$ & refractive index of the immersion medium & 1\\
+$n_{\mathrm{pix}}$ & SLM pixels per side & 1\\
+$N_{\mathrm{pix}}$ & number of SLM pixels, $n_{\mathrm{pix}}^2$ & 1\\
+$p$ & SLM pixel pitch & $\mu$m\\
+$\mathrm{pad}$ & zero-padding factor of the focal grid & 1\\
+$n_{\mathrm{fft}}$ & focal grid size, $\mathrm{pad}\,n_{\mathrm{pix}}$ & 1\\
+$j$ & index of an SLM pixel, at position $(x_j,y_j)$ from the optical axis & m\\
+$m,\ M$ & index and number of traps & 1\\
+$(x_m,y_m,z_m)$ & position of trap $m$ in the focal volume & $\mu$m\\
+$l_m$ & vortex (topological) charge of trap $m$ & 1\\
+$w_m,\ a_m$ & target weight of trap $m$ and its target amplitude $\sqrt{w_m}$ & 1\\
+$A_j$ & input beam amplitude, normalised so that $\sum_jA_j^2=N_{\mathrm{pix}}$ & 1\\
+$\phi_j$ & phase displayed at pixel $j$ & rad\\
+$\Delta_j^m$ & phase delay from pixel $j$ to trap $m$ (Eq.~\eqref{eq:delay}) & rad\\
+$V_m,\ I_m$ & complex field at trap $m$ and its intensity $|V_m|^2$ (fraction of the input power) & 1\\
+$e$ & efficiency, the sum of the trap intensities & 1\\
+$u$ & uniformity, $1-(\max I-\min I)/(\max I+\min I)$ & 1\\
+$\sigma$ & relative standard deviation of the trap intensities & percent\\
+$\eta$ & root-mean-square fractional error of a shaped potential in its measure region & 1\\
+$\Delta x,\ X_{1/2}$ & width of one focal bin and half of the unaliased field & $\mu$m\\
+$K,\ \sigma_K,\ q$ & crosstalk kernel of the device and its fitted width and exponent & 1\\
+$Z_j,\ c_j$ & Zernike mode $j$ (Noll order) and its coefficient & waves\\
+$N$ (or $n_{\mathrm{fix}}$) & iteration after which the focal phase is frozen & 1\\
+$\alpha$ & exponent of the assignment cost (M16) or weight of the adaptive form (M05) & 1\\
+$m$ (mixing) & mixing parameter of the mixed-region rule & 1\\
+$G,\ \rho_m$ & feedback gain and measured intensity relative to its target & 1\\
+$\lambda_{\mathrm{B5}}$ & trade-off parameter of the front & 1\\
+$\mathrm{AC}$ & accuracy of a volume hologram, mean over planes of the overlap of unit-sum intensities & 1\\
+$z_R$ & SLM-limited Rayleigh range & mm\\
+$\kappa,\ \gamma,\ f_c$ & trap stiffness, drag coefficient and corner frequency of a bead & pN/$\mu$m, kg/s, Hz\\
+$U,\ \omega_r$ & dipole potential depth of an atom and its radial trap frequency & J, rad/s\\
+\bottomrule\end{tabular}\end{table}

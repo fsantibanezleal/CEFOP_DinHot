@@ -7,6 +7,7 @@
   fig-feedback.pdf  emulated camera feedback: relative standard deviation against step, four cases.
   fig-learned.pdf   the learned models: cgh-net ratio by target kind, and the warm-start control.
   fig-bench.pdf     the benchmark: relative standard deviation at 100 iterations, every method on every geometry, ideal and C08.
+  six more figures (data flow, convergence, device, geometry, Pareto fronts, freeze index): see make_figs_more.py, called at the end.
 
 Run from the repository root after ``data/extract.py``:  python manuscripts/holographic-trap-studio/figures/make_figs.py
 Deps: matplotlib, numpy (the notebook environment has both; the pipeline environment has no matplotlib).
@@ -211,6 +212,8 @@ def main() -> int:
     fig_feedback()
     fig_learned()
     fig_bench()
+    import make_figs_more
+    make_figs_more.main()
     print("figures written to", HERE)
     return 0
 
