@@ -27,7 +27,7 @@ intensities and rescaling the target iteratively brings them to the percent leve
 ## Inputs and outputs
 
 - Inputs: `setup`, a `Target` of kind `traps` on FFT bins (`_gs.check_on_bins`, `m12_closed_loop.py` line 69; otherwise a `ValueError`),
-  `budget` (`iterations` counts feedback iterations; `time_s` an optional cap), `rng`, optional `init`, `variant` (`nogrette` or `kim`),
+  `budget` (`iterations` counts feedback iterations; `time_s` an optional cap), `rng`, optional `init`, `variant` (`nogrette`, `kim` or `nogrette-printed`),
   `gain` in $(0, 1]$, `camera`, `n_inner`, `n_start`, `start` (`gsw` or `gs`). Invalid values raise a `ValueError` (lines 57 to 67).
 - Output: `Result` with `phi`, one `history` entry per feedback iteration: `uniformity` and `rel_std` of the MEASURED $I_m/w_m$ (what the
   experimenter sees), `efficiency` of the true fields, `rel_std_true` of the true values, `time_s`; `fields` the true trap fields; `meta`
@@ -47,7 +47,23 @@ $$w_m^T \leftarrow w_m^T\,\frac{1}{1 - G(1-\rho_m)},$$
 
 implemented on amplitudes as $a_m \leftarrow a_m\sqrt{1/(1 - G(1-\rho_m))}$ (line 93; $\rho$ floored at $10^{-3}$, line 91). A trap at $\rho = 1$
 keeps its target; the multiplicative reading is DinHot's (it keeps the memory of earlier corrections and has the same fixed point $\rho = 1$);
-UNVERIFIED against the paper's printed form.
+the printed form is the variant `nogrette-printed` below.
+
+Variant `nogrette-printed` (`m12_closed_loop.py`, `VARIANTS`) is the rule as the paper prints it (Eq. 3): the new target intensity comes from the latest measurement alone,
+$I'_m = \bar I/[1 - G(1 - I_m/\bar I)]$ on the base design weights, so $a_m = a^{\rm base}_m\sqrt{1/(1 - G(1-\rho_m))}$ with no memory of earlier
+corrections. It equals `nogrette` at the first feedback iteration and differs from the second. Measured on the acceptance task (10 by 10 grid,
+camera 0.19, no noise, $G = 0.7$, 20 iterations, `n_inner` = 1, seeds 1, 2, 3):
+
+| Variant | Open-loop spread (percent) | After 20 iterations (percent) |
+|---|---|---|
+| `nogrette` (cumulative, default) | 20.9, 20.4, 20.3 | 0.84, 1.07, 2.18 |
+| `nogrette-printed` (memoryless) | 20.9, 20.4, 20.3 | 15.4, 16.8, 18.2 |
+
+The memoryless rule does not close the loop on the emulation: a uniform measurement ($\rho = 1$) sends the target back to the base design,
+whose hologram is the uncorrected one, so uniform is not a fixed point of the map and the loop settles (about 15.5 percent from the fifth iteration
+for seed 1) with the camera's spread left. The default stays `nogrette`; both are offered so a replication can be compared with the paper number for
+number (`tests/methods/control/test_m12_closed_loop.py`, the `printed` tests; the TypeScript mirror carries the variant, without a Python reference file yet).
+
 
 Variant `kim` (Kim et al. 2019). The target amplitudes follow the square-root weights of the source, $T^{(j)}_m = \sqrt{\langle I\rangle/I_m}\;T^{(j-1)}_m$
 (`a = a / sqrt(rho)`, line 99, full gain, `gain` unused). The first inner iteration displays $\arg\mathcal F^{-1}[T e^{i\psi}]$ with the focal phase $\psi$
@@ -122,7 +138,7 @@ so the module default camera applies; both were read from those files, not re-ru
 ## Limits and failure modes
 
 - The camera is an emulation: the loop shows the correction against stated errors, not an instrument.
-- The update form of the source is read multiplicatively (UNVERIFIED).
+- The default `nogrette` reads the update of the source multiplicatively; the memoryless form as printed is `nogrette-printed`, which does not settle on the emulation.
 - FFT form only: traps on bins, $z = 0$, no vortex (the cases C01, C02, C03, C12 and C13 are on bins by design, I1 report F8 and I2).
 - Gain above 1 needs the floor `MIN_DENOMINATOR` of the case driver; M12 itself restricts $G$ to $(0, 1]$.
 
@@ -179,7 +195,7 @@ about `gain_rms`, drawn once per trap id, independent of the order and the compo
 stated meaning; it is an emulation, not a model of a sensor.
 
 The loops are the two published updates of M12 (see M12): `nogrette`,
-$w_m^T \leftarrow w_m^T/(1 - G(1-\rho_m))$ with $\rho_m$ the measured intensity relative to its target (the multiplicative reading is DinHot's, UNVERIFIED against the paper's printed form), and `kim`,
+$w_m^T \leftarrow w_m^T/(1 - G(1-\rho_m))$ with $\rho_m$ the measured intensity relative to its target (the multiplicative reading is DinHot's; the printed memoryless form is the variant `nogrette-printed`), and `kim`,
 $T^{(j)}_m = \sqrt{\langle I\rangle/I_m}\,T^{(j-1)}_m$ with the focal phase frozen. The case driver (`stages/feedback.py`) applies the Nogrette factor $1/(1 - G(1 - I_m/\mathrm{mean}(I)))$ to the target weights of the case's
 weight-aware method and re-runs it from the previous phase for `STEP_ITERATIONS` = 10 iterations per step (line 23), reporting the measured spread (the relative standard deviation of the camera readings divided by the
 target weights).
@@ -247,7 +263,7 @@ The M12 method itself, scored on the true fields in the bake, is listed in the M
 - Classification, decided: the method tiers rule says a validation protocol, a calibration or a benchmark design is not by itself a method beyond the state of the art. The
   emulator reproduces published curves, so it is a validation tool of M12 and the claim BS-6 was withdrawn (decision of 2026-10-28, recorded in the SDD's Beyond the state of the art).
 - Only the end points of the two published curves are compared; the conventional-WGS clause of the research record is not run.
-- The Nogrette update is read multiplicatively (UNVERIFIED); the printed form was not confirmed.
+- The default Nogrette update is read multiplicatively; the form as printed (memoryless) is the variant `nogrette-printed`, measured not to settle on the emulation (see Variant `nogrette-printed`).
 - Noise, blur and roll-off make the result worse than the ideal camera; the published experiments' own noise floor is not modelled.
 - A measured hardware loop (a real SLM and a camera) is a documented frontier of the product, not part of this build.
 

@@ -82,6 +82,22 @@ describe('optimization methods (CG with strong-Wolfe line search, Adam)', () => 
 
 describe('control methods', () => {
   describe('M12 closed loop on the emulated camera', () => runDoc('methods.M12', TOL.default));
+  describe('M12 variant nogrette-printed (the rule as Nogrette et al. print it: no memory of earlier corrections)', () => {
+    // No Python reference file holds this variant yet (stages/engine_reference.py): the properties of the Python tests are asserted here.
+    const run = (variant: string, iterations: number) => {
+      const ctx = ctxOf(load('methods.M12').cases[0]);
+      return drain(getMethod('M12').run({ ...ctx, budget: makeBudget(iterations), options: { ...ctx.options, variant } }));
+    };
+    it('equals the cumulative variant at the first iteration and differs from the second', () => {
+      same(Array.from(run('nogrette-printed', 1).phi), Array.from(run('nogrette', 1).phi), 'first iteration');
+      const a = run('nogrette-printed', 2), b = run('nogrette', 2);
+      expect(Array.from(a.phi).some((x, i) => Math.abs(x - b.phi[i]) > 1e-9)).toBe(true);
+      expect(a.meta.variant).toBe('nogrette-printed');
+    });
+    it('rejects an unknown variant naming the three', () => {
+      expect(() => run('x', 1)).toThrow("variant must be one of ['nogrette', 'kim', 'nogrette-printed']");
+    });
+  });
   describe('M14 Zernike', () => {
     const doc = load('methods.M14');
     doc.cases.forEach((c, k) => {

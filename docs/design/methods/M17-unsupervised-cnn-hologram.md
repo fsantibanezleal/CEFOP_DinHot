@@ -44,14 +44,27 @@ Network `CghVolNet` (`learned/nets.py`): a U-Net of 14 channels with 0.99 millio
 (a matrix product) and the lens phase of each plane carry each to the SLM; they are summed and the output is the phase of the sum (`atan2`); ONNX opset 17,
 4 671 540 bytes (limit 5 MB), every operator in the web-safe list (`learned/webops.py`).
 
-Loss and accuracy (defined in the module docstring; DeepCGH's own accuracy formula was not read, UNVERIFIED, and this definition is used for the loss, the baseline and
-the evaluation alike): the plane field is the centred orthonormal FFT of $A e^{i(\phi - Z q)}$ with $q$ the quadratic lens term; with $T$ and $I$ the unit-sum plane
+Loss and accuracy (defined in the module docstring; this per-plane definition is DinHot's and is used for the loss, the baseline and the evaluation alike; DeepCGH's own
+definition is stated below): the plane field is the centred orthonormal FFT of $A e^{i(\phi - Z q)}$ with $q$ the quadratic lens term; with $T$ and $I$ the unit-sum plane
 intensities of the target and of the hologram,
 
 $$AC = \frac1P\sum_{p}\frac{2\sum T_p I_p}{\sum T_p^2 + \sum I_p^2},\qquad \mathcal L = 1 - AC$$
 
 (`methods/learned/_planes.py` line 11; `learned/torch_forward.py`). The torch forward model is verified against the engine's `point_trap_fields` at a trap of that
 depth (`tests/learned/test_torch_forward.py::test_plane_intensity_matches_the_engine_point_trap_model_at_depth`).
+
+Accuracy in the definition of DeepCGH. Eybposh et al. 2020 (Opt. Express 28, 26636, Eq. 3) define the accuracy of a volume as the cosine similarity of the
+target and reconstructed intensity volumes over all voxels,
+
+$$AC_{\rm cos} = \frac{\sum_{x,y,z} I \hat I}{\sqrt{\sum I^2 \sum \hat I^2}},$$
+
+scale invariant, in $[0, 1]$, equal to 1 iff the volumes are proportional (0 for an all-zero reconstruction). DinHot's per-plane form above is a Dice-type overlap
+averaged over planes; the two differ in the form of the overlap and in joining the planes in one vector. The network is trained with the per-plane form (no
+retraining); the evaluation (`learned/evaluation.py`, `cosine_accuracy`, `methods/learned/_planes.py` `cosine_volume_accuracy`) reports the cosine accuracy
+next to every per-plane accuracy (fields `ac_cosine_hybrid`, `ac_cosine_net_alone`, `ac_cosine_m19_matched`, their medians `ac_cosine_median` and the ratio
+`ratio_cosine_hybrid_over_m19_matched` in `evaluation-detail.json`), with the plane intensities unit-sum as in the per-plane form. The metrics record
+`metrics.json` is unchanged. The numbers of the released model under this definition are written by the next run of the evaluate stage; none is quoted here.
+Tests: `tests/learned/test_cosine_accuracy.py`.
 
 Inference. With the model released, the hybrid runs the network and then M19 from the network's phase in what is left of `budget.time_s`, at most `budget.iterations`
 iterations and at least one; the refinement is kept only if it raises the volume accuracy of the network's mask (`m17_cgh_net.py` lines 106 to 118), because M19 is a
@@ -118,7 +131,7 @@ objective of M19 is not what AC measures. The single-plane record: median ratio 
 ## Limits and failure modes
 
 - The model is specific to its crop and planes (128 by 128, pad 1, three depths); DeepCGH also trains one model per resolution and plane set.
-- The accuracy is DinHot's AC definition (UNVERIFIED against the paper's formula); the advantage is on plane images, not on trap uniformity.
+- The trained and released accuracy is DinHot's per-plane AC; DeepCGH's cosine accuracy is reported next to it in the evaluation detail; the advantage is on plane images, not on trap uniformity.
 - The web encoder `frontend/src/lib/ort.ts` (`encodeCghPlanes`, line 83; `predictCghPhase`, line 252) builds the three-plane input `[1, 3, 128, 128]` the card declares.
 - The phase of a near-zero SLM field is ill-conditioned (`atan2`), hence the parity claim on intensities.
 
