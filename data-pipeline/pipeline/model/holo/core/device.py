@@ -8,16 +8,16 @@ are off.
 - Crosstalk (physics-viz D2.1, READ from Schroff et al. 2023, Methods, "Pixel crosstalk modelling", Eq. 4 checked on the
   rendered page): each SLM pixel is ``upsample x upsample`` computational pixels and the phase, kept in ``[0, 2 pi)``,
   is convolved with ``K = F^-1 { exp[-(|kx|^q + |ky|^q) / sigma^q] }`` (fitted ``sigma = 1.24 px^-1``, ``q = 1.80``).
-  UNVERIFIED: the dossier does not state the unit of ``k``. This implementation takes ``k`` in cycles per SLM pixel
-  (so the computational grid spans +-``upsample / 2``); the gap research must re-check it against the paper.
+  The paper gives sigma in inverse pixels and does not define the unit of ``k`` further. This implementation takes ``k`` in
+  cycles per SLM pixel (so the computational grid spans +-``upsample / 2``): DinHot's reading, not the paper's statement.
   The convolution is circular (FFT based), so the phase wraps at the border of the SLM.
 - Pixel envelope (physics-viz D1.6, DERIVED there, not read from a source): a square pixel of width
   ``a = sqrt(fill_factor) p`` multiplies the focal field by ``sinc(a x / (lambda f)) sinc(a y / (lambda f))``, so the
   intensity falls to ``sinc^2(sqrt(fill) / 2) ~ 0.4`` at the edge of the unaliased window. The test compares it with a
   brute-force DFT of a pixel-sampled hologram. The envelope has unit value at the centre: the power lost to dead
   area (``1 - fill_factor``) is not applied; the input power is the power that reaches the active area.
-- Quantization, LUT gamma and flicker: no primary source with measured effects was read (physics-viz D2.2, UNVERIFIED);
-  they are computed device parameters. Order in ``displayed_phase``: wrap, quantize to ``2^b`` levels, nonlinear response
+- Quantization, LUT gamma and flicker: no published source with measured effects on this device model is used (physics-viz D2.2);
+  they are computed device parameters, stated and not calibrated. Order in ``displayed_phase``: wrap, quantize to ``2^b`` levels, nonlinear response
   ``2 pi (level phase / 2 pi)^gamma``, additive Gaussian flicker noise of rms ``flicker_rad`` per pixel, wrap.
 """
 from __future__ import annotations

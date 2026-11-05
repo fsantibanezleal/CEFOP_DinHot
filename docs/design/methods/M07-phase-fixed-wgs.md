@@ -48,7 +48,7 @@ laser amplitude introduces a focal phase change $\delta\psi_i$ that makes $g_i$ 
 
 In the code (`rule_wgs_fixed`, `_gs.py` lines 95 to 107): $b = |V|/a$; `state['w'] *= mean(b)/b`; for $k < N$ the phase is `angle(v)`; at
 $k = N$ the phase is stored, `state['psi'] = angle(v)`; for $k > N$ it is the stored one; the coefficient is `w * a * exp(1j * psi)`.
-UNVERIFIED (docstring): the source does not define $B_i$ (taken as the field amplitude, as in M06) nor whether the $N$-th iteration already
+DinHot's choices (docstring), because the source does not settle them: it does not define $B_i$ (taken as the field amplitude, as in M06) nor say whether the $N$-th iteration already
 uses the frozen phase (here it computes it; the red run of T1 shows that freezing one iteration late turns the port's parity test red).
 
 ## Defaults

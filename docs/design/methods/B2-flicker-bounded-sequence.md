@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b2_flicker_bounded.py` |
 | Live port | none (lane `baked`; `getMethod('B2')` raises `NotLive`) |
 | Card | [B2](../../frameworks/B2_flicker-bounded-sequence.md) |
-| Outcome | hypothesis confirmed in DinHot's transient model on the acceptance task (0.916 to 0.926 against the test's LPI at 0.551 to 0.709 after the 2026-10-29 rule corrections; 0.919 to 0.923 against 0.537 to 0.724 before), with the measured scope of the update below; the model is UNVERIFIED |
+| Outcome | hypothesis confirmed in DinHot's transient model on the acceptance task (0.916 to 0.926 against the test's LPI at 0.551 to 0.709 after the 2026-10-29 rule corrections; 0.919 to 0.923 against 0.537 to 0.724 before), with the measured scope of the update below; the model is DinHot's own and is not calibrated against a measured display |
 
 ## Tier and role
 
@@ -48,7 +48,7 @@ $\theta_m(s) = \theta_m(0) + \operatorname{wrap}(\theta_m^{end} - \theta_m(0))\,
 `budget.iterations` iterations (`n_fix` capped at the budget), later frames use `frame_iterations`. The optimization drops the penalty form of the research record's loss,
 $\lambda\sum(\arg V - \theta)^2$, for the hard lock, its $\lambda\to\infty$ limit.
 
-**Transient intensity (UNVERIFIED model).** Between frames $s$ and $s+1$ the displayed SLM field is modelled as the blend $f_a = A\,[(1-a)e^{i\phi_s} + a\,e^{i\phi_{s+1}}]$, $a\in[0, 1]$ (the liquid crystal
+**Transient intensity (DinHot's own model; the LPI paper reports a measurement, not a transient equation).** Between frames $s$ and $s+1$ the displayed SLM field is modelled as the blend $f_a = A\,[(1-a)e^{i\phi_s} + a\,e^{i\phi_{s+1}}]$, $a\in[0, 1]$ (the liquid crystal
 relaxing between the two holograms), and trap $m$ is read at its trajectory point $x_m(s+a)$: $I_m(s, a) = |V_m(f_a; x_m(s+a))|^2$. `transient_min_ratio` returns for each trap
 $\min_{s,a} I_m(s, a)/\operatorname{mean}_s I_m(s)$ over 10 sub-steps per frame interval (lines 88 to 104). Both B2 and the LPI baseline of the test are scored by this same function. The source gives
 the LPI paper's measurement, not its transient equation. Not modelled: the SLM refresh rate and the temporal response of the device.
@@ -80,7 +80,7 @@ minimal-jerk profile, the wrap and the trajectory endpoints, the phase-velocity 
 ## Evaluation that confirms or refutes it
 
 Confirmed if B2's minimum transient ratio is at least 0.9 and above LPI's, with the frames individually uniform; refuted if LPI's frames were as good (the proposal would add nothing) or if the ratio of B2
-fell below 0.9. Because both are scored with the same UNVERIFIED blend model, the comparison is internally fair and not a statement about a real SLM.
+fell below 0.9. Because both are scored with the same blend model, which is DinHot's own, the comparison is internally fair and not a statement about a real SLM.
 
 ## Measured result
 
@@ -106,7 +106,7 @@ frames; the measured file does not name the method of that driver, so it is not 
 
 ## Limits and failure modes
 
-- The transient model is DinHot's (UNVERIFIED); the comparison is against DinHot's implementation of LPI, not the authors' code, and without a measured flicker curve the benefit is simulation only.
+- The transient model is DinHot's own and is not calibrated; the comparison is against DinHot's implementation of LPI, not the authors' code, and without a measured flicker curve the benefit is simulation only.
 - The SLM temporal response (liquid-crystal relaxation) and the refresh rate are not modelled.
 - Phase velocity is bounded by hand (0.3 rad per frame); a trajectory needing more raises a `ValueError`.
 - The phases are held by default; the case of changing end phases is bounded but tested only for the bound.
@@ -120,4 +120,4 @@ frames; the measured file does not name the method of that driver, so it is not 
 
 ## Update after the corrections of 2026-10-29
 
-Measured scope, with one assignment shared by B2 and linear phase interpolation (LPI) and the transient model of the acceptance test: `b2_flicker_bounded.frames_for_move` names the fewest frames that keep the peak step per frame at most 0.2 Fourier units, a bound set where C10's lowest moving trap first reached 0.9; with those frames the claim holds on most seeds and not on all. Acceptance task (moves of 4 bins, 13 frames, a peak step of 0.31 Fourier units per frame, outside that bound, seeds 1 to 3): B2 0.916 to 0.926 of the mean, LPI 0.551 to 0.709. C10's long sort on M16's own plan (16 moving traps, the longest 29 bins, seeds 1 to 6): at 25 frames LPI leads in every seed (0.320 to 0.594 against 0.205 to 0.391); B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds (median 0.911), where LPI reaches 0.360 to 0.690, and on seed 2 it collapses to 0.155 with the same frames, against 0.617 for LPI (the phase-path limit of the lattice moves below); with held phases at 25 frames the lowest moving trap is at 0.177 (seed 1). Long moves of the acceptance lattice (two columns moved 12 or 20 bins, 8 seeds, the frames of `frames_for_move`): median 0.933 and 0.936, 6 of 8 seeds at least 0.9 and 7 of 8 above LPI on the same assignment and frames (LPI 0.568 to 0.756 and 0.581 to 0.701); the seeds below (0.768 and 0.023 at 12 bins, 0.584 and 0.847 at 20 bins) stay below with twice the frames (0.757, 0.000, 0.558 and 0.840; re-measured 2026-10-30 by the BS-1 and BS-2 manuscript's `measure.py`, with the phase-step bound lifted from 0.3 to 1 rad as the end phases need), so the limit there is the phase path that the end phases prescribe, not the frame count (`tests/methods/beyond/test_b2_flicker_bounded.py::test_long_moves_meet_the_claim_on_most_seeds_with_the_frames_of_the_move`). Measured 2026-10-29 after the GS family of the beyond methods was made the ladder methods' own rules (M06 and M07 project the start's field unweighted, as slmsuite does). The transient model is not verified in absolute terms.
+Measured scope, with one assignment shared by B2 and linear phase interpolation (LPI) and the transient model of the acceptance test: `b2_flicker_bounded.frames_for_move` names the fewest frames that keep the peak step per frame at most 0.2 Fourier units, a bound set where C10's lowest moving trap first reached 0.9; with those frames the claim holds on most seeds and not on all. Acceptance task (moves of 4 bins, 13 frames, a peak step of 0.31 Fourier units per frame, outside that bound, seeds 1 to 3): B2 0.916 to 0.926 of the mean, LPI 0.551 to 0.709. C10's long sort on M16's own plan (16 moving traps, the longest 29 bins, seeds 1 to 6): at 25 frames LPI leads in every seed (0.320 to 0.594 against 0.205 to 0.391); B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds (median 0.911), where LPI reaches 0.360 to 0.690, and on seed 2 it collapses to 0.155 with the same frames, against 0.617 for LPI (the phase-path limit of the lattice moves below); with held phases at 25 frames the lowest moving trap is at 0.177 (seed 1). Long moves of the acceptance lattice (two columns moved 12 or 20 bins, 8 seeds, the frames of `frames_for_move`): median 0.933 and 0.936, 6 of 8 seeds at least 0.9 and 7 of 8 above LPI on the same assignment and frames (LPI 0.568 to 0.756 and 0.581 to 0.701); the seeds below (0.768 and 0.023 at 12 bins, 0.584 and 0.847 at 20 bins) stay below with twice the frames (0.757, 0.000, 0.558 and 0.840; re-measured 2026-10-30 by the BS-1 and BS-2 manuscript's `measure.py`, with the phase-step bound lifted from 0.3 to 1 rad as the end phases need), so the limit there is the phase path that the end phases prescribe, not the frame count (`tests/methods/beyond/test_b2_flicker_bounded.py::test_long_moves_meet_the_claim_on_most_seeds_with_the_frames_of_the_move`). Measured 2026-10-29 after the GS family of the beyond methods was made the ladder methods' own rules (M06 and M07 project the start's field unweighted, as slmsuite does). The transient model is not calibrated in absolute terms.

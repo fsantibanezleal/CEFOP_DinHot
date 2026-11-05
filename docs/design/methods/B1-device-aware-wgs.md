@@ -117,7 +117,7 @@ the ratio of the means reaches two on the harder device, which has the 4-bit qua
 
 ## Limits and failure modes
 
-- UNVERIFIED: the unit of $k$ in the crosstalk kernel (the model is relative to the model of the device, not to a measured instrument; see M13 and the device model P02).
+- The unit of $k$ in the crosstalk kernel is DinHot's reading (the model is relative to the model of the device, not to a measured instrument; see M13 and the device model P02).
 - Five seeds in the measurement of the claim and one in the acceptance test; the benchmark's B1 cells on the C08 device hold the seeds of the table in the update below, within the wall-clock bound of a group.
 - Baked: a step works on about nine times the pixels of the plain FFT (3 by 3 upsampling); the cost of a hologram is above the live budget.
 - Traps must be on bins with $z = 0$ and no vortex on a device; a shaped target is refused.

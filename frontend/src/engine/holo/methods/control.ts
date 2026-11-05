@@ -2,7 +2,7 @@
  * Control methods M12, M14, M15 and M16 (the live lane).
  *
  * Python counterparts: `methods/control/m12_closed_loop.py`, `m14_zernike.py`, `m15_vortex.py`, `m16_rearrangement.py`
- * (each docstring there carries the model, the dossier section and the UNVERIFIED items). Keywords (camelCase) in
+ * (each docstring there carries the model, the dossier section and the readings that are DinHot's own). Keywords (camelCase) in
  * `ctx.options`: M12 `variant`, `gain`, `camera`, `nInner`, `nStart`, `start`; M14 `mode`, `injected`, `known`, `camera`,
  * `modes`, `trialWaves`, `baseIterations`; M15 `charge`; M16 `atoms` (a TrapSet), `alpha`, `maxStepBins`, `nFix`.
  */

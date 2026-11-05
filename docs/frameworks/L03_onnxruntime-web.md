@@ -23,4 +23,4 @@ M17 and B3 ([M17](M17_unsupervised-cnn-hologram.md), [B3](B3_learned-warm-start.
 ## Caveats and licence
 
 - GitHub Pages sends no cross-origin isolation headers, so `SharedArrayBuffer` and multi-threaded WebAssembly are unavailable: the number of threads is 1.
-- Inference timings in the browser are not measured yet and are not quoted. The licence of the runtime was not re-read for this card (UNVERIFIED here); see [ATTRIBUTION](../../ATTRIBUTION.md).
+- Inference timings in the browser are not measured yet and are not quoted. The installed package, version 1.31.1, declares the MIT licence in its `package.json`, which was read for this card; see [ATTRIBUTION](../../ATTRIBUTION.md).

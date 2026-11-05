@@ -17,7 +17,9 @@ Recipe (physics-viz D3.3, with the sources of D3.2):
   spectrum used here is twice that, ``P1(f) = D / (pi^2 (f^2 + f_c^2))`` (DERIVED from the same integral).
 - ``fit_lorentzian`` fits ``1 / P = a + b f^2`` (a linearised least-squares fit, weights ``P^2`` because the relative error of
   an averaged periodogram bin is constant), so ``f_c = sqrt(a / b)`` and ``D = pi^2 / b``. The linearisation is biased at low
-  segment counts (Norrelykke and Flyvbjerg 2010, arXiv 0906.1708, abstract only read: UNVERIFIED which correction applies);
+  segment counts (Norrelykke and Flyvbjerg 2010, arXiv 0906.1708: weighted least squares on the average of n spectra gives a relative
+  bias on the amplitude D between -2/n, Eq. 32, and +1/n, Eq. 41, by the weighting, and none on f_c, Eq. 33; which weighting
+  this fit corresponds to was not derived, so no correction is applied);
   the oracle test bounds the effect at 10 percent for the run it uses.
 """
 from __future__ import annotations

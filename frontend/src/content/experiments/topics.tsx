@@ -192,8 +192,8 @@ export function MetricsTopic() {
       <Equation
         tex={String.raw`w_m^{\prime}=\frac{w_m}{\max\!\big(${floorTex},\,1-G\,(1-I_m/\bar I)\big)},\qquad \phi_t=\frac{\bigl|\{\text{atoms in the target at frame } t\}\bigr|}{\lvert\text{target}\rvert},\qquad \tau=\min_{m\in\text{moving},\,t}\frac{I_m}{\bar I}`}
         caption={t(
-          'Camera feedback and rearrangement: G is the loop gain, I_m the camera reading of trap m and Ī the mean reading; φ_t is the filling of the target at frame t and τ the lowest relative intensity of a moving trap. The loop of Nogrette et al. 2014 is the source of the factor; the product reads it as a factor on the current target, a reading not checked beyond the formula (UNVERIFIED).',
-          'Realimentación de cámara y reordenamiento: G es la ganancia del lazo, I_m la lectura de la cámara de la trampa m e Ī la lectura media; φ_t es el llenado del objetivo en el cuadro t y τ la menor intensidad relativa de una trampa en movimiento. El lazo de Nogrette et al. 2014 es la fuente del factor; el producto lo lee como un factor sobre el objetivo actual, una lectura no verificada más allá de la fórmula (SIN VERIFICAR).',
+          'Camera feedback and rearrangement: G is the loop gain, I_m the camera reading of trap m and Ī the mean reading; φ_t is the filling of the target at frame t and τ the lowest relative intensity of a moving trap. The loop of Nogrette et al. 2014 is the source of the factor; the product applies it as a factor on the current target, DinHot’s cumulative reading, while the printed rule recomputes the target from the latest measurement alone.',
+          'Realimentación de cámara y reordenamiento: G es la ganancia del lazo, I_m la lectura de la cámara de la trampa m e Ī la lectura media; φ_t es el llenado del objetivo en el cuadro t y τ la menor intensidad relativa de una trampa en movimiento. El lazo de Nogrette et al. 2014 es la fuente del factor; el producto lo aplica como un factor sobre el objetivo actual, la lectura acumulativa de DinHot, mientras que la regla impresa recalcula el objetivo solo con la última medición.',
         )}
       />
       <p lang={lang}>

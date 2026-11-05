@@ -6,7 +6,7 @@ DinHot is released under the Apache License 2.0 (`LICENSE`). This file credits w
 
 DinHot is the rebuild of **DinHotSys** ("Dynamic Holographic Optical Tweezers"), a C++ desktop tool (Windows Forms, OpenGL and OpenMP) of the **CEFOP**, **Universidad de Concepcion**, dated **2010**. The credits that the original files
 state are the assembly company "UdeC", the product name "DinHotSys", "Copyright (c) UdeC 2010" and the version string 1.0.*; the tool's own window title reads "Gestor Sistema: Dinamic Hot System v 0.1.2". The original files name no author,
-and this file therefore names none: the individual credit of the original developers is UNVERIFIED and is added here when it is stated by the repository owner.
+and this file therefore names none: the individual credit of the original developers is not established from the files and is added here when it is stated by the repository owner.
 
 The state of the repository before this rebuild, including the original sources, is kept in its history at commit f032a9b:
 https://github.com/fsantibanezleal/CEFOP_DinHot/tree/f032a9b
@@ -22,9 +22,9 @@ The phase views use a perceptually uniform cyclic colormap of the **CET** family
   Licence: **Creative Commons Attribution 4.0 International (CC BY 4.0)**, https://creativecommons.org/licenses/by/4.0/ ; the licence asks to cite the site and the paper, which this entry does. The Python package `colorcet`
   3.2.1 declares the same licence (CC-BY-4.0): https://pypi.org/pypi/colorcet/json , source https://github.com/bokeh/colorcet . The map in use is CET-C1 (cyclic magenta, red, yellow, blue; `cyclic_mrybm_35_75_c68`) sampled to
   256 entries of 8-bit RGB and embedded as data in the workbench source, so that phase 0 and phase 2 pi are the same colour. The change from the published data is that sampling and 8-bit rounding. The workbench source that
-  carries the data is not on this branch yet; the map name was read from its header and is to be confirmed when it lands (UNVERIFIED here).
+  carries the data is `frontend/src/workbench/colormaps.ts`; its header names the map CET-C1 (`cyclic_mrybm_35_75_c68`), and the colorcet.com gallery (https://colorcet.com/gallery.html) lists CET-C1 as the cyclic magenta, red, yellow, blue map; the programmatic name was not found on that page.
 - **inferno.** Nathaniel Smith and Stefan van der Walt, the matplotlib colormap, embedded in the same way as 256 entries of 8-bit RGB; the licence recorded in the workbench source header is CC0 (public domain dedication).
-  Confirmed from that header only, not from the matplotlib distribution (UNVERIFIED here).
+  The CC0 dedication is stated in the header of the colormap source file that carries these maps (https://github.com/BIDS/colormap/blob/master/colormaps.py); it was not checked in the matplotlib distribution.
 
 Matplotlib's `twilight` was considered for phase and not used: the repository that holds its data shows no licence statement (https://github.com/bastibe/twilight ).
 
@@ -48,21 +48,21 @@ URLs, and the main ones are listed here so that the intellectual credit is in on
 - Eybposh et al. 2020 (DeepCGH), https://doi.org/10.1364/OE.399624
 - Grimm, Weidemuller and Ovchinnikov 2000 (dipole traps), https://arxiv.org/abs/physics/9902072
 - Tolic-Norrelykke et al. 2006 (calibration spectrum), https://arxiv.org/abs/physics/0603037
-- Noll 1976 (Zernike ordering), https://doi.org/10.1364/JOSA.66.000207 (not opened; UNVERIFIED)
+- Noll 1976 (Zernike ordering), https://doi.org/10.1364/JOSA.66.000207 (paywalled; the text was not available in full)
 
 Existing holography software was studied as a reference only and none of it is used: slmsuite (MIT), odak (MPL-2.0), hologradpy (LGPL-3.0), the OTSLM toolbox (GPLv3 per its paper, MATLAB), neural-holography (a custom academic,
-non-commercial licence), DeepCGH and holotorch (licence not asserted on their repositories; a copyright file of DeepCGH was not read), as reported when they were surveyed; the licence of Red Tweezers could not be found (UNVERIFIED).
+non-commercial licence), DeepCGH and holotorch (licence not asserted on their repositories; a copyright file of DeepCGH was not read), as reported when they were surveyed; Red Tweezers lists the GPLv3 licence on its Mendeley Data entry (https://data.mendeley.com/datasets/8cyd4g424p/1).
 
 The portable random generator is **xoshiro128\*\*** (Blackman and Vigna, https://arxiv.org/abs/1805.01407 , reference at https://prng.di.unimi.it/xoshiro128starstar.c ) seeded by **SplitMix32**
 (https://github.com/bryc/code/blob/master/jshash/PRNGs.md , described there as public domain). Both were re-implemented from their published update rules and cross-checked against an independent implementation; no source file was copied.
-The licence terms of the xoshiro reference file were not confirmed (UNVERIFIED).
+The header of the xoshiro reference file dedicates it to the public domain "to the extent possible under law" and grants permission to use, copy, modify and distribute it with or without fee (read at https://prng.di.unimi.it/xoshiro128starstar.c ).
 
 ## Third-party code and data bundled with the site
 
 | Item | Version | Role | Licence |
 |---|---|---|---|
 | fft.js | 4.0.4 | the FFT of the live engine, bundled in the site | MIT (as recorded when it was chosen) |
-| onnxruntime-web | 1.31.1 | in-browser inference of the learned models; its WebAssembly file is hosted with the site | UNVERIFIED: not read for this file |
+| onnxruntime-web | 1.31.1 | in-browser inference of the learned models; its WebAssembly file is hosted with the site | MIT (the `license` field of the installed `package.json`, version 1.31.1) |
 | CET-C1 and inferno colour data | see above | embedded colormap tables | CC BY 4.0 and CC0, see above |
 
 The other dependencies (the shared app shell, React, the charting and 3D libraries, the build and test tools, numpy and the rest of the pipeline) are used as installed packages under their own licences, which the packages carry; they are

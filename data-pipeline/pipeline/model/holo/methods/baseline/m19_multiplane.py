@@ -27,8 +27,8 @@ sphere elements wrap modulo $n_z$ at the corners of the square SLM (periodic rep
 Axial resolution is set by the aperture: the depth of field is about $2\lambda/NA^2$ with
 $NA = n_{pix}\, p / (2 f)$ (about 40 mm here), so planes closer than that cannot be told apart by any hologram.
 Defaults: ``dz_m`` = smallest gap between the distinct plane depths of the target; ``nz`` as above.
-UNVERIFIED: the paper reports the experimental match as weak (secondary, not read); no per-plane weighting is in the
-paper, so none is applied.
+The paper has no per-plane weighting, so none is applied (the weak experimental match that the paper reports is a
+secondary statement that was not read).
 """
 from __future__ import annotations
 

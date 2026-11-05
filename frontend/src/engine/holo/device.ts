@@ -1,7 +1,7 @@
 /**
  * SLM device model: phase quantization, phase-response LUT, flicker, pixel crosstalk and the pixel-aperture envelope.
  *
- * Python counterpart: `core/device.py` (the model, its sources and its UNVERIFIED items are documented there). A missing
+ * Python counterpart: `core/device.py` (the model, its sources and the readings that are DinHot's own are documented there). A missing
  * device (`null`) is the ideal one. Order in `displayedPhase`: wrap, quantize to `2^b` levels, nonlinear response
  * `2 pi (level phase / 2 pi)^gamma`, additive Gaussian flicker of rms `flickerRad` per pixel (portable RNG), wrap.
  * Crosstalk: each SLM pixel is `upsample x upsample` samples blurred with `K = F^-1 exp[-(|kx|^q + |ky|^q) / sigma^q]`

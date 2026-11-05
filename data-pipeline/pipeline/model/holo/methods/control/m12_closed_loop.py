@@ -9,9 +9,10 @@ Variant ``nogrette`` (dossier D3.1, Nogrette et al., Phys. Rev. X 4, 021034, htt
 iterations are plain GS (forward FFT, replace the amplitude by the target, inverse FFT, keep the phase); with $\rho_m =
 (I_m / w_m) / \langle I / w \rangle$ the measured intensity relative to its target and gain $G$,
 $$I'_m = \frac{\bar I}{1 - G\,(1 - I_m/\bar I)}\quad\Longrightarrow\quad w^{\rm T}_m \leftarrow w^{\rm T}_m\,\frac{1}{1 - G(1 - \rho_m)}$$
-(the target intensity is multiplied by the factor, so a trap at $\rho = 1$ keeps its target: the dossier prints the update in
-terms of the measured intensity; the multiplicative reading is DinHot's, it keeps the memory of earlier corrections and has
-the same fixed point $\rho = 1$; UNVERIFIED against the paper). Default $G = 0.7$ (Nogrette: 19 percent rms to 1.4 percent
+(the target intensity is multiplied by the factor, so a trap at $\rho = 1$ keeps its target: the paper prints the update in
+terms of the measured intensity, Eq. 3; the multiplicative reading is DinHot's, it keeps the memory of earlier corrections and has
+the same fixed point $\rho = 1$ as the printed rule, which recomputes the target from the latest measurement alone and is
+the variant ``nogrette-printed`` below). Default $G = 0.7$ (Nogrette: 19 percent rms to 1.4 percent
 in 20 iterations).
 
 Variant ``nogrette-printed`` is the rule as the paper prints it (Eq. 3): the new target intensity is computed from the latest

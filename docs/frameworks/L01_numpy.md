@@ -35,5 +35,5 @@ the engine's own and is what the TypeScript port reproduces; the random numbers 
 
 ## Caveats and licence
 
-Floating-point rounding differs between platforms and between numpy builds at the level of 1e-12 relative, which is why the parity tolerances are stated per quantity. The licence of numpy is carried by the package and was not
-re-read for this card (UNVERIFIED here); see [ATTRIBUTION](../../ATTRIBUTION.md) for the policy on dependencies.
+Floating-point rounding differs between platforms and between numpy builds at the level of 1e-12 relative, which is why the parity tolerances are stated per quantity. The licence of numpy is carried by the package; the installed 2.4.6 declares BSD-3-Clause (with the licences of its bundled
+components) in its metadata, which was read for this card; see [ATTRIBUTION](../../ATTRIBUTION.md) for the policy on dependencies.

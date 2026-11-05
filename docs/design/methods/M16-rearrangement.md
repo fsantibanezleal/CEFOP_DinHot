@@ -56,15 +56,14 @@ fractional positions; lines 168 to 175). The number of steps is set by the longe
 Because the amplitude is interpolated and the phase advances smoothly, no trap passes through zero intensity, unlike independent weighted-GS holograms
 whose free phases jump between steps.
 
-UNVERIFIED (docstring): the paper gives the unit of the step as $\lambda f/(mL)$ with $m \approx 0.41$ in prose; the equations above are the
-extraction's rendering of the described procedure; and the wrapped phase difference (the shortest phase path) is DinHot's reading of "interpolate linearly".
+Knottnerus et al. (arXiv:2501.01391, Section 3) choose the number of holograms so that the longest trajectory advances at most one Fourier unit, $\lambda f/L \approx 0.45\ \mu$m with $L$ the demagnified chip side, per hologram; they describe the procedure in prose, with no numbered equation, so the equations above are DinHot's rendering of it, and the wrapped phase difference (the shortest phase path) is DinHot's choice, since the paper does not say how the phase difference is taken.
 
 ## Defaults
 
 | Parameter | Default | Where | Source of the value |
 |---|---|---|---|
 | `alpha` | 1.5 | `m16_rearrangement.py` line 135 | the paper value; above the 1.12 bound for a square lattice |
-| `max_step_bins` $s_{max}$ | `None`: `pad` bins (one Fourier unit $\lambda f/(n_{pix}p)$), line 143 | line 135 | DinHot's reading of the paper's step unit (UNVERIFIED, above) |
+| `max_step_bins` $s_{max}$ | `None`: `pad` bins (one Fourier unit $\lambda f/(n_{pix}p)$), line 143 | line 135 | the paper's step unit of one Fourier unit per hologram, in DinHot's grid units (above) |
 | `n_fix` | 12 | line 135 | M07's default (Kim); see M07 for the grid dependence |
 
 The port has the same defaults (`control.ts` lines 386 and 387).
@@ -112,7 +111,7 @@ the method's final hologram as the bake scores it; M16 is a sorting method and i
 
 - LPI does not optimize its intermediate frames (the gap BS-2 addresses); the transient measure of the module is simplified (each frame is scored at its
   own positions, not in the blend model of BS-2).
-- The step unit is a reading of the paper (UNVERIFIED); the wrapped phase difference is DinHot's reading.
+- The step unit is the paper's (one Fourier unit per hologram, in prose); the wrapped phase difference is DinHot's choice.
 - The assignment needs at least as many atoms as targets (`n <= m`); the atoms beyond the targets are released.
 - The reported success rate of the source (61 percent after nine rounds on a 7 by 7 to 3 by 3 sort, through the research dossier) is a different
   quantity and is not reproduced here.

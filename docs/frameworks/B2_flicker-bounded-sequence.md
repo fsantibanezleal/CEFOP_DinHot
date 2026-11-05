@@ -31,7 +31,7 @@ $x_m(s) = x_m(0) + (x_m(S) - x_m(0))(10\tau^3 - 15\tau^4 + 6\tau^5)$, $\tau = s/
 with the same $h$ (default: phases held), and `run` raises `ValueError` if the phase step per frame exceeds `phase_velocity_max` (default 0.3 rad; the LPI paper:
 slips of several tenths of pi barely mattered, near pi lost atoms). The optimisation drops the penalty form of the research loss for the hard lock, its $\lambda\to\infty$ limit.
 
-**Transient intensity (UNVERIFIED model).** Between frames $s$ and $s+1$ the displayed SLM field is modelled as the blend $f_a = A[(1-a)e^{i\phi_s} + a e^{i\phi_{s+1}}]$, $a\in[0,1]$,
+**Transient intensity (DinHot's own model; the LPI paper reports a measurement, not a transient equation).** Between frames $s$ and $s+1$ the displayed SLM field is modelled as the blend $f_a = A[(1-a)e^{i\phi_s} + a e^{i\phi_{s+1}}]$, $a\in[0,1]$,
 and trap $m$ is read at its trajectory point $x_m(s+a)$: $I_m(s,a) = |V_m(f_a; x_m(s+a))|^2$. `transient_min_ratio` returns for each trap $\min_{s,a} I_m(s,a)/\operatorname{mean}_s I_m(s)$. The source gives
 the LPI paper's measurement, not its transient equation. Not modelled: the SLM refresh rate and the temporal response of the device.
 
@@ -58,7 +58,7 @@ by the same function. The paper reports above 0.70 for LPI on hardware; the test
 
 ## Limits
 
-The transient model is DinHot's (UNVERIFIED); the comparison is against DinHot's implementation of LPI, not the authors' code.
+The transient model is DinHot's own and is not calibrated; the comparison is against DinHot's implementation of LPI, not the authors' code.
 
 Measured scope (design record, Measured scope): the acceptance task runs at 0.31 Fourier units per frame; with the frames that keep the peak step
 at most 0.2 Fourier units, a bound set on C10's sort, the claim holds on 6 of 8 seeds of each longer lattice move (where B2 is above LPI on 7 of 8) and on 5 of 6 seeds of C10, and

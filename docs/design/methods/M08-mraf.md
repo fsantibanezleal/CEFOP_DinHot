@@ -56,7 +56,7 @@ Design decisions of DinHot, none of them in the source (module docstring and E2 
   the cell cannot reach its target for any hologram. Without it the error floor is 0.10 to 0.13 and the ratio to GS 1.4 to 3.8. A shape thinner
   than the erosion raises a `ValueError`.
 - The default start is a Fresnel-lens phase of `start_waves` waves at the aperture edge (`start_phase_field`, line 213), because a random
-  start leaves speckle that MRAF removes slowly (error 0.3 after 100 iterations). The source states no start (UNVERIFIED).
+  start leaves speckle that MRAF removes slowly (error 0.3 after 100 iterations). The start is DinHot's choice.
   `start_waves=None` draws a uniform random phase through `rng`; `init` overrides both.
 - Offset-MRAF variants (Gaunt, Bruce, van Bijnen) are not implemented; their primary papers were not opened.
 

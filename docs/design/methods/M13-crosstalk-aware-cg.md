@@ -47,8 +47,8 @@ the closed form: the adjoint of the crosstalk operator is the convolution with t
 A pruned zero-padded transform (only the $n u$ nonzero rows and the wanted frequencies) makes the forward and the adjoint 2.4 times cheaper than
 the plain upsampled FFT pair (0.14 s forward and 0.13 s adjoint at 256 pixels, E3 report D1).
 
-UNVERIFIED: the unit of $k$ in the kernel. The implementation takes $k$ in cycles per SLM pixel (so the computational grid spans $\pm u/2$); the
-research record did not state the unit, and the gap study was to re-check it against the paper (`core/device.py` docstring).
+The unit of $k$ in the kernel is DinHot's reading. The implementation takes $k$ in cycles per SLM pixel (so the computational grid spans $\pm u/2$); Schroff et al.
+give sigma in inverse pixels and do not define the unit of the kernel variable further (`core/device.py` docstring).
 
 ## Defaults
 
@@ -108,7 +108,7 @@ On C04 M13 has the lowest mean error in the bake (about 26 percent, with M18 at 
 
 ## Limits and failure modes
 
-- UNVERIFIED: the unit of $k$ in the kernel (above); the claim is relative to the model of the device, not to a measured instrument.
+- The unit of $k$ in the kernel is DinHot's reading (above); the claim is relative to the model of the device, not to a measured instrument.
 - One seed in the acceptance test; the benchmark protocol repeats it over 20 seeds (its rows are not yet in `data/derived/benchmark/results.json`).
 - Baked: too heavy for the live budget at full size.
 - Traps with an axial offset or a vortex are refused on a device; the trap fields are read at the nearest FFT bin.

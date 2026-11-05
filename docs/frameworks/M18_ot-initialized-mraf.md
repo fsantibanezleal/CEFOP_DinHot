@@ -34,7 +34,7 @@ $m = 0.4$ (Pasienski and DeMarco 2008, see [M08](M08_mraf.md)); the fixed-point 
 Defaults (`m18_ot_mraf.py`, lines 53 to 55): `mix = 0.4`, `eps = 0.001`, `ot_iterations = 200`. The kernel width is
 $\sigma^2 = \epsilon\,n_{fft}^2$ bins squared. The start is the OT phase; `init` replaces it (a random phase is the baseline of the acceptance
 test). Grids: live size 128 by 128 (64 pixel SLM padded 2), baked 256 by 256 (128 pixel SLM padded 2). The model is the ideal device.
-UNVERIFIED: the target amplitude is normalised to the total input power $n_{pix}^2$; the source does not state the normalisation (rescaling it
+The target amplitude is normalised to the total input power $n_{pix}^2$, DinHot's choice: the source (Pasienski and DeMarco, Eq. 1) keeps the target power constant and gives no numerical normalisation (rescaling it
 to the current signal-region power instead drains the signal region, efficiency 0.001).
 
 ## Acceptance criterion and test

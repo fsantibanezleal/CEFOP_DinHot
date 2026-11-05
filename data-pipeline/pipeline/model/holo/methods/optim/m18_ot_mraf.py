@@ -28,8 +28,9 @@ region NR,
 .. math:: G^{(n)} = \left\{ m\, \sqrt{I_0}\big|_{SR} + (1-m)\, |E^{(n)}_{out}|\big|_{NR} \right\} e^{i \arg E^{(n)}_{out}},
 
 then the inverse transform, the SLM amplitude reset to the beam, the phase kept. ``\sqrt{I_0}`` is the target amplitude
-normalised to the total input power ``n_pix^2`` (UNVERIFIED: the dossier does not state the normalisation; rescaling
-it to the current signal-region power instead drains the signal region); ``m = 0.4`` (Pasienski: 0.30 to 0.40), which
+normalised to the total input power ``n_pix^2`` (DinHot's choice: Pasienski and DeMarco, Eq. 1, keep the target power
+constant across iterations and give no numerical normalisation; rescaling it to the current signal-region power instead
+drains the signal region, which was measured); ``m = 0.4`` (Pasienski: 0.30 to 0.40), which
 puts the fixed point near the efficiency solving ``\eta = m^2 / (m^2 + (1-m)^2 (1-\eta))``, which is 0.44 (measured
 0.445 in the tests; Swan's MRAF rows: 0.18 to 0.45). The start is the OT phase; ``init`` replaces it (a random phase
 is the baseline of the acceptance test: MRAF from a random start). Grids: live size 128 x 128 (64 pixel SLM padded 2),

@@ -76,7 +76,7 @@ site replays it; "both" means a small size runs live and the full size is baked.
 
 Every card has the same sections, in this order: a header table (family, lane, targets, module and entrypoint with `SPEC` and `run` lines, anchor), Purpose, the equations with their
 source (or The gap and Method for a beyond-the-state-of-the-art method), Implementation (defaults), Acceptance criterion and test, Measured values (with seeds and grid), Limits, References.
-A library card has the base template's sections instead: What and why, Install (exact, verified), Usage, Applying it here, Caveats and licence. A method that is not yet built also has a Pending section at its end naming what is pending. An unverified reading of a source is written `UNVERIFIED` with what was tried.
+A library card has the base template's sections instead: What and why, Install (exact, verified), Usage, Applying it here, Caveats and licence. A method that is not yet built also has a Pending section at its end naming what is pending. A reading of a source that could not be checked is stated in plain words, with what was tried.
 
 ## Status of the measured values
 

@@ -48,7 +48,7 @@ A pruned zero-padded transform makes the crosstalk forward and adjoint 2.4 times
 
 ## Limits
 
-- UNVERIFIED: the unit of $k$ in the kernel (cycles per SLM pixel is assumed; see [P02](P02_device-model.md)).
+- The unit of $k$ in the kernel is DinHot's reading (cycles per SLM pixel; the source does not define it; see [P02](P02_device-model.md)).
 - One seed in the acceptance test; the benchmark protocol repeats it over 20 seeds.
 - Baked: a gradient run on the 3 by 3 upsampled grid is too heavy for the live budget at full size.
 

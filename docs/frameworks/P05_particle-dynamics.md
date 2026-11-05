@@ -67,7 +67,7 @@ The simulated bead's power spectrum recovers the input corner frequency within 1
 ## Limits
 
 - The linearised Lorentzian fit is biased at low segment counts (Norrelykke and Flyvbjerg 2010, https://arxiv.org/abs/0906.1708 ,
-  abstract only read; UNVERIFIED which correction applies). The oracle test bounds the effect at 10 percent for the run it uses.
+  full text read: weighted least squares on the average of $n$ spectra biases the amplitude $D$ by between $-2/n$, Eq. (32), and $+1/n$, Eq. (41), by the weighting, and leaves $f_c$ unbiased, Eq. (33); which weighting this fit corresponds to was not derived, so no correction is applied). The oracle test bounds the effect at 10 percent for the run it uses.
 - The bead is overdamped (no inertia); the atom has no collisional damping.
 - The stiffness magnitude inherits the vacuum prefactor caveat of [P04](P04_trap-physics.md).
 

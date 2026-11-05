@@ -71,9 +71,9 @@ found; the benchmark protocol below is DinHot's own and its numbers are measured
 
 UNVERIFIED: the vectorial Debye equations (Leutenegger et al. 2006, https://doi.org/10.1364/OE.14.011277), the band-limited
 angular spectrum limit (https://doi.org/10.1364/OE.17.019662), the crosstalk-aware GS update of Persson et al. 2012, the random
-mask rule of Montes-Usategui et al. 2006 and the numeric effects of quantization and flicker were not read in the first round;
-the gap-closing research unit reads them before the methods and pages that use them are built, and this line is rewritten with
-what it found.
+mask rule of Montes-Usategui et al. 2006, the index table of Noll 1976 and the numeric effects of quantization and flicker were
+not available in full to this build; the pages that use them state in plain words which reading is the source's and which is
+DinHot's, and the vectorial lane is not built.
 
 ## Sizing and contracts
 
