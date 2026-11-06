@@ -1,5 +1,5 @@
 \begin{table}[t]\centering\footnotesize
-\caption{Notation: every symbol of the report with its meaning and its unit; a unit of 1 marks a dimensionless quantity or a count, and the intensities are fractions of the input power.}\label{tab:notation}
+\caption{Notation: the symbols used in more than one section of the report, with their meaning and unit; a symbol that belongs to one derivation only (the sigma points of one method, the statistics of one test) is defined where it appears. A unit of 1 marks a dimensionless quantity or a count, and the intensities are fractions of the input power.}\label{tab:notation}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth} >{\raggedright\arraybackslash}p{0.56\textwidth} >{\raggedright\arraybackslash}p{0.16\textwidth}@{}}\toprule Symbol & Meaning & Unit\\\midrule
 $\lambda$ & vacuum wavelength of the laser & nm\\
 $f$ & focal length of the lens in the pupil of which the SLM sits & mm\\
@@ -32,7 +32,19 @@ $m$ (mixing) & mixing parameter of the mixed-region rule & 1\\
 $G,\ \rho_m$ & feedback gain and measured intensity relative to its target & 1\\
 $\lambda_{\mathrm{B5}}$ & trade-off parameter of the front & 1\\
 $\mathrm{AC}$ & accuracy of a volume hologram, mean over planes of the overlap of unit-sum intensities & 1\\
-$z_R$ & SLM-limited Rayleigh range & mm\\
+$z_{R,\mathrm{SLM}}$ & SLM-limited Rayleigh range of the volume network (Eq.~\eqref{eq:m17-zr}), the depth unit of its planes & mm\\
 $\kappa,\ \gamma,\ f_c$ & trap stiffness, drag coefficient and corner frequency of a bead & pN/$\mu$m, kg/s, Hz\\
-$U,\ \omega_r$ & dipole potential depth of an atom and its radial trap frequency & J, rad/s\\
+$U,\ \hat U,\ \omega_r,\ \omega_z$ & dipole potential, trap depth of an atom and its radial and axial trap angular frequencies & J, J, rad/s, rad/s\\
+$w_{\mathrm b}$ & waist of the input Gaussian beam at the SLM, $w_{\mathrm{frac}}\,n_{\mathrm{pix}}\,p/2$ (not the trap weight $w_m$) & $\mu$m\\
+$w_0,\ z_R$ & waist and Rayleigh range $\pi w_0^2/\lambda$ of the focus of an atom trap (Eq.~\eqref{eq:atom}) & $\mu$m\\
+$\omega_0,\ \Gamma,\ \Delta$ & resonance angular frequency, natural linewidth and detuning of the atomic transition (Eq.~\eqref{eq:atom}); the detuning $\Delta$ carries no indices, unlike the delay $\Delta_j^m$ & rad/s\\
+$c,\ \epsilon_0$ & speed of light and vacuum permittivity & m/s, F/m\\
+$n_m,\ n_p,\ r$ & index of the medium, index and radius of a bead; $m=n_p/n_m$ in the polarizability is an index ratio and not the trap index & 1, 1, $\mu$m\\
+$\alpha$ (polarizability) & polarizability of the bead of Eq.~\eqref{eq:bead}, the third meaning of $\alpha$ & F\,m$^2$\\
+$D,\ P(f)$ & diffusion coefficient $k_BT/\gamma$ and power spectral density of the bead position at frequency $f$ & m$^2$/s, m$^2$/Hz\\
+$H,\ \boldsymbol\xi,\ \lambda_m$ & angular-spectrum transfer function, spatial frequency and wavelength in the medium, $\lambda/n_{\mathrm{imm}}$ (Eq.~\eqref{eq:angspec}) & 1, 1/$\mu$m, nm\\
+$T_m,\ t$ & target intensity of trap $m$ in the cost of the optimizers, and the power of that cost (Eq.~\eqref{eq:m10}) & 1\\
+$L,\ \epsilon$ & loss of an optimizer (a quadratic intensity loss unless stated) and a small positive constant that keeps a logarithm or a quotient finite & 1\\
+$g_i,\ B_i,\ \psi$ & weights, focal amplitude relative to its target and focal phase of the phase-fixed iteration $i$ (Eq.~\eqref{eq:m07}) & 1, 1, rad\\
+$\theta_m,\ h(\tau)$ & phase given to trap $m$ (random in M02, learned in B3, locked in B2) and the minimal-jerk profile of $\tau=s/S$ (Eq.~\eqref{eq:b2-traj}) & rad, 1\\
 \bottomrule\end{tabular}\end{table}

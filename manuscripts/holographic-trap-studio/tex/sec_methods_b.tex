@@ -15,19 +15,19 @@ where the focal phase follows the field, $\psi_i=\arg V_m$, for the first $N$ it
 \psi_i=\psi_N\quad(i\ge N).
 \label{eq:m07-freeze}
 \end{equation}
-The weights $g$ keep updating after the freeze and carry the memory of all earlier corrections. The reason given by the source is that replacing the SLM-plane amplitude by the laser amplitude introduces a change $\delta\psi_i$ of the focal phase, which makes $g_i$ less effective; fixing $\psi$ removes the change. The sources do not define $B_i$ (it is taken as the field amplitude, as in M06) nor say whether the $N$-th iteration already uses the frozen phase; here it computes the phase, and a one-iteration shift turns the parity test of the port red, which is how the choice is pinned. The source states the weight update and the freezing of the focal phase in its section on the calculation of the hologram and in its Fig.~1 (Kim et al.~\cite{kim2019}); both are displayed without an equation number in the preprint, so they are cited here by section and figure.
+In the engine the first iteration projects the field of the start hologram with $g=1$ and the first weight update uses the field of the second iteration, so that Eq.~\eqref{eq:m07} holds from $i\ge2$ with $g_1=g_0$. In the recursion of Kim et al.~\cite{kim2019} the weight $g_i$, built from the focal amplitude $B_i$ of the $i$-th iteration, produces the hologram of the $(i+1)$-th, with $g_0=1$ (preprint arXiv:1903.09286, page 2). The text read does not say whether $g_0=1$ is applied to the field of the start hologram, as the engine does, or whether the update begins at the first measured field, which would be one iteration earlier than the engine; the preprint text available to this report does not settle the indexing of the first iteration. The engine follows the phase-fixed weighted GS of the open library slmsuite (no update at its iteration 0); the convention is DinHot's choice and not a verified statement of the source. The weights $g$ keep updating after the freeze and carry the memory of all earlier corrections. The reason given by the source is that replacing the SLM-plane amplitude by the laser amplitude introduces a change $\delta\psi_i$ of the focal phase, which makes $g_i$ less effective; fixing $\psi$ removes the change. The sources do not define $B_i$ (it is taken as the field amplitude, as in weighted GS) nor say whether the $N$-th iteration already uses the frozen phase; here it computes the phase, and a one-iteration shift turns the parity test of the port red, which is how the choice is pinned. The source states the weight update and the freezing of the focal phase in its section on the calculation of the hologram and in its Fig.~1 (Kim et al.~\cite{kim2019}); both are displayed without an equation number in the preprint, so they are cited here by section and figure.
 
 \textbf{Pseudocode.} Algorithm~\ref{alg:m07} lists the procedure as implemented in the Fourier form.
 
 \begin{algorithm}[t]
-\caption{Phase-fixed weighted GS in the Fourier form (M07). The weights $g$ are updated at every iteration; the focal phase $\psi$ is recomputed until iteration $N$ and then kept.}
+\caption{Phase-fixed weighted GS in the Fourier form. The weights $g$ are updated at every iteration but the first, which projects the field of the start hologram with $g=1$; the focal phase $\psi$ is recomputed until iteration $N$ and then kept.}
 \label{alg:m07}
 \begin{algorithmic}[1]
 \Require traps $\{\mathbf u_m\}$ on FFT bins, target amplitudes $a_m$, freeze index $N$, iteration budget $K$, start $\phi^0$
 \State $g_m\gets 1$ for all $m$; $\phi\gets\phi^0$ (random superposition when no start is given)
 \For{$k=1,\dots,K$}
   \State $V\gets\mathcal F[A e^{i\phi}]$ sampled at the trap bins; $b_m\gets|V_m|/a_m$
-  \State $g_m\gets g_m\,\langle b\rangle/b_m$
+  \If{$k>1$} \State $g_m\gets g_m\,\langle b\rangle/b_m$ \EndIf
   \If{$k<N$} \State $\psi_m\gets\arg V_m$ \ElsIf{$k=N$} \State $\psi_m\gets\arg V_m$; store $\psi$ \EndIf
   \State $c_m\gets g_m\,a_m\,e^{i\psi_m}$ (with the stored $\psi$ for $k>N$)
   \State $\phi\gets\arg\mathcal F^{-1}\big[\sum_m c_m\delta(\mathbf u-\mathbf u_m)\big]$
@@ -36,11 +36,11 @@ The weights $g$ keep updating after the freeze and carry the memory of all earli
 \end{algorithmic}
 \end{algorithm}
 
-\textbf{Parameters and how they were chosen.} The freeze index has the default \defv{M07}{nfix}, the value of Kim et al., pinned by a test; the acceptance criterion is run with $N=60$, which was measured on the $50\times30$ task of DinHot's grid, and the default is not grid dependent (whether it should become grid dependent is not settled). The measured finding is that the literal setting does not transfer to a smaller SLM: with the source value the spread stalls on the crowded array, and larger values of $N$ remove the stall (Section~\ref{sec:results}). A replication of a published setting that does not transfer is itself a result and is kept. Since the corrections of the update rule, the method matches the weighted GS with the phase freeze of the open library slmsuite to a small fraction of a percent in the final spread from the same start; the earlier code reweighted the field of the start hologram, whereas the source starts the recursion with $g_0=1$ so that the first iteration is plain GS.
+\textbf{Parameters and how they were chosen.} The freeze index has the default \defv{M07}{nfix}, the value of Kim et al., pinned by a test; the acceptance criterion is run with $N=60$, which was measured on the $50\times30$ task of DinHot's grid, and the default is not grid dependent (whether it should become grid dependent is not settled). The measured finding is that the literal setting does not transfer to a smaller SLM: with the source value the spread stalls on the crowded array, and larger values of $N$ remove the stall (Section~\ref{sec:results}). A replication of a published setting that does not transfer is itself a result and is kept. Since the corrections of the update rule, the method matches the weighted GS with the phase freeze of the open library slmsuite to a small fraction of a percent in the final spread from the same start; this holds with the convention above, in which the first iteration is plain GS; the engine before that convention reweighted the field of the start hologram.
 
 \textbf{Complexity.} $O(P\log P)$ per iteration in the Fourier form with $P=n_{\mathrm{fft}}^2$ and $O(N_{\mathrm{pix}}M)$ in the point form; the method is two-dimensional only because the freeze is defined for a plane. The WebGPU backend covers this method with the traps on bins and the ideal device (Section~\ref{sec:live}).
 
-\textbf{Acceptance criterion and gate.} The ladder row requires fewer iterations than M06 to reach a relative standard deviation of 0.5 percent on a $50\times30$ array with the phase fixed after the measured index (Table~\ref{tab:ladder}). The gate runs two seeds of 150 iterations in the Fourier form and asserts that M07 reaches the target and that M06 either never does or needs more iterations, with a final efficiency above 0.6; a second test pins the stall with the source value. The measurement of this report is: \acc{M07}. A sweep of the freeze index is also run by the script of this report (the key \texttt{n\_fix\_sweep\_min\_rel\_std\_150} of the acceptance file; Table~\ref{tab:acceptance}).
+\textbf{Acceptance criterion and gate.} The ladder row requires fewer iterations than weighted GS to reach a relative standard deviation of 0.5 percent on a $50\times30$ array with the phase fixed after the measured index (Table~\ref{tab:ladder}). The gate runs two seeds of 150 iterations in the Fourier form and asserts that phase-fixed weighted GS reaches the target and that weighted GS either never does or needs more iterations, with a final efficiency above 0.6; a second test pins the stall with the source value. The measurement of this report is: \acc{M07}. A sweep of the freeze index is also run by the script of this report (the key \texttt{n\_fix\_sweep\_min\_rel\_std\_150} of the acceptance file; Table~\ref{tab:acceptance}).
 
 \textbf{Limits.} The index depends on the grid; on a device with crosstalk and four phase levels the method keeps the spread of the ideal-model optimum, which is the gap that the first proposed method removes (Section~\ref{sec:b1}). The module is \texttt{m07\_phase\_fixed\_wgs}.
 
@@ -59,6 +59,24 @@ with the SLM amplitude reset to the beam. In the signal region the amplitude is 
 \end{equation}
 over the measure region. Three design decisions are DinHot's and not the source's. First, the measure region is the shape eroded by one resolution cell, because a pixel closer to the edge than the cell cannot reach its target for any hologram; without it the error floor is dominated by the edge, and a shape thinner than the erosion is refused. Second, the default start is a Fresnel-lens phase of \defv{M08}{startwaves} waves at the aperture edge, because a random start leaves speckle that the iteration removes slowly. Third, the offset variants of the method are not implemented, because their primary papers were not opened.
 
+\textbf{Pseudocode.} Algorithm~\ref{alg:m08} lists the iteration; with $m=1$ it is plain GS with a zero noise region.
+
+\begin{algorithm}[t]
+\caption{Mixed-region amplitude freedom (the field loop of the engine). The target is rescaled to the input power, the noise region keeps the amplitude it reaches, scaled by $1-m$.}
+\label{alg:m08}
+\begin{algorithmic}[1]
+\Require target amplitude $T$ and signal mask SR on the focal grid, mixing $m\in(0,1]$, start waves $W$, iteration budget $K$, start $\phi^0$
+\State $T\gets T\sqrt{N_{\mathrm{pix}}/\sum_{\mathrm{SR}}T^2}$ on SR, $0$ elsewhere; measure region $\gets$ SR eroded by one resolution cell
+\State $\phi\gets\phi^0$, or the Fresnel-lens phase of $W$ waves at the aperture edge when no start is given; $E\gets\mathcal F[Ae^{i\phi}]$
+\For{$k=1,\dots,K$}
+  \State $G\gets m\,T$ on SR, $(1-m)\,|E|$ elsewhere; $G\gets G\,e^{i\arg E}$
+  \State $\phi\gets\arg\mathcal F^{-1}[G]$; $E\gets\mathcal F[Ae^{i\phi}]$ (the SLM amplitude is reset to the beam)
+  \State record the efficiency in SR and the error $\eta$ of Eq.~\eqref{eq:m08-err} over the measure region
+\EndFor
+\State \Return $\phi$
+\end{algorithmic}
+\end{algorithm}
+
 \textbf{Parameters.} The mixing has the default \defv{M08}{mixing}, which lies in the range the source reports as typical; on DinHot's grid a larger value trades a higher efficiency for a larger error, a trade measured when the default was set. The benchmark tunes the mixing over a grid of four values.
 
 \textbf{Complexity.} Two Fourier transforms per iteration, $O(P\log P)$; the source reports convergence in under a hundred iterations.
@@ -73,18 +91,40 @@ over the measure region. Three design decisions are DinHot's and not the source'
 
 Direct search is the optimization method of holographic optical tweezers: visit every SLM pixel in random order, try every phase level and keep the best against an explicit cost that trades efficiency for uniformity with one weight. It is the reference method for perfect uniformity in Di Leonardo et al.~\cite{dileonardo} and the explicit-cost ancestor of the gradient methods. The cost is that of Polin et al.~\cite{polin}. With $I_m$ the trap intensities as fractions of the input power, $I^D_m=w_m/\operatorname{mean}(w)$ the design intensities and $M$ the trap count,
 \begin{equation}
-C=-\langle I\rangle+f\,\sigma,\qquad \sigma=\sqrt{\frac1M\sum_m\big(I_m-\gamma I^D_m\big)^2},\qquad
+C=-\langle I\rangle+f_u\,\sigma,\qquad \sigma=\sqrt{\frac1M\sum_m\big(I_m-\gamma I^D_m\big)^2},\qquad
 \gamma=\frac{\sum_m I_mI^D_m}{\sum_m(I^D_m)^2},
 \label{eq:m09}
 \end{equation}
-where $f$ weights uniformity against efficiency and $\gamma$ is the best common scale of the design. One sweep visits every pixel once in a seeded random order; at each pixel all $P$ trial phases $2\pi k/P$ are evaluated and the best is kept if it lowers the cost, so the cost never increases. The trap fields are updated incrementally: a change $\delta z=e^{i\phi'}-e^{i\phi}$ at pixel $j$ changes each field by
+where $f_u$ weights uniformity against efficiency (the symbol $f$ is the focal length elsewhere), $\sigma$ is the root-mean-square residual of the design in units of the intensity and not the percentage of Eq.~\eqref{eq:metrics}, and $\gamma$ is the best common scale of the design and not the drag of Eq.~\eqref{eq:bead}. One sweep visits every pixel once in a seeded random order; at each pixel all $P$ trial phases $2\pi k/P$ are evaluated and the best is kept if it lowers the cost, so the cost never increases. The trap fields are updated incrementally: a change $\delta z=e^{i\phi'}-e^{i\phi}$ at pixel $j$ changes each field by
 \begin{equation}
 \delta V_m=\frac{A_j}{N_{\mathrm{pix}}}\,\delta z\,e^{-i\Delta_j^m},
 \label{eq:m09-update}
 \end{equation}
 an update that costs $O(M)$ and holds for any trap depth and any vortex charge, because it uses the point-trap form. After each sweep the fields are recomputed in full to drop the rounding drift of the increments. The start is the random superposition rounded to the $P$ levels, and an initial phase overrides it. The source reports convergence in about $N$ trials and a worst case of $N\,P$.
 
-\textbf{Parameters.} The number of levels has the default \defv{M09}{levels} and the weight $f$ the default \defv{M09}{f}, the values of the direct-search row of Di Leonardo et al.; the budget is the number of sweeps taken from the iteration budget, and a cap on the trial phases serves the time-boxed rows of the benchmark. The simulated-annealing variant of the source is not implemented, because the source gives no quantitative result for it.
+\textbf{Pseudocode.} Algorithm~\ref{alg:m09} lists a run.
+
+\begin{algorithm}[t]
+\caption{Direct search with the cost of Eq.~\eqref{eq:m09}. One sweep visits every pixel once in a seeded random order; the cost never increases.}
+\label{alg:m09}
+\begin{algorithmic}[1]
+\Require traps with design intensities $I^D_m$, levels $P$, weight $f_u$, number of sweeps $K$, cap on the trial phases
+\State $\phi\gets$ the random superposition rounded to the $P$ levels $2\pi p/P$; $V\gets$ trap fields of $\phi$
+\For{sweep $=1,\dots,K$}
+  \State $C_{\mathrm{cur}}\gets C(|V|^2)$ by Eq.~\eqref{eq:m09}; draw a random order of the $N_{\mathrm{pix}}$ pixels from the seeded generator
+  \For{each pixel $j$ in that order}
+    \State \textbf{stop} when the cap on the trial phases would be exceeded
+    \State for $p=0,\dots,P-1$: $V^{(p)}\gets V+\frac{A_j}{N_{\mathrm{pix}}}\big(e^{2\pi ip/P}-e^{i\phi_j}\big)e^{-i\Delta_j^m}$ and $C^{(p)}\gets C(|V^{(p)}|^2)$
+    \State $p^\ast\gets\arg\min_pC^{(p)}$
+    \If{$C^{(p^\ast)}<C_{\mathrm{cur}}$} \State $V\gets V^{(p^\ast)}$; $\phi_j\gets2\pi p^\ast/P$; $C_{\mathrm{cur}}\gets C^{(p^\ast)}$ \EndIf
+  \EndFor
+  \State recompute $V$ in full from $\phi$ (drops the rounding drift of the increments); record the history entry
+\EndFor
+\State \Return $\phi$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Parameters.} The number of levels has the default \defv{M09}{levels} and the weight $f_u$ the default \defv{M09}{f}, the values of the direct-search row of Di Leonardo et al.; the budget is the number of sweeps taken from the iteration budget, and a cap on the trial phases serves the time-boxed rows of the benchmark. The simulated-annealing variant of the source is not implemented, because the source gives no quantitative result for it.
 
 \textbf{Complexity and lane.} One trial costs $O(M)$ and a sweep evaluates $N_{\mathrm{pix}}P$ trials, so a sweep costs $O(N_{\mathrm{pix}}PM)$; the method is sequential by construction, so it is baked and replayed and not run live. A test confirms that the incremental update agrees with a full evaluation to $10^{-10}$ and that the cost never rises.
 
@@ -110,7 +150,28 @@ In the code the cost is normalized by $\sum(sT)^t$, which has the same minimizer
 
 \textbf{Optimizer.} The Fletcher--Reeves nonlinear conjugate gradient builds directions $d_i=-g_i+\gamma_id_{i-1}$ with $\gamma_i=g_i\cdot g_i/(g_{i-1}\cdot g_{i-1})$ (Harte Eqs.~(3) to (5)), with a strong-Wolfe line search by cubic interpolation. The source does not state the line search; this is DinHot's choice, and a second Wolfe constant below one half keeps the Fletcher--Reeves directions descent directions. If a direction is not a descent direction or the search fails, the iteration restarts from steepest descent and the run stops if that fails too, so that the cost never increases. The start is $n_{\mathrm{pix}}^2$ uniform random phases from the portable generator.
 
-\textbf{Parameters.} The power $t$ has the default stages of the field case (the powered cost first, then the basic one, with an equal share of the iterations) and the basic cost for traps; the design-efficiency argument is left unset by default and the code then chooses a design level for traps and a lower one for fields (Table~\ref{tab:defaults}); the Wolfe constants and the cap on line-search evaluations are numerical guards. The cost refuses an odd or non-integer power; the benchmark grid holds only the even schedules $t=2$, $t=4$, $(4,2)$ and $(4,2)$ with a design efficiency of 0.8, so no entry of the grid is refused and no benchmark row of M10 is skipped.
+\textbf{Pseudocode.} Algorithm~\ref{alg:m10} lists the optimizer.
+
+\begin{algorithm}[t]
+\caption{Fletcher--Reeves conjugate gradient with a strong-Wolfe line search on the powered intensity cost, in stages of equal share of the iterations (the loop shared with the device-aware conjugate gradient, which differs by the forward model).}
+\label{alg:m10}
+\begin{algorithmic}[1]
+\Require target (traps or shaped field), power schedule $(t_1,\dots,t_S)$, requested efficiency $\eta$, iteration budget $K$, start $\phi^0$
+\State $\phi\gets\phi^0$ (uniform random phases when no start is given)
+\For{each stage $s=1,\dots,S$ with $K_s\approx K/S$ iterations (the last stage takes the remainder)}
+  \State build the cost $C_{t_s}$ with target level $\eta$; $f\gets C_{t_s}(\phi)$; $g\gets\nabla C_{t_s}(\phi)$ by Eq.~\eqref{eq:m10} (two Fourier transforms); $d\gets-g$
+  \For{$i=1,\dots,K_s$}
+    \If{$d\cdot g\ge0$} \State $d\gets-g$ \EndIf
+    \State strong-Wolfe search along $d$ ($c_1=10^{-4}$, $c_2=0.1$, cubic interpolation, first trial moving the largest pixel by 0.1 rad, later trials $2(f-f_{\mathrm{old}})/(g\cdot d)$)
+    \If{no step is found} \State restart with $d\gets-g$ and search again; \textbf{stop} the run if that fails too \EndIf
+    \State $\phi\gets\phi+a\,d$; $g'\gets\nabla C_{t_s}(\phi)$; $\gamma\gets(g'\cdot g')/(g\cdot g)$; $d\gets-g'+\gamma d$; $g\gets g'$
+  \EndFor
+\EndFor
+\State \Return $\phi$ wrapped to $[0,2\pi)$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Parameters.} The power $t$ has the default stages of the field case (the powered cost first, then the basic one, with an equal share of the iterations) and the basic cost for traps; the design-efficiency argument is left unset by default and the code then chooses a design level for traps and a lower one for fields (Table~\ref{tab:defaults}); the Wolfe constants and the cap on line-search evaluations are numerical guards. The cost refuses an odd or non-integer power; the benchmark grid holds only the even schedules $t=2$, $t=4$, $(4,2)$ and $(4,2)$ with a design efficiency of 0.8, so no entry of the grid is refused and no benchmark row of conjugate-gradient minimization is skipped.
 
 \textbf{Acceptance criterion and gate.} The analytic gradient agrees with finite differences, and a square lattice of flat-top spots reaches an error below one percent (Table~\ref{tab:ladder}). The gate checks the gradient for $t=2$ and $t=4$ on a shaped target and on traps by central differences in six directions, runs the lattice on a $64$-pixel SLM padded twice with 1500 iterations and two seeds, and checks that the cost decreases monotonically. The measurement of this report is: \acc{M10}. Harte et al.~\cite{harte} report 0.58 percent at 4000 iterations for the same figure.
 
@@ -120,27 +181,44 @@ In the code the cost is normalized by $\sum(sT)^t$, which has the same minimizer
 
 \subsection{Wirtinger gradient descent with Adam (M11)}\label{sec:m11}
 
-The hologram is treated as a differentiable program: any linear forward model (the point-trap form, the Fourier form, a device) can be optimized by a first-order method if the gradient with respect to the phase is available. The solution replicated is Wirtinger holography of Chakravarthula, Peng, Kollin, Fuchs, Heide and Wetzstein~\cite{chakra}, with the Adam optimizer of Kingma and Ba~\cite{kingma} (named in the module; the original was not re-read). It is the bridge between the iterative methods and the learned ones. The loss is minimized over the phase with a differentiable propagation $P$ and $H=c\,e^{i\phi}$; the gradient of the real loss with respect to the complex field is the Wirtinger derivative, pulled back through $P$ by the chain rule,
+The hologram is treated as a differentiable program: any linear forward model (the point-trap form, the Fourier form, a device) can be optimized by a first-order method if the gradient with respect to the phase is available. The solution replicated is Wirtinger holography of Chakravarthula, Peng, Kollin, Fuchs and Heide~\cite{chakra}, with the Adam optimizer of Kingma and Ba~\cite{kingma} (named in the module; the original was not re-read). It is the bridge between the iterative methods and the learned ones. The loss is minimized over the phase with a differentiable propagation $P$ and $H=c\,e^{i\phi}$; the gradient of the real loss with respect to the complex field is the Wirtinger derivative, pulled back through $P$ by the chain rule,
 \begin{equation}
 \frac{\partial L}{\partial\phi_j}=2\operatorname{Re}\!\big(i\,f_j\,\overline{(P^{H}G)_j}\big),\qquad G=\frac{\partial L}{\partial z^*}=L'(I)\,z,
 \label{eq:m11}
 \end{equation}
-so that any linear forward model works. The loss is the quadratic intensity loss $C_2=\sum(I_m-T_m)^2/\sum T_m^2$ of the optimization module, with the design efficiency of M10; the penalty term of the source has weight zero, because a phase penalty has no role for a phase-only hologram of traps. Adam updates, with bias-corrected moments,
+so that any linear forward model works. The loss is the quadratic intensity loss $C_2=\sum(I_m-T_m)^2/\sum T_m^2$ of the optimization module, with the design efficiency of conjugate-gradient minimization; the penalty term of the source has weight zero, because a phase penalty has no role for a phase-only hologram of traps. Adam updates, with bias-corrected moments,
 \begin{equation}
 m\leftarrow\beta_1m+(1-\beta_1)g,\quad v\leftarrow\beta_2v+(1-\beta_2)g^2,\quad x\leftarrow x-\mathrm{lr}\,\frac{\hat m}{\sqrt{\hat v}+\epsilon}.
 \label{eq:m11-adam}
 \end{equation}
 The source uses L-BFGS for quadratic losses and Adam with a small rate for learned losses; the start is $n_{\mathrm{pix}}^2$ uniform random phases.
 
+\textbf{Pseudocode.} Algorithm~\ref{alg:m11} lists the loop.
+
+\begin{algorithm}[t]
+\caption{Wirtinger gradient descent with Adam on the quadratic intensity loss; the history records the state before each step, so the cost may rise.}
+\label{alg:m11}
+\begin{algorithmic}[1]
+\Require target, learning rate $\mathrm{lr}$, $\beta_1=0.9$, $\beta_2=0.999$, $\epsilon=10^{-8}$, iteration budget $K$, start $\phi^0$
+\State $\phi\gets\phi^0$ (uniform random phases when no start is given); $m\gets0$; $v\gets0$
+\For{$i=1,\dots,K$}
+  \State forward model: $z\gets$ field of $\phi$; $L\gets C_2$; adjoint pass: $g\gets2\operatorname{Re}\big(i\,f\,\overline{P^HG}\big)$ with $G=L'(I)\,z$ (Eq.~\eqref{eq:m11}); record the state
+  \State $m\gets\beta_1m+(1-\beta_1)g$; $v\gets\beta_2v+(1-\beta_2)g^2$; $\hat m\gets m/(1-\beta_1^i)$; $\hat v\gets v/(1-\beta_2^i)$
+  \State $\phi\gets\phi-\mathrm{lr}\,\hat m/(\sqrt{\hat v}+\epsilon)$
+\EndFor
+\State \Return $\phi$ wrapped to $[0,2\pi)$
+\end{algorithmic}
+\end{algorithm}
+
 \textbf{Parameters and how they were chosen.} The learning rate has the default \defv{M11}{lr}, tuned on the trap loss: the rate of the source moves a pixel by a small angle in 30 iterations, and the tuning record of the design document (tuning seeds, then separate seeds) shows the spread falling as the rate rises up to a value near the default, where a larger rate ties within one percent and a still larger one diverges; the smaller step is kept. The moment constants are the defaults of Kingma and Ba. The benchmark's tuning grid for the rate is 0.5, 1, 2 and 4, around the default of 1. The tuned row equals the default row on three of the seven geometries, and on the others the rate chosen at 30 iterations is within a factor of about 1.4; at 100 iterations, however, the tuned rows of G1, G5 and G6 are four to eight times worse than the default (a relative standard deviation of 8.5, 9.8 and 9.0 percent against 1.2, 2.2 and 1.2), so a rate tuned for a short budget can hurt a long one. A mutation run with the rate of the source fails the acceptance test, which shows that the tuned rate is what makes the row pass.
 
 \textbf{Complexity.} One forward and one adjoint evaluation per iteration, two Fourier transforms in the Fourier form, so that the cost per iteration is the same as for the conjugate gradient without its line search; the method runs both live at small sizes and baked at full size. Adam is not a descent method, so the history records the state before each step and the cost may rise. With a device the traps must lie on bins with no depth offset and no vortex.
 
-\textbf{Acceptance criterion and gate.} The criterion is a lower trap-intensity error than GS at equal iterations on the $10\times10$ task (Table~\ref{tab:ladder}); the gate runs three seeds of 30 iterations and requires a lower spread per seed and in median than the in-test copy of the GS rule, which was cross-checked against M04 and gives the same numbers to four digits. Companion tests check the gradient on a set with depth offsets, a vortex and unequal weights. The measurement of this report is: \acc{M11}. Because the derivative is pulled back by the chain rule, the same code differentiates the point-trap form, the Fourier form and the device form; the only requirement on a forward model is that its adjoint is available, and the engine provides it for each. The tuning record is therefore a statement about one loss on one family of grids: a rate that is right for the $10\times10$ task is not guaranteed to be right for a crowded array or a shaped field, and the benchmark's tuned arm for this method uses a grid of rates that lies below the default, so that the arm cannot contain the rate the tuning record selected. The method stops at a few percent in 30 iterations, since it is first order; the tuned rate is specific to this loss and these grids; and on a shaped target scored on a device the rate of the trap loss is untuned. The module is \texttt{m11\_wirtinger\_adam}.
+\textbf{Acceptance criterion and gate.} The criterion is a lower trap-intensity error than GS at equal iterations on the $10\times10$ task (Table~\ref{tab:ladder}); the gate runs three seeds of 30 iterations and requires a lower spread per seed and in median than the in-test copy of the GS rule, which was cross-checked against plain GS and gives the same numbers to four digits. Companion tests check the gradient on a set with depth offsets, a vortex and unequal weights. The measurement of this report is: \acc{M11}. Because the derivative is pulled back by the chain rule, the same code differentiates the point-trap form, the Fourier form and the device form; the only requirement on a forward model is that its adjoint is available, and the engine provides it for each. The tuning record is therefore a statement about one loss on one family of grids: a rate that is right for the $10\times10$ task is not guaranteed to be right for a crowded array or a shaped field. The method stops at a few percent in 30 iterations, since it is first order; the tuned rate is specific to this loss and these grids; and on a shaped target scored on a device the rate of the trap loss is untuned. The module is \texttt{m11\_wirtinger\_adam}.
 
 \subsection{Closed-loop weighted GS on an emulated camera (M12)}\label{sec:m12}
 
-Camera-in-the-loop correction measures the trap intensities and rescales the target until the traps are equal. Two published procedures are replicated, on an emulation. Nogrette et al.~\cite{nogrette} reduce a 19 percent root-mean-square trap-depth spread to 1.4 percent in 20 iterations at gain $G=0.7$, and Kim et al.~\cite{kim2019} reduce a 22 percent spread to 1.59 percent in three phase-fixed steps. The camera is an emulation of per-trap fixed gain error, additive noise, blur and roll-off, so a result shows that the loop works against those stated errors and not against an instrument; a measured hardware loop is a documented frontier of the product. One feedback iteration measures the trap intensities of the current hologram, rescales the target and runs a number of inner iterations from the current phase; the open-loop start is a number of iterations of M06 from the random start.
+Camera-in-the-loop correction measures the trap intensities and rescales the target until the traps are equal. Two published procedures are replicated, on an emulation. Nogrette et al.~\cite{nogrette} reduce a 19 percent root-mean-square trap-depth spread to 1.4 percent in 20 iterations at gain $G=0.7$, and Kim et al.~\cite{kim2019} reduce a 22 percent spread to 1.59 percent in three phase-fixed steps. The camera is an emulation of per-trap fixed gain error, additive noise, blur and roll-off, so a result shows that the loop works against those stated errors and not against an instrument; a measured hardware loop is a documented frontier of the product. One feedback iteration measures the trap intensities of the current hologram, rescales the target and runs a number of inner iterations from the current phase; the open-loop start is a number of iterations of weighted GS from the random start.
 
 \textbf{Update rules.} With $\rho_m=(I_m/w_m)/\langle I/w\rangle$ the measured intensity relative to its target, the Nogrette variant runs plain GS inside and rescales the current target intensity,
 \begin{equation}
@@ -152,11 +230,34 @@ implemented on amplitudes with a floor on $\rho$. Nogrette et al.~\cite{nogrette
 T^{(j)}_m=\sqrt{\frac{\langle I\rangle}{I_m}}\;T^{(j-1)}_m,
 \label{eq:m12-kim}
 \end{equation}
-at full gain, and the first inner iteration displays $\arg\mathcal F^{-1}[Te^{i\psi}]$ with the focal phase frozen at that of the current hologram and no weight correction on top: a second correction overshoots and the loop diverges, which was measured. Later inner iterations add the phase-fixed weights of M07, reset at every step.
+at full gain, and the first inner iteration displays $\arg\mathcal F^{-1}[Te^{i\psi}]$ with the focal phase frozen at that of the current hologram and no weight correction on top: a second correction overshoots and the loop diverges, which was measured. Later inner iterations add the phase-fixed weights of phase-fixed weighted GS, reset at every step.
+
+\textbf{Pseudocode.} Algorithm~\ref{alg:m12} lists a run; the variant that reads the update as printed, without memory, replaces $a_m\gets a_m\sqrt{\cdot}$ by $a_m\gets a^{\mathrm{base}}_m\sqrt{\cdot}$.
+
+\begin{algorithm}[t]
+\caption{Closed-loop weighted GS on the emulated camera, the two variants (the cumulative reading of the Nogrette rule and the square-root rule of Kim); the history records the spread of the measured intensities.}
+\label{alg:m12}
+\begin{algorithmic}[1]
+\Require traps on FFT bins, camera, variant, gain $G$, inner iterations $n_{\mathrm{in}}$, start iterations $n_0$, feedback budget $K$
+\State $\phi\gets$ $n_0$ iterations of weighted GS from the random superposition; $a\gets a^{\mathrm{base}}$; measure the camera readings $\mathrm{meas}$ of $\phi$
+\For{$k=1,\dots,K$}
+  \State $\rho_m\gets\max\{(\mathrm{meas}_m/w_m)/\langle\mathrm{meas}/w\rangle,\,10^{-3}\}$
+  \If{variant is Nogrette} \State $a_m\gets a_m\sqrt{1/(1-G(1-\rho_m))}$; $n_{\mathrm{in}}$ iterations of plain GS on the target amplitudes $a$ from the current phase
+  \Else \State $a_m\gets a_m/\sqrt{\rho_m}$; $g_m\gets1$; $\psi\gets$ none
+    \For{$j=1,\dots,n_{\mathrm{in}}$}
+      \State $V\gets$ trap fields of $\phi$; \textbf{if} $\psi$ is none \textbf{then} $\psi\gets\arg V$ \textbf{else} $b_m\gets|V_m|/a_m$; $g_m\gets g_m\langle b\rangle/b_m$ \textbf{end if}
+      \State $\phi\gets\arg\mathcal F^{-1}[\sum_m g_ma_me^{i\psi_m}\delta(\mathbf u-\mathbf u_m)]$
+    \EndFor
+  \EndIf
+  \State measure the camera readings of $\phi$; record the spread of $\mathrm{meas}/w$
+\EndFor
+\State \Return $\phi$
+\end{algorithmic}
+\end{algorithm}
 
 \textbf{Parameters.} The variant, the gain (default \defv{M12}{gain}) and the numbers of inner and start iterations are listed in Table~\ref{tab:defaults}. The gain is that of Nogrette et al. The inner iteration count has two measured defaults: with more than one inner GS iteration the loop settles at several percent because the algorithm's own spread is reintroduced between measurements, and for the Kim variant three inner iterations reach a fraction of a percent where one does not. The default camera has a gain error of 0.19 and no roll-off, which is Nogrette's spread.
 
-\textbf{The emulated camera.} At the bin nearest to each trap the camera returns the intensity map, optionally blurred by a Gaussian and multiplied by the pixel-aperture roll-off, times a fixed gain per trap identity $\exp(sz-s^2/2)$, with $s$ the stated gain error and $z$ the first normal of a stream seeded from the seed and the trap identity, so that the gain of a trap does not depend on the order or composition of the trap set; additive Gaussian noise is clipped at zero. Every error is a parameter with a stated meaning. The emulator was first proposed as a method and dropped from the ladder: an emulator that reproduces published feedback curves is a validation tool for M12, not a method that answers the problem differently.
+\textbf{The emulated camera.} At the bin nearest to each trap the camera returns the intensity map, optionally blurred by a Gaussian and multiplied by the pixel-aperture roll-off, times a fixed gain per trap identity $\exp(sz-s^2/2)$, with $s$ the stated gain error and $z$ the first normal of a stream seeded from the seed and the trap identity, so that the gain of a trap does not depend on the order or composition of the trap set; additive Gaussian noise is clipped at zero. Every error is a parameter with a stated meaning. The emulator was first proposed as a method and dropped from the ladder: an emulator that reproduces published feedback curves is a validation tool for the closed-loop method, not a method that answers the problem differently.
 
 \textbf{Acceptance criterion and gate.} From the published open-loop spreads the loop reaches the published curves within a factor of 1.5 (Table~\ref{tab:ladder}). The gate runs two seeds and asserts a final measured spread within the factor and below one eighth of the open-loop spread, a plain-GS start, the Kim variant in three steps, convergence with a noisy blurred camera, and determinism. The measurement of this report is: \acc{M12}. The loop reaches the published level for the Nogrette variant and goes below it for the Kim variant, because the emulated camera has no noise. Two findings are kept as results: more than one inner GS iteration degrades the Nogrette loop, and a second weight correction in the first Kim step diverges. Only the end points of the published curves are compared, and the conventional-WGS clause of the research record was not run.
 

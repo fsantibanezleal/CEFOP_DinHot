@@ -14,7 +14,8 @@
    "module": "beyond/b1_device_wgs",
    "params": {
     "steps": 3,
-    "warm": 12
+    "warm": 12,
+    "weights": true
    }
   },
   "B2": {

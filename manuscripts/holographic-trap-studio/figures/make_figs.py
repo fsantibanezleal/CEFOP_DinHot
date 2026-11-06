@@ -66,11 +66,15 @@ def fig_cases() -> None:
     d = studio()
     cases = [c for c in d["cases"] if c["status"] == "baked" and c["target_kind"] == "traps"]
     methods = sorted({m for c in cases for m in c["methods"]}, key=lambda m: (m[0] != "M", m))
+    # the mean over the three seeds of the canonical bake (measured_ranges.json), the matrix of tab:bake-sigma; the manifests hold
+    # the first bake seed only, which is lucky or unlucky by a factor of tens for the weighted methods
+    measured = json.loads((ROOT / "data-pipeline" / "pipeline" / "cases" / "measured_ranges.json").read_text(encoding="utf-8"))["measured"]
     grid = np.full((len(methods), len(cases)), np.nan)
     for j, c in enumerate(cases):
         for i, m in enumerate(methods):
-            if m in c["methods"]:
-                grid[i, j] = max(c["methods"][m]["rel_std_pct"], 1e-3)
+            v = measured[c["case_id"]].get(f"{m}.rel_std_pct")
+            if v:
+                grid[i, j] = max(sum(v) / len(v), 1e-3)
     fig, ax = plt.subplots(figsize=(7.2, 5.6))
     im = ax.imshow(np.ma.masked_invalid(grid), aspect="auto", cmap="viridis_r", norm=LogNorm(vmin=1e-3, vmax=1e3))
     ax.set_xticks(range(len(cases)), [c["short"] for c in cases])

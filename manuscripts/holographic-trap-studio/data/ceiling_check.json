@@ -1,0 +1,14 @@
+{
+ "schema": "dinhot.manuscript-ceiling-check/v1",
+ "reference_level_mean_A_squared": 0.8694892467164173,
+ "iterations": 600,
+ "adam_lr": 0.05,
+ "seed": 1,
+ "efficiency_after_maximisation": {
+  "ten traps on adjacent bins (gap 1 bin of the padded grid)": 1.8515253031884549,
+  "ten traps 2 bins apart": 0.9323644090445694,
+  "ten traps eight bins apart (the spacing of the 10 x 10 task)": 0.869536209939144,
+  "10 x 10 lattice at eight bins": 0.8406848302149561,
+  "one trap": 0.8694892174082735
+ }
+}

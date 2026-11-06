@@ -22,9 +22,13 @@ from __future__ import annotations
 import json
 import re
 import statistics
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import beyond_rows  # noqa: E402
+
 ROOT = HERE.parents[2]
 DERIVED = ROOT / "data" / "derived"
 CONTRACTS = ROOT / "docs" / "contracts"
@@ -101,16 +105,29 @@ NOTATION = [
     (r"$G,\ \rho_m$", "feedback gain and measured intensity relative to its target", "1"),
     (r"$\lambda_{\mathrm{B5}}$", "trade-off parameter of the front", "1"),
     (r"$\mathrm{AC}$", "accuracy of a volume hologram, mean over planes of the overlap of unit-sum intensities", "1"),
-    (r"$z_R$", "SLM-limited Rayleigh range", "mm"),
+    (r"$z_{R,\mathrm{SLM}}$", r"SLM-limited Rayleigh range of the volume network (Eq.~\eqref{eq:m17-zr}), the depth unit of its planes", "mm"),
     (r"$\kappa,\ \gamma,\ f_c$", "trap stiffness, drag coefficient and corner frequency of a bead", r"pN/$\mu$m, kg/s, Hz"),
-    (r"$U,\ \omega_r$", "dipole potential depth of an atom and its radial trap frequency", "J, rad/s"),
+    (r"$U,\ \hat U,\ \omega_r,\ \omega_z$", "dipole potential, trap depth of an atom and its radial and axial trap angular frequencies", "J, J, rad/s, rad/s"),
+    (r"$w_{\mathrm b}$", r"waist of the input Gaussian beam at the SLM, $w_{\mathrm{frac}}\,n_{\mathrm{pix}}\,p/2$ (not the trap weight $w_m$)", r"$\mu$m"),
+    (r"$w_0,\ z_R$", r"waist and Rayleigh range $\pi w_0^2/\lambda$ of the focus of an atom trap (Eq.~\eqref{eq:atom})", r"$\mu$m"),
+    (r"$\omega_0,\ \Gamma,\ \Delta$", r"resonance angular frequency, natural linewidth and detuning of the atomic transition (Eq.~\eqref{eq:atom}); the detuning $\Delta$ carries no indices, unlike the delay $\Delta_j^m$", "rad/s"),
+    (r"$c,\ \epsilon_0$", "speed of light and vacuum permittivity", "m/s, F/m"),
+    (r"$n_m,\ n_p,\ r$", r"index of the medium, index and radius of a bead; $m=n_p/n_m$ in the polarizability is an index ratio and not the trap index", r"1, 1, $\mu$m"),
+    (r"$\alpha$ (polarizability)", r"polarizability of the bead of Eq.~\eqref{eq:bead}, the third meaning of $\alpha$", r"F\,m$^2$"),
+    (r"$D,\ P(f)$", r"diffusion coefficient $k_BT/\gamma$ and power spectral density of the bead position at frequency $f$", r"m$^2$/s, m$^2$/Hz"),
+    (r"$H,\ \boldsymbol\xi,\ \lambda_m$", r"angular-spectrum transfer function, spatial frequency and wavelength in the medium, $\lambda/n_{\mathrm{imm}}$ (Eq.~\eqref{eq:angspec})", r"1, 1/$\mu$m, nm"),
+    (r"$T_m,\ t$", r"target intensity of trap $m$ in the cost of the optimizers, and the power of that cost (Eq.~\eqref{eq:m10})", "1"),
+    (r"$L,\ \epsilon$", "loss of an optimizer (a quadratic intensity loss unless stated) and a small positive constant that keeps a logarithm or a quotient finite", "1"),
+    (r"$g_i,\ B_i,\ \psi$", r"weights, focal amplitude relative to its target and focal phase of the phase-fixed iteration $i$ (Eq.~\eqref{eq:m07})", "1, 1, rad"),
+    (r"$\theta_m,\ h(\tau)$", r"phase given to trap $m$ (random in M02, learned in B3, locked in B2) and the minimal-jerk profile of $\tau=s/S$ (Eq.~\eqref{eq:b2-traj})", "rad, 1"),
 ]
 
 
 def table_notation() -> str:
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Notation: every symbol of the report with its meaning and its unit; a unit of 1 marks a dimensionless "
-           "quantity or a count, and the intensities are fractions of the input power.}\\label{tab:notation}\n",
+           "\\caption{Notation: the symbols used in more than one section of the report, with their meaning and unit; a symbol that "
+           "belongs to one derivation only (the sigma points of one method, the statistics of one test) is defined where it appears. "
+           "A unit of 1 marks a dimensionless quantity or a count, and the intensities are fractions of the input power.}\\label{tab:notation}\n",
            "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.2\\textwidth} >{\\raggedright\\arraybackslash}p{0.56\\textwidth} "
            ">{\\raggedright\\arraybackslash}p{0.16\\textwidth}@{}}\\toprule Symbol & Meaning & Unit\\\\\\midrule\n"]
     for s, m, u in NOTATION:
@@ -335,24 +352,33 @@ def bake_tables(measured: dict, cases: dict[str, dict]) -> tuple[str, str, str, 
         return None if not v else statistics.fmean(v)
 
     def table(metric: str, label: str, caption: str, fmt_fn) -> str:
-        out = ["\\begin{table}[t]\\centering\\scriptsize\\setlength{\\tabcolsep}{3pt}\n", f"\\caption{{{caption}}}\\label{{{label}}}\n",
-               "\\begin{tabular}{@{}l " + "r" * len(trap_cases) + "@{}}\\toprule Id & " + " & ".join(shorts) + "\\\\\\midrule\n"]
-        for m in methods:
-            cells = []
-            for c in trap_cases:
-                v = mean_of(c, m, metric)
-                cells.append("" if v is None else fmt_fn(v))
-            out.append(f"{m} & " + " & ".join(cells) + "\\\\\n")
-        out.append("\\bottomrule\\end{tabular}\\end{table}\n")
+        """Mean over the three seeds with the range over the seeds in brackets, in blocks of cases that fit the page width."""
+        out = ["\\begin{table}[t]\\centering\\scriptsize\\setlength{\\tabcolsep}{3pt}\n", f"\\caption{{{caption}}}\\label{{{label}}}\n"]
+        blocks = [list(range(0, 5)), list(range(5, 9)), list(range(9, len(trap_cases)))]
+        for bi, idx in enumerate(blocks):
+            if not idx:
+                continue
+            out.append("\\smallskip\n" if bi else "")
+            out.append("\\begin{tabular}{@{}l " + "r" * len(idx) + "@{}}\\toprule Id & " + " & ".join(shorts[i] for i in idx)
+                       + "\\\\\\midrule\n")
+            for m in methods:
+                cells = []
+                for i in idx:
+                    v = measured[trap_cases[i]].get(f"{m}.{metric}")
+                    cells.append("" if not v else f"{fmt_fn(statistics.fmean(v))} [{fmt_fn(min(v))}, {fmt_fn(max(v))}]")
+                out.append(f"{m} & " + " & ".join(cells) + "\\\\\n")
+            out.append("\\bottomrule\\end{tabular}\n")
+        out.append("\\end{table}\n")
         return "".join(out)
 
     t_sigma = table("rel_std_pct", "tab:bake-sigma",
-                    "Relative standard deviation of the trap intensities (percent), mean over the three seeds of the canonical bake, "
-                    "every method on every point-trap case it ran on; blank cells are methods the case does not run. The seed range "
-                    "of selected cells is in Table~\\ref{tab:seeds}.", sig)
+                    "Relative standard deviation of the trap intensities (percent), mean over the three seeds of the canonical bake with "
+                    "the minimum and maximum over the seeds in brackets, every method on every point-trap case it ran on (three blocks "
+                    "of cases); blank cells are methods the case does not run.", sig)
     t_eff = table("efficiency", "tab:bake-eff",
-                  "Efficiency of the same runs as Table~\\ref{tab:bake-sigma}: mean over the three seeds of the canonical bake, the "
-                  "fraction of the input power in the traps, scored on the case's own device.", lambda v: fmt(v, 2))
+                  "Efficiency of the same runs as Table~\\ref{tab:bake-sigma}: mean over the three seeds of the canonical bake with the "
+                  "range over the seeds in brackets, the fraction of the input power in the traps, scored on the case's own device.",
+                  lambda v: fmt(v, 2))
     sel = ("M04", "M06", "M07", "M11", "B1", "B4", "B5")
     cs = [c for c in ("C02_grid_feedback", "C08_device_limited", "C09_aberrated") if c in measured]
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
@@ -398,6 +424,88 @@ QUOTED = {"bakeIdleS": ("515", "MR, The bake: time and memory"), "bakeLoadedS": 
           "bakeCaseMB": ("322", "MR, The bake: time and memory")}
 
 
+def headline(measured: dict) -> dict[str, str]:
+    """The headline statistic of the abstract: over the cases where M04 and M07 both ran, the median of the three-seed means of the
+    spread, with the range of the three per-seed medians (the uncertainty the bake supports), and the cases it covers."""
+    both = [c for c, v in measured.items() if "M04.rel_std_pct" in v and "M07.rel_std_pct" in v]
+    out = {"hlN": str(len(both)), "hlCases": ", ".join(c.split("_")[0] for c in both)}
+    for m, name in (("M04", "Four"), ("M07", "Seven")):
+        means = statistics.median(statistics.fmean(measured[c][f"{m}.rel_std_pct"]) for c in both)
+        per_seed = [statistics.median(measured[c][f"{m}.rel_std_pct"][s] for c in both) for s in range(3)]
+        out[f"hlSigmaM{name.lower()}"] = f"{means:.2g}" if means < 1 else f"{means:.0f}"
+        out[f"hlSigmaM{name.lower()}Lo"] = f"{min(per_seed):.2g}" if min(per_seed) < 1 else f"{min(per_seed):.0f}"
+        out[f"hlSigmaM{name.lower()}Hi"] = f"{max(per_seed):.2g}" if max(per_seed) < 1 else f"{max(per_seed):.0f}"
+    out["hlSeeds"] = "3"
+    effs = [statistics.fmean(measured[c]["M07.efficiency"]) for c in both]
+    out["hlEffLo"], out["hlEffHi"] = f"{min(effs):.3f}", f"{max(effs):.3f}"
+    # the three methods over the cases where all of them ran (one common set, so that the medians are comparable)
+    com = [c for c, v in measured.items() if all(f"{m}.rel_std_pct" in v for m in ("M04", "M06", "M07"))]
+    out["cmN"] = str(len(com))
+    for m, name in (("M04", "Four"), ("M06", "Six"), ("M07", "Seven")):
+        sg = statistics.median(statistics.fmean(measured[c][f"{m}.rel_std_pct"]) for c in com)
+        ef = statistics.median(statistics.fmean(measured[c][f"{m}.efficiency"]) for c in com)
+        out[f"cmSigma{name}"] = f"{sg:.2g}" if sg < 1 else f"{sg:.0f}" if sg >= 10 else f"{sg:.1f}"
+        out[f"cmEff{name}"] = f"{ef:.2f}"
+    return out
+
+
+GEO_NAMES = {"G1": "10 x 10 square", "G2": "ring of 36", "G3": "100 random", "G4": "quasi-periodic 119"}
+
+
+def s3(x: float) -> str:
+    return f"{x:.3g}"
+
+
+def table_b1_weights() -> str:
+    """The ablation of the weight update of B1 (companion manuscript's measurements): the acceptance task and the benchmark lattices."""
+    comp = HERE.parents[1] / "device-aware-flicker-bounded" / "data"
+    bj = load(comp / "beyond.json")["ablation"]
+    out = ["\\begin{table}[t]\\centering\\footnotesize\n",
+           "\\caption{Ablation of the weight update of the device-aware weighted GS (B1), the method run with its weight update and with every "
+           "weight kept at one. First block: the $10\\times10$ acceptance task, median [min, max] of the relative standard deviation "
+           "$\\sigma$ (\\%) over the seeds. Second block: the four benchmark geometries on the C08 device at 10 outer iterations, median over "
+           "three seeds of $\\sigma$ and of the efficiency $e$.}\\label{tab:b1-weights}\n",
+           "\\begin{tabular}{@{}l r r r r@{}}\\toprule Task & $\\sigma$ with weights & $\\sigma$ no weights & $e$ with & $e$ no weights"
+           "\\\\\\midrule\n"]
+    for key, label in (("b1_crosstalk", "acceptance task, crosstalk device"), ("b1_full", "acceptance task, 4-bit device")):
+        v = bj[key]["summary"]
+        out.append(f"{label} ({v['full']['sigma']['n']} seeds) & {s3(v['full']['sigma']['median'])} "
+                   f"[{s3(v['full']['sigma']['min'])}, {s3(v['full']['sigma']['max'])}] & {s3(v['no_weights']['sigma']['median'])} "
+                   f"[{s3(v['no_weights']['sigma']['min'])}, {s3(v['no_weights']['sigma']['max'])}] & & \\\\\n")
+    for g, nm in GEO_NAMES.items():
+        rows = [r for r in load(comp / f"b1_weights_geo_{g}.json") if r["device"]]
+        med = lambda k, q: statistics.median(r[k][q] for r in rows)  # noqa: E731
+        out.append(f"{g} {nm} (C08 device, {len(rows)} seeds) & {sig(med('weights', 'sigma'))} & {sig(med('no_weights', 'sigma'))} & "
+                   f"{fmt(med('weights', 'eff'), 3)} & {fmt(med('no_weights', 'eff'), 3)}\\\\\n")
+    out.append("\\bottomrule\\end{tabular}\\end{table}\n")
+    return "".join(out)
+
+
+def table_power(cases: dict[str, dict]) -> str:
+    """The power budget (zero order and ghost fractions) of the trap cases, for plain GS, the phase-fixed form and the reference method."""
+    idx = load(DERIVED / "manifests" / "index.json")["cases"]
+    out = ["\\begin{table}[t]\\centering\\footnotesize\n",
+           "\\caption{Power budget of the point-trap cases at the bake seed (one seed per case): the fraction of the input power in the traps "
+           "$e$, in the zero order $z_0$ and in the ghost traps $g$ (everything else on the grid, including folded replicas), for plain GS "
+           "(M04) and phase-fixed weighted GS (M07) where they ran. The remainder of the power is zero for the plain Fourier form.}"
+           "\\label{tab:power}\n",
+           "\\begin{tabular}{@{}l r r r r r r@{}}\\toprule Case & M04 $e$ & M04 $z_0$ & M04 $g$ & M07 $e$ & M07 $z_0$ & M07 $g$"
+           "\\\\\\midrule\n"]
+    for c in idx:
+        if c["status"] != "baked":
+            continue
+        m = load(DERIVED / "manifests" / f"{c['case_id']}.json")
+        if m["params"]["target"]["kind"] != "traps" or "M04" not in m["methods"] or "M07" not in m["methods"]:
+            continue
+        cells = []
+        for mid in ("M04", "M07"):
+            v = m["methods"][mid]
+            cells += [fmt(v["efficiency"], 3), fmt(v["zero_order"], 3), fmt(v["ghost"], 3)]
+        out.append(f"{c['case_id'].split('_')[0]} & " + " & ".join(cells) + "\\\\\n")
+    out.append("\\bottomrule\\end{tabular}\\end{table}\n")
+    return "".join(out)
+
+
 def derived_size() -> dict[str, int]:
     files = [p for p in DERIVED.rglob("*") if p.is_file()]
     traces = [p.stat().st_size for p in files if p.name == "trace.json"]
@@ -440,6 +548,8 @@ def main() -> int:
     for mid, m in params.items():
         for k, v in m["params"].items():
             L.append(csname_macro(f"def:{mid}:{k.replace('_', '')}", esc(defval(v))))
+    for r in beyond_rows.rows():
+        acc[r["id"]] = r
     for mid, r in acc.items():
         L.append(csname_macro(f"acc:{mid}", esc(r["text"])))
     tables, summary, appendix, versions = contract_tables(catalog)
@@ -456,6 +566,8 @@ def main() -> int:
         L.append(csname_macro(f"medsig:{m}", sg))
         L.append(csname_macro(f"medeff:{m}", ef))
         L.append(csname_macro(f"ncases:{m}", str(n)))
+    for k, v in headline(measured).items():
+        L.append(f"\\newcommand{{\\{k}}}{{{v}}}\n")
     tests = count_tests()
     total = sum(tests.values())
     for k, v in tests.items():
@@ -477,6 +589,8 @@ def main() -> int:
     (HERE / "table_bake_eff.tex").write_text(t_eff, encoding="utf-8")
     (HERE / "table_seeds.tex").write_text(t_seeds, encoding="utf-8")
     (HERE / "table_pareto.tex").write_text(table_pareto(bench), encoding="utf-8")
+    (HERE / "table_b1_weights.tex").write_text(table_b1_weights(), encoding="utf-8")
+    (HERE / "table_power.tex").write_text(table_power(cases), encoding="utf-8")
     print(f"wrote methods_numbers.tex and {7 + len(tables)} tables; {len(params)} methods, {len(catalog)} contracts, {total} tests")
     return 0
 

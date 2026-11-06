@@ -1,8 +1,9 @@
 \begin{table}[t]\centering\scriptsize\setlength{\tabcolsep}{4pt}
 \caption{Keyword defaults of every method, read from the signature of its \texttt{run} function by \texttt{params.py}, in two blocks; a default of \texttt{unset} is chosen at run time from the target, as the method section states, and methods with no keyword take only the interface arguments.}\label{tab:defaults}
 \begin{tabular}{@{}l l l @{\hskip 1.2em} l l l@{}}\toprule Id & Keyword & Default & Id & Keyword & Default\\\midrule
-B1 & \texttt{steps} & 3 &  & \texttt{levels} & 8\\
- & \texttt{warm} & 12 &  & \texttt{max\_trials} & unset\\
+B1 & \texttt{steps} & 3 & M09 & \texttt{f} & 0.5\\
+ & \texttt{warm} & 12 &  & \texttt{levels} & 8\\
+ & \texttt{weights} & true &  & \texttt{max\_trials} & unset\\
 B2 & \texttt{destination} & unset & M10 & \texttt{t} & unset\\
  & \texttt{frames} & 13 &  & \texttt{efficiency} & unset\\
  & \texttt{frame\_iterations} & 10 & M11 & \texttt{lr} & 1\\
@@ -34,5 +35,4 @@ M07 & \texttt{n\_fix} & 12 &  & \texttt{eps} & 0.001\\
  & \texttt{form} & auto &  & \texttt{ot\_iterations} & 200\\
 M08 & \texttt{mixing} & 0.3 & M19 & \texttt{dz\_m} & unset\\
  & \texttt{start\_waves} & 20 &  & \texttt{nz} & unset\\
-M09 & \texttt{f} & 0.5 &  &  & \\
 \bottomrule\end{tabular}\end{table}
