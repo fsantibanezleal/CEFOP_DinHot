@@ -4,7 +4,7 @@
   fig-modes.pdf      the eight aberration modes of the design (Noll 4 to 11) on the SLM disc, from the engine's basis.
   fig-design.pdf     (a) the design samples in the plane of two modes: the sixteen deterministic points and 16 random draws
                      against the 200 draws of the evaluation ensemble; (b) the rms wavefront of each draw.
-  fig-ecdf.pdf       distribution over the 200 draws of the relative standard deviation, phase-fixed WGS against B4 (seed 1).
+  fig-ecdf.pdf       distribution over the 200 draws of the relative standard deviation, phase-fixed WGS against the robust hologram (seed 1).
   fig-seeds.pdf      (a) ratio of the 95th percentiles per seed with its bootstrap interval; (b) efficiency ratio per seed.
   fig-conv.pdf       (a) the expected cost along the CG iterations; (b) the ratio of the 95th percentiles against the iterations.
   fig-level.pdf      the ratio of the 95th percentiles against the efficiency ratio for each target level.
@@ -12,7 +12,7 @@
   fig-mismatch.pdf   the ratio on ensembles that differ from the design prior (amplitude, extra modes).
   fig-theory.pdf     (a) first-order spread against the measured spread per draw; (b) measured and predicted mean squared spread.
   fig-pointing.pdf   (a) the ratio under pointing errors against the displacement; (b) the curvature of the trap intensity.
-  fig-bake.pdf       the relative standard deviation of phase-fixed WGS and of B4 on the cases of the committed bake.
+  fig-bake.pdf       the relative standard deviation of phase-fixed WGS and of the robust hologram on the cases of the committed bake.
 
 Run from the repository root after the measurement:  python manuscripts/aberration-robust-hologram/figures/make_figs.py
 Deps: matplotlib, numpy (the notebook environment); the modes figure also imports the engine's Zernike basis.
@@ -147,7 +147,7 @@ def fig_seeds(d: dict) -> None:
     ax.axhline(1.25, color=LIGHT, lw=1.2, ls="--", label="criterion 1.25")
     ax.axhline(statistics.median(r), color=INK, lw=0.8, ls=":", label=f"median over {len(r)} seeds")
     ax.set_xlabel("seed of the holograms")
-    ax.set_ylabel("p95 of phase-fixed WGS over p95 of B4")
+    ax.set_ylabel("p95 of phase-fixed WGS over p95 of the robust hologram")
     ax.set_title("(a) spread ratio per seed", fontsize=8)
     ax.set_xticks(x)
     ax.set_ylim(0.95, 1.85)
@@ -159,7 +159,7 @@ def fig_seeds(d: dict) -> None:
     ax.axhline(0.9, color=LIGHT, lw=1.2, ls="--", label="criterion 0.90")
     ax.set_ylim(0.85, 1.02)
     ax.set_xlabel("seed of the holograms")
-    ax.set_ylabel("mean efficiency of B4 over that of WGS")
+    ax.set_ylabel("mean efficiency of the robust hologram over that of WGS")
     ax.set_title("(b) efficiency ratio per seed", fontsize=8)
     ax.set_xticks(x)
     ax.legend(fontsize=6.5, frameon=False, loc="lower right")
@@ -222,7 +222,7 @@ def fig_level(d: dict) -> None:
         ax.annotate(f"{lv:g}", (x, y), textcoords="offset points", xytext=(5, 5), fontsize=7)
     ax.axhline(1.25, color=LIGHT, lw=1.2, ls="--", label="criterion 1.25")
     ax.axvline(0.90, color=MID, lw=1.0, ls=":", label="efficiency floor 0.90")
-    ax.set_xlabel("mean efficiency of B4 over that of WGS")
+    ax.set_xlabel("mean efficiency of the robust hologram over that of WGS")
     ax.set_ylabel("p95 ratio, median and range of 3 seeds")
     ax.legend(fontsize=7, frameon=False, loc="upper left")
     grid(ax)
@@ -235,7 +235,7 @@ def fig_ablation(d: dict) -> None:
              ("rand32", "32 random draws"), ("adam", "resampled draws, Adam"), ("modes4-4", "mode 4 only"), ("modes4-6", "modes 4 to 6"),
              ("modes4-8", "modes 4 to 8"), ("modes9-11", "modes 9 to 11"), ("prior0.005", "amplitude 0.005"),
              ("prior0.01", "amplitude 0.01"), ("prior0.03", "amplitude 0.03"), ("prior0.04", "amplitude 0.04"),
-             ("default", "B4: sigma points, modes 4 to 11, 0.02")]
+             ("default", "robust hologram: sigma points, modes 4 to 11, 0.02")]
     med = np.array([statistics.median(by[k]["ratio"]) for k, _ in items])
     lo = med - np.array([min(by[k]["ratio"]) for k, _ in items])
     hi = np.array([max(by[k]["ratio"]) for k, _ in items]) - med
@@ -293,7 +293,7 @@ def fig_theory(d: dict) -> None:
     t = d["theory"][0]
     fig, axs = plt.subplots(1, 2, figsize=(7.2, 3.0))
     ax = axs[0]
-    for name, col, mk, lab in (("nominal", LIGHT, "o", "phase-fixed WGS"), ("b4", DARK, "^", "B4")):
+    for name, col, mk, lab in (("nominal", LIGHT, "o", "phase-fixed WGS"), ("b4", DARK, "^", "robust hologram")):
         ax.plot(t[name]["sig"], t[name]["lin"], mk, ms=3, color=col, mfc="none" if name == "nominal" else col, label=lab)
     top = max(max(t["nominal"]["sig"]), max(t["nominal"]["lin"]))
     ax.plot([0, top], [0, top], "-", color=INK, lw=0.8, label="equality")
@@ -307,7 +307,7 @@ def fig_theory(d: dict) -> None:
     keys = ["measured_mean_sq", "pred_mean_sq", "bound_mean_sq"]
     xs = np.arange(len(keys))
     w = 0.36
-    for k, (name, col, hatch, lab) in enumerate((("nominal", LIGHT, "//", "phase-fixed WGS"), ("b4", DARK, "", "B4"))):
+    for k, (name, col, hatch, lab) in enumerate((("nominal", LIGHT, "//", "phase-fixed WGS"), ("b4", DARK, "", "robust hologram"))):
         vals = [statistics.median(tt[name][key] for tt in d["theory"]) for key in keys]
         ax.bar(xs + (k - 0.5) * w, vals, w, color=col, hatch=hatch, edgecolor=INK, lw=0.5, label=lab)
     ax.set_xticks(xs)
@@ -326,7 +326,7 @@ def fig_pointing(d: dict) -> None:
     ax = axs[0]
     bins = [0.05, 0.10, 0.15]
     for key, col, mk, lab in (("ratio_sample", DARK, "o", "pointing and aberration design, Adam"),
-                              ("ratio_sigma_design", LIGHT, "s", "aberration design (B4 as released)")):
+                              ("ratio_sigma_design", LIGHT, "s", "aberration design (robust hologram as released)")):
         med = [statistics.median(r[key] for p in pt for r in p["rows"] if abs(r["bins"] - b) < 1e-9) for b in bins]
         lo = [min(r[key] for p in pt for r in p["rows"] if abs(r["bins"] - b) < 1e-9) for b in bins]
         hi = [max(r[key] for p in pt for r in p["rows"] if abs(r["bins"] - b) < 1e-9) for b in bins]
@@ -351,7 +351,7 @@ def fig_pointing(d: dict) -> None:
     vals = [statistics.median(c["nominal"] for c in cv), statistics.median(c["b4"] for c in cv), cv[0]["aperture"]]
     ax.bar(range(3), vals, color=[LIGHT, DARK, MID], edgecolor=INK, lw=0.5)
     ax.set_xticks(range(3))
-    ax.set_xticklabels(["phase-fixed\nWGS", "B4", "aligned\naperture"], fontsize=7.5)
+    ax.set_xticklabels(["phase-fixed\nWGS", "robust\nhologram", "aligned\naperture"], fontsize=7.5)
     ax.set_ylabel("relative curvature (per bin squared)")
     ax.set_title("(b) the spot width fixes the curvature", fontsize=8)
     grid(ax)

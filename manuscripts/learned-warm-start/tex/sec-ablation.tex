@@ -49,7 +49,7 @@ wherever both are below the cap. The final spread of the network is lower than t
 
 The strongest start a predictor could be asked for is the converged solution of the iteration itself. Table~\ref{tab:oracle} and Figure~\ref{fig:oracle} give, for ten generated geometries and the first seed, the iterations to 1 percent from the phases of a converged random-start run. With the default freeze, the oracle start needs a median of \OTwelveMed{} iterations against \ORMed{} from the random start, a saving of \OTwelveGain{} iteration; at $\nfix=3$ it needs \OThreeMed{} against \ORThreeMed{}, and with the freeze at the first iteration \OOneMed{}. On the geometry that does not converge for
 any arm (the largest array of the ten, \texttt{gen/06} in Table~\ref{tab:oracle}) the oracle does not help either. Two readings follow. First, at the published freeze index the start cannot be worth more than about one iteration, whoever predicts it: the network at $\nfix=12$ has nothing to improve. Second, with an oracle the early freeze converges on geometries on which the random start with the same freeze never does (\texttt{gen/01}, \texttt{gen/03} and \texttt{gen/08}), which is the part of the gap a perfect predictor could close; the network, with its phases, does not close it (Table~\ref{tab:sweep}). The predicted
-phases are not those of a converged solution, which the trap list alone does not determine because the converged phases of a dense array depend on the random start that produced them.
+phases are not those of a converged solution; whether the trap list determines such phases is not tested here, and the converged phases of a dense array depend, in these runs, on the random start that produced them.
 
 \begin{table}[t]
 \centering\small

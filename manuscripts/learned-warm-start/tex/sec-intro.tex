@@ -3,7 +3,7 @@
 \textbf{The problem.} A phase-only spatial light modulator (SLM) in the pupil plane of a lens turns a computed phase pattern into an array of optical traps in the focal plane. The arrays now
 reach thousands of sites: the 256-atom quantum simulator of Ebadi et al.~\cite{ebadi} used arrays of roughly one thousand tweezers computed with phase-fixed weighted Gerchberg--Saxton (WGS), and
 the 6100-atom array of Manetsch et al.~\cite{manetsch} spans about twelve thousand sites with a trap-depth spread of 11.4 percent after WGS. The spread matters because the trap depth is proportional to the
-intensity, so every percent of intensity spread is a percent of depth spread across the atoms~	te{grimm}. The method that delivers percent-level uniformity at this scale is phase-fixed WGS of
+intensity, so every percent of intensity spread is a percent of depth spread across the atoms~\cite{grimm}. The method that delivers percent-level uniformity at this scale is phase-fixed WGS of
 Kim et al.~\cite{kim2019}, which freezes the focal-plane phase after a few iterations so that the weights of the update remain effective. Its cost is iterations: each one is a
 pair of Fourier-type transforms of the full SLM field, and the number of iterations before the intensities are uniform decides how fast a new geometry can be displayed, how
 many holograms a rearrangement sequence can afford and how much computation a browser or an embedded controller must carry.
@@ -37,7 +37,7 @@ the engine default of 12) needs \itRThree{} iterations against \itNThree{} for t
 
 \textbf{Main result.} On held-out geometries a network start with an early freeze reaches 1 percent of relative standard deviation at a median of \itNThree{} iterations (95\% interval \itNThreeLo{} to \itNThreeHi),
 against \itRTwelve{} from a random start with the default freeze (factor \ratioRoverN{}, interval \ratioRoverNLo{} to \ratioRoverNHi, below the factor of two required); a random start with the same early freeze reaches it at \itRThree{}
-(\itRThreeLo{} to \itRThreeHi). The claim that a learned start accelerates phase-fixed WGS is refuted on this model, and the trained network is not released.
+(\itRThreeLo{} to \itRThreeHi). The claim that a learned start accelerates phase-fixed WGS is not supported for this trained network on this model (one network, one training seed), and the network is not released. The oracle start of Section~\ref{sec:abl-oracle} shows a headroom at an early freeze that this network does not reach.
 
 \textbf{Structure.} Section~\ref{sec:related} places the work among the published methods, Section~\ref{sec:problem} states the problem, Section~\ref{sec:proposed-method} derives the method,
 Section~\ref{sec:theory} analyses it, Section~\ref{sec:design} states the hypotheses and the protocol, Sections~\ref{sec:results} and~\ref{sec:ablation} report the measurements, and Sections~\ref{sec:discussion}

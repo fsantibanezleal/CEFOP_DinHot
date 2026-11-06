@@ -64,7 +64,7 @@ def write() -> None:
     lines = [r"\begin{tabular}{@{}l r r r r r@{}}", r"\toprule",
              r"Geometry & $\sigma$ with weights (\%) & $\sigma$ without (\%) & $e$ with & $e$ without & seeds lower without\\",
              r"\midrule"]
-    macros = ["% B1 with and without the weight update on the benchmark lattices, C08 device (data/b1_weights_geo.py).\n"]
+    macros = ["% Device-aware WGS with and without the weight update on the benchmark lattices, C08 device (data/b1_weights_geo.py).\n"]
     for g in GEOS:
         sel = [r for r in rows if r["geometry"] == g and r["device"]]
         med = {k: {f: statistics.median(r[k][f] for r in sel) for f in ("sigma", "eff")} for k, _ in VARIANTS}

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Regenerate the figures of the B1 and B2 manuscript from ``data/beyond.json`` (written by ``data/measure.py``).
+"""Regenerate the figures of the device-aware and flicker-bounded manuscript from ``data/beyond.json`` (written by ``data/measure.py``).
 
-  fig-b1.pdf  (a) trap intensities of one hologram on the crosstalk device, phase-fixed WGS and B1, sorted;
-              (b) relative standard deviation per seed for the baselines and for B1 with and without the device model.
-  fig-b2.pdf  (a) intensity of the worst moving trap along the 13-frame sequence, B2 and linear phase interpolation;
+  fig-b1.pdf  (a) trap intensities of one hologram on the crosstalk device, phase-fixed WGS and device-aware WGS, sorted;
+              (b) relative standard deviation per seed for the baselines and for device-aware WGS with and without the device model.
+  fig-b2.pdf  (a) intensity of the worst moving trap along the 13-frame sequence, flicker-bounded sequence and linear phase interpolation;
               (b) minimum transient intensity of the moving traps against the number of frames, per seed.
-  fig-b1-model.pdf     (a) transfer function of the crosstalk kernel of the device model; (b) spread of B1 per outer iteration.
-  fig-b1-tradeoff.pdf  efficiency against spread per seed for the baselines and B1 on the crosstalk device.
-  fig-bench.pdf        factor and efficiency ratio of B1 over phase-fixed WGS on each geometry of the studio's benchmark.
-  fig-ablation.pdf     (a) spread of each B1 variant per seed; (b) minimum transient ratio of each B2 variant per seed.
+  fig-b1-model.pdf     (a) transfer function of the crosstalk kernel of the device model; (b) spread of device-aware WGS per outer iteration.
+  fig-b1-tradeoff.pdf  efficiency against spread per seed for the baselines and device-aware WGS on the crosstalk device.
+  fig-bench.pdf        factor and efficiency ratio of device-aware WGS over phase-fixed WGS on each geometry of the studio's benchmark.
+  fig-ablation.pdf     (a) spread of each device-aware variant per seed; (b) minimum transient ratio of each flicker-bounded variant per seed.
   fig-b2-theory.pdf    (a) closed-form intensity of a trap read half way between two shifted frames; (b) frames a move needs.
-  fig-b2-long.pdf      minimum transient ratio of B2 and linear phase interpolation on the long moves, per seed.
+  fig-b2-long.pdf      minimum transient ratio of the flicker-bounded sequence and linear phase interpolation on the long moves, per seed.
 
 Run from the repository root after the measurement:  python manuscripts/device-aware-flicker-bounded/figures/make_figs.py
 Deps: matplotlib, numpy (the notebook environment).
@@ -43,7 +43,7 @@ def fig_b1(d: dict) -> None:
     rows = d["bs1_crosstalk"]["rows"]
     fig, axs = plt.subplots(1, 2, figsize=(7.2, 2.9), gridspec_kw={"width_ratios": [1, 1.25]})
     r0 = rows[0]
-    for key, col, lab in (("ratios_M07", ORANGE, "phase-fixed WGS (M07)"), ("ratios_B1", BLUE, "device-aware WGS (B1)")):
+    for key, col, lab in (("ratios_M07", ORANGE, "phase-fixed WGS"), ("ratios_B1", BLUE, "device-aware WGS")):
         v = np.sort(np.array(r0[key]))
         axs[0].plot(np.arange(len(v)), v, ".", ms=3.5, color=col, label=lab)
     axs[0].axhline(1.0, color=INK, lw=0.7, ls="--")
@@ -52,14 +52,14 @@ def fig_b1(d: dict) -> None:
     axs[0].set_title("(a) one hologram, seed 1, crosstalk device", fontsize=8)
     axs[0].legend(fontsize=6.8, frameon=False, loc="upper left")
     axs[0].grid(True, color=GRID, lw=0.5)
-    series = [("M07_30", ORANGE, "M07, 30 it."), ("M07_100", "#f2b27c", "M07, 100 it."),
-              ("M04_30", GRID, "GS (M04)"), ("M06_30", PURPLE, "WGS (M06)")]
+    series = [("M07_30", ORANGE, "phase-fixed WGS, 30 it."), ("M07_100", "#f2b27c", "phase-fixed WGS, 100 it."),
+              ("M04_30", GRID, "GS, 30 it."), ("M06_30", PURPLE, "weighted GS, 30 it.")]
     x = np.arange(len(rows))
     w = 0.14
     for k, (key, col, lab) in enumerate(series):
         axs[1].bar(x + (k - 2) * w, [r["baselines"][key]["sigma"] for r in rows], w, color=col, edgecolor=INK, lw=0.4, label=lab)
-    axs[1].bar(x + 2 * w, [r["B1_no_device_model"]["sigma"] for r in rows], w, color=GREEN, edgecolor=INK, lw=0.4, label="B1, device model removed")
-    axs[1].bar(x + 3 * w, [r["B1"]["sigma"] for r in rows], w, color=BLUE, edgecolor=INK, lw=0.4, label="B1")
+    axs[1].bar(x + 2 * w, [r["B1_no_device_model"]["sigma"] for r in rows], w, color=GREEN, edgecolor=INK, lw=0.4, label="device-aware, device model removed")
+    axs[1].bar(x + 3 * w, [r["B1"]["sigma"] for r in rows], w, color=BLUE, edgecolor=INK, lw=0.4, label="device-aware WGS")
     axs[1].set_yscale("log")
     axs[1].set_xticks(x, [f"seed {r['seed']}" for r in rows], fontsize=7)
     axs[1].set_ylabel("relative standard deviation (%)")
@@ -75,7 +75,7 @@ def fig_b2(d: dict) -> None:
     runs = d["bs2"]["runs"]
     r0 = next(r for r in runs if "curve_b2" in r)
     fig, axs = plt.subplots(1, 2, figsize=(7.2, 2.8), gridspec_kw={"width_ratios": [1.3, 1]})
-    for key, col, lab in (("curve_lpi", ORANGE, "linear phase interpolation"), ("curve_b2", BLUE, "flicker-bounded sequence (B2)")):
+    for key, col, lab in (("curve_lpi", ORANGE, "linear phase interpolation"), ("curve_b2", BLUE, "flicker-bounded sequence")):
         c = np.array(r0[key])
         axs[0].plot(np.linspace(0, r0["frames"] - 1, len(c)), c, color=col, lw=1.1, label=lab)
     axs[0].axhline(0.9, color=INK, lw=0.7, ls=":")
@@ -88,7 +88,7 @@ def fig_b2(d: dict) -> None:
     for i, f in enumerate(frames):
         sel = [r for r in runs if r["frames"] == f]
         axs[1].plot([i - 0.12] * len(sel), [r["lpi_min"] for r in sel], "o", ms=3.5, color=ORANGE, label="LPI" if i == 0 else None)
-        axs[1].plot([i + 0.12] * len(sel), [r["b2_min"] for r in sel], "s", ms=3.5, color=BLUE, label="B2" if i == 0 else None)
+        axs[1].plot([i + 0.12] * len(sel), [r["b2_min"] for r in sel], "s", ms=3.5, color=BLUE, label="flicker-bounded" if i == 0 else None)
     axs[1].axhline(0.9, color=INK, lw=0.7, ls=":")
     axs[1].set_xticks(range(len(frames)), [str(f) for f in frames])
     axs[1].set_xlabel("frames in the sequence")
@@ -116,7 +116,7 @@ def fig_b1_model(d: dict) -> None:
     axs[0].legend(fontsize=6.8, frameon=False)
     axs[0].grid(True, color=GRID, lw=0.5)
     hist = rows[0]["B1_history_sigma"]
-    axs[1].plot(range(1, len(hist) + 1), hist, "o-", color=BLUE, ms=4, lw=1.1, label="B1 after each outer iteration")
+    axs[1].plot(range(1, len(hist) + 1), hist, "o-", color=BLUE, ms=4, lw=1.1, label="device-aware WGS after each outer iteration")
     axs[1].axhline(rows[0]["baselines"]["M07_30"]["sigma"], color=ORANGE, lw=1.0, ls="--", label="phase-fixed WGS, 30 iterations")
     axs[1].axhline(rows[0]["baselines"]["M07_100"]["sigma"], color=INK, lw=0.8, ls=":", label="phase-fixed WGS, 100 iterations")
     axs[1].set_yscale("log")
@@ -134,10 +134,10 @@ def fig_b1_model(d: dict) -> None:
 def fig_b1_tradeoff(d: dict) -> None:
     rows = d["bs1_crosstalk"]["rows"]
     fig, ax = plt.subplots(figsize=(3.6, 2.9))
-    spec = (("M07, 30 iterations", lambda r: r["baselines"]["M07_30"], ORANGE, "s"),
-            ("M07, 100 iterations", lambda r: r["baselines"]["M07_100"], "#f2b27c", "D"),
-            ("B1, device model removed", lambda r: r["B1_no_device_model"], GREEN, "^"),
-            ("B1", lambda r: r["B1"], BLUE, "o"))
+    spec = (("phase-fixed WGS, 30 iterations", lambda r: r["baselines"]["M07_30"], ORANGE, "s"),
+            ("phase-fixed WGS, 100 iterations", lambda r: r["baselines"]["M07_100"], "#f2b27c", "D"),
+            ("device-aware, device model removed", lambda r: r["B1_no_device_model"], GREEN, "^"),
+            ("device-aware WGS", lambda r: r["B1"], BLUE, "o"))
     for lab, get, col, mk in spec:
         ax.plot([get(r)["eff"] for r in rows], [get(r)["sigma"] for r in rows], mk, ms=4.5, color=col, mec=INK, mew=0.4, label=lab)
     ax.set_yscale("log")
@@ -188,7 +188,7 @@ def fig_ablation(d: dict) -> None:
     axs[0].set_yscale("log")
     axs[0].set_xticks(range(len(keys)), [short[k] for k in keys], rotation=40, ha="right", fontsize=7)
     axs[0].set_ylabel("relative standard deviation (%)")
-    axs[0].set_title("(a) B1 variants, one marker per seed", fontsize=8)
+    axs[0].set_title("(a) device-aware WGS variants, one marker per seed", fontsize=8)
     axs[0].grid(True, color=GRID, lw=0.5, which="both")
     keys2 = ["full", "no_lock", "no_opt", "iters_1", "iters_3", "linear"]
     short2 = {"full": "all", "no_lock": "no lock", "no_opt": "no optimization", "iters_1": "1 iteration", "iters_3": "3 iterations",
@@ -200,7 +200,7 @@ def fig_ablation(d: dict) -> None:
     axs[1].axhline(0.9, color=INK, lw=0.7, ls=":")
     axs[1].set_xticks(range(len(keys2)), [short2[k] for k in keys2], rotation=40, ha="right", fontsize=7)
     axs[1].set_ylabel("minimum transient intensity ratio")
-    axs[1].set_title("(b) B2 variants, one marker per seed", fontsize=8)
+    axs[1].set_title("(b) flicker-bounded variants, one marker per seed", fontsize=8)
     axs[1].grid(True, color=GRID, lw=0.5)
     fig.tight_layout()
     fig.savefig(HERE / "fig-ablation.pdf", bbox_inches="tight")
@@ -244,7 +244,7 @@ def fig_b2_long(d: dict) -> None:
         rows = sc["long"][key]["rows"]
         x = np.arange(len(rows))
         ax.plot(x - 0.1, [r["lpi_enough"] for r in rows], "o", ms=4, color=ORANGE, mec=INK, mew=0.4, label="linear phase interpolation")
-        ax.plot(x + 0.1, [r["enough"] for r in rows], "s", ms=4, color=BLUE, mec=INK, mew=0.4, label="B2")
+        ax.plot(x + 0.1, [r["enough"] for r in rows], "s", ms=4, color=BLUE, mec=INK, mew=0.4, label="flicker-bounded sequence")
         ax.axhline(0.9, color=INK, lw=0.7, ls=":")
         ax.set_xticks(x, [str(r["seed"]) for r in rows], fontsize=7)
         ax.set_xlabel("seed")

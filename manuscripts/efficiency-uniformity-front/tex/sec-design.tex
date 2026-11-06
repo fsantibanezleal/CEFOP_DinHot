@@ -46,18 +46,18 @@ The points of the published methods are computed by the engine on the same task 
 \label{tab:methods}
 \begin{tabular}{@{}p{4.2cm} p{4.4cm} p{5.4cm}@{}}
 \toprule
-Method (engine label) & Setting & Origin of the rule\\
+Method & Setting & Origin of the rule\\
 \midrule
-Gerchberg--Saxton (M04) & \baseIters{} iterations & Di Leonardo et al.~\cite{dileonardo}\\
-Adaptive additive (M05) & \baseIters{} iterations, exponent 0.5 & Di Leonardo et al.~\cite{dileonardo}\\
-Weighted GS (M06) & \baseIters{} iterations & Di Leonardo et al.~\cite{dileonardo}\\
-Phase-fixed WGS (M07) & \baseIters{} iterations, freezing at 12 & Kim et al.~\cite{kim2019}\\
-Direct search (M09) & one sweep, 8 trial phases, weight $f=0.5$ & Polin et al.~\cite{polin}, Di Leonardo et al.~\cite{dileonardo}\\
+Gerchberg--Saxton & \baseIters{} iterations & Di Leonardo et al.~\cite{dileonardo}\\
+Adaptive additive & \baseIters{} iterations, exponent 0.5 & Di Leonardo et al.~\cite{dileonardo}\\
+Weighted GS & \baseIters{} iterations & Di Leonardo et al.~\cite{dileonardo}\\
+Phase-fixed WGS & \baseIters{} iterations, freezing at 12 & Kim et al.~\cite{kim2019}\\
+Direct search & one sweep, 8 trial phases, weight $f=0.5$ & Polin et al.~\cite{polin}, Di Leonardo et al.~\cite{dileonardo}\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The first four rows are the points of the acceptance criterion of the method together with weighted GS; phase-fixed WGS is added here because it is the start of the front, so that its point is the uniform end of every front, up to the refinement by the first minimization. The union of the points of M04, M05, M06 and M09 is the published union of hypotheses H1 and H8.
+The first four rows are the points of the acceptance criterion of the method together with weighted GS; phase-fixed WGS is added here because it is the start of the front, so that its point is the uniform end of every front, up to the refinement by the first minimization. The union of the points of Gerchberg--Saxton, the adaptive additive iteration, weighted GS and direct search is the published union of hypotheses H1 and H8.
 For hypothesis H5 the engine also generates three one-parameter fronts from the published rules, each a set of points that a reader of the sources could produce by turning the one knob that the source exposes: the iterates $1,\dots,100$ of weighted GS, the iterates $1,\dots,100$ of phase-fixed WGS, and the adaptive additive iteration at \baseIters{} iterations with its exponent set to $0,0.1,\dots,1$. The sweep of the weight of direct search is not run, because one sweep of one value takes about a minute on the CPU of the machine.
 
 \subsection{Metrics and statistics}\label{sec:metrics}

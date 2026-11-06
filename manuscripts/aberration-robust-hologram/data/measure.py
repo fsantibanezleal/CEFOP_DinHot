@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure the aberration-robust hologram (B4) of DinHot and write ``robust.json``, ``robust_numbers.tex`` and the tables.
+"""Measure the aberration-robust hologram of DinHot and write ``robust.json``, ``robust_numbers.tex`` and the tables.
 
 Every number of the manuscript comes from this script, through the macros of ``robust_numbers.tex`` and the table files
 ``tab_*.tex``. The methods are the real ones of ``data-pipeline/pipeline/model/holo`` (B4 through ``b4_robust.run`` and
@@ -514,7 +514,7 @@ def bake_rows() -> dict:
 # ------------------------------------------------------------------------------------------------ driver
 
 ABLATION = [  # (group, name, label)
-    ("design", "default", "sigma points, 16 deterministic draws (B4)"),
+    ("design", "default", "sigma points, 16 deterministic draws (default)"),
     ("design", "nominal", "nominal cost only, same CG (one point)"),
     ("design", "rand4", "4 fixed random draws, same CG"),
     ("design", "rand8", "8 fixed random draws, same CG"),
@@ -525,22 +525,22 @@ ABLATION = [  # (group, name, label)
     ("modes", "modes4-6", "Noll 4 to 6"),
     ("modes", "modes4-8", "Noll 4 to 8"),
     ("modes", "modes9-11", "Noll 9 to 11 (not the dominant modes)"),
-    ("modes", "default", "Noll 4 to 11 (B4)"),
+    ("modes", "default", "Noll 4 to 11 (default)"),
     ("prior", "prior0.005", "design amplitude 0.005 waves per mode"),
     ("prior", "prior0.01", "design amplitude 0.01 waves per mode"),
-    ("prior", "default", "design amplitude 0.02 waves per mode (B4)"),
+    ("prior", "default", "design amplitude 0.02 waves per mode (default)"),
     ("prior", "prior0.03", "design amplitude 0.03 waves per mode"),
     ("prior", "prior0.04", "design amplitude 0.04 waves per mode"),
     ("level", "level0.8", "target level 0.80"),
     ("level", "level0.85", "target level 0.85"),
-    ("level", "default", "target level 0.90 (B4)"),
+    ("level", "default", "target level 0.90 (default)"),
     ("level", "level0.937", "target level 0.937"),
     ("level", "level0.95", "target level 0.95"),
     ("level", "level1.0", "target level 1.00"),
     ("iterations", "iter5", "5 CG iterations"),
     ("iterations", "iter10", "10 CG iterations"),
     ("iterations", "iter20", "20 CG iterations"),
-    ("iterations", "default", "40 CG iterations (B4)"),
+    ("iterations", "default", "40 CG iterations (default)"),
     ("iterations", "iter80", "80 CG iterations"),
 ]
 
@@ -834,9 +834,9 @@ def write_outputs(data: dict, out: Path) -> None:
     tex_table("tab_main_rows.tex", L)
 
     L = []
-    label = {"M04": "Gerchberg--Saxton (M04)", "M05": "generalized adaptive additive (M05)", "M06": "weighted GS (M06)",
-             "M07": "phase-fixed WGS (M07)", "M10": "conjugate gradient, nominal cost (M10)",
-             "M11": "Wirtinger gradient with Adam (M11)", "B4": "aberration-robust hologram (B4)"}
+    label = {"M04": "Gerchberg--Saxton", "M05": "generalized adaptive additive", "M06": "weighted GS",
+             "M07": "phase-fixed WGS", "M10": "conjugate gradient, nominal cost",
+             "M11": "Wirtinger gradient with Adam", "B4": "aberration-robust hologram"}
     for nm in names:
         rows = [sd["rows"][nm] for sd in pub]
         L.append(f"{label[nm]} & {f(statistics.median(r['p95'] for r in rows), 2)} & "
@@ -870,7 +870,7 @@ def write_outputs(data: dict, out: Path) -> None:
 
     L = []
     for t in th:
-        for name, lab in (("nominal", "phase-fixed WGS"), ("b4", "B4")):
+        for name, lab in (("nominal", "phase-fixed WGS"), ("b4", "robust hologram")):
             x = t[name]
             L.append(f"{t['seed']} & {lab} & {x['sigma0']:.2g} & {f(x['measured_mean_sq'], 2)} & {f(x['pred_mean_sq'], 2)} & "
                      f"{f(x['bound_mean_sq'], 2)} & {f(x['pearson'], 3)} & {f(x['p95_measured'], 2)} & {f(x['p95_linear'], 2)} \\\\")
@@ -878,7 +878,7 @@ def write_outputs(data: dict, out: Path) -> None:
 
     L = []
     for t in th:
-        for name, lab in (("nominal", "phase-fixed WGS"), ("b4", "B4")):
+        for name, lab in (("nominal", "phase-fixed WGS"), ("b4", "robust hologram")):
             x = t[name]
             L.append(f"{t['seed']} & {lab} & {x['l0']:.3g} & {x['j_sigma']:.3g} & {neg(format(x['delta_j'], '.3g'))} & {x['gauss_newton']:.3g} \\\\")
     tex_table("tab_cost_rows.tex", L)

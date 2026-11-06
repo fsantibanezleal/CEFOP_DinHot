@@ -53,7 +53,7 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 
 \begin{document}
 
-\title{Tracing the Efficiency-Uniformity Pareto Front of Holographic Optical Trap Arrays\\ by Continuation of a Weighted Cost}
+\title{A Weighted-Cost Continuation Adds the Efficient Side of the Efficiency-Uniformity Trade-off of Holographic Optical Trap Arrays: Larger Hypervolume on One Lattice, No Better Uniform End, No Gain on the Benchmark at 100 Iterations}
 \author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
 \small CAOS open-research programme, Santiago, Chile\\
 \small \texttt{fsantibanez@gmail.com}}
@@ -63,15 +63,15 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 \headerblock
 
 \begin{abstract}
-Every method that computes the hologram of an array of optical traps trades the light in the traps against their uniformity, and the literature reports one or two points of that trade-off per method and per task. We propose to compute the whole front by
+Every method that computes the hologram of an array of optical traps trades the light in the traps against their uniformity. We compute a curve of the trade-off by
 continuation: a weight $\lambda$ combines a normalized squared error of the trap intensities and the normalized light into one loss, the loss is minimized by conjugate gradients at increasing weights, and each solution starts the next. An identity shows that the loss at every weight is the
-squared error against a flat target raised uniformly, which gives the weight a reading and predicts the weight \lamSat{} (interval \lamSatLo{} to \lamSatHi) beyond which the target exceeds the efficiency that is reached. On a ten by ten lattice of 100 traps and \nSeeds{} seeds the front has a hypervolume of \hvFront{} against
-\hvPub{} for the union of the points of Gerchberg--Saxton, the adaptive additive iteration, weighted GS and direct search run on the same seeds, a paired difference of \hvDiff{} (95 percent interval \hvDiffLo{} to \hvDiffHi) that is positive in \hvGeCount{} of \nSeeds{} seeds,
-and it dominates the first two points in every seed. It dominates the weighted GS point in \domGSWSeeds{} and the phase-fixed point in \domPFSeeds{} of \nSeeds{} seeds, and \frontDomMin{} to \frontDomMax{} of its \nLambda{} points are dominated by iterates of weighted GS run for 100 iterations. In the benchmark of the studio the stored fronts meet the published union on \benchPassThirty{} of \benchNThirty{} geometries at 30 iterations and on \benchPassHundred{} of \benchNHundred{} at 100.
-An ablation of twelve variants shows that the warm start, the scaling of the loss and the start from phase-fixed WGS each raise the hypervolume by \ablStartGsAbs{} to \ablRawAbs{}. The front is computed on the ideal device.
+squared error against a flat target raised uniformly, which turns the largest efficiency that a curve reaches into the weight \lamSat{} (interval \lamSatLo{} to \lamSatHi) beyond which the target exceeds it. On a ten by ten lattice of 100 traps and \nSeeds{} seeds the curve has a hypervolume of \hvFront{} against
+\hvPub{} for the union of the points of Gerchberg--Saxton, the adaptive additive iteration, weighted GS and direct search, a paired difference of \hvDiff{} (95 percent interval \hvDiffLo{} to \hvDiffHi) that is positive in \hvGeCount{} of \nSeeds{} seeds,
+and it dominates the first two points in every seed. It dominates the weighted GS point in \domGSWSeeds{} and the phase-fixed point in \domPFSeeds{} of \nSeeds{} seeds, and \frontDomMin{} to \frontDomMax{} of its \nLambda{} points are dominated by iterates of weighted GS run for 100 iterations, so it is not the Pareto front. In the studio's benchmark the stored curves meet the published union on \benchPassThirty{} of \benchNThirty{} geometries at 30 iterations and on \benchPassHundred{} of \benchNHundred{} at 100.
+An ablation of twelve variants shows that the warm start, the scaling of the loss and the start from phase-fixed WGS each raise the hypervolume by \ablStartGsAbs{} to \ablRawAbs{}. The curve is computed on the ideal device.
 \end{abstract}
 
-\noindent\textbf{Keywords:} holographic optical tweezers, Pareto front, continuation, conjugate gradient, weighted Gerchberg--Saxton, hypervolume.
+\noindent\textbf{Keywords:} holographic optical tweezers, efficiency-uniformity trade-off, continuation, conjugate gradient, weighted Gerchberg--Saxton, hypervolume.
 
 \input{sec-intro}
 \input{sec-related}

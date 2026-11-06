@@ -395,7 +395,7 @@ def b1_variant(setup: Setup, target: Target, device: Device | None, iters: int, 
 
 
 B1_VARIANTS = {  # key: (label, keyword arguments of b1_variant, device used inside the loop)
-    "full": ("B1, all components", {}, True),
+    "full": ("device-aware WGS, all components", {}, True),
     "no_weights": ("without the weight update", {"weights": False}, True),
     "no_step": ("without the device-aware phase step", {"device_step": False}, True),
     "no_guard": ("without the best-iterate safeguard", {"safeguard": False}, True),
@@ -480,7 +480,7 @@ def b2_variant(setup: Setup, start: TrapSet, dest: TrapSet, seed: int, frames: i
 
 
 B2_VARIANTS = {
-    "full": ("B2, all components", {}),
+    "full": ("flicker-bounded sequence, all components", {}),
     "no_lock": ("without the trajectory lock", {"lock": False}),
     "no_opt": ("without the per-frame optimization", {"frame_iterations": 0}),
     "iters_1": ("1 iteration per frame", {"frame_iterations": 1}),
@@ -759,6 +759,7 @@ def write_macros(data: dict, path: Path) -> None:
         L.append(macro("benchOneDevSeedsMseven", f"{common}" + (f" ({', '.join(other)})" if other else "")))
         items = [f"{x['geometry']} {fmt(x['factor'], 2)}" for x in dev]
         L.append(macro("benchOneDevList", ", ".join(items[:-1]) + f" and {items[-1]}"))
+        L.append(macro("benchOneDevLastFactor", f"a factor of {fmt(dev[-1]['factor'], 2)}"))  # the large set is the last geometry
     path.write_text("".join(L), encoding="utf-8")
 
 
@@ -842,6 +843,8 @@ def write_extra_macros(data: dict, path: Path) -> None:
         L.append(macro("ablSeconds", fmt(sum(r["seconds"] for k in ("b1_crosstalk", "b1_full", "b2") for r in ab[k]["rows"]) / 60.0, 0)))
         L.append(macro("ablTN", ab["b2"]["summary"]["full"]["min"]["n"]))
         L.append(macro("ablTCheck", f"{ab['b2']['max_check_full_vs_b2run']:.1e}"))
+    main_s = sum(r["seconds"] for k in ("bs1_crosstalk", "bs1_full_device") for r in data[k]["rows"]) + sum(r["seconds"] for r in data["bs2"]["runs"])
+    L.append(macro("mainMinutes", fmt(main_s / 60.0, 0)))  # wall-clock of the main measurements, without the long moves and the ablation
     path.open("a", encoding="utf-8").write("".join(L))
 
 
@@ -856,7 +859,7 @@ def write_tables(data: dict, out: Path) -> None:
         for tag, key, fname in (("", "b1_crosstalk", "tab_abl_b1.tex"), ("F", "b1_full", "tab_abl_b1_full.tex")):
             d = ab[key]
             L = ["\\begin{tabular}{@{}l r r r r@{}}\n\\toprule\n",
-                 row_cells(["Variant", "$\\sigma$ median (\\%)", "$\\sigma$ range (\\%)", "Factor over M07, 95\\% interval", "$e$ ratio"]),
+                 row_cells(["Variant", "$\\sigma$ median (\\%)", "$\\sigma$ range (\\%)", "Factor over phase-fixed WGS, 95\\% interval", "$e$ ratio"]),
                  "\\midrule\n"]
             for k in [*d["variants"], "warm_only"]:
                 v = d["summary"][k]
@@ -886,7 +889,7 @@ def write_tables(data: dict, out: Path) -> None:
     # benchmark, B1 against M07 on the C08 device, then on the ideal device
     bb = data["benchmark_bs1"]
     L = ["\\begin{tabular}{@{}l r r r r r r r@{}}\n\\toprule\n",
-         row_cells(["Geometry", "Traps", "Seeds (B1, M07)", "$\\sigma$ M07 (\\%)", "$\\sigma$ B1 (\\%)", "Factor", "$e$ ratio", "Both thresholds"]),
+         row_cells(["Geometry", "Traps", "Seeds (device-aware, phase-fixed)", "$\\sigma$ phase-fixed WGS (\\%)", "$\\sigma$ device-aware WGS (\\%)", "Factor", "$e$ ratio", "Both thresholds"]),
          "\\midrule\n"]
     for x in bb["devices"]["device"]:
         ok = x["factor"] >= 2 and x["eff_ratio"] >= 0.9
@@ -899,7 +902,7 @@ def write_tables(data: dict, out: Path) -> None:
     # B2, the long moves and the rearrangement case
     sc = data["bs2_scope"]
     L = ["\\begin{tabular}{@{}l r r r r r r r@{}}\n\\toprule\n",
-         row_cells(["Move", "Frames", "Peak step (Fourier units)", "B2 median", "B2 range", "Seeds at 0.9 or above", "Linear phase interpolation range", "B2 above it"]),
+         row_cells(["Move", "Frames", "Peak step (Fourier units)", "Sequence median", "Sequence range", "Seeds at 0.9 or above", "Linear phase interpolation range", "Sequence above it"]),
          "\\midrule\n"]
     for key in ("12", "20"):
         lg = sc["long"][key]

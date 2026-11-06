@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure the learned warm start (B3) of DinHot: every arm of the ablation on the held-out geometries, the freeze sweep,
+"""Measure the learned warm start of DinHot: every arm of the ablation on the held-out geometries, the freeze sweep,
 the oracle-phase bound and the weight accounting; write ``warm.json``, ``warm_numbers.tex`` and the table files.
 
 The network is the rejected candidate: the checkpoint ``ws-final/ckpt.pt`` of the training run (6000 steps) in the learned

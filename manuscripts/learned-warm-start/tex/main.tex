@@ -54,7 +54,7 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 
 \begin{document}
 
-\title{A Learned Warm Start for Phase-Fixed Weighted Gerchberg--Saxton Does Not Beat an Early Phase Freeze:\\ A Measured Negative Result on Holographic Optical Trap Arrays}
+\title{A Learned Warm Start for Phase-Fixed Weighted Gerchberg-Saxton Does Not Beat an Early Phase Freeze: A Measured Negative Result on Holographic Optical Trap Arrays}
 \author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
 \small CAOS open-research programme, Santiago, Chile\\
 \small \texttt{fsantibanez@gmail.com}}
@@ -66,16 +66,15 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 \begin{abstract}
 Phase-fixed weighted Gerchberg--Saxton (WGS) is the practical method for large arrays of optical traps, and its cost is the number of iterations
 before the trap intensities are uniform. We tested whether a small permutation-equivariant network that predicts the initial phase of every trap
-(a learned warm start, $\nParams$ parameters, $\onnxBytes$ bytes as an ONNX graph) lets phase-fixed WGS reach a relative standard deviation of 1 percent in at least two times
+(a learned warm start, $\nParams$ parameters) lets phase-fixed WGS reach a relative standard deviation of 1 percent in at least two times
 fewer iterations than a random start on geometries held out from training, with the final efficiency within 1 percent. On $\nGeo$ held-out geometries
 ($\nGen$ generated, $\nBench$ benchmark; $\nSeeds$ seeds, a budget of $\budget$ iterations) the network start needs a median of \itNThree{} iterations
 (bootstrap 95\% interval \itNThreeLo{} to \itNThreeHi) against \itRTwelve{} from a random start, a factor of \ratioRoverN{} (interval \ratioRoverNLo{} to \ratioRoverNHi), below the factor of two required, and
 the final efficiency differs by \effdNThree{} percent, above the 1 percent allowed. A control with no network (a random start with the same early freeze of the phase)
 needs \itRThree{} iterations (factor \ratioRoverRThree{}, interval \ratioRoverRThreeLo{} to \ratioRoverRThreeHi), so the gain belongs to the freeze index and not to the network; the network
 with the engine's own freeze index needs \itNTwelve{} iterations, as the random start does. The shorter freeze has a price: \neverRThree{} percent of its runs
-never reach 1 percent within $\budget$ iterations, against \neverRTwelve{} percent for the default. A sweep of the freeze index and a start from the phases of a converged
-run show that the iterations to 1 percent are the freeze index plus a few, whatever the start. The model is not released. The results hold on a scalar Fourier model of the
-device and on one trained network of one architecture; they are not hardware measurements.
+never reach 1 percent within $\budget$ iterations, against \neverRTwelve{} percent for the default. In a sweep of the freeze index the median iterations to 1 percent lie \swTwelveEx{} to \swFourEx{} above the freeze index; the phases of a converged
+run save \OTwelveGain{} iteration at the default freeze and lower the median from \ORThreeMed{} to \OThreeMed{} at a freeze of three (ten geometries, one seed). The model is not released. The results hold on a scalar Fourier model and one trained network, not on hardware.
 \end{abstract}
 
 \noindent\textbf{Keywords:} holographic optical tweezers, weighted Gerchberg--Saxton, learned initialization, warm start, negative result.

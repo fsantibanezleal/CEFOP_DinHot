@@ -717,14 +717,14 @@ def write_outputs(data: dict) -> None:
     T.append("\\begin{tabular}{@{}lrrr@{}}\n\\toprule\n")
     T.append(row(["Result", "Efficiency", "Uniformity", "Hypervolume"]))
     T.append("\\midrule\n")
-    names = {"M04": "Gerchberg-Saxton (M04)", "M05": "Adaptive additive (M05)", "M06": "Weighted GS (M06)",
-             "M07": "Phase-fixed WGS (M07)", "M09": "Direct search (M09)"}
+    names = {"M04": "Gerchberg-Saxton", "M05": "Adaptive additive", "M06": "Weighted GS",
+             "M07": "Phase-fixed WGS", "M09": "Direct search"}
     for n in ("M04", "M05", "M06", "M07", "M09"):
         p = a["points"][n]
         hv = stats([e * u for e, u in zip([r["published"][n][0] for r in data["main"]], [r["published"][n][1] for r in data["main"]])])
         T.append(row([names[n], pm(p["e"]), pm(p["u"]), pm(hv, 3)]))
     T.append("\\midrule\n")
-    T.append(row(["Union of M04, M05, M06, M09", "", "", pm(a["hv_published"], 4)]))
+    T.append(row(["Union of the four published points", "", "", pm(a["hv_published"], 4)]))
     T.append(row(["Front (knee point)", pm(a["knee"]["e"]), pm(a["knee"]["u"]), ""]))
     T.append(row(["Front (whole)", f"{f(a['e_min']['mean'])} to {f(a['e_max']['mean'])}", f"{f(a['u_min']['mean'])} to 1", pm(a["hv_front"], 4)]))
     T.append("\\bottomrule\n\\end{tabular}\n")

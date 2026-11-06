@@ -132,6 +132,30 @@
         "BS-1",
         "BS-2"
       ]
+    },
+    {
+      "kind": "manuscript",
+      "title": "A Weighted-Cost Continuation Adds the Efficient Side of the Efficiency-Uniformity Trade-off of Holographic Optical Trap Arrays: Larger Hypervolume on One Lattice, No Better Uniform End, No Gain on the Benchmark at 100 Iterations",
+      "version": "0.01",
+      "covers": [
+        "BS-5"
+      ]
+    },
+    {
+      "kind": "manuscript",
+      "title": "Aberration-Robust Holograms for Optical Trap Arrays: Expected-Cost Optimization Lowers the Tail of the Intensity Spread Under Residual Aberrations Drawn from Its Design Prior, in Simulation",
+      "version": "0.01",
+      "covers": [
+        "BS-4"
+      ]
+    },
+    {
+      "kind": "manuscript",
+      "title": "A Learned Warm Start for Phase-Fixed Weighted Gerchberg-Saxton Does Not Beat an Early Phase Freeze: A Measured Negative Result on Holographic Optical Trap Arrays",
+      "version": "0.01",
+      "covers": [
+        "BS-3"
+      ]
     }
   ]
 }
