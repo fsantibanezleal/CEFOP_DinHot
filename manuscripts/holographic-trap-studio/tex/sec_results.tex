@@ -58,7 +58,7 @@ The emulated camera loop reduces the spread as in the published curves. In the b
 \label{fig:feedback}
 \end{figure}
 
-The particle simulations act on the computed traps: C01 carries a bead in the central trap (stiffness \beadKappa{} pN/$\mu$m and a corner frequency of \beadFc{} Hz in the trace) and C03 an atom (a corner frequency of \atomFc{} Hz and a radial trap frequency of \atomOmega{} Hz in the trace); the trap depth follows the intensity~\cite{grimm}, and the bead's spectrum is a Lorentzian whose corner frequency is the stiffness over $2\pi\gamma$~\cite{tolic}, which the particle oracle checks. The bias of the linearised Lorentzian fit at low segment counts is a known effect, and the tests bound the fitted corner frequency at twelve percent in the oracle test and at ten percent in the engine's dynamics test for the runs they use~\cite{norrelykke}.
+The particle simulations act on the computed traps: C01 carries a bead in the central trap (stiffness \beadKappa{} pN/$\mu$m and a corner frequency of \beadFc{} Hz in the trace) and C03 an atom (a corner frequency of \atomFc{} Hz and a radial trap frequency of \atomOmega{} Hz in the trace); the trap depth follows the intensity~\cite{grimm}, and the bead's spectrum is a Lorentzian whose corner frequency is the stiffness over $2\pi\gamma$~\cite{tolic}, which the particle oracle checks. The fit of a Lorentzian to an average of $n$ power spectra carries a bias of relative size between $-2/n$ and $+1/n$~\cite{norrelykke}; the bounds on the fitted corner frequency, twelve percent in the oracle test and ten percent in the engine's dynamics test, are DinHot's own tolerances for the segment counts those runs use.
 
 \subsection{The benchmark}\label{sec:results-bench}
 

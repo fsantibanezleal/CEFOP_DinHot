@@ -330,8 +330,12 @@ def contract_tables(catalog: list[dict]) -> tuple[dict[str, str], str, str, dict
         t.append("\\bottomrule\\end{tabular}\\end{table}\n")
         tables[cid] = "".join(t)
         if cid in ("params-record", "case-manifest", "trace", "benchmark-results", "model-metrics", "readiness"):
-            appendix.append(f"\\par\\medskip\\noindent\\textbf{{Contract \\texttt{{{esc(cid)}}}}}\\par\\nopagebreak\n\\begingroup\\scriptsize\n"
-                            "\\begin{longtable}{@{}l l c l l@{}}\n\\toprule Field & Type & Req. & Unit & Range\\\\\\midrule\\endhead\n"
+            appendix.append("\\begingroup\\scriptsize\n\\begin{longtable}{@{}l l c l l@{}}\n"
+                            f"\\caption{{Nested fields of the contract \\texttt{{{esc(cid)}}}, generated from its schema file: "
+                            f"the path of each field, its type, whether it is required, its unit and the range or constant "
+                            f"the schema states.}}\\label{{tab:fields-{cid}}}\\\\\n"
+                            "\\toprule Field & Type & Req. & Unit & Range\\\\\\midrule\\endfirsthead\n"
+                            "\\toprule Field & Type & Req. & Unit & Range\\\\\\midrule\\endhead\n"
                             + "".join(f"\\texttt{{{esc(p)}}} & {esc(ty)} & {'yes' if rq else 'no'} & {unit_of(p)} & {esc(rg)}\\\\\n"
                                       for p, ty, rq, rg in nested)
                             + "\\bottomrule\\end{longtable}\n\\endgroup\n")
