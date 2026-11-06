@@ -20,6 +20,8 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "manuscripts" / "holographic-trap-studio" / "data"
 IDS = ["M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10", "M11", "M12", "M13", "M14", "M15", "M16", "M17",
        "M18", "M19", "B4", "B5"]       # the rows of the table before it was measured (M01 to M19, BS-4, BS-5)
+# The table adds B1 and B2 after M19, measured by the companion manuscript (beyond_rows.py reads its beyond.json).
+TABLE_IDS = IDS[:-2] + ["B1", "B2"] + IDS[-2:]
 # Decimal constants that describe a row's setup (a bar, a gain, a start), not a measured value; they appear in the text by design.
 SETUP_CONSTANTS = {"M06": {"0.9", "0.98"}, "M07": {"0.5"}, "B4": {"0.5"}}
 DECIMAL = re.compile(r"(?<![\w.])-?\d+\.\d+(?:e-?\d+)?")
@@ -102,11 +104,14 @@ def test_every_decimal_of_a_text_comes_from_its_measured_numbers(doc):
 
 def test_extract_builds_the_acceptance_table_from_the_file(doc):
     ex = load_module(DATA / "extract.py")
-    assert [row[0] for row in ex.UNIT_ACCEPTANCE] == IDS
-    for (mid, text, seeds, src), r in zip(ex.UNIT_ACCEPTANCE, doc["rows"]):
+    assert [row[0] for row in ex.UNIT_ACCEPTANCE] == TABLE_IDS
+    beyond = load_module(DATA / "beyond_rows.py").rows()
+    source = {r["id"]: r for r in doc["rows"] + beyond}
+    for mid, text, seeds, src in ex.UNIT_ACCEPTANCE:
+        r = source[mid]
         assert (mid, text, seeds, src) == (r["id"], r["text"], r["seeds"], r["source"])
     tex = ex.table_acceptance()
-    assert tex.count("\\\n") >= len(IDS) and "acceptance.py" in (DATA / "extract.py").read_text(encoding="utf-8")
+    assert tex.count("\\\n") >= len(TABLE_IDS) and "acceptance.py" in (DATA / "extract.py").read_text(encoding="utf-8")
 
 
 def test_extract_types_no_acceptance_number():
