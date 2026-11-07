@@ -7,22 +7,26 @@ import { useMemo, useState } from 'react';
 import { INTENSITY_LUT, PHASE_LUT } from './colormaps';
 import { apertureEnvelopeAtEdge, fillFactorEfficiency, gratingPeriodPx, levelOf, phaseDifference, quantizationEfficiency, stagePhase, TWO_PI } from './decode';
 import { Heatmap } from './HeatmapStage';
-import { LOADING, Fill, Pending, useActions, useFmt, useStateKey, useT } from './ui';
+import { useNav } from './nav';
+import { OpticalTrainView } from './OpticalTrain';
+import { SlmSectionView } from './SlmSection';
+import { LOADING, Fill, Pending, cardOf, useActions, useFmt, useStateKey, useT } from './ui';
 import { useSelection, type Selection } from './model';
 import { coeffArray, J_MAX, MARECHAL_RMS_WAVES, rmsWaves, strehl, wavefrontWaves, zernikeName } from './zernike';
 
-/** The lane and provenance every card of the group declares, from what the selection's maps came from. */
-export function cardOf(sel: Selection) {
-  return { lane: sel.maps?.lane ?? ('replay' as const), provenance: sel.data.manifest.real_or_synthetic };
-}
+export { cardOf };
 
 export function HologramGroup() {
   const { t } = useT();
   const sel = useSelection();
+  const nav = useNav();
   return (
     <SubTabs
       ariaLabel={t('Hologram views', 'Vistas del holograma')}
+      value={nav?.tabs.hologram}
+      onChange={nav ? (id) => nav.setTab('hologram', id) : undefined}
       tabs={[
+        { id: 'train', label: t('Optical train', 'Tren óptico'), content: sel ? <OpticalTrainView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'mask', label: t('Phase mask', 'Máscara de fase'), content: sel ? <PhaseMaskView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'device', label: t('Device effects', 'Efectos del dispositivo'), content: sel ? <DeviceEffectsView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'aberrations', label: t('Aberrations', 'Aberraciones'), content: sel ? <AberrationView sel={sel} /> : <Pending label={LOADING} /> },
@@ -139,44 +143,43 @@ export function DeviceEffectsView({ sel }: { sel: Selection }) {
       data={(dev ? factors : IDEAL_FACTORS).map((f) => ({ id: f.id, label: f.label, value: f.value, tone: f.value > 0.9 ? ('good' as const) : f.value > 0.7 ? ('warn' as const) : ('bad' as const) }))}
     />
   );
-  // An ideal SLM adds no phase error: there is no map to draw, so the closed-form factors (all 1) take the whole view.
-  if (!abs) {
-    return (
-      <PlotCard
-        fill
-        title={{ en: 'What each device effect costs, in closed form', es: 'Lo que cuesta cada efecto del dispositivo, en forma cerrada' }}
-        {...c}
-        dataKey={stateKey}
-        note={{ en: 'This run uses an ideal SLM: no phase error to map, and every factor is 1. Pick the case device in the rail if the case has one.', es: 'Esta corrida usa un SLM ideal: no hay error de fase que mapear y todos los factores valen 1. Elija el dispositivo del caso en el panel si lo tiene.' }}
-      >
-        <Fill>{bars}</Fill>
-      </PlotCard>
-    );
-  }
+  // The stage is the SLM in section (V2); the closed-form costs and, for a device, the map of the phase it adds sit beside it, in one card.
+  // An ideal SLM adds no phase error: there is no map to draw, so the closed-form factors (all 1) are the whole card.
   return (
-    <ViewsRow shares={[2, 3]}>
+    <ViewsRow shares={[3, 2]}>
+      <SlmSectionView sel={sel} />
       <PlotCard
         fill
-        title={{ en: 'Phase the device adds', es: 'Fase que añade el dispositivo' }}
+        title={abs ? { en: 'What each effect costs, and the phase the device adds', es: 'Lo que cuesta cada efecto y la fase que añade el dispositivo' } : { en: 'What each device effect costs, in closed form', es: 'Lo que cuesta cada efecto del dispositivo, en forma cerrada' }}
         {...c}
         dataKey={stateKey}
-        note={{ en: 'Absolute difference between the ideal phase and what the device shows (quantized, response curve, crosstalk), in radians.', es: 'Diferencia absoluta entre la fase ideal y la que muestra el dispositivo (cuantizada, curva de respuesta, diafonía), en radianes.' }}
+        note={
+          abs
+            ? { en: 'Bars: closed forms (quantization, fill factor, pixel aperture). Map: absolute difference between the ideal phase and what the device shows (quantized, response curve, crosstalk), in radians.', es: 'Barras: formas cerradas (cuantización, factor de llenado, apertura del píxel). Mapa: diferencia absoluta entre la fase ideal y la que muestra el dispositivo (cuantizada, curva de respuesta, diafonía), en radianes.' }
+            : { en: 'This run uses an ideal SLM: no phase error to map, and every factor is 1. Pick the case device in the rail or in the section view if the case has one.', es: 'Esta corrida usa un SLM ideal: no hay error de fase que mapear y todos los factores valen 1. Elija el dispositivo del caso en el panel o en la vista en sección si lo tiene.' }
+        }
       >
-        <Fill>
-          <Heatmap
-            label={{ en: 'Absolute phase error of the device, in radians', es: 'Error de fase absoluto del dispositivo, en radianes' }}
-            data={abs}
-            cols={n}
-            rows={n}
-            lut={INTENSITY_LUT}
-            range={[0, Math.PI]}
-            describe={(col, row, v) => t(`pixel (${col}, ${row}): ${fmt(v, { decimals: 3 })} rad`, `píxel (${col}, ${row}): ${fmt(v, { decimals: 3 })} rad`)}
-            summary={t(`Absolute phase error map, ${n} by ${n} pixels, mean ${fmt(abs.reduce((a, v) => a + v, 0) / abs.length, { decimals: 3 })} rad.`, `Mapa del error de fase absoluto, ${n} por ${n} píxeles, media ${fmt(abs.reduce((a, v) => a + v, 0) / abs.length, { decimals: 3 })} rad.`)}
-          />
+        <Fill quiet>
+          {abs ? (
+            <div className="dh-stack">
+              <div className="dh-fill">{bars}</div>
+              <div className="dh-fill">
+                <Heatmap
+                  label={{ en: 'Absolute phase error of the device, in radians', es: 'Error de fase absoluto del dispositivo, en radianes' }}
+                  data={abs}
+                  cols={n}
+                  rows={n}
+                  lut={INTENSITY_LUT}
+                  range={[0, Math.PI]}
+                  describe={(col, row, v) => t(`pixel (${col}, ${row}): ${fmt(v, { decimals: 3 })} rad`, `píxel (${col}, ${row}): ${fmt(v, { decimals: 3 })} rad`)}
+                  summary={t(`Absolute phase error map, ${n} by ${n} pixels, mean ${fmt(abs.reduce((a, v) => a + v, 0) / abs.length, { decimals: 3 })} rad.`, `Mapa del error de fase absoluto, ${n} por ${n} píxeles, media ${fmt(abs.reduce((a, v) => a + v, 0) / abs.length, { decimals: 3 })} rad.`)}
+                />
+              </div>
+            </div>
+          ) : (
+            bars
+          )}
         </Fill>
-      </PlotCard>
-      <PlotCard fill title={{ en: 'What each effect costs, in closed form', es: 'Lo que cuesta cada efecto, en forma cerrada' }} {...c} dataKey={stateKey}>
-        <Fill quiet>{bars}</Fill>
       </PlotCard>
     </ViewsRow>
   );

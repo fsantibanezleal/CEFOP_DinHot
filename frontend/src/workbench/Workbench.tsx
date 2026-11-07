@@ -11,6 +11,7 @@ import {
   Knob,
   Readout,
   formatNumber,
+  replaceQueryParam,
   useShellLang,
   type CaseDef,
   type RailSection,
@@ -26,6 +27,7 @@ import { ConvergenceGroup } from './ConvergenceGroup';
 import type { DeviceStage } from './decode';
 import { DynamicsGroup } from './DynamicsGroup';
 import { laneOf } from './engine';
+import { GROUP_IDS, initialGroup, makeNav, NavContext, type GroupId } from './nav';
 import { FocalGroup } from './FocalGroup';
 import { HologramGroup } from './HologramGroup';
 import { isShaped, methodLabel, replayMaps, replayResult, trapsOf, UnavailableContext, ViewContext, type DeviceChoice, type Region, type Selection } from './model';
@@ -85,6 +87,9 @@ function railOf(data: CaseData): Rail {
   };
 }
 
+/** The desktop rail width in CSS pixels (shell 0.21.0, bounded 150 to 360): narrow enough that the instrument takes 60 percent of the viewport. */
+const RAIL_WIDTH = 200;
+
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 
@@ -122,6 +127,15 @@ export function Workbench() {
   const [methodId, setMethodId] = useState<string | null>(null);
   const [rail, setRail] = useState<Rail | null>(null);
   const [editError, setEditError] = useState<Text | null>(null);
+  // The open group is the workbench's (a controlled value of the shell), so a view can open another: the optical train opens Device effects
+  // and the Focal plane group (ADR-0082 rule 6). The URL keeps `?view=` as the shell would have kept it.
+  const [group, setGroup] = useState<GroupId>(() => (typeof window === 'undefined' ? GROUP_IDS[0] : initialGroup(window.location.search)));
+  const [subTabs, setSubTabs] = useState<Record<string, string | undefined>>({});
+  const changeGroup = useCallback((id: string) => {
+    setGroup(id as GroupId);
+    replaceQueryParam('view', id);
+  }, []);
+  const nav = useMemo(() => makeNav(changeGroup, (g, tab) => setSubTabs((cur) => ({ ...cur, [g]: tab })), subTabs), [changeGroup, subTabs]);
 
   const data = loaded.state === 'ready' && loaded.data.manifest.case_id === selected ? loaded.data : null;
   useEffect(() => {
@@ -217,6 +231,7 @@ export function Workbench() {
     () => ({
       mode: r?.mode ?? 'inspect',
       selectTrap: (id) => patch({ trapId: id }),
+      setDevice: (device) => patch({ device }),
       setRegion: (region) => patch({ region }),
       addTrap: (x, y) => {
         const e = addTrap(traps, x, y, halfField);
@@ -520,6 +535,7 @@ export function Workbench() {
     <UnavailableContext.Provider value={unavailable}>
       <ViewContext.Provider value={sel}>
         <ActionsContext.Provider value={actions}>
+          <NavContext.Provider value={nav}>
           <CaseWorkbench
             caseId={selected ?? ''}
             source={data?.manifest.real_or_synthetic}
@@ -576,7 +592,12 @@ export function Workbench() {
               { id: 'dynamics', label: { en: 'Dynamics', es: 'Dinámica' }, lane: 'replay', provenance: prov, content: <DynamicsGroup /> },
             ]}
             context={{ content: <ContextView sel={sel} /> }}
+            group={group}
+            onGroupChange={changeGroup}
+            tabDensity="compact"
+            railWidth={RAIL_WIDTH}
           />
+          </NavContext.Provider>
         </ActionsContext.Provider>
       </ViewContext.Provider>
     </UnavailableContext.Provider>

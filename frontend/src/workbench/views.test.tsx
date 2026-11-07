@@ -2,6 +2,7 @@
 // without throwing and says what it must (the lane, the reason a view is unavailable, the held edit), and the pure maths the views
 // lean on (the Lorentzian fit, the thermal width, the lobes and their overlaps, the metrics of a trap list) is held to known values.
 
+import { LinkedViewProvider } from '@fasl-work/caos-app-shell';
 import { createElement, type ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -21,6 +22,7 @@ vi.stubGlobal('__APP_VERSION__', 'test-version');
 const actions: Actions = {
   mode: 'inspect',
   selectTrap: () => undefined,
+  setDevice: () => undefined,
   setRegion: () => undefined,
   addTrap: () => undefined,
   moveTrap: () => undefined,
@@ -37,7 +39,7 @@ const actions: Actions = {
 
 function render(node: ReactElement, sel: Selection | null, unavailable: { en: string; es: string } | null = null): string {
   return renderToStaticMarkup(
-    createElement(UnavailableContext.Provider, { value: unavailable }, createElement(ViewContext.Provider, { value: sel }, createElement(ActionsContext.Provider, { value: actions }, node))),
+    createElement(LinkedViewProvider, null, createElement(UnavailableContext.Provider, { value: unavailable }, createElement(ViewContext.Provider, { value: sel }, createElement(ActionsContext.Provider, { value: actions }, node)))),
   );
 }
 

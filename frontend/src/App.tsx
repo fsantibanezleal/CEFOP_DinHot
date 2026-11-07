@@ -5,7 +5,7 @@
 // Methodology, Implementation, Experiments, Benchmark; the landing never moves the tabs. Identity, licence and visibility come from product.json (one source,
 // written by scripts/instantiate.py); the version is VERSION, injected at build.
 import { lazy, Suspense } from 'react';
-import { AppShell, CitationsProvider, Landing, STANDARD_ROUTES, type ShellConfig } from '@fasl-work/caos-app-shell';
+import { AppShell, CitationsProvider, Landing, LinkedViewProvider, STANDARD_ROUTES, type ShellConfig } from '@fasl-work/caos-app-shell';
 import { Route, Routes } from 'react-router';
 import product from '../../product.json';
 import { architecture } from './architecture';
@@ -35,6 +35,7 @@ const config: ShellConfig = {
 export function App() {
   return (
     <CitationsProvider items={CITATIONS}>
+      <LinkedViewProvider>
       <AppShell config={config}>
         <Suspense fallback={<p className="caos-pending" data-state="loading" role="status" aria-label="Loading / Cargando">…</p>}>
           <Routes>
@@ -49,6 +50,7 @@ export function App() {
           </Routes>
         </Suspense>
       </AppShell>
+      </LinkedViewProvider>
     </CitationsProvider>
   );
 }

@@ -4,7 +4,7 @@ import { formatNumber, pick, useShellLang, useWorkbenchState, type BiText, type 
 import { createContext, useContext, type ReactNode } from 'react';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import type { Text } from '../lib/contract.types';
-import { methodLabel, UnavailableContext, useSelection, type Selection } from './model';
+import { methodLabel, UnavailableContext, useSelection, type DeviceChoice, type Selection } from './model';
 
 /** The rows every replay view of the case consumes; the model slots add theirs where a view shows them. */
 export const CASE_ROWS = ['case-index', 'case-manifest', 'trace'];
@@ -14,6 +14,8 @@ export type EditMode = 'inspect' | 'add' | 'move' | 'delete';
 export interface Actions {
   mode: EditMode;
   selectTrap: (id: number | null) => void;
+  /** The SLM device of the run and of the section view: the ideal one or the case's own (one state with the rail's switch). */
+  setDevice: (device: DeviceChoice) => void;
   setRegion: (r: Selection['region']) => void;
   addTrap: (xUm: number, yUm: number) => void;
   moveTrap: (id: number, xUm: number, yUm: number) => void;
@@ -71,7 +73,25 @@ export function Pending({ label }: { label: BiText }) {
   );
 }
 
+/** The lane and provenance every card of a group declares, from what the selection's maps came from. */
+export function cardOf(sel: Selection) {
+  return { lane: sel.maps?.lane ?? ('replay' as const), provenance: sel.data.manifest.real_or_synthetic };
+}
+
 export const LOADING: BiText = { en: 'Loading the case artifacts', es: 'Cargando los artefactos del caso' };
+
+/**
+ * The stage of a view that carries controls under it (ADR-0082, ADR-0071 rule 8): on a desktop it takes the height the controls leave; on a
+ * phone it is marked `data-caos-flow`, so the card takes the height of its content (the shell's rule for flowing content) and the stage the
+ * height the scene needs, instead of the 260 to 440 px the card is clamped to with the controls inside it.
+ */
+export function StageBox({ children }: { children: ReactNode }) {
+  return (
+    <div className="dh-stagebox" data-caos-flow="">
+      {children}
+    </div>
+  );
+}
 
 /** A card's body whose content is unavailable for a stated reason (not a spinner, not an empty chart). */
 export function Unavailable({ reason }: { reason: BiText }) {

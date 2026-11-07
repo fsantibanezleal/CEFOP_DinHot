@@ -93,3 +93,85 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* V1 and V2 (ADR-0082): the scene a Stage holds, the light that moves along the optical train and the buttons drawn in it. Only product
+   classes and shell tokens; the callouts are the shell's own and are not restyled. */
+.dh-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dh-scene > svg {
+  display: block;
+  max-width: 100%;
+}
+
+.dh-flow {
+  animation: dh-flow 1.4s linear infinite;
+}
+
+@keyframes dh-flow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+/* the light stands still when the page asks for reduced motion, whatever the script decided */
+@media (prefers-reduced-motion: reduce) {
+  .dh-flow {
+    animation: none;
+  }
+}
+
+.dh-train-button,
+.dh-slm-pixel,
+.dh-train [role='button'] {
+  cursor: pointer;
+}
+
+.dh-train-button:focus-visible,
+.dh-slm-pixel:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.dh-slm-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  min-width: 0;
+}
+
+.dh-slm-controls label {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+  font-size: var(--text-sm);
+}
+
+.dh-slm-controls input[type='range'] {
+  min-width: 6rem;
+  max-width: 14rem;
+}
+
+/* The stage box of a view with controls under it: a flexible share of the card on a desktop, a fixed scene height on a phone, where the
+   card takes the height of its content (data-caos-flow, shell 0.19.1). */
+.dh-stagebox {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .dh-stagebox {
+    flex: none;
+    height: clamp(430px, 62vh, 560px);
+  }
+}
