@@ -29,7 +29,8 @@ def test_cosine_of_proportional_volumes_is_one_and_ignores_scale():
 
 
 def test_cosine_of_orthogonal_volumes_is_zero():
-    t = np.zeros((2, 4, 4)); i = np.zeros((2, 4, 4))
+    t = np.zeros((2, 4, 4))
+    i = np.zeros((2, 4, 4))
     t[0, 0, 0] = 3.0
     i[1, 3, 3] = 2.0
     assert _planes.cosine_similarity(t, i) == 0.0
@@ -70,7 +71,8 @@ def test_volume_cosine_joins_the_planes_in_one_vector():
     ts, is_ = [], []
     for a, z in zip(amps, _planes.Z_PLANES):
         i = np.abs(fft_focal_field(phi - z * q, SETUP)) ** 2
-        ts.append((a**2 / (a**2).sum()).ravel()); is_.append((i / i.sum()).ravel())
+        ts.append((a**2 / (a**2).sum()).ravel())
+        is_.append((i / i.sum()).ravel())
     t, i = np.concatenate(ts), np.concatenate(is_)
     assert joint == pytest.approx(float(t @ i / np.sqrt((t @ t) * (i @ i))), abs=1e-12)
 
