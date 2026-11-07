@@ -1,11 +1,12 @@
-// Group 4, Convergence: did the algorithm converge and what it traded (V4), the efficiency-uniformity front of the benchmark (B5) and
-// the camera feedback loop that removes the non-uniformity the optics leave (V9).
+// Group 4, Convergence: the method at work, coupled to the focal plane (V5), did the algorithm converge and what it traded (V4), the
+// efficiency-uniformity front of the benchmark (B5) and the camera feedback loop that removes the non-uniformity the optics leave (V9).
 import { PlotCard, SubTabs, ViewsRow } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useMemo } from 'react';
 import { loadBenchmark, useArtifact } from '../api/artifacts';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { cardOf } from './HologramGroup';
+import { MethodAtWorkView } from './MethodAtWork';
 import { historyAt, methodLabel, useSelection, type Selection } from './model';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 
@@ -16,6 +17,7 @@ export function ConvergenceGroup() {
     <SubTabs
       ariaLabel={t('Convergence views', 'Vistas de convergencia')}
       tabs={[
+        { id: 'method', label: t('Method at work', 'Método trabajando'), content: sel ? <MethodAtWorkView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'metrics', label: t('Metrics by iteration', 'Métricas por iteración'), content: sel ? <MetricsView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'pareto', label: t('Pareto front', 'Frente de Pareto'), content: sel ? <ParetoView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'camera', label: t('Camera feedback', 'Realimentación de cámara'), content: sel ? <CameraView sel={sel} /> : <Pending label={LOADING} /> },

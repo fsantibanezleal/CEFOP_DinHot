@@ -1,0 +1,53 @@
+/* The guided story (ADR-0082 rules 3 to 5) and the method-at-work view that the story and the App share. Product classes only, shell
+   tokens only; the shell's story frame, callouts and cards are composed, never restyled. */
+.dh-story { min-width: 0; }
+.dh-story-stage { position: relative; display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; }
+.dh-story-callouts { height: 100%; pointer-events: none; }
+.dh-story-drawing { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; padding-top: 86px; }
+.dh-story-card { display: flex; flex: 1 1 0; min-height: 0; min-width: 0; }
+.dh-story-card > * { flex: 1 1 0; min-height: 0; min-width: 0; }
+.dh-story-view { display: flex; flex: 1 1 auto; flex-direction: column; width: 100%; height: 100%; min-height: 0; min-width: 0; }
+.dh-story-view > * { flex: 1 1 0; min-height: 0; min-width: 0; }
+
+.dh-story-evidence { display: grid; align-content: start; gap: .55rem; min-width: 0; }
+.dh-story-evidence h2 { margin: 0; font-size: 1.05rem; }
+.dh-story-evidence p { margin: 0; color: var(--color-fg-subtle); overflow-wrap: anywhere; }
+.dh-story-evidence small { color: var(--color-fg-faint); overflow-wrap: anywhere; }
+.dh-story-focal { position: relative; width: 100%; aspect-ratio: 1; max-height: 15rem; min-height: 9rem; }
+.dh-story-missing { margin: 0; padding: .4rem .65rem; border-left: 3px solid var(--color-warn); background: var(--color-surface-2); color: var(--color-fg); overflow-wrap: anywhere; }
+.dh-story-facts { display: grid; gap: .35rem; margin: 0; }
+.dh-story-facts > div { display: grid; gap: .1rem; min-width: 0; }
+.dh-story-facts dt { color: var(--color-fg-subtle); font-size: .78rem; }
+.dh-story-facts dd { margin: 0; overflow-wrap: anywhere; }
+.dh-story-state { max-width: 70rem; margin-inline: auto; padding: 1rem; }
+.dh-story-picks { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; }
+.dh-story-picks button { min-height: 2rem; padding: .3rem .55rem; border: 1px solid var(--color-border); border-radius: 999px; color: var(--color-fg-subtle); background: var(--color-surface-2); font: inherit; font-size: .78rem; }
+.dh-story-picks button[aria-pressed="true"] { color: var(--color-fg); border-color: var(--color-accent); background: var(--color-accent-soft); }
+
+/* V6, the comparison: one row per method on the cell the story names, the seed spread drawn on each bar */
+.dh-cmp { display: flex; flex-direction: column; gap: .4rem; min-width: 0; min-height: 0; height: 100%; }
+.dh-cmp > .caos-stage { flex: 1 1 0; min-height: 0; }
+.dh-cmp-svg { display: block; max-width: 100%; }
+.dh-cmp-list { flex: none; }
+.dh-cmp-list { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .78rem; color: var(--color-fg-subtle); }
+
+/* V5, the method at work: charts on the left, the focal plane and the trap intensities on the right, under the callout header */
+.dh-mw-box { position: relative; flex: 1 1 0; min-width: 0; min-height: 0; }
+.dh-mw { padding-top: 86px; box-sizing: border-box; }
+.dh-mw-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-2); width: 100%; height: 100%; min-height: 0; }
+.dh-mw-charts, .dh-mw-maps { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-2); min-width: 0; min-height: 0; }
+.dh-mw-cell { position: relative; min-width: 0; min-height: 0; }
+.dh-mw-scrub { display: inline-flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; font-size: var(--text-sm); min-width: 0; }
+.dh-mw-scrub input[type='range'] { min-width: 8rem; max-width: 18rem; }
+@media (max-width: 900px) {
+  .dh-story-drawing { padding-top: 130px; }
+  .dh-story-card { overflow: hidden; }
+  .dh-cmp { height: auto; }
+  .dh-cmp > .caos-stage { flex: none; height: 560px; }
+  .dh-mw { padding-top: 175px; }
+  .dh-mw-box { flex: none; height: 1140px; }
+  .dh-mw-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; align-content: start; }
+  .dh-mw-charts, .dh-mw-maps { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; }
+  .dh-mw-charts .dh-mw-cell { height: 210px; }
+  .dh-mw-maps .dh-mw-cell { height: 250px; }
+}
