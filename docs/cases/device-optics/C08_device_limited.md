@@ -94,4 +94,4 @@ The App has up to six groups (Hologram, Focal plane, Traps, Convergence, Dynamic
 
 ## Notes
 
-The bands are provisional. The crosstalk parameters are those of Schroff et al. 2023; the 4-bit, fill-factor and flicker effects have no published source for this device in the research record (computed only), and the unit of the kernel's k is UNVERIFIED. The grid is 128 pixels at 3 mm focal length (half field 63.75 um).
+The bands are provisional. The crosstalk parameters are those of Schroff et al. 2023; the 4-bit, fill-factor and flicker effects have no published source for this device in the research record (computed only), and the unit of the kernel's k is DinHot's reading (cycles per SLM pixel), because the source gives sigma in inverse pixels and does not define the unit further. The grid is 128 pixels at 3 mm focal length (half field 63.75 um).

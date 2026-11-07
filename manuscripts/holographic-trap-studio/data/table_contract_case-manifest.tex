@@ -1,0 +1,21 @@
+\begin{table}[t]\centering\footnotesize
+\caption{Top-level fields of the contract \texttt{case-manifest}, read from its schema file: type, requirement, unit (a dash marks an identifier, a count or a dimensionless quantity) and the range or constant the schema states.}\label{tab:contract-case-manifest}
+\begin{tabular}{@{}l l c l >{\raggedright\arraybackslash}p{0.3\textwidth}@{}}\toprule Field & Type & Req. & Unit & Range\\\midrule
+\texttt{\scriptsize schema} & const & yes & - & = dinhot.manifest/v1\\
+\texttt{\scriptsize case\_id} & string & yes & - & length >= 1\\
+\texttt{\scriptsize title} & object & yes & - & -\\
+\texttt{\scriptsize category} & object & yes & - & -\\
+\texttt{\scriptsize real\_or\_synthetic} & enum & yes & - & \{real, synthetic\}\\
+\texttt{\scriptsize expected\_band} & object & yes & - & -\\
+\texttt{\scriptsize engine} & object & yes & - & -\\
+\texttt{\scriptsize params} & object & yes & - & -\\
+\texttt{\scriptsize seed} & integer & yes & - & -\\
+\texttt{\scriptsize artifact} & object & yes & - & -\\
+\texttt{\scriptsize lane} & enum & yes & - & \{live, precompute\}\\
+\texttt{\scriptsize gate} & object & yes & - & -\\
+\texttt{\scriptsize flags} & array of object & yes & - & -\\
+\texttt{\scriptsize methods} & object & yes & - & -\\
+\texttt{\scriptsize models} & object & yes & - & -\\
+\texttt{\scriptsize expect} & object & yes & - & -\\
+\texttt{\scriptsize anchor} & object & yes & - & -\\
+\bottomrule\end{tabular}\end{table}

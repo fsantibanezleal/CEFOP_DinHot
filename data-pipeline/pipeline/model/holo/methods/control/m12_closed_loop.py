@@ -9,10 +9,25 @@ Variant ``nogrette`` (dossier D3.1, Nogrette et al., Phys. Rev. X 4, 021034, htt
 iterations are plain GS (forward FFT, replace the amplitude by the target, inverse FFT, keep the phase); with $\rho_m =
 (I_m / w_m) / \langle I / w \rangle$ the measured intensity relative to its target and gain $G$,
 $$I'_m = \frac{\bar I}{1 - G\,(1 - I_m/\bar I)}\quad\Longrightarrow\quad w^{\rm T}_m \leftarrow w^{\rm T}_m\,\frac{1}{1 - G(1 - \rho_m)}$$
-(the target intensity is multiplied by the factor, so a trap at $\rho = 1$ keeps its target: the dossier prints the update in
-terms of the measured intensity; the multiplicative reading is DinHot's, it keeps the memory of earlier corrections and has
-the same fixed point $\rho = 1$; UNVERIFIED against the paper). Default $G = 0.7$ (Nogrette: 19 percent rms to 1.4 percent
+(the target intensity is multiplied by the factor, so a trap at $\rho = 1$ keeps its target: the paper prints the update in
+terms of the measured intensity, Eq. 3; the multiplicative reading is DinHot's, it keeps the memory of earlier corrections and has
+the same fixed point $\rho = 1$ as the printed rule, which recomputes the target from the latest measurement alone and is
+the variant ``nogrette-printed`` below). Default $G = 0.7$ (Nogrette: 19 percent rms to 1.4 percent
 in 20 iterations).
+
+Variant ``nogrette-printed`` is the rule as the paper prints it (Eq. 3): the new target intensity is computed from the latest
+measurement alone, $I'_m = \bar I/[1 - G(1 - I_m/\bar I)]$ on the BASE design weights, so the target amplitude is
+$a_m = a^{\rm base}_m\sqrt{1/(1 - G(1 - \rho_m))}$ with no memory of earlier corrections (``nogrette`` multiplies the running target,
+the cumulative reading above). The two coincide at the first feedback iteration and differ from the second. Measured on the
+acceptance task (10 x 10 grid, camera 19 percent rms, G = 0.7, 20 iterations, ``n_inner`` = 1, seeds 1, 2, 3):
+the cumulative ``nogrette`` goes from 20.9, 20.4, 20.3 percent open-loop spread to 0.84, 1.07, 2.18 percent after 20
+iterations (measured rel_std of $I/w$; 3.3 to 3.7 percent at iteration 5); ``nogrette-printed`` goes from the same starts to 15.4,
+16.8, 18.2 percent (15.5 to 18.3 at iteration 5, no further change), the true spread settling at 11.9 to 13.1 percent. The
+memoryless rule does not close the loop on this emulation: a measurement that is uniform
+(rho = 1) sends the target back to the base design, whose hologram is the uncorrected one, so uniform is not a fixed point of the
+map; the loop settles (seed 1: 16.4 percent at iteration 1, 15.5 from iteration 5 on, no further change) at a corrected target
+that still leaves the camera's spread. The paper's 20 iterations at gain 0.7 are therefore reproduced by the cumulative reading and
+not by the memoryless one, which is the stated reason ``nogrette`` stays the default; the printed form is kept so the two can be compared number for number.
 
 Variant ``kim`` (dossier D1.3 and D3.1, Kim et al., Opt. Lett. 44, 3178, https://arxiv.org/abs/1903.09286):
 $T^{(j)}_m = \sqrt{\langle I \rangle / I_m}\; T^{(j-1)}_m$ (square-root weights, full gain), and the first inner iteration displays
@@ -48,7 +63,7 @@ from ..baseline._common import amp_targets, fft_backproject, fft_fields, require
 SPEC = MethodSpec(id="M12", name="Closed-loop weighted GS on an emulated camera", family="control", lane="live",
                   targets=("traps",), dims=(2,))
 
-VARIANTS = ("nogrette", "kim")
+VARIANTS = ("nogrette", "kim", "nogrette-printed")
 
 
 def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=None, variant: str = "nogrette",
@@ -62,7 +77,7 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
     if start not in ("gsw", "gs"):
         raise ValueError(f"start must be 'gsw' or 'gs', got {start!r}")
     if n_inner is None:
-        n_inner = 1 if variant == "nogrette" else 3
+        n_inner = 3 if variant == "kim" else 1
     if n_inner < 1 or n_start < 1:
         raise ValueError("n_inner and n_start must be >= 1")
     traps = target.traps
@@ -89,8 +104,9 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
     history = []
     for k in range(1, budget.iterations + 1):
         rho = np.maximum((meas / w) / np.mean(meas / w), 1e-3)
-        if variant == "nogrette":
-            a = a * np.sqrt(1.0 / (1.0 - gain * (1.0 - rho)))
+        if variant in ("nogrette", "nogrette-printed"):
+            factor = np.sqrt(1.0 / (1.0 - gain * (1.0 - rho)))
+            a = a * factor if variant == "nogrette" else a_base * factor
             state = {"a": a.copy(), "w": np.ones(len(traps))}
             for j in range(1, n_inner + 1):
                 _, v = fft_fields(phi, setup, traps)

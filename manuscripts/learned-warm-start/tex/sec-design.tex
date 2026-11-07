@@ -1,0 +1,73 @@
+\section{Experimental design}\label{sec:design}
+
+\subsection{Hypotheses}\label{sec:hypotheses}
+
+Three hypotheses were fixed, with their thresholds, before the network was trained, and a fourth was added after the first evaluation to explain its outcome; we label it as such.
+\begin{description}
+\item[H1 (speed).] On geometries held out from training, the median number of iterations to 1 percent, $k_1$ of Eq.~\eqref{eq:k1}, of phase-fixed WGS from the network start is at most half that from the random start: the ratio of the medians is at least $2$.
+\item[H2 (accuracy).] The final efficiency and the final uniformity of the run from the network start differ from those of the random start by at most 1 percent (relative difference of the medians).
+\item[H3 (size).] The exported network is at most 1 MB as an ONNX graph. Its inference time in a browser (a threshold of 10 ms in the product's research record) belongs to the same acceptance test; it was not measured here because H1 failed first.
+\item[H4 (attribution; added after the first evaluation).] If the network start shortens the iteration, the gain is not reproduced by a random start with the same freeze index $\nfix$; if instead a random start with the same $\nfix$ reproduces it, the gain belongs to the freeze index. The prediction of the second reading, which Section~\ref{sec:theory} motivates, is that a network start at the default $\nfix=12$ shows no gain, and that the gain of the candidate at $\nfix=3$ is the gain of $\nfix=3$.
+\end{description}
+H1 and H2 are the acceptance test of the model slot of the product: a network that fails either is not released. H3 is met by the candidate. H4 is exploratory; its tests are the ablation of Section~\ref{sec:ablation}, and it does not change the status of H1 and H2.
+
+\subsection{Data and provenance}\label{sec:data}
+
+The held-out file was written once, before any training run, from seeded generators, and is identified by its sha256 digest (checked by the measurement script against the digest recorded with the rejected candidate). Training reads other seeds and never this file. Table~\ref{tab:heldout} describes it. Its $\nGen$ generated trap sets come from the same generators as the training data (lattices, hexagonal lattices, rings, random sets with a minimum spacing and three-dimensional
+stacks) with a fresh seed, and are filtered to be demanding: at least 40 traps and a random-start phase-fixed WGS run, on a selection seed that is not an evaluation seed, that needs more than 3 iterations to reach 1 percent. A sparse array reaches 1 percent at the first iteration from any start, so it cannot show a warm start, and the filter looks only at the baseline, never at a model. The remaining $\nBench$ geometries are the six point-trap geometries of
+the benchmark of the product (G1 to G6: a $10\times10$ square lattice, a ring of 36 traps, 100 random traps, a quasi-periodic array of 119 traps, a three-dimensional lattice of $5\times5\times3$ traps and a $32\times32$ lattice of 1024 traps), on the grids of the benchmark, the last of which is $512^2$ pixels. The quasi-periodic benchmark geometry belongs to a family absent from training. The generated sets have between \trapsMin{} and \trapsMax{} traps (median \trapsMed). The engine setup of the generated sets is an SLM of $\nPixGen\times\nPixGen$ pixels of pitch \pitchUm{} $\mu$m with a zero padding of \padGen, a lens of \focalMm{} mm and a wavelength of \lambdaNm{} nm.
+
+\begin{table}[t]
+\centering\small
+\resizebox{\textwidth}{!}{\begin{tabular}{@{}lrrll@{}}
+\toprule
+Group & Geometries & Traps & Grid & Origin \\
+\midrule
+generated, demanding & \nGen & \trapsMin--\trapsMax & $\nPixGen^2$, pad \padGen & fresh seed; at least 40 traps; the random start needs more than 3 iterations \\
+benchmark G1 to G6 & \nBench & 36--\benchTrapsMax & $256^2$ and $512^2$ & benchmark geometry records of the product \\
+\bottomrule
+\end{tabular}}
+\caption{Composition of the held-out set of $\nGeo$ trap geometries: the generated geometries are filtered to be demanding for the baseline, and the benchmark geometries are those of the product's benchmark; neither group is used in training.}
+\label{tab:heldout}
+\end{table}
+
+\subsection{Methods compared}\label{sec:compared}
+
+Every method is run by the engine of the product on the same geometries, seeds and budget; no number is taken from a publication. The published method is phase-fixed WGS of Kim et al.~\cite{kim2019} at its default freeze index $\nfix=12$ from the random superposition start of~\cite{dileonardo}. Two published iterations that precede it serve as references: the Gerchberg--Saxton iteration~\cite{gs1972} and weighted GS~\cite{dileonardo}, both from the random start. The proposed
+method is phase-fixed WGS from the network start. The ablation adds the arms that separate the two factors that the candidate changed at once, the start and the freeze index:
+\begin{itemize}
+\item random start, $\nfix=12$ (the published default);
+\item random start, $\nfix=3$ (the early freeze alone, no network);
+\item network start, $\nfix=12$ (the network alone, the published freeze);
+\item network start, $\nfix=3$ (the candidate as it was trained and first evaluated).
+\end{itemize}
+A sweep of $\nfix$ over $1,2,3,4,6,8$ and $12$ for both starts (on every second generated geometry, $30$ of them) and an oracle start (Section~\ref{sec:oracle-design}) complete the design. The network is the trained candidate: the checkpoint at the last of its $\trainSteps$ steps, read from the training directory of the data root; nothing is retrained.
+
+\subsection{Metrics and statistics}\label{sec:stats}
+
+The per-run quantities are those of Eqs.~\eqref{eq:metrics} and~\eqref{eq:k1}, read after each iteration by the engine. For a geometry $g$ and an arm the per-geometry value is the median over the $\nSeeds$ seeds,
+\begin{equation}
+\tilde k_g=\operatorname{median}_{s\in\{301,302,303\}}\,k_1^{(g,s)},
+\label{eq:pergeo}
+\end{equation}
+and the summary of an arm is the median over geometries, $\tilde k=\operatorname{median}_g\tilde k_g$; the ratio of two arms is the ratio of their summaries, $\rho=\tilde k_{\mathrm{ref}}/\tilde k_{\mathrm{arm}}$. The same seed gives the same random phases in every arm, so the arms are paired by geometry and seed. The uncertainty of $\tilde k$ and of $\rho$ is a percentile bootstrap over geometries,
+\begin{equation}
+\mathrm{CI}_{95}=\big[\,q_{2.5}\{\tilde k^{*b}\}_{b=1}^{B},\ q_{97.5}\{\tilde k^{*b}\}_{b=1}^{B}\,\big],\qquad B=10^{4},
+\label{eq:boot}
+\end{equation}
+where $\tilde k^{*b}$ is the summary of the $b$-th resample of the $\nGeo$ geometries with replacement~\cite{efron}, with a fixed seed for the resampling. Because $k_1$ is an integer capped at $\budget+1$ and the arms differ in how many runs hit the cap, we also report the share of runs that never reach 1 percent, the quartiles of $\tilde k_g$ and the median final $\relstd$. The difference between two arms on the geometries is tested with the exact two-sided sign test on the paired $\tilde k_g$, ties dropped,
+\begin{equation}
+p=\min\Big\{1,\ 2\sum_{j=0}^{\min(n_+,n_-)}\binom{n_++n_-}{j}2^{-(n_++n_-)}\Big\},
+\label{eq:sign}
+\end{equation}
+with $n_+$ and $n_-$ the numbers of geometries where the first arm needs more and fewer iterations. The sign test uses no distributional assumption and is robust to the heavy tail of the capped counts. Final-efficiency differences are the relative difference of the medians over geometries, as in the acceptance test.
+
+\subsection{Oracle start and weight accounting}\label{sec:oracle-design}
+
+Two further measurements probe the theory. The oracle start is the best start a predictor could hope for: the phases $\arg V_m$ of the final field of a random-start phase-fixed WGS run of $\budget$ iterations on the same geometry and seed are used as the trap phases $\theta_m$ of Eq.~\eqref{eq:start}, and the iteration is run again from there with $\nfix=12$, $3$ and $1$. It is computed on the first ten generated geometries with the first seed. The weight accounting runs the iteration with a wrapper that records $S_k$ and $s_k$ of Section~\ref{sec:weights-bound} at every iteration, from the random start and from the oracle start, for $\nfix=12$ and $\nfix=3$, on the same ten geometries and seed, and checks Eq.~\eqref{eq:allowance} on every run.
+
+The two probes answer different questions. The oracle start bounds what any predictor of trap phases could gain at a given freeze index, and its comparison with the network start tells whether the network is far from that bound or the bound itself is small. The accounting tests a specific explanation of the bound, that the restart of the weights limits the iteration, by comparing the lower bound it implies with the iterations that the run actually needs. Both are exploratory and are reported with their small samples.
+
+\subsection{Hardware and run times}\label{sec:hardware}
+
+The engine is the NumPy implementation of the product (the point-trap form for every geometry); the network runs in PyTorch on the CPU for the inference of each geometry, and the measurement of all arms was run with \nWorkers{} worker processes on the development workstation (Intel Core i9-14900HX, 48 GB of RAM), in \runtimeMin{} minutes of wall-clock time. The network was trained on a single RTX 4070 Laptop GPU in \trainMinutes{} minutes. The generated trap sets and the held-out file do not depend on the machine; the wall-clock numbers do, and none of the conclusions rests on a time. The number of worker processes does not change any result, because each run is a pure function of its geometry, seed, start and freeze index, and the results are gathered by identifier. The measurement script checks the held-out digest before it starts and stops if it differs. Every random choice goes through the portable seeded generator of the engine, so a rerun reproduces the same numbers up to the floating point of the machine's fast Fourier transform.

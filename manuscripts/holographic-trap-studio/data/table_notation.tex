@@ -1,0 +1,50 @@
+\begin{table}[t]\centering\footnotesize
+\caption{Notation: the symbols used in more than one section of the report, with their meaning and unit; a symbol that belongs to one derivation only (the sigma points of one method, the statistics of one test) is defined where it appears. A unit of 1 marks a dimensionless quantity or a count, and the intensities are fractions of the input power.}\label{tab:notation}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth} >{\raggedright\arraybackslash}p{0.56\textwidth} >{\raggedright\arraybackslash}p{0.16\textwidth}@{}}\toprule Symbol & Meaning & Unit\\\midrule
+$\lambda$ & vacuum wavelength of the laser & nm\\
+$f$ & focal length of the lens in the pupil of which the SLM sits & mm\\
+$\mathrm{NA}$ & numerical aperture of the objective & 1\\
+$n_{\mathrm{imm}}$ & refractive index of the immersion medium & 1\\
+$n_{\mathrm{pix}}$ & SLM pixels per side & 1\\
+$N_{\mathrm{pix}}$ & number of SLM pixels, $n_{\mathrm{pix}}^2$ & 1\\
+$p$ & SLM pixel pitch & $\mu$m\\
+$\mathrm{pad}$ & zero-padding factor of the focal grid & 1\\
+$n_{\mathrm{fft}}$ & focal grid size, $\mathrm{pad}\,n_{\mathrm{pix}}$ & 1\\
+$j$ & index of an SLM pixel, at position $(x_j,y_j)$ from the optical axis & m\\
+$m,\ M$ & index and number of traps & 1\\
+$(x_m,y_m,z_m)$ & position of trap $m$ in the focal volume & $\mu$m\\
+$l_m$ & vortex (topological) charge of trap $m$ & 1\\
+$w_m,\ a_m$ & target weight of trap $m$ and its target amplitude $\sqrt{w_m}$ & 1\\
+$A_j$ & input beam amplitude, normalised so that $\sum_jA_j^2=N_{\mathrm{pix}}$ & 1\\
+$\phi_j$ & phase displayed at pixel $j$ & rad\\
+$\Delta_j^m$ & phase delay from pixel $j$ to trap $m$ (Eq.~\eqref{eq:delay}) & rad\\
+$V_m,\ I_m$ & complex field at trap $m$ and its intensity $|V_m|^2$ (fraction of the input power) & 1\\
+$e$ & efficiency, the sum of the trap intensities & 1\\
+$u$ & uniformity, $1-(\max I-\min I)/(\max I+\min I)$ & 1\\
+$\sigma$ & relative standard deviation of the trap intensities & percent\\
+$\eta$ & root-mean-square fractional error of a shaped potential in its measure region & 1\\
+$\Delta x,\ X_{1/2}$ & width of one focal bin and half of the unaliased field & $\mu$m\\
+$K,\ \sigma_K,\ q$ & crosstalk kernel of the device and its fitted width and exponent & 1\\
+$Z_j,\ c_j$ & Zernike mode $j$ (Noll order) and its coefficient & waves\\
+$N$ (or $n_{\mathrm{fix}}$) & iteration after which the focal phase is frozen & 1\\
+$\alpha$ & exponent of the assignment cost (M16) or weight of the adaptive form (M05) & 1\\
+$m$ (mixing) & mixing parameter of the mixed-region rule & 1\\
+$G,\ \rho_m$ & feedback gain and measured intensity relative to its target & 1\\
+$\lambda_{\mathrm{B5}}$ & trade-off parameter of the front & 1\\
+$\mathrm{AC}$ & accuracy of a volume hologram, mean over planes of the overlap of unit-sum intensities & 1\\
+$z_{R,\mathrm{SLM}}$ & SLM-limited Rayleigh range of the volume network (Eq.~\eqref{eq:m17-zr}), the depth unit of its planes & mm\\
+$\kappa,\ \gamma,\ f_c$ & trap stiffness, drag coefficient and corner frequency of a bead & pN/$\mu$m, kg/s, Hz\\
+$U,\ \hat U,\ \omega_r,\ \omega_z$ & dipole potential, trap depth of an atom and its radial and axial trap angular frequencies & J, J, rad/s, rad/s\\
+$w_{\mathrm b}$ & waist of the input Gaussian beam at the SLM, $w_{\mathrm{frac}}\,n_{\mathrm{pix}}\,p/2$ (not the trap weight $w_m$) & $\mu$m\\
+$w_0,\ z_R$ & waist and Rayleigh range $\pi w_0^2/\lambda$ of the focus of an atom trap (Eq.~\eqref{eq:atom}) & $\mu$m\\
+$\omega_0,\ \Gamma,\ \Delta$ & resonance angular frequency, natural linewidth and detuning of the atomic transition (Eq.~\eqref{eq:atom}); the detuning $\Delta$ carries no indices, unlike the delay $\Delta_j^m$ & rad/s\\
+$c,\ \epsilon_0$ & speed of light and vacuum permittivity & m/s, F/m\\
+$n_m,\ n_p,\ r$ & index of the medium, index and radius of a bead; $m=n_p/n_m$ in the polarizability is an index ratio and not the trap index & 1, 1, $\mu$m\\
+$\alpha$ (polarizability) & polarizability of the bead of Eq.~\eqref{eq:bead}, the third meaning of $\alpha$ & F\,m$^2$\\
+$D,\ P(f)$ & diffusion coefficient $k_BT/\gamma$ and power spectral density of the bead position at frequency $f$ & m$^2$/s, m$^2$/Hz\\
+$H,\ \boldsymbol\xi,\ \lambda_m$ & angular-spectrum transfer function, spatial frequency and wavelength in the medium, $\lambda/n_{\mathrm{imm}}$ (Eq.~\eqref{eq:angspec}) & 1, 1/$\mu$m, nm\\
+$T_m,\ t$ & target intensity of trap $m$ in the cost of the optimizers, and the power of that cost (Eq.~\eqref{eq:m10}) & 1\\
+$L,\ \epsilon$ & loss of an optimizer (a quadratic intensity loss unless stated) and a small positive constant that keeps a logarithm or a quotient finite & 1\\
+$g_i,\ B_i,\ \psi$ & weights, focal amplitude relative to its target and focal phase of the phase-fixed iteration $i$ (Eq.~\eqref{eq:m07}) & 1, 1, rad\\
+$\theta_m,\ h(\tau)$ & phase given to trap $m$ (random in M02, learned in B3, locked in B2) and the minimal-jerk profile of $\tau=s/S$ (Eq.~\eqref{eq:b2-traj}) & rad, 1\\
+\bottomrule\end{tabular}\end{table}

@@ -16,8 +16,8 @@ reimplementan. Cada uno es una lección sobre una sola pregunta.
 
 Eight topics, from simple to complex, in two trees:
 
-1. `01-fourier-optics`: where a phase pattern sends the light, and the numbers that judge a trap array.
-2. `02-analytic-holograms`: the one-step holograms, the baselines.
+1. `01-fourier-optics`: where a phase pattern sends the light, the numbers that judge a trap array, and the engine-reference, readiness and API contracts.
+2. `02-analytic-holograms`: the one-step holograms, the baselines, and the Laguerre-Gaussian vortex traps (M15).
 3. `03-gerchberg-saxton`: the Gerchberg-Saxton family, phase-fixed WGS against slmsuite, and device-aware WGS (B1).
 4. `04-shaped-potentials`: what a shaped potential asks, the signal and the noise region, MRAF and optimal-transport starts for shaped targets.
 5. `05-optimization`: conjugate gradient and Wirtinger-Adam on the explicit cost, and the efficiency-uniformity front (B5).
@@ -27,6 +27,15 @@ Eight topics, from simple to complex, in two trees:
 
 Levels: 1 fundamentals, 2 the method in practice, 3 comparison with published methods (the published methods of the SDD's ladder,
 run against slmsuite 0.5.0 or as published), 4 proposed methods (the product's own claims, measured, including the negatives).
+
+## Coverage of the tool / Cobertura de la herramienta
+
+[`coverage.json`](coverage.json) maps each method of the SDD's ladder, each data contract, each pipeline stage and each method
+package to the notebooks that teach it (paths relative to a language tree, present in both); a method counts as covered only by a
+notebook of level 2 or above. The parts without a notebook yet are listed in the index of each tree.
+[`coverage.json`](coverage.json) asigna cada método de la escalera del SDD, cada contrato de datos, cada etapa del pipeline y cada
+paquete de métodos a los notebooks que lo enseñan (rutas relativas a un árbol de idioma, presentes en ambos); un método solo cuenta
+como cubierto por un notebook de nivel 2 o superior. Las partes que aún no tienen notebook se listan en el índice de cada árbol.
 
 ## The two trees / Los dos árboles
 

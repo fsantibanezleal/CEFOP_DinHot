@@ -42,7 +42,7 @@ Continuation over $\lambda\in[0,1]$ of the loss
 $$L_\lambda(\phi) = (1-\lambda)\,\frac{\sum_m (I_m - T_m)^2}{\sum_m T_m^2}\;-\;\lambda\,\frac{\sum_m I_m}{e_0},\qquad T_m = e_0\,\frac{w_m}{\sum_k w_k},$$
 
 with $I_m = |V_m|^2$ and $e_0$ the efficiency of the weighted-GS hologram at the uniform end. The research record writes $(1-\lambda)\sum(|V|^2 - w_mT_m)^2 - \lambda\sum|V|^2$; the two terms are divided by
-$\sum T^2$ and $e_0$ so that both are dimensionless and of order one (UNVERIFIED reading: the scaling is not stated in the record). The start ($\lambda = 0$) is phase-fixed WGS (`warm` = 30 iterations,
+$\sum T^2$ and $e_0$ so that both are dimensionless and of order one (DinHot's scaling, part of the method's definition: the record states none). The start ($\lambda = 0$) is phase-fixed WGS (`warm` = 30 iterations,
 `pfwgs`), refined by the same conjugate gradient; each next $\lambda$ is warm-started from its neighbour and solved with `budget.iterations` Fletcher-Reeves and strong-Wolfe CG iterations
 (`_common.cg_minimize`). The gradient is the closed form $G_m = [2(1-\lambda)(I_m - T_m)/\sum T^2 - \lambda/e_0]\,V_m$ pulled back by the point-trap adjoint (`_FrontCost.value_grad`, lines 84 to 91).
 
@@ -105,7 +105,7 @@ On C02 the knee has a relative standard deviation of 0.67 percent or below again
 
 ## Limits and failure modes
 
-- The loss scaling is DinHot's reading (UNVERIFIED); the front is computed with the ideal device, so it does not apply to a device-limited case.
+- The loss scaling is DinHot's, part of the method's definition; the front is computed with the ideal device, so it does not apply to a device-limited case.
 - The hypervolume depends on the reference point and is dominated by the high-uniformity region.
 - One seed in the acceptance test; the benchmark protocol repeats it over 20 seeds (its rows are not yet in `data/derived/benchmark/results.json`).
 - The front is computed for one task and one setup; a different geometry gives a different front.
@@ -114,8 +114,8 @@ On C02 the knee has a relative standard deviation of 0.67 percent or below again
 ## References
 
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913
-- Polin, Hovhannisyan and Sorensen 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the phase-fixed start)
+- Polin, Ladavac, Lee, Roichman and Grier 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the phase-fixed start)
 
 ## Update after the corrections of 2026-10-29
 

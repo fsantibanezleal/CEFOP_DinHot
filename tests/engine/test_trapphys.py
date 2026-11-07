@@ -19,7 +19,8 @@ def test_constants():
 def test_polarizability_clausius_mossotti_and_r3_scaling():
     a = tp.rayleigh_polarizability_Fm2(50e-9, 1.59, 1.33)
     er = (1.59 / 1.33) ** 2
-    assert a == pytest.approx(4 * math.pi * (50e-9) ** 3 * tp.EPS0_F_PER_M * (er - 1) / (er + 2))
+    # Harada and Asakura 1996: alpha = 4 pi eps0 n_m^2 r^3 (m^2 - 1) / (m^2 + 2), m = n_p / n_m
+    assert a == pytest.approx(4 * math.pi * 1.33**2 * (50e-9) ** 3 * tp.EPS0_F_PER_M * (er - 1) / (er + 2), rel=1e-12, abs=0)
     assert a > 0
     # the gradient force scales as r^3: a factor 1000 for a tenfold radius (dossier D3.1)
     assert tp.rayleigh_polarizability_Fm2(500e-9, 1.59, 1.33) / a == pytest.approx(1000.0)
@@ -30,11 +31,61 @@ def test_gaussian_stiffness_eq12_13():
     a = tp.rayleigh_polarizability_Fm2(50e-9, 1.59, 1.33)
     i0 = tp.gaussian_peak_intensity_W_per_m2(1e-3, 0.5e-6)
     assert i0 == pytest.approx(2e-3 / (math.pi * 0.25e-12))
-    k = tp.gaussian_stiffness_N_per_m(a, i0, 0.5e-6)
-    assert k == pytest.approx(2 * a / (tp.C_M_PER_S * tp.EPS0_F_PER_M) * i0 / 0.25e-12)
+    k = tp.gaussian_stiffness_N_per_m(a, i0, 0.5e-6, n_medium=1.33)
+    assert k == pytest.approx(2 * a / (1.33 * tp.C_M_PER_S * tp.EPS0_F_PER_M) * i0 / 0.25e-12, rel=1e-12, abs=0)
     assert k > 0
-    # curvature form: kappa = -alpha/(2 c eps0) I'' with I'' = -4 I0 / w^2 at the centre of a Gaussian
-    assert tp.gradient_stiffness_N_per_m(a, -4 * i0 / 0.25e-12) == pytest.approx(k)
+    # curvature form: kappa = -alpha/(2 n_m c eps0) I'' with I'' = -4 I0 / w^2 at the centre of a Gaussian
+    assert tp.gradient_stiffness_N_per_m(a, -4 * i0 / 0.25e-12, n_medium=1.33) == pytest.approx(k, rel=1e-12, abs=0)
+
+
+def test_medium_factor_vacuum_is_the_old_form():
+    """n_medium = 1 (the default) is the vacuum form of the dossier, to the last digit."""
+    a = 3.3e-33
+    i0, w, curv = 2.1e10, 0.7e-6, -4.4e22
+    assert tp.gradient_stiffness_N_per_m(a, curv) == -a / (2.0 * tp.C_M_PER_S * tp.EPS0_F_PER_M) * curv
+    assert tp.gradient_stiffness_N_per_m(a, curv, n_medium=1.0) == tp.gradient_stiffness_N_per_m(a, curv)
+    assert tp.gaussian_stiffness_N_per_m(a, i0, w) == 2.0 * a * i0 / (tp.C_M_PER_S * tp.EPS0_F_PER_M * w**2)
+    er = 1.59**2
+    assert tp.rayleigh_polarizability_Fm2(50e-9, 1.59, 1.0) == 4 * math.pi * (50e-9) ** 3 * tp.EPS0_F_PER_M * (er - 1) / (er + 2)
+
+
+def test_stiffness_closed_form_in_water():
+    """kappa = (2 pi n_m r^3 / c) L(m) (-d2I/dx2), with L(m) = (m^2 - 1)/(m^2 + 2) (Harada and Asakura 1996)."""
+    r, n_p, n_m = 0.1e-6, 1.59, 1.33
+    m = n_p / n_m
+    lm = (m**2 - 1) / (m**2 + 2)
+    a = tp.rayleigh_polarizability_Fm2(r, n_p, n_m)
+    assert a == pytest.approx(4 * math.pi * tp.EPS0_F_PER_M * n_m**2 * r**3 * lm, rel=1e-12, abs=0)
+    curv = -3.0e22
+    assert tp.gradient_stiffness_N_per_m(a, curv, n_medium=n_m) == pytest.approx(2 * math.pi * n_m * r**3 / tp.C_M_PER_S * lm * -curv, rel=1e-12, abs=0)
+    ratio = tp.gradient_stiffness_N_per_m(a, curv, n_medium=n_m) / tp.gradient_stiffness_N_per_m(a, curv)
+    assert ratio == pytest.approx(1 / n_m, rel=1e-12, abs=0)
+    # against the old vacuum-prefactor alpha the full stiffness is larger by exactly n_m
+    a_old = 4 * math.pi * r**3 * tp.EPS0_F_PER_M * lm
+    assert tp.gradient_stiffness_N_per_m(a, curv, n_medium=n_m) / tp.gradient_stiffness_N_per_m(a_old, curv) == pytest.approx(n_m, rel=1e-12, abs=0)
+
+
+def test_stiffness_map_carries_the_medium_factor():
+    w, dx, n_m = 0.5e-6, 0.02e-6, 1.33
+    ax = (np.arange(121) - 60) * dx
+    xx, yy = np.meshgrid(ax, ax)
+    rel = np.exp(-2 * (xx**2 + yy**2) / w**2)
+    a = tp.rayleigh_polarizability_Fm2(50e-9, 1.59, n_m)
+    i0 = tp.gaussian_peak_intensity_W_per_m2(1e-3, w)
+    k_vac = tp.stiffness_map(rel, dx, i0, a)
+    k_med = tp.stiffness_map(rel, dx, i0, a, n_medium=n_m)
+    assert k_med[0] == pytest.approx(k_vac[0] / n_m, rel=1e-12, abs=0)
+    assert k_med[1] == pytest.approx(k_vac[1] / n_m, rel=1e-12, abs=0)
+    assert k_med[0][60, 60] == pytest.approx(tp.gaussian_stiffness_N_per_m(a, i0, w, n_medium=n_m), rel=5e-3)
+
+
+def test_medium_index_domain_errors():
+    with pytest.raises(ValueError):
+        tp.gradient_stiffness_N_per_m(1e-33, -1e22, n_medium=0.0)
+    with pytest.raises(ValueError):
+        tp.gaussian_stiffness_N_per_m(1e-33, 1e10, 1e-6, n_medium=float("nan"))
+    with pytest.raises(ValueError):
+        tp.stiffness_map(np.ones((5, 5)), 1e-7, 1e10, 1e-33, n_medium=-1.0)
 
 
 def test_stiffness_map_matches_analytic_gaussian():
@@ -44,9 +95,9 @@ def test_stiffness_map_matches_analytic_gaussian():
     rel = np.exp(-2 * (xx**2 + yy**2) / w**2)              # relative intensity, peak 1
     a = tp.rayleigh_polarizability_Fm2(50e-9, 1.59, 1.33)
     i0 = tp.gaussian_peak_intensity_W_per_m2(1e-3, w)
-    kxx, kyy = tp.stiffness_map(rel, dx, i0, a)
+    kxx, kyy = tp.stiffness_map(rel, dx, i0, a, n_medium=1.33)
     assert kxx.shape == rel.shape
-    assert kxx[60, 60] == pytest.approx(tp.gaussian_stiffness_N_per_m(a, i0, w), rel=5e-3)
+    assert kxx[60, 60] == pytest.approx(tp.gaussian_stiffness_N_per_m(a, i0, w, n_medium=1.33), rel=5e-3)
     assert kyy[60, 60] == pytest.approx(kxx[60, 60], rel=1e-9)
     assert kxx[60, 0] < kxx[60, 60]                         # the flank is not stiffer than the centre... sign check
     with pytest.raises(ValueError):

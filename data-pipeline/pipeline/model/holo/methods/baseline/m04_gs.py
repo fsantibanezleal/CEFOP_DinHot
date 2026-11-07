@@ -1,7 +1,8 @@
 r"""M04: Gerchberg-Saxton, point-trap and FFT forms.
 
-Update rule (dossier D1.2, Di Leonardo, Ianni and Ruocco 2007, https://doi.org/10.1364/OE.15.001913, Table 1; Gerchberg and
-Saxton 1972 is UNVERIFIED, not opened): with $V_m = \frac1N\sum_j A_j e^{i(\phi_j - \Delta_j^m)}$ and target amplitudes
+Update rule (dossier D1.2, Di Leonardo, Ianni and Ruocco 2007, https://doi.org/10.1364/OE.15.001913, Table 1; the
+original, Gerchberg and Saxton 1972, Optik 35, 237, pp. 238-239, replaces the amplitude in each plane and keeps the phase,
+starting from uniform random phases): with $V_m = \frac1N\sum_j A_j e^{i(\phi_j - \Delta_j^m)}$ and target amplitudes
 $a_m = \sqrt{w_m}$,
 $$\phi_j^{k} = \arg \sum_m a_m \frac{V_m^{k-1}}{|V_m^{k-1}|}\, e^{+i\Delta_j^m}.$$
 The start is the SR hologram (``init`` overrides). ``form='point'`` is the direct sum of ``core.forward``;

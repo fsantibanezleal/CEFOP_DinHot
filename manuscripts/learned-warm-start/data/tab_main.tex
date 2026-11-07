@@ -1,0 +1,12 @@
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+Start & $n_{\mathrm{fix}}$ & Median it. [95\% CI] & Q1--Q3 & Never (\%) & Final $\sigma$ (\%) & Efficiency \\
+\midrule
+random (engine default) & 12 & 14 [14, 14] & 13--15 & 6.1 & 0.00013 & 0.790 \\
+random & 3 & 7.5 [6, 10.5] & 5--61 & 32.8 & 0.217 & 0.757 \\
+network (candidate) & 3 & 8 [7, 17] & 5--61 & 34.8 & 0.216 & 0.756 \\
+network & 12 & 14 [14, 14.5] & 13--15 & 4.5 & 0.000222 & 0.791 \\
+Gerchberg--Saxton, random start & -- & 61 [61, 61] & -- & 100 & 16.3 & 0.821 \\
+weighted GS, random start & -- & 30 [27, 36] & -- & 6.6 & 0.472 & 0.808 \\
+\bottomrule
+\end{tabular}

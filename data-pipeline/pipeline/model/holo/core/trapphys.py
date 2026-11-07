@@ -2,13 +2,15 @@
 
 Names carry their units (``_m``, ``_N_per_m``, ``_W_per_m2``, ``_J``, ``_rad_s``, ``_Fm2`` = F m^2 = C m^2 / V).
 
-Rayleigh bead (physics-viz D3.1, READ from Bouloumis and Nic Chormaic, arXiv 2001.07359, Eq. 5 to 14, who follow
-Harada and Asakura 1996, not opened): polarizability ``alpha_0 = 4 pi r^3 eps0 (eps_r - 1) / (eps_r + 2)`` (Eq. 5,
-Clausius-Mossotti), time-averaged gradient force ``F = (1/2) Re(alpha) / (c eps0) grad I`` (Eq. 9), and for a Gaussian focus
-``I = I0 exp(-2 rho^2 / w0^2)`` the stiffness ``kappa = 2 Re(alpha) I0 / (c eps0 w0^2)`` (Eq. 12 and 13), ``U = kappa rho^2 / 2``
-(Eq. 14). In general ``kappa_i = -Re(alpha) / (2 c eps0) d^2 I / d x_i^2``. Here ``eps_r = (n_particle / n_medium)^2`` and the
-vacuum prefactor of the dossier is kept: the extra medium factors of a bead in water are not in the section read
-(UNVERIFIED), so the magnitude carries that caveat. Radiation reaction (Eq. 6) and the scattering force are not modelled.
+Rayleigh bead in a homogeneous medium of index ``n_m`` (physics-viz D3.1; the vacuum forms READ from Bouloumis and Nic
+Chormaic, arXiv 2001.07359, Eq. 5 to 14; the medium factors from Harada and Asakura 1996, Opt. Commun. 124, 529, re-derived
+for a dipole in a medium: ``n_m^2`` from the polarizability of a sphere in the medium, ``1/n_m`` from the intensity). With ``m = n_particle / n_medium``
+and ``L(m) = (m^2 - 1) / (m^2 + 2)``: polarizability ``alpha = 4 pi eps0 n_m^2 r^3 L(m)``; intensity
+``I = (1/2) n_m c eps0 |E|^2``; time-averaged gradient force ``F = alpha / (2 n_m c eps0) grad I = (2 pi n_m r^3 / c) L(m) grad I``;
+potential depth ``U = alpha I / (2 n_m c eps0)``; stiffness ``kappa_i = -alpha / (2 n_m c eps0) d^2 I / d x_i^2`` and, for a
+Gaussian focus ``I = I0 exp(-2 rho^2 / w0^2)``, ``kappa = 2 alpha I0 / (n_m c eps0 w0^2)``, ``U = kappa rho^2 / 2``. With
+``n_m = 1`` (the default of every ``n_medium`` keyword) each form is the vacuum one. The vacuum prefactor understates the force
+and the stiffness of a bead in water (1.33) by the factor ``n_m``. Radiation reaction and the scattering force are not modelled.
 
 Atom (physics-viz D3.4, READ and verified on a rendered page, Grimm, Weidemuller and Ovchinnikov 2000, arXiv physics/9902072):
 ``U_dip = (3 pi c^2 / (2 omega0^3)) (Gamma / Delta) I`` (Eq. 12), ``Gamma_sc = (3 pi c^2 / (2 hbar omega0^3)) (Gamma / Delta)^2 I``
@@ -39,15 +41,15 @@ def _pos(name: str, v: float) -> float:
 
 
 def rayleigh_polarizability_Fm2(radius_m: float, n_particle: float, n_medium: float) -> float:
-    """``alpha_0 = 4 pi r^3 eps0 (eps_r - 1) / (eps_r + 2)`` with ``eps_r = (n_particle / n_medium)^2`` (Eq. 5)."""
+    """``alpha = 4 pi eps0 n_m^2 r^3 (m^2 - 1) / (m^2 + 2)`` with ``m = n_particle / n_medium`` (Harada and Asakura 1996)."""
     r, npar, nmed = _pos("radius_m", radius_m), _pos("n_particle", n_particle), _pos("n_medium", n_medium)
     er = (npar / nmed) ** 2
-    return 4.0 * math.pi * r**3 * EPS0_F_PER_M * (er - 1.0) / (er + 2.0)
+    return 4.0 * math.pi * nmed**2 * r**3 * EPS0_F_PER_M * (er - 1.0) / (er + 2.0)
 
 
-def gradient_stiffness_N_per_m(alpha_Fm2: float, intensity_curvature_W_per_m4: float) -> float:
-    """``kappa = -alpha / (2 c eps0) d^2 I / dx^2`` along one axis (from Eq. 9)."""
-    return -alpha_Fm2 / (2.0 * C_M_PER_S * EPS0_F_PER_M) * intensity_curvature_W_per_m4
+def gradient_stiffness_N_per_m(alpha_Fm2: float, intensity_curvature_W_per_m4: float, *, n_medium: float = 1.0) -> float:
+    """``kappa = -alpha / (2 n_m c eps0) d^2 I / dx^2`` along one axis (``n_medium`` = 1 is the vacuum form)."""
+    return -alpha_Fm2 / (2.0 * _pos("n_medium", n_medium) * C_M_PER_S * EPS0_F_PER_M) * intensity_curvature_W_per_m4
 
 
 def gaussian_peak_intensity_W_per_m2(power_w: float, waist_m: float) -> float:
@@ -55,14 +57,16 @@ def gaussian_peak_intensity_W_per_m2(power_w: float, waist_m: float) -> float:
     return 2.0 * _pos("power_w", power_w) / (math.pi * _pos("waist_m", waist_m) ** 2)
 
 
-def gaussian_stiffness_N_per_m(alpha_Fm2: float, peak_intensity_W_per_m2: float, waist_m: float) -> float:
-    """``kappa = 2 alpha I0 / (c eps0 w0^2)`` (Eq. 12 and 13)."""
+def gaussian_stiffness_N_per_m(
+    alpha_Fm2: float, peak_intensity_W_per_m2: float, waist_m: float, *, n_medium: float = 1.0
+) -> float:
+    """``kappa = 2 alpha I0 / (n_m c eps0 w0^2)`` (``n_medium`` = 1 is the vacuum form)."""
     w = _pos("waist_m", waist_m)
-    return 2.0 * alpha_Fm2 * peak_intensity_W_per_m2 / (C_M_PER_S * EPS0_F_PER_M * w**2)
+    return 2.0 * alpha_Fm2 * peak_intensity_W_per_m2 / (_pos("n_medium", n_medium) * C_M_PER_S * EPS0_F_PER_M * w**2)
 
 
 def stiffness_map(
-    intensity_map: np.ndarray, spacing_m: float, intensity_scale_W_per_m2: float, alpha_Fm2: float
+    intensity_map: np.ndarray, spacing_m: float, intensity_scale_W_per_m2: float, alpha_Fm2: float, *, n_medium: float = 1.0
 ) -> tuple[np.ndarray, np.ndarray]:
     """Local stiffness ``(kappa_xx, kappa_yy)`` in N/m at every pixel of a focal intensity map.
 
@@ -80,7 +84,7 @@ def stiffness_map(
     d2y[1:-1, :] = (ph[2:, :] - 2 * ph[1:-1, :] + ph[:-2, :]) / dx**2
     d2x[:, 0], d2x[:, -1] = d2x[:, 1], d2x[:, -2]
     d2y[0, :], d2y[-1, :] = d2y[1, :], d2y[-2, :]
-    return (gradient_stiffness_N_per_m(alpha_Fm2, d2x), gradient_stiffness_N_per_m(alpha_Fm2, d2y))
+    return (gradient_stiffness_N_per_m(alpha_Fm2, d2x, n_medium=n_medium), gradient_stiffness_N_per_m(alpha_Fm2, d2y, n_medium=n_medium))
 
 
 def rayleigh_range_m(waist_m: float, wavelength_m: float) -> float:

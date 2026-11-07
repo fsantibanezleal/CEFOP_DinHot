@@ -1,5 +1,8 @@
 # scripts/
 
+Start with the [numbered local workflow](local/README.md): check prerequisites, initialize, optionally generate
+into an external sandbox, then start the declared local frontend/API. Existing flat commands remain compatible.
+
 Environment and pipeline scripts in both `*.sh` and `*.ps1`, and the guards CI runs (each runs locally too, with the
 standard library only).
 
@@ -28,7 +31,7 @@ standard library only).
 | `check_doc_paths.py` | every repository path a document names exists |
 | `check_web_baseline.py` | the web's tokens, classes, numbers, images and animation loops |
 | `check_svg_animation.py` | an animated SVG carries its reduced-motion block and plays ten seconds at most (the shell's own analysis; needs `npm ci`) |
-| `check_deploy_place.py` | one deploy place, and only its files |
+| `check_deploy_place.py` | one deploy place, and only its files; plain `pages`/`vps` targets and structured static-plus-service VPS records are supported |
 | `check_live.py` | after a deploy, the live site is this build (run by the deploy workflow) |
 | `check_base_integrity.py` | no real `.env`, venv, native or heavy binary, raw data or machine path is tracked; a model file (`.pt`, `.pth`, `.onnx`) passes only when a catalog row's `documents` names it, at most 5 MB each and 50 MB together |
 | `check_content_standards.py` | no em-dash and no emoji in tracked content (ADR-0067); a pinned third-party notice listed with its digest in `.content_standards_allow` is skipped while the digest matches |

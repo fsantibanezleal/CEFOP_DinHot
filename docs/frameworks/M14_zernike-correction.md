@@ -24,7 +24,7 @@ $$\phi_{shown} = \phi_{base} - 2\pi\sum_j \hat c_j Z_j, \qquad E = \mathcal{F}\b
 https://arxiv.org/abs/2012.12281 ). `mode = "correct"` subtracts the known coefficients, exactly when they equal the injected ones.
 
 `mode = "recover"` (default) is a sensorless modal search with the emulated camera only. The merit is the summed measured trap intensity
-$M(\hat c) = \sum_m I_m$, which the Maréchal approximation makes a Gaussian in the residual rms, $M\propto\exp[-(2\pi\sigma)^2]$ (UNVERIFIED against Noll 1976),
+$M(\hat c) = \sum_m I_m$, which the exponential Strehl form (Mahajan 1983, https://doi.org/10.1364/JOSA.73.000860, compares it with the Maréchal expansion) makes a Gaussian in the residual rms, $M\propto\exp[-(2\pi\sigma)^2]$,
 so $\ln M$ is a parabola in each coefficient. One sweep visits the modes (Noll 4 to 11, tip, tilt and piston excluded: they move or do not change the
 traps), evaluates $M$ at $\hat c_j-\delta,\hat c_j,\hat c_j+\delta$ ($\delta$ = 0.06 waves), fits the parabola to $\ln M$ and moves to its vertex (step clipped to $\pm2\delta$; if
 not concave, to the best of the three). The modes are not exactly orthogonal under the Gaussian beam and off-axis traps, so the sweep repeats; it stops when the
@@ -52,7 +52,7 @@ Recovers an injected set of Noll modes 4 to 11 within 5 percent of their amplitu
 
 ## Limits
 
-- UNVERIFIED: Noll indices 12 to 21 and the Noll 1976 ordering ([P03](P03_zernike.md)).
+- Noll indices 12 to 21 and the Noll 1976 ordering were not compared with the paper, whose text was not available in full ([P03](P03_zernike.md)).
 - The merit assumes a roughly Gaussian response in each coefficient; strong aberrations break it.
 - The camera is an emulation.
 

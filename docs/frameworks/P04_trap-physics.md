@@ -18,34 +18,41 @@ Units are carried in the names (`_m`, `_N_per_m`, `_W_per_m2`, `_J`, `_rad_s`, `
 
 ### Rayleigh bead
 
-The polarizability of a sphere of radius $r$ with $\epsilon_r = (n_{particle}/n_{medium})^2$ is
+A sphere of radius $r$ in a homogeneous medium of index $n_m$ has the relative index $m = n_{particle}/n_m$ and the
+Clausius-Mossotti factor $L(m) = (m^2-1)/(m^2+2)$. Its polarizability in the medium is
 
-$$\alpha_0 = 4\pi r^3 \epsilon_0\,\frac{\epsilon_r - 1}{\epsilon_r + 2}$$
+$$\alpha = 4\pi\epsilon_0\, n_m^2\, r^3\, L(m)$$
 
-(Eq. 5, Clausius-Mossotti; `rayleigh_polarizability_Fm2`, line 41). The time-averaged gradient force is
-$F = \tfrac12 \operatorname{Re}(\alpha)/(c\epsilon_0)\,\nabla I$ (Eq. 9). For a Gaussian focus $I = I_0 \exp(-2\rho^2/w_0^2)$
-the stiffness is
+(`rayleigh_polarizability_Fm2`, line 43; Harada and Asakura 1996, Opt. Commun. 124, 529). The intensity in the medium is
+$I = \tfrac12 n_m c\epsilon_0 |E|^2$, so the time-averaged gradient force is
 
-$$\kappa = \frac{2\operatorname{Re}(\alpha)\, I_0}{c\,\epsilon_0\, w_0^2}, \qquad U = \tfrac12 \kappa\rho^2$$
+$$F = \frac{\alpha}{2\, n_m c\,\epsilon_0}\,\nabla I = \frac{2\pi n_m r^3}{c}\, L(m)\,\nabla I,
+\qquad U = \frac{\alpha I}{2\, n_m c\,\epsilon_0}.$$
 
-(Eqs. 12 to 14; `gaussian_stiffness_N_per_m`, line 58). In general
-$\kappa_i = -\operatorname{Re}(\alpha)/(2 c\epsilon_0)\; \partial^2 I/\partial x_i^2$, evaluated on a focal intensity map by `stiffness_map`
-(line 64) with 3-point central differences. Source: Bouloumis and Nic Chormaic, arXiv 2001.07359, Eqs. 5 to 14, who follow Harada
-and Asakura 1996 (not opened). The vacuum prefactor is kept: the extra medium factors of a bead in water are not in the
-section read (UNVERIFIED), so the magnitude carries that caveat. Radiation reaction and the scattering force are not modelled.
+For a Gaussian focus $I = I_0 \exp(-2\rho^2/w_0^2)$ the stiffness is
+
+$$\kappa = \frac{2\alpha\, I_0}{n_m\, c\,\epsilon_0\, w_0^2}, \qquad U = \tfrac12 \kappa\rho^2$$
+
+(`gaussian_stiffness_N_per_m`, line 60). In general
+$\kappa_i = -\alpha/(2 n_m c\epsilon_0)\; \partial^2 I/\partial x_i^2$, evaluated on a focal intensity map by `stiffness_map`
+(line 68) with 3-point central differences; each of the three takes the medium index as the keyword `n_medium` (default 1, the
+vacuum form). The dynamics stage uses the same medium index for the depth of a bead, $U_0 = \alpha I_{peak}/(2 n_m c\epsilon_0)$
+(`stages/dynamics.py`). The vacuum prefactor of Bouloumis and Nic Chormaic (arXiv 2001.07359, Eqs. 5 to 14) understates the force
+and the stiffness of a bead in water ($n_m = 1.33$) by the factor $n_m$; the derivation is in the record of the check of the
+2026-11-04 review. Radiation reaction and the scattering force are not modelled.
 
 ### Atom in a dipole trap
 
 $$U_{dip} = \frac{3\pi c^2}{2\omega_0^3}\,\frac{\Gamma}{\Delta}\,I, \qquad
 \Gamma_{sc} = \frac{3\pi c^2}{2\hbar\omega_0^3}\Big(\frac{\Gamma}{\Delta}\Big)^2 I, \qquad \hbar\Gamma_{sc} = \frac{\Gamma}{\Delta}\,U_{dip}$$
 
-with $\Delta = \omega - \omega_0$; red detuning ($\Delta < 0$) is attractive (Eqs. 12 to 14; `dipole_potential_J`, line 91;
-`scattering_rate_per_s`, line 99). A focused Gaussian beam gives $I(r,z) = \frac{2P}{\pi w^2(z)}\exp(-2r^2/w^2(z))$ (Eq. 36),
+with $\Delta = \omega - \omega_0$; red detuning ($\Delta < 0$) is attractive (Eqs. 12 to 14; `dipole_potential_J`, line 95;
+`scattering_rate_per_s`, line 103). A focused Gaussian beam gives $I(r,z) = \frac{2P}{\pi w^2(z)}\exp(-2r^2/w^2(z))$ (Eq. 36),
 $z_R = \pi w_0^2/\lambda$ (Eq. 37) and $U = -\hat U\,[1 - 2(r/w_0)^2 - (z/z_R)^2]$ (Eq. 38), hence
 
 $$\omega_r = \sqrt{\frac{4\hat U}{m w_0^2}}, \qquad \omega_z = \sqrt{\frac{2\hat U}{m z_R^2}}$$
 
-(`dipole_trap_depth_J`, line 107; `trap_frequencies_rad_s`). Source: Grimm, Weidemuller and Ovchinnikov 2000,
+(`dipole_trap_depth_J`, line 111; `trap_frequencies_rad_s`). Source: Grimm, Weidemuller and Ovchinnikov 2000,
 https://arxiv.org/abs/physics/9902072 . Constants: SI 2019 exact values of $c$, $k_B$, $h$ and the CODATA 2018 value of
 $\epsilon_0$.
 

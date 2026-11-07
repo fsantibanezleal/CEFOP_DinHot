@@ -1,6 +1,6 @@
 """M10 conjugate-gradient minimization of the intensity cost (Harte et al. 2014; algorithms dossier D2.2).
 
-Source: Harte, Bruce, Belmonte, Arnold, Opt. Express 22, 26548 (2014), https://doi.org/10.1364/OE.22.026548
+Source: Harte, Bruce, Keeling, Cassettari, Opt. Express 22, 26548 (2014), https://doi.org/10.1364/OE.22.026548
 (arXiv 1408.0188, eqs (1) to (11)). The SLM field is ``E_in = A_j exp(i phi_j)``, the focal field ``E_out`` its
 zero-padded Fourier transform, and the cost over the signal region (the noise region is free)
 

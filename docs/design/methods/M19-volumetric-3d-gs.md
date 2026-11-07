@@ -63,7 +63,7 @@ by a linear ramp (line 101). The start is the SR hologram of the snapped traps (
 |---|---|---|---|
 | `dz_m` | the smallest gap between the distinct plane depths of the target | `m19_multiplane.py` lines 57 to 61 | DinHot's rule: the finest axial structure that the target contains |
 | `nz` | the next power of two of at least 32 and of $8\,\max|i_z| + 1$ | line 66 (`_next_pow2`, line 51) | DinHot's rule: the 3D FFT length; 32 gives a volume of 33.6 MB at 256 by 256 pixels |
-| per-plane weighting | none | n/a | the source has none (UNVERIFIED: the paper reports a weak experimental match, a secondary statement that was not read) |
+| per-plane weighting | none | n/a | the source has none (the weak experimental match that the paper reports is a secondary statement that was not read) |
 
 ## Complexity and lane
 

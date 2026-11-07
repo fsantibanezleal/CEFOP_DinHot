@@ -18,8 +18,8 @@ so the TypeScript port needs no autodiff.
 
 The model is the ``device`` passed in: crosstalk, the pixel-aperture envelope and the quantizer (straight-through:
 quantized in the forward pass, identity in the backward pass; flicker is dropped). With ``device=None`` M13 is M10
-(an ideal device has no crosstalk to model). The unit of the kernel's ``k`` (cycles per SLM pixel) is the
-UNVERIFIED assumption recorded in ``core/device.py``.
+(an ideal device has no crosstalk to model). The unit of the kernel's ``k`` (cycles per SLM pixel) is DinHot's
+reading, recorded in ``core/device.py``: Schroff et al. give sigma in inverse pixels and do not define the unit further.
 
 Quantizer and the line search (I3). With a quantizing device (``bit_depth`` not None) the cost is evaluated on the rounded phase
 while the backward pass is the identity, so along a search direction the value is a staircase and the gradient is not its slope.

@@ -37,7 +37,7 @@ export const METHODOLOGY_CITATIONS: Citation[] = [
   {
     id: 'kim2019',
     label: { en: 'Kim et al. 2019', es: 'Kim et al. 2019' },
-    citation: 'Kim et al. (2019). Large-scale uniform optical focus array generation with a phase spatial light modulator. Optics Letters, 44, 3178.',
+    citation: 'Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin, Englund (2019). Large-scale uniform optical focus array generation with a phase spatial light modulator. Optics Letters, 44, 3178.',
     doi: '10.1364/OL.44.003178',
   },
   {
@@ -55,7 +55,7 @@ export const METHODOLOGY_CITATIONS: Citation[] = [
   {
     id: 'harte2014',
     label: { en: 'Harte et al. 2014', es: 'Harte et al. 2014' },
-    citation: 'Harte et al. (2014). A conjugate gradient minimisation approach to generating holographic traps for ultracold atoms. Optics Express, 22, 26548.',
+    citation: 'Harte, Bruce, Keeling, Cassettari (2014). A conjugate gradient minimisation approach to generating holographic traps for ultracold atoms. Optics Express, 22, 26548.',
     doi: '10.1364/OE.22.026548',
   },
   {

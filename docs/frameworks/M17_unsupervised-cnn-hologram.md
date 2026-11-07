@@ -45,7 +45,22 @@ The loss is the intensity error of the Fourier model of [P01](P01_forward-models
 
 $$\mathcal{L}(\phi) = \frac{\sum_{nm}\big(T_{nm} - |\mathcal{F}[A\,e^{i\phi}]_{nm}|^2\big)^2}{\sum_{nm}T_{nm}^2}$$
 
-with $T$ the normalised target intensity. This is the general form of the unsupervised objective of the source; the exact accuracy metric of the paper is not reproduced here.
+with $T$ the normalised target intensity. This is the general form of the unsupervised objective of the source.
+
+Accuracy. Eybposh et al. 2020 (Opt. Express 28, 26636, Eq. 3) define the accuracy of a volume as the cosine similarity of the
+target and reconstructed intensity volumes over all voxels,
+
+$$AC_{\rm cos} = \frac{\sum_{x,y,z} I \hat I}{\sqrt{\sum I^2 \sum \hat I^2}},$$
+
+scale invariant, in $[0, 1]$, equal to 1 iff the volumes are proportional (0 for an all-zero reconstruction). DinHot's per-plane form above is a Dice-type overlap
+averaged over planes; the two differ in the form of the overlap and in joining the planes in one vector. The network is trained with the per-plane form (no
+retraining); the evaluation (`learned/evaluation.py`, `cosine_accuracy`, `methods/learned/_planes.py` `cosine_volume_accuracy`) reports the cosine accuracy
+next to every per-plane accuracy (fields `ac_cosine_hybrid`, `ac_cosine_net_alone`, `ac_cosine_m19_matched`, their medians `ac_cosine_median` and the ratio
+`ratio_cosine_hybrid_over_m19_matched` in `evaluation-detail.json`), with the plane intensities unit-sum as in the per-plane form. The metrics record
+`metrics.json` is unchanged. The numbers of the released model under this definition are written by the next run of the evaluate stage; none is quoted here.
+Tests: `tests/learned/test_cosine_accuracy.py`.
+
+
 
 ## Acceptance criterion and test
 
@@ -62,7 +77,7 @@ Measured on the released model: `data/derived/models/metrics.json` (the median r
 ## Limits
 
 - DeepCGH trains a separate model per resolution and target set; the released model is specific to its crop size and its three planes.
-- The accuracy is DinHot's plane-image definition; the advantage is on plane images, not on trap uniformity (design record, Limits).
+- The trained accuracy is DinHot's plane-image definition (DeepCGH's cosine accuracy is reported next to it); the advantage is on plane images, not on trap uniformity (design record, Limits).
 - No published controlled comparison against WGS on trap-array uniformity exists; the benchmark protocol is DinHot's own.
 
 ## References

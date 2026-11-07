@@ -71,9 +71,9 @@ found; the benchmark protocol below is DinHot's own and its numbers are measured
 
 UNVERIFIED: the vectorial Debye equations (Leutenegger et al. 2006, https://doi.org/10.1364/OE.14.011277), the band-limited
 angular spectrum limit (https://doi.org/10.1364/OE.17.019662), the crosstalk-aware GS update of Persson et al. 2012, the random
-mask rule of Montes-Usategui et al. 2006 and the numeric effects of quantization and flicker were not read in the first round;
-the gap-closing research unit reads them before the methods and pages that use them are built, and this line is rewritten with
-what it found.
+mask rule of Montes-Usategui et al. 2006, the index table of Noll 1976 and the numeric effects of quantization and flicker were
+not available in full to this build; the pages that use them state in plain words which reading is the source's and which is
+DinHot's, and the vectorial lane is not built.
 
 ## Sizing and contracts
 
@@ -151,6 +151,7 @@ resolves it to. The runtimes are Python 3.12 (CI; the device's venv may be newer
 | build | @vitejs/plugin-react | 6.1.1 | the React transform for vite | none |
 | build | typescript | 5.9.3 | type check of the web and the generated contract types | none |
 | build | openapi-typescript | 7.13.0 | generates `contract.gen.ts` from the OpenAPI document | hand-written types, rejected: they drift (the build checks them) |
+| build | minimatch | 11.0.1 | the override of Redocly's matcher under openapi-typescript (advisory GHSA-g3hv-75wg-m249), guarded by `frontend/scripts/codegen-compatibility.mjs` | Redocly 2.x, rejected: it breaks the private module the generator imports |
 | build | @types/node | 24.19.1 | types of the build scripts | none |
 | build | @types/react | 19.3.0 | types of React | none |
 | build | @types/react-dom | 19.3.0 | types of React DOM | none |
@@ -254,7 +255,7 @@ criteria are measured on DinHot's own grids; the anchors are the published resul
 | BS-1 | beyond | Device-aware weighted GS (engine id B1) | on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; measured against the corrected M07 and against slmsuite's WGS-Kim alike: a median of 25.8 times (15.9 to 33.3 over five seeds) at 0.995 of the efficiency, and 2.0 times on the full C08 device (the bake, three seeds; 2.2 in notebook 03-04) with 4-bit phase and flicker; in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.06); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds | `tests/methods/beyond/test_b1_device_wgs.py` |
 | BS-2 | beyond | Flicker-bounded phase-continuous sequence (engine id B2) | minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: with the frames that keep the peak step per frame at most 0.2 Fourier units (a bound set on C10's sort) it holds on most seeds (acceptance task, 13 frames at 0.31 Fourier units per frame, seeds 1 to 3: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds, and B2 above LPI on 7 of 8 seeds of each); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.911; LPI 0.360 to 0.690), with one seed collapsing on its phase path | `tests/methods/beyond/test_b2_flicker_bounded.py` |
 | BS-3 | beyond | Learned warm start for phase-fixed WGS (refuted) (engine id B3) | measured negative: on held-out geometries the network start needs a median 8 iterations to 1 percent against 14 from a random start (1.75 times, below the 2 times claimed), and a control with the same early phase fix and no network gains as much; the model is not released and the claim BS-3 is reported as refuted | `tests/learned/test_b3_warm_start.py` |
-| BS-4 | beyond | Aberration-robust hologram (engine id B4) | over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.04 times) | `tests/methods/beyond/test_b4_robust.py` |
+| BS-4 | beyond | Aberration-robust hologram (engine id B4) | over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (1.04 times at the acceptance budget; 1.48 times at 0.10 bins and 0.912 of the efficiency with a displacement prior alone and five times the budget) | `tests/methods/beyond/test_b4_robust.py` |
 | BS-5 | beyond | Efficiency-uniformity Pareto front (engine id B5) | hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured: 0.8190 against 0.8018); in the benchmark the stored front (B5's converged run of the first seed) reaches that hypervolume on none of the 6 geometries with a front against the medians at 100 iterations on the ideal device, below them by at most 0.007, and on all 6 against those at 30 (the count at 100 iterations moves between runs of the benchmark, 3, 4 and 0, because a cell's medians depend on the seeds its wall-clock bound admits), 2026-10-31 run | `tests/methods/beyond/test_b5_pareto.py` |
 
 Physics components, each tested in `tests/engine/`: the FFT and point-trap forward models (agreement at the trap positions), the

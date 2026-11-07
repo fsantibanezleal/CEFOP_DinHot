@@ -64,10 +64,10 @@ export function OpticsTopic() {
       <Figure caption={t('From the SLM through the lens to the focal plane: the replica period, the unaliased window, the zero order and a trap that is refused.', 'Del SLM a través de la lente al plano focal: el período de réplicas, la ventana sin aliasing, el orden cero y una trampa que se rechaza.')}>
         <OpticsFigure t={t} />
       </Figure>
-      <Callout variant="honest" title={t('Exact, modelled and unverified', 'Exacto, modelado y no verificado')}>
+      <Callout variant="honest" title={t('Exact, modelled and not established', 'Exacto, modelado y no establecido')}>
         {t(
-          'Exact: the FFT and point-trap forms give the same field at a trap on a bin, which the engine tests. Modelled: the scalar Fraunhofer propagation, the pixel envelope (derived, not published) and the plain angular spectrum. Unverified: the band-limit symbol, a numeric aperture at which the scalar model fails, and the vectorial lane, which is not built.',
-          'Exacto: las formas FFT y de trampas puntuales dan el mismo campo en una trampa sobre un bin, lo que el motor prueba. Modelado: la propagación escalar de Fraunhofer, la envolvente del píxel (derivada, no publicada) y el espectro angular simple. No verificado: el símbolo del límite de banda, una apertura numérica en que el modelo escalar falle y el carril vectorial, que no está construido.',
+          'Exact: the FFT and point-trap forms give the same field at a trap on a bin, which the engine tests. Modelled: the scalar Fraunhofer propagation, the pixel envelope (derived, not published) and the plain angular spectrum. Not established: the band-limit symbol and a numeric aperture at which the scalar model fails (the vectorial focusing equations were not available in full); the vectorial lane is not built.',
+          'Exacto: las formas FFT y de trampas puntuales dan el mismo campo en una trampa sobre un bin, lo que el motor prueba. Modelado: la propagación escalar de Fraunhofer, la envolvente del píxel (derivada, no publicada) y el espectro angular simple. No establecido: el símbolo del límite de banda y una apertura numérica en que el modelo escalar falle (las ecuaciones vectoriales de enfoque no estuvieron disponibles completas); el carril vectorial no está construido.',
         )}
       </Callout>
     </DocSection>

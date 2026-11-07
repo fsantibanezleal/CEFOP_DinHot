@@ -32,7 +32,7 @@ licences are in [ATTRIBUTION.md](../ATTRIBUTION.md).
 ## Honesty and data policy
 
 - Numbers come from the engine and the committed artifacts, never from a claim. A number on a card is either a published result, labelled with its source and conditions, or a DinHot measurement, labelled with its seeds, grid
-  and date. Where DinHot does not reproduce a published number, the card says so; where a source could not be read, the card says UNVERIFIED and what was tried.
+  and date. Where DinHot does not reproduce a published number, the card says so; where a source could not be read, the card says so in plain words and what was tried.
 - All fourteen cases are synthetic: parameters are stated, absolute numbers are those of the stated model, not of a measured instrument. The product does not drive hardware.
 - Public derived artifacts are committed (`data/derived/`); raw and private sources stay out of git (`data/raw/`) per ADR-0055. The two data contracts ([architecture/08_data-contracts.md](architecture/08_data-contracts.md))
   govern the cases in and the artifacts out.

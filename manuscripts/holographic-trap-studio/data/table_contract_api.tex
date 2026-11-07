@@ -1,0 +1,12 @@
+\begin{table}[t]\centering\footnotesize
+\caption{Operations of the dormant read-only API contract (the OpenAPI document of the catalog): method and path, the operation and its response codes; every other method is refused.}\label{tab:contract-api}
+\begin{tabular}{@{}l >{\raggedright\arraybackslash}p{0.4\textwidth} l@{}}\toprule Operation & Summary & Responses\\\midrule
+\texttt{\scriptsize GET /health} & Liveness. & 200\\
+\texttt{\scriptsize GET /healthz} & Liveness (alias of /health). & 200\\
+\texttt{\scriptsize GET /api/cases} & The case index (catalog row case-index), baked and refused cases. & 200, 503\\
+\texttt{\scriptsize GET /api/cases/\{case\_id\}/manifest} & One case manifest (catalog row case-manifest). & 200, 404, 503\\
+\texttt{\scriptsize GET /api/artifacts/\{rel\_path\}} & An artifact a manifest names (catalog row trace), by its path under data/derived. & 200, 404, 503\\
+\texttt{\scriptsize GET /api/benchmark} & The benchmark results (catalog row benchmark-results). & 200, 503\\
+\texttt{\scriptsize GET /api/models/metrics} & The held-out metrics of the model slots (catalog row model-metrics). & 200, 503\\
+\texttt{\scriptsize GET /api/readiness} & What is real in this build (catalog row readiness). & 200, 503\\
+\bottomrule\end{tabular}\end{table}

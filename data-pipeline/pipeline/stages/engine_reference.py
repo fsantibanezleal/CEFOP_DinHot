@@ -288,15 +288,15 @@ def camera_docs() -> list[dict]:
 def physics_docs() -> list[dict]:
     a = tp.rayleigh_polarizability_Fm2(0.5e-6, 1.59, 1.33)
     grid = np.exp(-((np.arange(21)[None, :] - 10) ** 2 + (np.arange(21)[:, None] - 10) ** 2) / 18.0)
-    sm = tp.stiffness_map(grid, 1e-7, 1e10, a)
+    sm = tp.stiffness_map(grid, 1e-7, 1e10, a, n_medium=1.33)
     om0 = 2 * math.pi * tp.C_M_PER_S / 780.241e-9
     gam = 2 * math.pi * 6.065e6
     delta = -2 * math.pi * 1e12
     depth = tp.dipole_trap_depth_J(1e-3, 2e-6, om0, gam, delta)
     case = {"inputs": {"radius_m": 0.5e-6, "n_particle": 1.59, "n_medium": 1.33, "power_w": 1e-3, "waist_m": 2e-6, "omega0": om0, "gamma": gam,
                        "delta": delta, "mass_kg": 1.443e-25, "wavelength_m": 780.241e-9, "map": arr(grid), "spacing_m": 1e-7, "scale": 1e10},
-            "outputs": {"alpha": a, "i0": tp.gaussian_peak_intensity_W_per_m2(1e-3, 2e-6), "kappa_gauss": tp.gaussian_stiffness_N_per_m(a, 1e10, 2e-6),
-                        "kappa": tp.gradient_stiffness_N_per_m(a, 1e12), "k_map_xx": arr(sm[0]), "k_map_yy": arr(sm[1]),
+            "outputs": {"alpha": a, "i0": tp.gaussian_peak_intensity_W_per_m2(1e-3, 2e-6), "kappa_gauss": tp.gaussian_stiffness_N_per_m(a, 1e10, 2e-6, n_medium=1.33),
+                        "kappa": tp.gradient_stiffness_N_per_m(a, 1e12, n_medium=1.33), "k_map_xx": arr(sm[0]), "k_map_yy": arr(sm[1]),
                         "z_rayleigh": tp.rayleigh_range_m(2e-6, 780.241e-9), "u_dip": tp.dipole_potential_J(1e10, om0, gam, delta),
                         "gamma_sc": tp.scattering_rate_per_s(1e10, om0, gam, delta), "depth": depth,
                         "freqs": list(tp.trap_frequencies_rad_s(depth, 1.443e-25, 2e-6, 780.241e-9))}}

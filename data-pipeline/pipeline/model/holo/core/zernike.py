@@ -10,8 +10,9 @@ root sum of squares of the coefficients (DERIVED there), ``sigma_W`` in waves.
 Noll ordering: the table of the page for j = 1..11 (piston, tip, tilt, defocus, oblique and vertical astigmatism, vertical
 and horizontal coma, vertical and oblique trefoil, primary spherical) and j = 12..15 = (4,2), (4,-2), (4,4), (4,-4)
 from a secondary table. For j = 12..21 this module applies the Noll rule: within an n, even j takes the cos term
-(m > 0), odd j the sin term (m < 0), ordered by increasing |m|. UNVERIFIED: Noll 1976 (JOSA 66, 207) itself was not opened;
-sign conventions differ between sources. The gap research must re-check j = 12..21 and the signs.
+(m > 0), odd j the sin term (m < 0), ordered by increasing |m|. Noll 1976 (JOSA 66, 207) is paywalled and no open copy was found, so
+its index table was not read; the rule for j = 12..21 and the signs are the implementation's own reading, checked by the
+orthonormality of the basis over the disc and not against the printed table, and sign conventions differ between sources.
 
 Strehl (physics-viz D2.3, page statements): Marechal approximation ``S ~ exp[-(2 pi sigma_W)^2]`` (sigma_W in waves),
 ``S > 0.8`` for ``sigma_W < 1/14`` wave.

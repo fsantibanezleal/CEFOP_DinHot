@@ -12,7 +12,7 @@ Method. Continuation over ``lambda`` in [0, 1] of the loss
 
 with ``I_m = |V_m|^2`` and ``e_0`` the efficiency of the weighted-GS hologram at the uniform end. The dossier writes
 ``(1-\lambda)\sum(|V|^2 - w_m T_m)^2 - \lambda\sum|V|^2``; the two terms are divided by ``\sum T^2`` and ``e_0`` so that
-both are dimensionless and of order one (UNVERIFIED reading: the dossier does not state the scaling). The start
+both are dimensionless and of order one (DinHot's scaling, part of the method's definition: the dossier does not state one). The start
 (``lambda = 0``) is phase-fixed WGS (Kim 2019: Di Leonardo's GSW point ``e = 0.93``, ``u = 0.99`` on flat
 illumination), refined by the same CG; each next ``lambda`` is warm-started from its neighbour and solved with
 ``budget.iterations`` Fletcher-Reeves/strong-Wolfe CG iterations (``_common.cg_minimize``). The gradient is the

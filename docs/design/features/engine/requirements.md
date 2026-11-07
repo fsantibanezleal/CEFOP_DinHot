@@ -21,7 +21,7 @@ Zernike basis, the trap physics and particle dynamics, the emulated camera and t
 | EN-011 | IF a seed is negative, fractional, boolean or above 32 bits, THEN the generator SHALL raise `ValueError`. | `tests/engine/test_rng.py::test_bad_seed` |
 | EN-012 | THE Zernike modes SHALL be the Noll-indexed orthonormal basis over the unit disc, with rms 1 each. | `tests/engine/test_zernike.py::test_orthonormal_over_disc` |
 | EN-013 | THE simulated bead SHALL have the corner frequency kappa / (2 pi gamma) and the diffusion kT / gamma of its parameters, recovered from its power spectrum. | `tests/engine/test_dynamics.py::test_corner_frequency_oracle` |
-| EN-014 | THE gradient-force stiffness of a Gaussian trap SHALL be 2 alpha I0 / (c eps0 w^2), from the equations of the source. | `tests/engine/test_trapphys.py::test_gaussian_stiffness_eq12_13` |
+| EN-014 | THE gradient-force stiffness of a Gaussian trap SHALL be 2 alpha I0 / (n_m c eps0 w^2) with alpha = 4 pi eps0 n_m^2 r^3 (m^2 - 1) / (m^2 + 2), from the equations of the source (Harada and Asakura 1996). | `tests/engine/test_trapphys.py::test_gaussian_stiffness_eq12_13` |
 | EN-015 | THE emulated camera SHALL give each trap the same gain on every read for a seed, whatever the order of the reads. | `tests/engine/test_camera.py::test_gains_are_per_trap_seeded_and_order_independent` |
 | EN-016 | IF a trap is outside the field, THEN THE trap check SHALL raise `OutOfFieldError` that names the trap and the bound. | `tests/engine/test_traps.py::test_out_of_field_names_trap_and_bound` |
 | EN-017 | THE `Result` of a method SHALL be a finite square phase with a list of history entries that carry the required keys, else `ValueError`. | `tests/engine/test_types_registry.py::test_result_validation` |

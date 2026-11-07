@@ -1,8 +1,8 @@
 /**
  * Zernike aberrations in Noll order, orthonormal over the unit disc.
  *
- * Python counterpart: `core/zernike.py` (definitions, the Noll rule for j = 12..21 and the UNVERIFIED sign conventions are
- * documented there; physics-viz D2.3). `Z_n^m = N R_n^|m|(rho) {cos(m theta) | sin(|m| theta)}`, `N = sqrt(2 (n + 1))` for
+ * Python counterpart: `core/zernike.py` (definitions, the Noll rule for j = 12..21 and the sign conventions, whose source text
+ * (Noll 1976) was not available in full, are documented there; physics-viz D2.3). `Z_n^m = N R_n^|m|(rho) {cos(m theta) | sin(|m| theta)}`, `N = sqrt(2 (n + 1))` for
  * `m != 0`, `sqrt(n + 1)` for `m = 0`; the rms wavefront error is the root sum of squares of the coefficients (waves).
  */
 import { type Setup, slmAxis, wrapPhase } from './geometry';

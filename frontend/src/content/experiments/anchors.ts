@@ -4,7 +4,7 @@
 // shown as if it had been measured under this build's conditions). Transcribed from the anchor lines the manifests carry
 // (`anchor.source`) and from the validation-anchor sections of the case cards (`docs/cases/*/C*.md`), which quote the sources;
 // the papers themselves were read only as far as those cards record (the section and figure numbers are the cards'), so a value not
-// marked otherwise is UNVERIFIED against the paper's full text in this unit.
+// marked otherwise is quoted as the card states it and was not re-read against the paper's full text in this unit.
 import type { Text } from '../../lib/contract.types';
 
 export interface Published {
@@ -82,8 +82,8 @@ export const POLIN_ARRAY = {
   cite: 'polin2005',
   withinPct: 5,
   conditions: {
-    en: 'Polin et al. 2005, Optics Express 13, 5831: 51 traps with 12 vortices of charge 8 within 5 percent after direct search; the paper does not state here which spread statistic it uses (UNVERIFIED)',
-    es: 'Polin et al. 2005, Optics Express 13, 5831: 51 trampas con 12 vórtices de carga 8 dentro de 5 por ciento tras la búsqueda directa; aquí no se precisa qué estadístico de dispersión usa el artículo (SIN VERIFICAR)',
+    en: 'Polin et al. 2005, Optics Express 13, 5831: 51 traps with 12 vortices of charge 8 within 5 percent after direct search; the text of Fig. 3 of the paper states that the traps vary from their planned relative intensities by less than 5 percent',
+    es: 'Polin et al. 2005, Optics Express 13, 5831: 51 trampas con 12 vórtices de carga 8 dentro de 5 por ciento tras la búsqueda directa; el texto de la Fig. 3 del artículo indica que las trampas varían respecto de sus intensidades relativas planificadas en menos de 5 por ciento',
   },
 } as const;
 

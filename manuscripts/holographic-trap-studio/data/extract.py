@@ -19,8 +19,8 @@ Sources, all committed with the product:
   * ``data/derived/readiness.json``: what is real in the build.
 
 ``UNIT_ACCEPTANCE`` below is read from ``acceptance.json``, written by ``acceptance.py`` (run it first, same folder), which measures
-the acceptance quantity of each method M01 to M19, B4 and B5 as its gate test computes it, on the current engine. The values
-of B1 and B2 in the companion manuscript are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py``.
+the acceptance quantity of each method M01 to M19, B4 and B5 as its gate test computes it, on the current engine. The rows of
+B1 and B2 come from ``beyond.json``, measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` (``beyond_rows.py``).
 ``QUOTED_LIVE`` holds the browser measurements, which a standard-library script cannot repeat; each names the section of
 ``docs/design/measured-resources.md`` or of the SDD that records it. The count of engine fixtures and their loosest tolerance are
 read from ``tests/fixtures/engine``.
@@ -31,9 +31,13 @@ import json
 import math
 import re
 import statistics
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import beyond_rows  # noqa: E402
+
 ROOT = HERE.parents[2]
 DERIVED = ROOT / "data" / "derived"
 
@@ -49,7 +53,9 @@ def load_acceptance() -> list[tuple[str, str, str, str]]:
     path = HERE / "acceptance.json"
     if not path.is_file():
         raise SystemExit(f"{path} is missing: run manuscripts/holographic-trap-studio/data/acceptance.py first")
-    return [(r["id"], r["text"], r["seeds"], r["source"]) for r in json.loads(path.read_text(encoding="utf-8"))["rows"]]
+    rows = json.loads(path.read_text(encoding="utf-8"))["rows"]
+    rows = rows[:-2] + beyond_rows.rows() + rows[-2:]      # M01 to M19, then B1 and B2 (companion measurements), then B4 and B5
+    return [(r["id"], r["text"], r["seeds"], r["source"]) for r in rows]
 
 
 UNIT_ACCEPTANCE = load_acceptance()
@@ -89,6 +95,9 @@ def group_of(tier: str | None) -> str | None:
 
 def load(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+MEASURED = load(ROOT / "data-pipeline" / "pipeline" / "cases" / "measured_ranges.json")["measured"]
 
 
 def tex_escape(s: str) -> str:
@@ -208,6 +217,7 @@ def benchmark_summary(ladder: list[dict]) -> dict:
             xs = [it100[(m, g, device)] for g in point if (m, g, device) in it100]
             out[device] = None if not xs else {
                 "n": len(xs), "sigma": statistics.median(x["rel_std_pct"]["median"] for x in xs),
+                "q1": statistics.median(x["rel_std_pct"]["q1"] for x in xs), "q3": statistics.median(x["rel_std_pct"]["q3"] for x in xs),
                 "eff": statistics.median(x["efficiency"]["median"] for x in xs),
                 "time_s": statistics.median(x["time_s"]["median"] for x in xs)}
         by_method[m] = out
@@ -333,38 +343,63 @@ def table_cases(cases: list[dict]) -> str:
     return "".join(out)
 
 
+def seeds_of(case_id: str, method: str, metric: str) -> list[float]:
+    """The values of one metric over the three seeds of the canonical bake (``measured_ranges.json``)."""
+    return MEASURED[case_id][f"{method}.{metric}"]
+
+
+def mean_range(v: list[float], d: int) -> str:
+    return f"{statistics.fmean(v):.{d}f} [{min(v):.{d}f}, {max(v):.{d}f}]"
+
+
 def table_calibration(cases: list[dict]) -> str:
     c12 = next(c for c in cases if c["short"] == "C12")
+    cid = c12["case_id"]
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Calibration case C12 (10 $\\times$ 10 traps at eight Fourier units): efficiency $e$ and uniformity $u$ of the analytic and Gerchberg--Saxton baselines as baked, against the values published by Di~Leonardo et al.\\ for the same task.}\\label{tab:calibration}\n",
-           "\\begin{tabular}{@{}l r r r r r@{}}\\toprule Method & $e$ (baked) & $u$ (baked) & $\\sigma$ (\\%) & $e$ (published) & $u$ (published)\\\\\\midrule\n"]
+           "\\caption{Calibration case C12 (10 $\\times$ 10 traps at eight Fourier units): efficiency $e$ and uniformity $u$ of the analytic "
+           "and Gerchberg--Saxton baselines, the mean over the three seeds of the canonical bake (the range over the seeds in "
+           "brackets for $u$ and $\\sigma$), against the values published by Di~Leonardo et al.\\ for the same task.}\\label{tab:calibration}\n",
+           "\\begin{tabular}{@{}l r r r r r@{}}\\toprule Method & $e$ (baked) & $u$ (baked) & $\\sigma$ (\\%) & $e$ (published) & "
+           "$u$ (published)\\\\\\midrule\n"]
     for mid in ("M01", "M02", "M03", "M04", "M05", "M06", "M07"):
-        v = c12["methods"].get(mid)
-        if not v:
+        if f"{mid}.efficiency" not in MEASURED[cid]:
             continue
         pe, pu = PUBLISHED_ANCHORS.get(mid, (None, None))
         pub = ("& " + f(pe, 2) + " & " + f(pu, 2)) if pe is not None else "& n/a & n/a"
-        out.append(f"{mid} & {f(v['efficiency'], 3)} & {f(v['uniformity'], 3)} & {f(v['rel_std_pct'], 2)} {pub}\\\\\n")
+        eff = statistics.fmean(seeds_of(cid, mid, "efficiency"))
+        out.append(f"{mid} & {f(eff, 3)} & {mean_range(seeds_of(cid, mid, 'uniformity'), 3)} & "
+                   f"{mean_range(seeds_of(cid, mid, 'rel_std_pct'), 2)} {pub}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
 
 def table_results(cases: list[dict]) -> str:
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Baked results per case at the case budget: the method with the lowest relative standard deviation among those with at least half the best efficiency, and the phase-fixed WGS (M07) and plain GS (M04) rows where they ran. $e$ efficiency, $\\sigma$ relative standard deviation of the trap intensities (\\%).}\\label{tab:results}\n",
-           "\\begin{tabular}{@{}l l r r r r r@{}}\\toprule Case & Best & $e$ & $\\sigma$ & M07 $\\sigma$ & M07 $e$ & M04 $\\sigma$\\\\\\midrule\n"]
+           "\\caption{Baked results per case at the case budget, the mean over the three seeds of the canonical bake with the range over "
+           "the seeds in brackets: the method with the lowest mean relative standard deviation among those with at least half the best "
+           "mean efficiency, and the phase-fixed WGS (M07) and plain GS (M04) rows where they ran. $e$ efficiency, $\\sigma$ relative "
+           "standard deviation of the trap intensities (\\%).}\\label{tab:results}\n",
+           "\\begin{tabular}{@{}l l r r r r r@{}}\\toprule Case & Best & $e$ & $\\sigma$ & M07 $\\sigma$ & M07 $e$ & "
+           "M04 $\\sigma$\\\\\\midrule\n"]
     for c in cases:
         if c["status"] != "baked":
             continue
-        b = c["methods"].get(c["best_method"])
-        m7 = c["methods"].get("M07")
-        m4 = c["methods"].get("M04")
         if c["target_kind"] != "traps":
             out.append(f"{c['short']} & shaped potential & n/a & n/a & n/a & n/a & n/a" + "\\\\\n")
             continue
-        out.append(f"{c['short']} & {c['best_method']} & {f(b['efficiency'], 3)} & {sig2(b['rel_std_pct'])} & "
-                   f"{sig2(m7['rel_std_pct']) if m7 else 'n/a'} & {f(m7['efficiency'], 3) if m7 else 'n/a'} & "
-                   f"{f(m4['rel_std_pct'], 1) if m4 else 'n/a'}\\\\\n")
+        m = MEASURED[c["case_id"]]
+        mids = sorted({k.split(".")[0] for k in m if k.endswith(".rel_std_pct")})
+        top = max(statistics.fmean(m[f"{x}.efficiency"]) for x in mids)
+        ok = [x for x in mids if statistics.fmean(m[f"{x}.efficiency"]) >= 0.5 * top]
+        best = min(ok, key=lambda x: (statistics.fmean(m[f"{x}.rel_std_pct"]), x))
+
+        def rng(x: str) -> str:
+            v = m[f"{x}.rel_std_pct"]
+            return f"{sig2(statistics.fmean(v))} [{sig2(min(v))}, {sig2(max(v))}]"
+
+        m7 = f"{rng('M07')} & {f(statistics.fmean(m['M07.efficiency']), 3)}" if "M07.rel_std_pct" in m else "n/a & n/a"
+        m4 = rng("M04") if "M04.rel_std_pct" in m else "n/a"
+        out.append(f"{c['short']} & {best} & {f(statistics.fmean(m[f'{best}.efficiency']), 3)} & {rng(best)} & {m7} & {m4}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
@@ -403,8 +438,9 @@ def table_bench_methods(bench: dict) -> str:
     n = len(bench["point_geometries"])
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
            f"\\caption{{Benchmark, per method: medians over the point-trap geometries the method ran on (of {n}) at 100 iterations with "
-           "the default parameters, on the ideal device and on the C08 device. $\\sigma$ relative standard deviation (\\%), $e$ efficiency, "
-           "time wall-clock seconds under shared load.}\\label{tab:benchmethods}\n",
+           "the default parameters, on the ideal device and on the C08 device. $\\sigma$ relative standard deviation (\\%): the median over the "
+           "geometries of the cell medians and, in brackets, the median over the geometries of the first and third quartiles over the seeds "
+           "of each cell; $e$ efficiency; time wall-clock seconds under shared load.}\\label{tab:benchmethods}\n",
            "\\begin{tabular}{@{}l r r r r r r@{}}\\toprule Id & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & "
            "$e$ C08\\\\\\midrule\n"]
     order = sorted(bench["by_method"], key=lambda m: (m.startswith("B"), m))
@@ -416,8 +452,9 @@ def table_bench_methods(bench: dict) -> str:
             out.append(f"\\multicolumn{{7}}{{@{{}}l}}{{\\textit{{{GROUP_LABEL.get(last, '')}}}}}\\\\\n")
         i, d = v["ideal"], v["device"]
         secs = (f"{i['time_s']:.0f}" if i["time_s"] >= 100 else f"{i['time_s']:.2g}") if i else ""
-        ideal = (f"{i['n']} & {sig(i['sigma'])} & {f(i['eff'], 3)} & {secs}" if i else "0 & n/a & n/a & n/a")
-        dev = f"{sig(d['sigma'])} & {f(d['eff'], 3)}" if d else "n/a & n/a"
+        ideal = (f"{i['n']} & {sig(i['sigma'])} [{sig(i['q1'])}, {sig(i['q3'])}] & {f(i['eff'], 3)} & {secs}" if i
+                 else "0 & n/a & n/a & n/a")
+        dev = f"{sig(d['sigma'])} [{sig(d['q1'])}, {sig(d['q3'])}] & {f(d['eff'], 3)}" if d else "n/a & n/a"
         out.append(f"{tex_escape(ladder_id(m))} & {ideal} & {dev}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
@@ -486,6 +523,30 @@ def main() -> int:
     m4, b4, b5 = acc["M04"], acc["B4"], acc["B5"]
     L.append(macro("accFourFlatEff", f(statistics.median(m4["flat_efficiency"]), 3)))
     L.append(macro("accFourFlatUni", f(statistics.median(m4["flat_uniformity"]), 3)))
+    L.append(macro("refLevel", f(m4["ceiling"], 3)))
+    g4 = bench["by_geometry"]["G4/device"]      # the quasi-periodic set on the C08 device: the proposed entry against the best published one
+    L.append(macro("gFourBOneSigma", sig(g4["proposed"]["sigma"])))
+    L.append(macro("gFourBOneSeeds", g4["proposed"]["n_seeds"]))
+    L.append(macro("gFourPubSigma", sig(g4["published"]["sigma"])))
+    L.append(macro("gFourPubMethod", tex_escape(g4["published"]["method"])))
+    # the calibration case C12, three-seed means (measured_ranges.json) and the published anchors of its table
+    c12 = MEASURED["C12_calibration"]
+    for k, nm in enumerate(("One", "Two", "Three", "Four", "Five", "Six", "Seven"), start=1):
+        L.append(macro(f"calU{nm}", f(statistics.fmean(c12[f"M0{k}.uniformity"]), 3)))
+        L.append(macro(f"calE{nm}", f(statistics.fmean(c12[f"M0{k}.efficiency"]), 3)))
+    v7 = c12["M07.rel_std_pct"]
+    L.append(macro("calSigmaSeven", f(statistics.fmean(v7), 2)))
+    L.append(macro("calSigmaSevenLo", f(min(v7), 2)))
+    L.append(macro("calSigmaSevenHi", f(max(v7), 2)))
+    for k, nm in ((2, "Two"), (3, "Three"), (6, "Six")):
+        L.append(macro(f"pubU{nm}", f"{PUBLISHED_ANCHORS[f'M0{k}'][1]:.2f}"))
+    ck = load(HERE / "ceiling_check.json")["efficiency_after_maximisation"]
+    cks = list(ck.values())      # adjacent bins, two bins, eight bins, 10 x 10 lattice, one trap (ceiling_check.py)
+    L.append(macro("ceilAdjacent", f(cks[0], 2)))
+    L.append(macro("ceilTwoBins", f(cks[1], 3)))
+    L.append(macro("ceilEightBins", f(cks[2], 3)))
+    L.append(macro("ceilLattice", f(cks[3], 3)))
+    L.append(macro("ceilOneTrap", f(cks[4], 3)))
     L.append(macro("accBFourRatio", f(statistics.median(b4["ratio"]), 3)))
     L.append(macro("accBFourRatioLo", f(min(b4["ratio"]), 2)))
     L.append(macro("accBFourRatioHi", f(max(b4["ratio"]), 2)))

@@ -55,6 +55,19 @@ def tracked(root: Path) -> list[str]:
     return [p for p in out.stdout.decode("utf-8", errors="replace").split("\0") if p]
 
 
+def nonexecutable_shells(root: Path) -> list[str]:
+    """Judge the Git index, so this CI gate also works on Windows checkouts."""
+    out = subprocess.run(["git", "ls-files", "--stage", "-z"], cwd=root, capture_output=True, check=True)
+    bad = []
+    for record in out.stdout.decode("utf-8", errors="replace").split("\0"):
+        if not record:
+            continue
+        metadata, name = record.split("\t", 1)
+        if name.endswith(".sh") and metadata.split()[0] != "100755":
+            bad.append(name)
+    return bad
+
+
 def declared(root: Path, files: set[str]) -> tuple[set[str], str | None]:
     """(the tracked files some catalog row's ``documents`` globs name, why none can be: None when the catalog is usable)."""
     catalog = root / CATALOG_REL
@@ -91,6 +104,10 @@ def main(argv: list[str]) -> int:
         print(f"::error::{message}")
         for line in detail or []:
             print(f"  {line}")
+
+    modes = nonexecutable_shells(root)
+    if modes:
+        error("tracked .sh files must have Git mode 100755", modes)
 
     # a real .env must never be tracked; an example file (.env.example, frontend/.env.example) may be
     envs = [f for f in files if ENV.search(f) and not ENV_EXAMPLE.search(f)]

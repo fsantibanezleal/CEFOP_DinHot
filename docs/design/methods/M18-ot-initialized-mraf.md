@@ -49,7 +49,7 @@ otherwise; lines 97 to 110). The stationary-phase relation is $k = (n_{fft}/2\pi
 
 Then MRAF (Pasienski and DeMarco 2008, Eq. (1)) with the mixing $m$:
 $G^{(n)} = \{m\sqrt{I_0}|_{SR} + (1-m)|E^{(n)}_{out}|\,|_{NR}\}\,e^{i\arg E^{(n)}_{out}}$, then the inverse transform, the SLM amplitude reset to the beam, the phase kept
-(`mraf`, lines 130 to 148). $\sqrt{I_0}$ is the target amplitude normalized to the total input power $n_{pix}^2$ (UNVERIFIED: the research record does not state the normalization; rescaling
+(`mraf`, lines 130 to 148). $\sqrt{I_0}$ is the target amplitude normalized to the total input power $n_{pix}^2$ (DinHot's choice: Pasienski and DeMarco, Eq. 1, keep the target power constant across iterations and give no numerical normalization; rescaling
 to the current signal-region power instead drains the signal region, efficiency 0.001, measured by E3). With $m = 0.4$ the fixed point is near the efficiency solving
 $\eta = m^2/(m^2 + (1-m)^2(1-\eta))$, which is 0.44.
 

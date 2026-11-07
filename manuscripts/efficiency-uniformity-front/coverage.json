@@ -1,0 +1,13 @@
+{
+  "kind": "manuscript",
+  "title_support": [
+    "tab:main",
+    "fig:front",
+    "tab:rivals",
+    "tab:bench",
+    "tab:ablation"
+  ],
+  "claims": {
+    "BS-5": "sec:method"
+  }
+}

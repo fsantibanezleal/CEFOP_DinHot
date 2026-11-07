@@ -97,8 +97,7 @@ Acceptance run of 2026-10-28 (E3 report D4 and D5, and the module docstring), 10
 Level sensitivity: a level of 0.937 gave 4.89 percent (1.28 times), 0.95 with 80 iterations gave 5.10 percent (1.23 times), 0.9 with 80 iterations 1.55 times. Tried and not adopted: ensemble WGS with per-iteration samples (worse),
 Adam on random samples (1.0 to 1.1 times), CG on 16 fixed random samples (1.05 times).
 
-The pointing result is a negative one: a displaced trap loses intensity in proportion to the curvature of its spot, which the spot width fixes, and halving the loss needs a spot 1.4 times wider, about half the peak
-efficiency (the implementer's reasoning, not a source). Outcome: the aberration claim is confirmed (1.55 times); the pointing claim and the original 2 times are not reached.
+The pointing result depends on the budget (measured in the method's manuscript, `manuscripts/aberration-robust-hologram`, 2026-11-03): the acceptance configuration (3 steps of 2 draws, 0.15 bin) gives 1.04 times (0.85 to 1.05 over three seeds), and 20 steps with the aberration prior at most about 1.07; with a displacement prior alone and 100 steps of Adam the ratio is 1.11 at 0.05 bins, 1.48 at 0.10 bins (1.44 to 1.50) and 1.37 at 0.15 bins, at 0.90 to 0.92 of the efficiency. The spread under displacement is dominated by a first-order slope term, which the design lowers (fivefold at 0.10 bins), over a second-order curvature floor that the spot width fixes; the earlier reading that the curvature alone bounds pointing robustness is incomplete. Outcome: the aberration claim is confirmed (1.435 times); pointing robustness stays an option, not claimed, measured negative at the acceptance budget and positive at five times that budget with a displacement prior alone; the original 2 times is not reached.
 
 Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, mean over 3 seeds with the range; each case has its own optics, listed in `data/derived/manifests/`; the bake gives B4 no aberration
 estimate, I1 report F5):
@@ -128,7 +127,7 @@ efficiency. On ideal cases (C01, C02, C07) B4's spread is 0.4 to 1.0 percent whi
 - Manetsch et al. 2025, https://arxiv.org/abs/2403.12021
 - Robust holograms, https://arxiv.org/abs/2512.15967
 - Nogrette et al. 2014, Phys. Rev. X 4, 021034, https://arxiv.org/abs/1402.5329
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the nominal M07)
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the nominal M07)
 
 ## Update after the corrections of 2026-10-29
 

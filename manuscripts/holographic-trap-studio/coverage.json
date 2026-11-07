@@ -1,0 +1,49 @@
+{
+  "kind": "technical-report",
+  "title_support": [
+    "tab:benchmark",
+    "tab:bake-sigma",
+    "fig:bench",
+    "fig:geometry"
+  ],
+  "methods": {
+    "M01": "sec:m01",
+    "M02": "sec:m02",
+    "M03": "sec:m03",
+    "M04": "sec:m04",
+    "M05": "sec:m05",
+    "M06": "sec:m06",
+    "M07": "sec:m07",
+    "M08": "sec:m08",
+    "M09": "sec:m09",
+    "M10": "sec:m10",
+    "M11": "sec:m11",
+    "M12": "sec:m12",
+    "M13": "sec:m13",
+    "M14": "sec:m14",
+    "M15": "sec:m15",
+    "M16": "sec:m16",
+    "M17": "sec:m17",
+    "M18": "sec:m18",
+    "M19": "sec:m19",
+    "BS-1": "sec:b1",
+    "BS-2": "sec:b2",
+    "BS-3": "sec:b3",
+    "BS-4": "sec:b4",
+    "BS-5": "sec:b5"
+  },
+  "contracts": {
+    "params-record": "sec:data-params-record",
+    "case-index": "sec:data-case-index",
+    "case-manifest": "sec:data-case-manifest",
+    "trace": "sec:data-trace",
+    "benchmark-results": "sec:data-benchmark-results",
+    "cgh-net": "sec:data-cgh-net",
+    "warmstart-model": "sec:data-warmstart-model",
+    "model-metrics": "sec:data-model-metrics",
+    "model-evidence": "sec:data-model-evidence",
+    "engine-reference": "sec:data-engine-reference",
+    "readiness": "sec:data-readiness",
+    "api": "sec:data-api"
+  }
+}

@@ -22,6 +22,16 @@ and the notebooks cover the methods like this:
 - The proposed methods are the level 4 notebooks, each named by the claim it tests in `caos.beyond` (B1 in 03, B5
   in 05, B4 in 06, B2 in 07, B3 in 08, a measured negative).
 
+## Coverage of the whole tool
+
+[`../coverage.json`](../coverage.json) maps every part of the tool to the notebooks that teach it: each method of the SDD's ladder
+(covered only by a notebook of level 2 or above), each data contract of `docs/contracts/catalog.md`, each pipeline stage of
+`data-pipeline/pipeline/stages/` and each method package (the product declares none). The paths are relative to a language tree and
+exist in both. Every notebook of level 2 or above has a third-level section on where its method changes or breaks and one on using
+it on your own data, and the notebooks of topics 01 and 02 also read the committed documents of the contracts they explain. The
+check is `tools/notebooks/check_notebook_depth.py` of CAOS_MANAGE. Every method of the ladder, every contract and every stage has a notebook in the map; a part that
+later has none would be listed by the check.
+
 ## Topics
 
 A topic without a level 3 notebook says why on its row.
@@ -43,8 +53,10 @@ A topic without a level 3 notebook says why on its row.
 |---|---|---|
 | [01-fourier-optics/01-where-the-light-goes.ipynb](01-fourier-optics/01-where-the-light-goes.ipynb) | 1 | where a phase pattern sends the light: focal bin and window, replicas outside it, the pixel envelope, phase levels and the zero order (case C01) |
 | [01-fourier-optics/02-reading-a-trap-array.ipynb](01-fourier-optics/02-reading-a-trap-array.ipynb) | 2 | what efficiency, uniformity, relative spread and the power budget of a 10 by 10 array say, where they disagree and why the budget needs its radius (case C12) |
+| [01-fourier-optics/03-engine-reference-and-readiness.ipynb](01-fourier-optics/03-engine-reference-and-readiness.ipynb) | 2 | how the browser engine is held to the Python engine by the engine-reference documents, how to read the readiness document and the API contract, and how to write a reference for a function of your own |
 | [02-analytic-holograms/01-superposition-and-random-mask.ipynb](02-analytic-holograms/01-superposition-and-random-mask.ipynb) | 1 | what the three one-step holograms (superposition, random superposition, random mask) give on C12 and what limits each |
 | [02-analytic-holograms/02-the-ten-by-ten-benchmark.ipynb](02-analytic-holograms/02-the-ten-by-ten-benchmark.ipynb) | 2 | how the three baselines compare with the published 10 by 10 table on five SLM sizes |
+| [02-analytic-holograms/03-laguerre-gaussian-vortex-traps.ipynb](02-analytic-holograms/03-laguerre-gaussian-vortex-traps.ipynb) | 2 | how one added term in the delay makes a ring with a dark centre (M15): the winding of the phase, the radius of the ring, the angular momentum per photon, the array of case C06 and the charge at which the check of the product aliases |
 | [03-gerchberg-saxton/01-the-gs-loop.ipynb](03-gerchberg-saxton/01-the-gs-loop.ipynb) | 1 | the two halves of a Gerchberg-Saxton iteration done by hand on nine traps (case C01), checked against M04 |
 | [03-gerchberg-saxton/02-weights-for-uniformity.ipynb](03-gerchberg-saxton/02-weights-for-uniformity.ipynb) | 2 | what weighted and adaptive GS gain over plain GS on C12: the first weights, iterations to 5, 2 and 1 percent, the alpha sweep, seed dependence |
 | [03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb](03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb) | 3 | how M06 and M07 compare with slmsuite 0.5.0 WGS-Leonardo and WGS-Kim on the 1024 traps of C03 under one set of metrics |
@@ -64,12 +76,12 @@ A topic without a level 3 notebook says why on its row.
 | [06-device-and-aberrations/04-robust-holograms.ipynb](06-device-and-aberrations/04-robust-holograms.ipynb) | 4 | B4 against phase-fixed WGS over 100 draws of residual aberration, and the measured negative on pointing errors |
 | [07-feedback-and-dynamics/01-a-bead-in-the-computed-trap.ipynb](07-feedback-and-dynamics/01-a-bead-in-the-computed-trap.ipynb) | 1 | the focal intensity of C01 as a potential, a Langevin bead in it, its Lorentzian spectrum against the stiffness and its Boltzmann histogram |
 | [07-feedback-and-dynamics/02-assigning-atoms-to-sites.ipynb](07-feedback-and-dynamics/02-assigning-atoms-to-sites.ipynb) | 2 | the Hungarian assignment of C10 for six exponents of the cost, crossings, and the plan M16 builds from it |
-| [07-feedback-and-dynamics/03-closed-loop-feedback.ipynb](07-feedback-and-dynamics/03-closed-loop-feedback.ipynb) | 3 | how the Nogrette and Kim updates of M12 compare on the emulated camera of C02, against the open-loop M07 |
+| [07-feedback-and-dynamics/03-closed-loop-feedback.ipynb](07-feedback-and-dynamics/03-closed-loop-feedback.ipynb) | 3 | how the Nogrette update of M12 (DinHot's cumulative reading of its Eq. 3, with the literal rule run beside it) and the Kim update compare on the emulated camera of C02, against the open-loop M07 |
 | [07-feedback-and-dynamics/04-moving-atoms-by-linear-phase-interpolation.ipynb](07-feedback-and-dynamics/04-moving-atoms-by-linear-phase-interpolation.ipynb) | 3 | how the sequence of holograms of M16 on the sort of C10 compares with independent holograms and a finer step |
 | [07-feedback-and-dynamics/05-flicker-bounded-moves.ipynb](07-feedback-and-dynamics/05-flicker-bounded-moves.ipynb) | 4 | B2 against LPI on its acceptance task, and the long moves of C10 where B2 needs the end phases |
 | [08-learned-holography/01-what-a-network-sees-of-a-hologram.ipynb](08-learned-holography/01-what-a-network-sees-of-a-hologram.ipynb) | 1 | what goes into the released network and what comes out for one three-plane target, the accuracy it is scored by, and a flat and a random phase on the same scale (C05 optics) |
 | [08-learned-holography/02-training-without-labels.ipynb](08-learned-holography/02-training-without-labels.ipynb) | 2 | how the network learns without example holograms: the loss by hand on fresh volumes, its smooth bowl around the network's phase, what it does not see on the traps, and the held-out record of 162 volumes |
-| [08-learned-holography/03-a-network-start-for-volume-holograms.ipynb](08-learned-holography/03-a-network-start-for-volume-holograms.ipynb) | 3 | whether the released network beats the volumetric GS (M17 against M19) on the accuracy of the volume and on the traps' own numbers |
+| [08-learned-holography/03-a-network-start-for-volume-holograms.ipynb](08-learned-holography/03-a-network-start-for-volume-holograms.ipynb) | 3 | whether the released network beats the volumetric GS (M17 against M19) on the accuracy of the volume (per plane and in the cosine form of the paper) and on the traps' own numbers |
 | [08-learned-holography/04-is-a-learned-warm-start-worth-it.ipynb](08-learned-holography/04-is-a-learned-warm-start-worth-it.ipynb) | 4 | whether a network that predicts trap phases speeds phase-fixed WGS, or a freeze with no network explains the whole gain (a measured negative) |
 
 ## Proposed methods

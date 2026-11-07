@@ -16,9 +16,11 @@ $$x_m(s) = x_m^{i} + \tfrac{s}{S}(x_m^{f} - x_m^{i}),\quad a_m(s) = a_m^{i} + \t
 \psi_m(s) = \psi_m^{i} + \tfrac{s}{S}\,\mathrm{wrap}(\psi_m^{f} - \psi_m^{i})$$
 and invert the transform at each step: $\phi(s) = \arg \sum_m a_m(s) e^{i\psi_m(s)} e^{+i\Delta_j^m(s)}$ (the point-trap
 back-projection, exact at fractional positions). $S$ is set by the longest path: $S = \lceil d_{max} / s_{max} \rceil$ with
-``max_step_bins`` $s_{max}$ (default ``pad`` bins, one Fourier unit $\lambda f / (n_{pix} p)$). UNVERIFIED: the paper
-gives the unit as $\lambda f/(mL)$ with $m \approx 0.41$ in prose, the equations above are the extraction's rendering of the
-described procedure, and the wrapped phase difference (shortest phase path) is DinHot's reading of "interpolate linearly".
+``max_step_bins`` $s_{max}$ (default ``pad`` bins, one Fourier unit $\lambda f / (n_{pix} p)$). The paper (Knottnerus et
+al., arXiv:2501.01391, Section 3) chooses the number of holograms so that the longest trajectory advances at most one
+Fourier unit, $\lambda f/L \approx 0.45\ \mu$m with $L$ the demagnified chip side, per hologram; it describes the
+procedure in prose, with no numbered equation, so the equations above are DinHot's rendering of it, and the wrapped
+phase difference (shortest phase path) is DinHot's choice, since the paper does not say how the phase difference is taken.
 Because the amplitude is interpolated and the phase advances smoothly, no trap passes through zero intensity, unlike
 independent weighted GS holograms whose free phases jump between steps (flicker; the paper: LPI stays above 70 percent).
 

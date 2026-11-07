@@ -10,8 +10,9 @@ $$\phi_{\rm shown} = \phi_{\rm base} - 2\pi \sum_j \hat c_j Z_j,\qquad E = \math
 
 ``mode='recover'`` (default): sensorless modal search, no wavefront sensor, only the emulated camera (``core.camera``,
 default: ideal gains, no noise, no roll-off, seeded from ``rng``). The merit is the summed measured trap intensity
-$M(\hat c) = \sum_m I_m$, which the Marechal approximation makes a Gaussian in the residual wavefront rms
-($M \propto \exp[-(2\pi\sigma)^2]$, ``core.zernike`` docstring, UNVERIFIED against Noll 1976), so $\ln M$ is a parabola in
+$M(\hat c) = \sum_m I_m$, which the exponential Strehl form makes a Gaussian in the residual wavefront rms
+($M \propto \exp[-(2\pi\sigma)^2]$, the form that Mahajan 1983, J. Opt. Soc. Am. 73, 860, compares with the Marechal
+expansion $1 - (2\pi\sigma)^2$), so $\ln M$ is a parabola in
 each coefficient. One sweep visits the modes in ``modes`` (default Noll 4 to 11, tip, tilt and piston excluded: they
 move or do not change the traps) and for each mode evaluates $M$ at $\hat c_j - \delta, \hat c_j, \hat c_j + \delta$
 ($\delta$ = ``trial_waves`` = 0.06), fits the parabola to $\ln M$ and moves to its vertex (step clipped to $\pm 2\delta$; if

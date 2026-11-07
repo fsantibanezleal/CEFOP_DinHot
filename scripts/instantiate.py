@@ -71,6 +71,38 @@ def write(rel: str, text: str) -> None:
     print(f"  wrote   {rel}")
 
 
+def product_ci(text: str) -> str:
+    """Remove one explicitly delimited template-only job, never a fragment of a pytest command."""
+    start = "  # BEGIN TEMPLATE-ONLY PLANTS\n"
+    end = "  # END TEMPLATE-ONLY PLANTS\n"
+    lines = text.splitlines(keepends=True)
+    if (text.count(start.strip()) != 1 or text.count(end.strip()) != 1
+            or lines.count(start) != 1 or lines.count(end) != 1):
+        raise ValueError("CI needs exactly one template-only job marker pair")
+    a, b = text.index(start), text.index(end)
+    if b <= a:
+        raise ValueError("CI template-only job markers are out of order")
+    block = text[a + len(start):b]
+    # Admit the whole known job boundary, not just headers recognized by a partial YAML regex.
+    # Any other same-level line (quoted/explicit/inline/unknown job keys included) must refuse.
+    body = block.splitlines()
+    if (not body or body[0] != "  template-plants:"
+            or any(line.strip() and (not line.startswith("    ") or "\t" in re.match(r"[ \t]*", line)[0])
+                   for line in body[1:])):
+        raise ValueError("CI template-only block must contain only the indented template-plants job")
+    command = "        run: pip install pytest==9.1.1 && python -m pytest tests/template/adversarial -q\n"
+    if block.count(command) != 1 or block.count("tests/template/adversarial") != 1:
+        raise ValueError("CI template-only block must contain exactly the standalone template-plants job")
+    following = next((line for line in text[b + len(end):].splitlines()
+                      if line.strip() and not line.lstrip().startswith("#")), None)
+    if following is not None and re.match(r"^  [^ \t]", following) is None:
+        raise ValueError("CI template-only end marker must be followed by a same-level job or end of file")
+    result = text[:a] + text[b + len(end):]
+    if "tests/template/adversarial" in result:
+        raise ValueError("CI contains an unmarked template-only test command")
+    return result
+
+
 def drop_template_test_rows() -> None:
     """Remove the feature rows whose gate is a test under tests/template/ (BD-3).
 
@@ -222,6 +254,13 @@ def main() -> int:
         print("instantiate: a VPS deploy needs --domain")
         return 2
 
+    # Validate before any identity write/removal: malformed CI must not leave a half-instantiated product.
+    try:
+        product_workflow = product_ci((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(f"instantiate: {exc}")
+        return 2
+
     template_version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     print(f"instantiate: {a.name} ({a.slug}) from CAOS_PRODUCT_TEMPLATE {template_version}")
 
@@ -294,9 +333,7 @@ def main() -> int:
     # the base's own tests that plant into or read the example: the guards a product takes verbatim are tested in the
     # template, a product tests its own guards and features under tests/adversarial/ (BD-3)
     remove("tests/template")
-    ci = ROOT / ".github" / "workflows" / "ci.yml"
-    if ci.exists():  # the template's CI also runs those plants; the product's runs only its own tests/adversarial
-        write(".github/workflows/ci.yml", ci.read_text(encoding="utf-8").replace(" tests/template/adversarial", ""))
+    write(".github/workflows/ci.yml", product_workflow)
     drop_template_test_rows()
     guides = ROOT / "docs" / "guides.md"
     if guides.exists():

@@ -1,0 +1,430 @@
+{
+ "schema": "dinhot.manuscript-params/v1",
+ "methods": {
+  "B1": {
+   "name": "Device-aware weighted GS",
+   "family": "beyond",
+   "lane": "baked",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2
+   ],
+   "module": "beyond/b1_device_wgs",
+   "params": {
+    "steps": 3,
+    "warm": 12,
+    "weights": true
+   }
+  },
+  "B2": {
+   "name": "Flicker-bounded phase-continuous sequence",
+   "family": "beyond",
+   "lane": "baked",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "beyond/b2_flicker_bounded",
+   "params": {
+    "destination": null,
+    "frames": 13,
+    "frame_iterations": 10,
+    "end_phases": null,
+    "phase_velocity_max": 0.3,
+    "n_fix": 12
+   }
+  },
+  "B3": {
+   "name": "Learned warm start for phase-fixed WGS",
+   "family": "learned",
+   "lane": "baked",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "learned/b3_warm_start",
+   "params": {
+    "n_fix": 12,
+    "form": "point",
+    "models_dir": null
+   }
+  },
+  "B4": {
+   "name": "Aberration- and pointing-robust hologram",
+   "family": "beyond",
+   "lane": "baked",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2
+   ],
+   "module": "beyond/b4_robust",
+   "params": {
+    "q": 8,
+    "lr": 0.02,
+    "warm": 30,
+    "aberration": 0.02,
+    "pointing_bins": 0.0,
+    "design": null,
+    "level_fraction": 0.9
+   }
+  },
+  "B5": {
+   "name": "Efficiency-uniformity Pareto front",
+   "family": "beyond",
+   "lane": "baked",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "beyond/b5_pareto",
+   "params": {
+    "n_lambda": 20,
+    "warm": 30
+   }
+  },
+  "M01": {
+   "name": "Superposition of prisms and lenses",
+   "family": "analytic",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "baseline/m01_superposition",
+   "params": {}
+  },
+  "M02": {
+   "name": "Random superposition",
+   "family": "analytic",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "baseline/m02_random_superposition",
+   "params": {}
+  },
+  "M03": {
+   "name": "Random mask",
+   "family": "analytic",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "baseline/m03_random_mask",
+   "params": {}
+  },
+  "M04": {
+   "name": "Gerchberg-Saxton",
+   "family": "GS",
+   "lane": "live",
+   "targets": [
+    "traps",
+    "field"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "baseline/m04_gs",
+   "params": {
+    "form": null,
+    "start_waves": 20.0
+   }
+  },
+  "M05": {
+   "name": "Generalized adaptive additive GS",
+   "family": "GS",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "baseline/m05_gaa",
+   "params": {
+    "alpha": 0.5,
+    "form": "auto",
+    "scale": "mean"
+   }
+  },
+  "M06": {
+   "name": "Weighted GS",
+   "family": "GS",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "baseline/m06_gsw",
+   "params": {
+    "form": "auto"
+   }
+  },
+  "M07": {
+   "name": "Phase-fixed weighted GS",
+   "family": "GS",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2
+   ],
+   "module": "baseline/m07_phase_fixed_wgs",
+   "params": {
+    "n_fix": 12,
+    "form": "auto"
+   }
+  },
+  "M08": {
+   "name": "Mixed-region amplitude freedom",
+   "family": "GS",
+   "lane": "live",
+   "targets": [
+    "field"
+   ],
+   "dims": [
+    2
+   ],
+   "module": "baseline/m08_mraf",
+   "params": {
+    "mixing": 0.3,
+    "start_waves": 20.0
+   }
+  },
+  "M09": {
+   "name": "Direct search",
+   "family": "optimization",
+   "lane": "baked",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "optim/m09_direct_search",
+   "params": {
+    "f": 0.5,
+    "levels": 8,
+    "max_trials": null
+   }
+  },
+  "M10": {
+   "name": "Conjugate-gradient minimization",
+   "family": "optimization",
+   "lane": "both",
+   "targets": [
+    "traps",
+    "field"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "optim/m10_cg",
+   "params": {
+    "t": null,
+    "efficiency": null
+   }
+  },
+  "M11": {
+   "name": "Wirtinger gradient descent with Adam",
+   "family": "optimization",
+   "lane": "both",
+   "targets": [
+    "traps",
+    "field"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "optim/m11_wirtinger_adam",
+   "params": {
+    "lr": 1.0,
+    "efficiency": null
+   }
+  },
+  "M12": {
+   "name": "Closed-loop weighted GS on an emulated camera",
+   "family": "control",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2
+   ],
+   "module": "control/m12_closed_loop",
+   "params": {
+    "variant": "nogrette",
+    "gain": 0.7,
+    "camera": null,
+    "n_inner": null,
+    "n_start": 30,
+    "start": "gsw"
+   }
+  },
+  "M13": {
+   "name": "Device-aware CG with pixel crosstalk",
+   "family": "optimization",
+   "lane": "baked",
+   "targets": [
+    "traps",
+    "field"
+   ],
+   "dims": [
+    2
+   ],
+   "module": "optim/m13_crosstalk_cg",
+   "params": {
+    "t": null,
+    "efficiency": null
+   }
+  },
+  "M14": {
+   "name": "Zernike correction and sensorless modal recovery",
+   "family": "control",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "control/m14_zernike",
+   "params": {
+    "mode": "recover",
+    "injected": null,
+    "known": null,
+    "camera": null,
+    "modes": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11
+    ],
+    "trial_waves": 0.06,
+    "base_iterations": 30
+   }
+  },
+  "M15": {
+   "name": "Laguerre-Gaussian vortex traps",
+   "family": "GS",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2,
+    3
+   ],
+   "module": "control/m15_vortex",
+   "params": {
+    "charge": null
+   }
+  },
+  "M16": {
+   "name": "Hungarian assignment and linear phase interpolation",
+   "family": "control",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    2
+   ],
+   "module": "control/m16_rearrangement",
+   "params": {
+    "atoms": null,
+    "alpha": 1.5,
+    "max_step_bins": null,
+    "n_fix": 12
+   }
+  },
+  "M17": {
+   "name": "Multi-plane CNN hologram",
+   "family": "learned",
+   "lane": "live",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    3
+   ],
+   "module": "learned/m17_cgh_net",
+   "params": {
+    "models_dir": null,
+    "refine": true
+   }
+  },
+  "M18": {
+   "name": "Optimal-transport initialized MRAF",
+   "family": "optimization",
+   "lane": "baked",
+   "targets": [
+    "field"
+   ],
+   "dims": [
+    2
+   ],
+   "module": "optim/m18_ot_mraf",
+   "params": {
+    "mix": 0.4,
+    "eps": 0.001,
+    "ot_iterations": 200
+   }
+  },
+  "M19": {
+   "name": "Volumetric 3D GS (multi-plane)",
+   "family": "GS",
+   "lane": "both",
+   "targets": [
+    "traps"
+   ],
+   "dims": [
+    3
+   ],
+   "module": "baseline/m19_multiplane",
+   "params": {
+    "dz_m": null,
+    "nz": null
+   }
+  }
+ }
+}

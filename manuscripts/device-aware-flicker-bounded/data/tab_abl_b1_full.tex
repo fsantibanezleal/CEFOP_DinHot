@@ -1,0 +1,12 @@
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+Variant & $\sigma$ median (\%) & $\sigma$ range (\%) & Factor over phase-fixed WGS, 95\% interval & $e$ ratio \\
+\midrule
+device-aware WGS, all components & 0.724 & 0.597 to 1.163 & 7.0 (3.4 to 14.3) & 0.990 \\
+without the weight update & 0.242 & 0.202 to 0.248 & 24.2 (16.8 to 34.8) & 0.997 \\
+without the device-aware phase step & 3.487 & 3.344 to 3.922 & 1.6 (1.3 to 1.9) & 1.006 \\
+without the best-iterate safeguard & 0.724 & 0.597 to 1.163 & 7.0 (3.4 to 14.3) & 0.990 \\
+device model removed from the loop & 5.769 & 5.189 to 5.781 & 1.0 (1.0 to 1.0) & 0.999 \\
+warm start only (no iteration) & 7.288 & 5.115 to 8.320 & 0.8 (0.5 to 1.3) & 0.999 \\
+\bottomrule
+\end{tabular}

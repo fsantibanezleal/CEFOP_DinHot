@@ -6,7 +6,7 @@ trap, evaluated with the point-trap form (exact between bins). Units: the map is
 per peak), so the physical intensity is ``P I_m / (pad^2 bin^2)`` W/m^2 (one bin carries ``I_m / pad^2`` of the power).
 ``power_mw`` is the laser power on the SLM.
 
-- Bead (overdamped Langevin): Rayleigh polarizability in the immersion medium, depth ``alpha I_peak / (2 c eps0)`` (the
+- Bead (overdamped Langevin): Rayleigh polarizability in the immersion medium, depth ``alpha I_peak / (2 n_m c eps0)``, ``n_m`` the immersion index (the
   gradient force of ``core/trapphys.py``), drag ``6 pi eta r``. Expected corner frequency ``kappa / (2 pi gamma)`` with
   ``kappa`` from the curvature of the same map; the measured one is the Lorentzian fit of the simulated spectrum
   (``fc_ratio`` = measured over expected, the particle oracle of the SDD). The position histogram is compared with the
@@ -95,7 +95,7 @@ def run(rec: dict, phi: np.ndarray, setup: Setup) -> tuple[dict, dict]:
     start = (float(xs[ix]), float(ys[iy]))
     if d["particle"] == "bead":
         alpha = tp.rayleigh_polarizability_Fm2(d["bead_radius_um"] * 1e-6, d["n_particle"], setup.n_imm)
-        depth = alpha * i_peak / (2.0 * tp.C_M_PER_S * tp.EPS0_F_PER_M)
+        depth = alpha * i_peak / (2.0 * setup.n_imm * tp.C_M_PER_S * tp.EPS0_F_PER_M)
         gamma = 6.0 * math.pi * d["viscosity_pa_s"] * d["bead_radius_um"] * 1e-6
         kappa = depth * curv
         fc_expected = kappa / (2.0 * math.pi * gamma)

@@ -25,7 +25,7 @@ Continuation over $\lambda\in[0,1]$ of the loss
 $$L_\lambda(\phi) = (1-\lambda)\,\frac{\sum_m(I_m - T_m)^2}{\sum_m T_m^2} \;-\; \lambda\,\frac{\sum_m I_m}{e_0}, \qquad T_m = e_0\,\frac{w_m}{\sum_k w_k}$$
 
 with $I_m = |V_m|^2$ and $e_0$ the efficiency of the weighted-GS hologram at the uniform end. The research form writes $(1-\lambda)\sum(|V|^2 - w_mT_m)^2 - \lambda\sum|V|^2$; the two terms
-are divided by $\sum T^2$ and $e_0$ so that both are dimensionless and of order one (UNVERIFIED reading: the scaling is not stated in the source). The start ($\lambda = 0$) is
+are divided by $\sum T^2$ and $e_0$ so that both are dimensionless and of order one (DinHot's scaling, part of the method's definition: the source states none). The start ($\lambda = 0$) is
 phase-fixed WGS, refined by the same CG; each next $\lambda$ is warm-started from its neighbour and solved with `budget.iterations` Fletcher-Reeves and strong-Wolfe CG iterations. The gradient is the closed
 form $G_m = [2(1-\lambda)(I_m - T_m)/\sum T^2 - \lambda/e_0]\,V_m$ pulled back by the point-trap adjoint (any trap $z$ and vortex charge; the ideal device).
 
@@ -51,10 +51,10 @@ Hypervolume at least that of the M04, M05, M09 and M06 points on the 10 by 10 ta
 
 ## Limits
 
-The loss scaling is DinHot's reading (UNVERIFIED); the front is computed with the ideal device; the hypervolume depends on the reference point.
+The loss scaling is DinHot's, part of the method's definition; the front is computed with the ideal device; the hypervolume depends on the reference point.
 
 ## References
 
 - Di Leonardo, Ianni and Ruocco 2007, https://doi.org/10.1364/OE.15.001913
-- Polin, Hovhannisyan and Sorensen 2005, https://doi.org/10.1364/OPEX.13.005831
+- Polin, Ladavac, Lee, Roichman and Grier 2005, https://doi.org/10.1364/OPEX.13.005831
 - Kim et al. 2019 (the phase-fixed start), https://doi.org/10.1364/OL.44.003178

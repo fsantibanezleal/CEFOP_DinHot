@@ -35,6 +35,12 @@ seed in two ran away (the loss rose from 0.044 to 0.53 between iterations 2 and 
 lowest relative standard deviation on its own device model among the iterates that keep at least ``EFFICIENCY_FLOOR`` of the
 warm start's efficiency, the ten percent of the claim's own criterion. The history keeps every iterate; ``meta`` names the
 returned one (``best_iteration``) and the floor. A run that converges returns its last iterate or one close to it.
+Option ``weights`` (default True, the method). ``weights=False`` keeps every weight at one, so the steps fit the current
+efficiency level with equal targets; it is the ablation of the weight update (BL-046, 2026-11-05). On the 10 x 10 acceptance
+task on the crosstalk device it lowers the spread (0.24 against 0.72 percent). On the benchmark's C08 device at 10
+iterations (median over three seeds) it lowers the spread on the square lattice (14 against 29 percent) at a lower
+efficiency (0.56 against 0.60), raises it on the ring of 36 (8.9 against 7.8), and leaves the random and quasi-periodic
+sets unchanged, so neither form dominates and the method keeps its weights.
 Defaults and measured numbers: tests ``test_b1_device_wgs.py`` and the E3 report.
 """
 from __future__ import annotations
@@ -59,7 +65,7 @@ EFFICIENCY_FLOOR = 0.9  # an iterate below this share of the warm start's effici
 
 
 def run(setup: Setup, target: Target, *, device: Device | None = None, budget: Budget, rng: Rng,
-        init: np.ndarray | None = None, steps: int = DEFAULT_STEPS, warm: int = DEFAULT_WARM) -> Result:
+        init: np.ndarray | None = None, steps: int = DEFAULT_STEPS, warm: int = DEFAULT_WARM, weights: bool = True) -> Result:
     """``budget.iterations`` outer iterations of weight update plus ``steps`` CG steps on the device-aware loss."""
     if target.kind != "traps":
         raise ValueError("B1 supports trap targets only (targets: 'traps'); got a shaped field")
@@ -87,8 +93,9 @@ def run(setup: Setup, target: Target, *, device: Device | None = None, budget: B
         if C.expired(deadline):
             break
         v, _ = cost.fwd.fields(phi)
-        r = np.maximum(np.abs(v), 1e-300) / a
-        w = w * np.mean(r) / r
+        if weights:
+            r = np.maximum(np.abs(v), 1e-300) / a
+            w = w * np.mean(r) / r
         amp2 = (w * a) ** 2
         cost.target = float(np.sum(np.abs(v) ** 2)) * amp2 / amp2.sum()
         res = C.cg_minimize(cost.value_grad, phi, steps, deadline=deadline)
@@ -101,6 +108,6 @@ def run(setup: Setup, target: Target, *, device: Device | None = None, budget: B
             best = (phi.copy(), v, it, entry["rel_std"])
     phi, v, best_it, _ = best
     return Result(phi=np.mod(phi, 2.0 * np.pi), history=history, fields=v,
-                  meta={"steps": steps, "warm": warm, "evaluations": evals, "weights": w.tolist(),
+                  meta={"steps": steps, "warm": warm, "evaluations": evals, "weights": w.tolist(), "weight_update": weights,
                         "device_aware": device is not None, "best_iteration": best_it, "efficiency_floor": floor,
                         "start_rel_std": start["rel_std"], "start_efficiency": start["efficiency"]})

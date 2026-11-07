@@ -1,0 +1,19 @@
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Component & Variant & Hypervolume & Change & Lowest $u$ & Seconds \\
+\midrule
+Reference & 20 values, 15 steps, linear, warm & $0.8230\pm0.0036$ &  & 0.012 & 64.2 \\
+Number of values & 5 values & $0.8130\pm0.0043$ & $-0.0100\pm0.0046$ & 0.015 & 18.7 \\
+ & 10 values & $0.8188\pm0.0024$ & $-0.0042\pm0.0034$ & 0.029 & 34.7 \\
+ & 40 values & $0.8242\pm0.0031$ & $0.0012\pm0.0017$ & 0.022 & 134.5 \\
+Steps per value & 5 steps & $0.8190\pm0.0039$ & $-0.0040\pm0.0043$ & 0.058 & 30.3 \\
+ & 30 steps & $0.8235\pm0.0030$ & $0.0005\pm0.0014$ & 0.013 & 118.5 \\
+Schedule & quadratic in $\lambda$ & $0.8221\pm0.0036$ & $-0.0009\pm0.0003$ & 0.011 & 70.8 \\
+ & target-spaced & $0.8133\pm0.0026$ & $-0.0097\pm0.0012$ & 0.944 & 70.6 \\
+Continuation & cold start per value & $0.8134\pm0.0057$ & $-0.0096\pm0.0070$ & 0.020 & 72.7 \\
+Start & plain GS start & $0.8170\pm0.0055$ & $-0.0060\pm0.0024$ & 0.019 & 68.2 \\
+ & random, no iteration & $0.8143\pm0.0046$ & $-0.0087\pm0.0051$ & 0.012 & 59.8 \\
+ & weighted GS, 100 it. & $0.8236\pm0.0028$ & $0.0006\pm0.0014$ & 0.017 & 48.0 \\
+Loss scaling & unscaled loss & $0.8033\pm0.0065$ & $-0.0197\pm0.0081$ & 0.002 & 62.8 \\
+\bottomrule
+\end{tabular}

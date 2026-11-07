@@ -54,7 +54,7 @@ Gram matrix of the 21 modes sampled on the disc: deviation from the identity wit
 
 ## Limits
 
-- UNVERIFIED: Noll 1976 (https://doi.org/10.1364/JOSA.66.000207 ) is paywalled and was not opened. The index table and the
+- Noll 1976 (https://doi.org/10.1364/JOSA.66.000207 ) is paywalled and was not opened. The index table and the
   normalisation come from secondary sources (the Janssen page, a University of Arizona page, Wikipedia); $j = 12$ to 21 follow
   the Noll rule, and $j = 21$ is derived. Sign conventions differ between sources.
 - The Maréchal relation is an approximation valid for small $\sigma_W$.

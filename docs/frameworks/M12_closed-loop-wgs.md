@@ -25,7 +25,22 @@ intensity relative to its target and gain $G$,
 $$I'_m = \frac{\bar I}{1 - G\,(1 - I_m/\bar I)} \quad\Longrightarrow\quad w^T_m \leftarrow w^T_m\,\frac{1}{1 - G(1-\rho_m)}$$
 
 The target intensity is multiplied by the factor, so a trap at $\rho = 1$ keeps its target. The multiplicative reading is DinHot's (it keeps the
-memory of earlier corrections and has the same fixed point $\rho = 1$); the printed form of the update was not confirmed (UNVERIFIED).
+memory of earlier corrections and has the same fixed point $\rho = 1$); the printed form is the variant `nogrette-printed`, below.
+
+Variant `nogrette-printed` is the rule as the paper prints it (Eq. 3): the new target intensity comes from the latest measurement alone,
+$I'_m = \bar I/[1 - G(1 - I_m/\bar I)]$ on the base design weights, so $a_m = a^{\rm base}_m\sqrt{1/(1 - G(1-\rho_m))}$ with no memory of earlier
+corrections. It equals `nogrette` at the first feedback iteration and differs from the second. Measured on the acceptance task (10 by 10 grid,
+camera 0.19, no noise, $G = 0.7$, 20 iterations, `n_inner` = 1, seeds 1, 2, 3):
+
+| Variant | Open-loop spread (percent) | After 20 iterations (percent) |
+|---|---|---|
+| `nogrette` (cumulative, default) | 20.9, 20.4, 20.3 | 0.84, 1.07, 2.18 |
+| `nogrette-printed` (memoryless) | 20.9, 20.4, 20.3 | 15.4, 16.8, 18.2 |
+
+The memoryless rule does not close the loop on the emulation: a uniform measurement ($\rho = 1$) sends the target back to the base design,
+whose hologram is the uncorrected one, so uniform is not a fixed point of the map and the loop settles (about 15.5 percent from the fifth iteration
+for seed 1) with the camera's spread left. The default stays `nogrette`; both are offered so a replication can be compared with the paper number for
+number (`tests/methods/control/test_m12_closed_loop.py`, the `printed` tests; the TypeScript mirror carries the variant, without a Python reference file yet).
 
 Variant `kim` (https://arxiv.org/abs/1903.09286 ): $T^{(j)}_m = \sqrt{\langle I\rangle/I_m}\;T^{(j-1)}_m$ (square-root weights, full gain). The first inner
 iteration displays $\arg \mathcal{F}^{-1}[T e^{i\psi}]$ with the focal phase $\psi$ frozen at that of the current hologram and no weight correction on
@@ -62,9 +77,9 @@ From a plain GS start with camera noise 5e-5, blur and roll-off the spread falls
 ## Limits
 
 - The camera is an emulation; the result shows the loop works against stated errors, not against an instrument.
-- The update form of the source is read multiplicatively (UNVERIFIED).
+- The default `nogrette` reads the update of the source multiplicatively; the memoryless form as printed is `nogrette-printed`, which does not settle on the emulation (measured above).
 
 ## References
 
 - Nogrette et al. 2014, Phys. Rev. X 4, 021034, https://arxiv.org/abs/1402.5329
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286

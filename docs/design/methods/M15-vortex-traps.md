@@ -15,7 +15,7 @@
 The established way to give a trap orbital angular momentum: one more term in the delay of the point-trap model, so that vortex
 traps (a ring of light with a dark centre) mix freely with plain traps in one hologram. It is a classical baseline because it is part
 of the first formulation of the point-trap model (Di Leonardo, Ianni and Ruocco 2007, text after Eq. (2),
-https://doi.org/10.1364/OE.15.001913) and was demonstrated in a trap array by Polin, Hovhannisyan and Sorensen 2005 (12 vortices of
+https://doi.org/10.1364/OE.15.001913) and was demonstrated in a trap array by Polin, Ladavac, Lee, Roichman and Grier 2005 (12 vortices of
 charge 8 inside a 51-trap array, https://doi.org/10.1364/OPEX.13.005831).
 
 ## Problem it answers
@@ -112,4 +112,4 @@ the azimuthal charge only, not a radial index.
 ## References
 
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913
-- Polin, Hovhannisyan and Sorensen 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
+- Polin, Ladavac, Lee, Roichman and Grier 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
