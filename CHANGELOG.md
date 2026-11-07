@@ -3,6 +3,25 @@
 All notable changes to this product. Versions are X.XX.XXX (VERSION is the single source); every release is
 tagged.
 
+## [0.02.003], 2026-11-07
+
+### Changed
+
+- Adopted CAOS_PRODUCT_TEMPLATE 0.15.002 and the shared app shell 0.23.1, whose gate now measures DinHot's long documentation
+  pages (the walk's budget scales with the document).
+- The App opens on the optical train, from the laser to the traps, drawn from the case's setup, and shows the SLM in section, one
+  pixel row with its commanded and displayed phase; both carry anchored callouts. A trap selected on the focal plane, in the per-trap
+  bars or on the optical train is selected everywhere. The method at work redraws the focal plane at the iteration the reader scrubs.
+- A guided story of five steps (`/story/setup`, `/story/device`, `/story/method`, `/story/compare`, `/story/hold`) states one measured
+  finding per step, computed from the release's artifacts; the comparison step is on the modelled device.
+- Every method is named by its name in the app, the notebooks, the manuscripts and the README; the engine ids stay in code and data.
+- The notebook runtimes live in the device's venvs root (`<venvs root>/dinhot/`), as the base requires.
+
+### Fixed
+
+- The review findings of the technical report, the four method papers and the notebooks of topics 01 to 08, and the citations checked
+  against the full texts where they were open.
+
 ## [0.02.002], 2026-10-31
 
 ### Changed
