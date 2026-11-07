@@ -8,7 +8,7 @@ import { PlotCard, SceneCallouts, Stage, formatNumber, prefersReducedMotion, use
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Text } from '../lib/contract.types';
 import { ReadinessNote } from '../readiness/ReadinessNote';
-import { isShaped, type Selection } from './model';
+import { is3D, isShaped, type Selection } from './model';
 import { useNav, type ViewTarget } from './nav';
 import { CASE_ROWS, cardOf, StageBox, useStateKey } from './ui';
 
@@ -202,14 +202,20 @@ interface DrawingProps {
   onSelectTrap: (id: number) => void;
 }
 
+/** A trap as the focal square shows it: lateral position, with the depth drawn as an oblique offset so traps of one lateral position on
+ * different planes do not hide one another (a case with every trap on one plane has no offset). */
+const projectTrap = (x: number, y: number, z: number) => ({ x: x + 0.5 * z, y: y + 0.3 * z });
+
 /** The point of a trap in the focal square: the array's own extent fills the square, y up. */
-function siteAt(field: Box, ext: number, x: number, y: number) {
+function siteAt(field: Box, ext: number, tr: { x_um: number; y_um: number; z_um: number }) {
   const half = field.w / 2;
   const k = (half - 5) / ext;
-  return { x: field.x + half + x * k, y: field.y + field.h / 2 - y * k };
+  const p = projectTrap(tr.x_um, tr.y_um, tr.z_um);
+  return { x: field.x + half + p.x * k, y: field.y + field.h / 2 - p.y * k };
 }
 
-const extentOf = (traps: readonly { x_um: number; y_um: number }[]): number => Math.max(1e-6, ...traps.map((t) => Math.max(Math.abs(t.x_um), Math.abs(t.y_um)))) * 1.1;
+const extentOf = (traps: readonly { x_um: number; y_um: number; z_um: number }[]): number =>
+  Math.max(1e-6, ...traps.map((t) => { const p = projectTrap(t.x_um, t.y_um, t.z_um); return Math.max(Math.abs(p.x), Math.abs(p.y)); })) * 1.1;
 
 /** The drawing: pure, so its tests read the element tree. Positions are pixels of the stage. */
 export function OpticalTrainDrawing(p: DrawingProps) {
@@ -265,9 +271,15 @@ export function OpticalTrainDrawing(p: DrawingProps) {
     const b = L.items[id];
     const i = byId[id];
     const isBtn = !!TRAIN_TARGET[id];
+    // The focal plane's array sits at the centre of its box and takes the pointer there (sites, or the nearest-trap pick), so on the line
+    // layout the button is the label strip under the box, which nothing covers; the frame is drawn apart. On the rows layout the box is the row.
+    const hit = id === 'focal' && !rows ? { x: b.x, y: b.y + b.h + 2, w: b.w, h: 50 } : b;
     return (
-      <g key={id} data-train-element={id} aria-label={label(i)} {...open(id)} className={isBtn ? 'dh-train-button' : undefined}>
-        <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="8" fill="var(--color-surface)" fillOpacity={isBtn ? 1 : 0.6} stroke={isBtn ? 'var(--color-accent)' : 'var(--color-border)'} strokeWidth={isBtn ? 1.5 : 1} />
+      <g key={id}>
+        <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="8" fill="var(--color-surface)" fillOpacity={isBtn ? 1 : 0.6} stroke={isBtn ? 'var(--color-accent)' : 'var(--color-border)'} strokeWidth={isBtn ? 1.5 : 1} pointerEvents="none" />
+        <g data-train-element={id} aria-label={label(i)} {...open(id)} className={isBtn ? 'dh-train-button' : undefined}>
+          <rect x={hit.x} y={hit.y} width={hit.w} height={hit.h} rx="8" fill="transparent" stroke="none" />
+        </g>
       </g>
     );
   };
@@ -336,14 +348,14 @@ export function OpticalTrainDrawing(p: DrawingProps) {
     let best = traps[0];
     let bd = Infinity;
     for (const tr of traps) {
-      const s = siteAt(L.field, ext, tr.x_um, tr.y_um);
+      const s = siteAt(L.field, ext, tr);
       const d = (s.x - px) ** 2 + (s.y - py) ** 2;
       if (d < bd) { bd = d; best = tr; }
     }
     if (best) p.onSelectTrap(best.id);
   };
 
-  const dot = Math.max(2.2, Math.min(5, (L.field.w - 10) / (2 * Math.sqrt(Math.max(1, traps.length)))));
+  const dot = Math.max(2.2, Math.min(4, (L.field.w - 10) / (2 * Math.sqrt(Math.max(1, traps.length)))));
   const selectedTrap = selectedId === null ? null : traps.find((tr) => String(tr.id) === selectedId) ?? null;
 
   return (
@@ -375,12 +387,12 @@ export function OpticalTrainDrawing(p: DrawingProps) {
       {/* the focal plane: a button for the view, the array face-on inside it */}
       {elementBox('focal')}
       <rect x={L.field.x} y={L.field.y} width={L.field.w} height={L.field.h} rx="4" fill="var(--color-bg)" stroke="var(--color-border)" strokeWidth="1" pointerEvents="none" />
-      <text x={L.field.x + 4} y={L.field.y + 11} fill="var(--color-fg-subtle)" fontSize="10" fontFamily="var(--font-mono)" pointerEvents="none">{traps.length ? `±${f(ext / 1.1, 1)} um` : ''}</text>
+      <text x={L.field.x + 4} y={L.field.y + 11} fill="var(--color-fg-subtle)" fontSize="10" fontFamily="var(--font-mono)" pointerEvents="none">{traps.length ? `±${f(ext / 1.1, 1)} um${is3D(traps) ? t(', z oblique', ', z oblicuo') : ''}` : ''}</text>
       {TRAIN_IDS.map((id) => textBlock(id))}
       <g data-train-sites="">
         {sites
           ? traps.map((tr) => {
-              const s = siteAt(L.field, ext, tr.x_um, tr.y_um);
+              const s = siteAt(L.field, ext, tr);
               const chosen = selectedId === String(tr.id);
               return (
                 <circle
@@ -403,13 +415,13 @@ export function OpticalTrainDrawing(p: DrawingProps) {
               );
             })
           : traps.map((tr) => {
-              const s = siteAt(L.field, ext, tr.x_um, tr.y_um);
+              const s = siteAt(L.field, ext, tr);
               return <circle key={tr.id} cx={s.x} cy={s.y} r={dot} fill="var(--color-accent)" aria-hidden="true" pointerEvents="none" />;
             })}
         {!sites && (
           <rect data-train-field="" x={L.field.x} y={L.field.y} width={L.field.w} height={L.field.h} fill="transparent" role="application" aria-label={t('Focal plane sites: click to select the nearest trap', 'Sitios del plano focal: pulse para elegir la trampa más cercana')} onPointerDown={nearest} />
         )}
-        {!sites && selectedTrap && (() => { const s = siteAt(L.field, ext, selectedTrap.x_um, selectedTrap.y_um); return <circle cx={s.x} cy={s.y} r={dot + 3} fill="none" stroke="var(--color-bad)" strokeWidth="2" pointerEvents="none" data-linked-selected-trap={String(selectedTrap.id)} />; })()}
+        {!sites && selectedTrap && (() => { const s = siteAt(L.field, ext, selectedTrap); return <circle cx={s.x} cy={s.y} r={dot + 3} fill="none" stroke="var(--color-bad)" strokeWidth="2" pointerEvents="none" data-linked-selected-trap={String(selectedTrap.id)} />; })()}
       </g>
     </svg>
   );

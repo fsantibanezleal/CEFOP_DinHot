@@ -372,6 +372,10 @@ export function SlmSectionView({ sel }: { sel: Selection }) {
       </Stage>
       </StageBox>
       <div className="dh-slm-controls" data-caos-plot-control="">
+        {sw.disabled ? (
+          // a switch with one choice the reader cannot take is not drawn as a control (the rail does the same): the reason says what is shown
+          <span className="caos-plot-note" data-state="ideal-only">{sw.reason![lang]}</span>
+        ) : (
         <ChipGroup
           id="slm-device"
           label={{ en: 'SLM in section', es: 'SLM en sección' }}
@@ -382,6 +386,7 @@ export function SlmSectionView({ sel }: { sel: Selection }) {
             { id: 'case', label: { en: 'Case device', es: 'Dispositivo del caso' }, disabled: sw.disabled, hint: sw.reason ?? { en: 'Quantization, response, fill factor and crosstalk of this case.', es: 'Cuantización, respuesta, factor de llenado y diafonía de este caso.' } },
           ]}
         />
+        )}
         <label>
           {t('Pixel column', 'Columna de píxeles')} <strong>{col}</strong>
           <input type="range" min={0} max={Math.max(0, n - 1)} step={1} value={col} aria-label={t('Scrub the pixel column along the row', 'Mover la columna de píxeles a lo largo de la fila')} onChange={(e) => setPos({ col: Number(e.target.value), row: rowIx })} />
@@ -390,7 +395,6 @@ export function SlmSectionView({ sel }: { sel: Selection }) {
           {t('Row', 'Fila')} <strong>{rowIx}</strong>
           <input type="range" min={0} max={Math.max(0, n - 1)} step={1} value={rowIx} aria-label={t('Choose the pixel row of the mask', 'Elegir la fila de píxeles de la máscara')} onChange={(e) => setPos({ col, row: Number(e.target.value) })} />
         </label>
-        {sw.reason && <span className="caos-plot-note">{sw.reason[lang]}</span>}
       </div>
     </PlotCard>
   );

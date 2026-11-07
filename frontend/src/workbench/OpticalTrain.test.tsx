@@ -256,6 +256,26 @@ describe('the trap sites in the focal plane', () => {
   });
 });
 
+describe('what the pointer can reach (gate G5)', () => {
+  it('traps of one lateral position on different planes are drawn apart (C05 has three planes)', () => {
+    const { props } = draw({}, 'C05_multiplane_vortices');
+    const dots = el(props).filter((n) => n.props['data-linked-id'] !== undefined);
+    const at = dots.map((d) => `${Number(d.props.cx).toFixed(2)},${Number(d.props.cy).toFixed(2)}`);
+    expect(new Set(at).size).toBe(dots.length);
+  });
+
+  it('the focal plane button is the strip under the box, so no site or pick area covers its centre', () => {
+    const { props } = draw();
+    const focal = el(props).find((n) => n.props['data-train-element'] === 'focal')!;
+    const hit = nodes(focal.props.children as ReactNode)[0];
+    const cx = Number(hit.props.x) + Number(hit.props.width) / 2;
+    const cy = Number(hit.props.y) + Number(hit.props.height) / 2;
+    const field = trainLayout(W, H).field;
+    expect(cy).toBeGreaterThan(field.y + field.h);
+    expect(cx).toBeGreaterThanOrEqual(field.x - 1);
+  });
+});
+
 describe('the narrow layout', () => {
   it('draws the train as rows at 340 px with no horizontal overflow of its viewBox', () => {
     const { props } = draw({ width: 340, height: 400 });

@@ -89,7 +89,7 @@ function railOf(data: CaseData): Rail {
 }
 
 /** The desktop rail width in CSS pixels (shell 0.21.0, bounded 150 to 360): narrow enough that the instrument takes 60 percent of the viewport. */
-const RAIL_WIDTH = 200;
+const RAIL_WIDTH = 232;
 
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
