@@ -54,7 +54,7 @@ def fig_front(d: dict) -> None:
             ax.plot(f["e"], f["u"], "o-", ms=2.2, lw=0.6, color=BLUE, alpha=0.55, label="front, one seed" if k == 0 else None)
         for name, (lab, mk, col) in PUB.items():
             ax.plot([r["published"][name][0] for r in d["main"]], [r["published"][name][1] for r in d["main"]], mk, ms=5,
-                    mfc="white" if name != "M09" else col, mec=col, color=col, label=lab)
+                    mfc="white" if lab != "direct search" else col, mec=col, color=col, label=lab)
         grid(ax)
         ax.set_xlabel("efficiency  e")
         ax.set_ylabel("uniformity  u")
