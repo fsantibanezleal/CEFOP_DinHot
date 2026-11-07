@@ -1,0 +1,250 @@
+\section{Proposed method: directional group-peak updates}\label{sec:directional}
+The second construction couples interval departures within disjoint
+groups. A shared peak price can allocate corrections differently from
+independent row prices: changing the largest weighted departure alters
+the group cost, and several rows may become active at the same peak.
+Unequal upper and lower scales specify directional policy. The interface
+retains original interval rows while using an exact group proximal
+operation. Directional expressibility is not new: a one-sided row split
+or a compact epigraph already expresses the same objective. The research
+question concerns the resulting complete numerical operation.
+
+For a nonempty closed box $C$ and a residual penalty $\Psi$, define
+\begin{equation}\label{eq:paper-infimal}
+ g_C(z)=\inf_{s\in C}\Psi(z-s).
+\end{equation}
+Assume $\Psi$ is proper, closed, convex, nonnegative and satisfies
+$\Psi(0)=0$. The relevant contraction property is
+\begin{equation}\label{eq:paper-contraction}
+ \Psi(Dw)\leq\Psi(w),\qquad D=\diag(d_i),\quad0\leq d_i\leq1.
+\end{equation}
+This property permits unequal behavior on positive and negative rays.
+It does not require global sign symmetry. Orthant-monotonicity provides
+important prior context for that distinction~\cite{orthant}; convexity
+alone is not enough to justify the box projection identity below.
+
+\begin{theorem}[Box-residual identity]\label{thm:paper-box}
+The contraction property\eqref{eq:paper-contraction} holds if and only if,
+for every nonempty closed box and every $z$,
+\begin{equation}\label{eq:paper-box-identity}
+ g_C(z)=\Psi(z-\Pi_C(z)).
+\end{equation}
+\end{theorem}
+\begin{proof}
+For any $s\in C$, set $r=z-\Pi_C(z)$. If $z_i$ exceeds its upper bound,
+then $z_i-s_i\geq r_i>0$. If it is below its lower bound, then
+$z_i-s_i\leq r_i<0$. Inside the interval $r_i=0$. Therefore
+$r=D(z-s)$ for some diagonal contraction. The property gives
+$\Psi(r)\leq\Psi(z-s)$, with equality attained by $s=\Pi_C(z)$.
+Conversely, fix $w,D$ and choose coordinate intervals with endpoints
+$-w_i$ and $-d_iw_i$ in increasing order. At $z=0$ the nearest-box
+residual is $Dw$, while $-w$ is an admissible point. The claimed identity
+therefore implies $\Psi(Dw)\leq\Psi(w)$.
+\end{proof}
+
+The theorem states an equivalence over all boxes. It is not merely a
+numerical observation on one training case. The infimal-convolution
+representation gives convexity. Its explicit composition with the
+continuous residual map supplies lower semicontinuity under the stated
+closedness assumption. A point inside the box has zero price, so the
+eliminated penalty is proper. These domain statements matter when an
+extended-real penalty represents an immutable restriction rather than
+a finite departure price.
+
+Let $H=\diag(h_i)\succ0$ be fixed. Define
+\begin{equation}\label{eq:paper-metric-prox}
+ \prox_f^H(v)=\argmin_z\{f(z)+\tfrac12(z-v)^\top H(z-v)\}.
+\end{equation}
+The translated residual relation is
+\begin{equation}\label{eq:paper-translated-prox}
+ \prox_{g_C}^H(v)=\Pi_C(v)+\prox_{\Psi}^H(v-\Pi_C(v)).
+\end{equation}
+\begin{proof}
+Put $p=\Pi_C(v)$ and clip a candidate coordinate to the
+segment joining $p_i$ and $v_i$. Diagonal quadratic distance from $v$
+cannot increase under that clipping. The new box residual is a
+coordinate contraction of the original residual, so its penalty cannot
+increase either. An optimum can therefore be sought on that product
+of segments. Writing $z=p+w$ makes its residual exactly $w$. The
+unconstrained residual proximal minimizer lies on the same segments
+because clipping toward the segment from zero to $v-p$ again decreases
+both terms. Thus the segment restriction does not change the residual
+minimum, establishing the relation.
+\end{proof}
+
+Diagonal structure is essential to this proof. A dense metric couples
+coordinates, and coordinate clipping can then increase the quadratic
+distance. The theory section gives a concrete counterexample. Likewise,
+the identity is not claimed for an arbitrary convex price lacking the
+contraction property. The admitted directional group penalties satisfy
+it because reducing a coordinate magnitude without changing its sign
+cannot increase any scaled directional peak. Separate disjoint groups
+then permit independent group calculations within the diagonal metric.
+
+For one group, define
+\begin{equation}\label{eq:paper-directional-price}
+ M(w)=\max_i\{c_{U,i}(w_i)_+,c_{L,i}(-w_i)_+\},\qquad
+ \Psi(w)=aM(w)+\tfrac12bM(w)^2,
+\end{equation}
+with positive directional scales and $a,b\geq0$. For residual $r=v-p$,
+choose $c_i$ according to the sign of $r_i$. Fixing a candidate peak
+$t\geq0$ constrains each residual coordinate to its corresponding
+interval. The best coordinate and scalar objective are
+\begin{equation}\label{eq:paper-threshold-model}
+ w_i(t)=\operatorname{sign}(r_i)\min\{|r_i|,t/c_i\},\qquad
+ F(t)=at+\tfrac12bt^2+\tfrac12\sum_i h_i(|r_i|-t/c_i)_+^2.
+\end{equation}
+The remaining problem is convex in one scalar. Breakpoints occur at
+$c_i|r_i|$. Sorting them in descending order gives active prefixes. On an interval with
+active set $S(t)=\{i:c_i|r_i|>t\}$, differentiating yields
+\begin{equation}\label{eq:paper-threshold-root}
+ t=\frac{\sum_{i\in S(t)}h_i|r_i|/c_i-a}
+          {b+\sum_{i\in S(t)}h_i/c_i^2}.
+\end{equation}
+Only a root consistent with its active interval is accepted. The zero
+endpoint is checked explicitly. When both prices vanish the original
+residual is returned directly; an empty active set never triggers a
+division by zero. Repeated breakpoints and zero residuals require
+consistent endpoint handling rather than arbitrary active-set choices.
+
+The operation costs $O(k\log k)$ for sorting a group of size $k$, then
+a prefix scan. Weighted threshold and projection methods already employ
+such structures~\cite{weighted,duchi,condat}. The implementation's specific
+role is to preserve the directional interval meaning, diagonal metric
+and original-row split, including boundary and representability cases.
+No claim identifies sorting or the scalar threshold primitive itself
+as an original algorithmic discovery.
+
+Algorithm~\ref{alg:paper-directional} makes those cases explicit. Numerical
+threshold comparisons use finite local spacing rather than a fixed
+absolute departure floor that changes meaning under unit conversion.
+Nonrepresentable arithmetic is refused. The interface requires disjoint
+groups; treating overlaps as separate independent calls would in general
+change the objective's proximal operation. Positive finite scales are
+required, and zero group price is distinguished from a hard constraint.
+These are semantic conditions of the implemented method rather than
+details to infer from a successful backend return code.
+
+\begin{algorithm}[htbp]
+\caption{Evaluate the directional disjoint-group proximal map with a fixed diagonal metric, retaining exact endpoint, zero-price and original-row semantics for independent numerical acceptance.}\label{alg:paper-directional}
+\begin{algorithmic}[1]
+\Require Nonempty box, disjoint groups, positive scales and diagonal $H\succ0$
+\State Set $p=\Pi_C(v)$ and $r=v-p$
+\For{each group}
+\If{both group prices are zero}
+\State Keep that residual group unchanged
+\Else
+\State Select each scale from the residual sign; sort $c_i|r_i|$
+\State Check $t=0$ and consistent roots of \eqref{eq:paper-threshold-root}
+\State Recover $w$ using \eqref{eq:paper-threshold-model}
+\EndIf
+\EndFor
+\State Return $p+w$, retaining exact hard-row projection separately
+\end{algorithmic}
+\end{algorithm}
+
+The joint conjugate is needed for independent acceptance. At fixed peak,
+maximizing the dual pairing produces the directional quantity
+\begin{equation}\label{eq:paper-dual-budget}
+ L(y)=\sum_i\left((y_i)_+/c_{U,i}+(-y_i)_+/c_{L,i}\right).
+\end{equation}
+Taking the scalar conjugate gives
+\begin{equation}\label{eq:paper-peak-conjugate}
+ \Psi^*(y)=\begin{cases}
+ (L(y)-a)_+^2/(2b),&b>0,\\
+ 0,&b=0,\ L(y)\leq a,\\
+ +\infty,&b=0,\ L(y)>a.
+ \end{cases}
+\end{equation}
+The interval support term remains necessary: $g_C^*=\sigma_C+\Psi^*$.
+A single coordinate-wise price cap is therefore not a valid replacement
+for the group budget. The evaluator checks each group's absolute
+normalized Fenchel relation, raw and bounded-repaired stationarity,
+and every hard row's complementarity separately. A negative approximate
+hard-row gap cannot cancel an incorrect soft relation.
+
+Finally, exact competing formulations delimit the computational claim.
+Directional one-sided rows reproduce the same peak under the published
+grouped projection path, while one nonnegative epigraph variable per
+group represents the convex price in an ordinary QP. The registered
+comparison retains both alternatives and direct/proximal DAQP policies
+where compatible. The primary operation includes 32 updates and all
+required recovery/acceptance work, not only one scalar threshold call.
+Its negative complete-population score demonstrates that a smaller
+original-row system can coexist with worse measured complete-operation
+cost. It does not refute the proximal identity, imply that every
+instance is slower by the same factor, or establish an advantage on
+an untested application regime.
+
+Absent interval sides require explicit domain treatment. A missing upper
+bound removes its positive directional departure, and a missing lower
+bound removes its negative departure. It does not contribute an artificial
+large finite endpoint or a product involving infinity and zero. The
+interval support in the conjugate then restricts the corresponding dual
+sign. This links a modeling convention at the serialized input boundary
+to a mathematical condition in original-space acceptance. A primal answer
+with a plausible objective can still fail if its recovered multiplier
+assigns force to a side that does not exist.
+
+Free group prices provide another useful boundary case. If both the
+linear and quadratic group coefficients vanish, the residual penalty
+is identically zero and the unconstrained residual proximal map is the
+identity. This is different from a hard box indicator, whose row operation
+projects to the box. The conjugate of the free residual penalty permits
+only zero soft-group dual contribution. These relationships give mutually
+consistent primal, proximal and dual controls. They prevent an endpoint
+special case from accidentally converting a free preference into an
+immutable constraint.
+
+Within a nonzero-price group, the scalar threshold can make several
+coordinates meet the same weighted peak. A coordinate below the active
+threshold keeps its residual value, whereas a larger weighted residual
+is clipped to its directional peak allowance. This is a coordinated
+allocation, not an independent softening of each original row. At tied
+breakpoints several algebraic active prefixes can describe the same
+unique proximal vector. The implementation must recover that vector
+consistently rather than infer scientific nonuniqueness from an internal
+sorting tie. Empty groups and overlapping memberships are rejected by
+the actual interface.
+
+The weights in\eqref{eq:paper-threshold-root} have physical meaning.
+The metric contribution divides by the squared directional scale,
+while the linear numerator divides by that scale once. Omitting one
+factor changes both threshold location and dimensional covariance.
+The independently expressed epigraph gives a different numerical route
+to the same group optimum, making this a concrete falsification target.
+The physical teaching input compares actual native, row-split and
+epigraph outputs and retains the original hard coupling equality.
+It is deliberately small enough to inspect without treating agreement
+as additional evidence of timing superiority.
+
+The original-row formulation also does not imply constant preparation
+cost under every update. A change in a vector is different from a
+change in matrix structure, metric, group membership or penalty family.
+Only the registered repeated-forecast vectors are updated within a
+prepared operation. Hard dynamics and heater-energy limits remain
+immutable in the thermal family. A different group layout or unit
+mapping would identify another input batch and invalidate reuse of
+the original source-bound observation. This is why batch digests,
+units and method policy settings accompany each recorded operation.
+
+Compatibility of references is similarly derived from semantics, not
+from an optimistic output flag. The linear row-split reference cannot
+be used as if it handled every quadratic group price. A direct DAQP
+epigraph requires its admitted curvature conditions; documented
+proximal policies have separately fixed roles. The complete protocol
+retains excluded cells as incompatible and dependent oracle limits
+as oracle-failed. Consequently the fastest selected reference is
+defined by the registered compatible alternatives for that instance,
+and cannot be chosen from an arbitrary easier objective afterward.
+
+All those conditions concern the same optimization model from
+different directions: input units, convex proximal structure,
+equivalent formulations, original duals and complete-operation
+accounting. Their agreement establishes a restricted and reproducible
+implementation claim. It does not authorize transferring a favorable
+teaching example to the entire held-out timing population. The retained
+negative score includes all required members, including those whose
+candidate or reference operation did not yield an accepted complete
+answer. That distinction preserves the scientific question even when
+a local closed-form calculation is exact.

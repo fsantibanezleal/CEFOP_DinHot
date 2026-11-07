@@ -5,6 +5,7 @@ test re-declares a shape."""
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from functools import lru_cache
@@ -109,4 +110,6 @@ def run_readiness_guard(root: Path | None = None, *, no_numpy: bool = False) -> 
     script = str(ROOT / "scripts" / "check_readiness.py")
     args = [str(root)] if root else []
     cmd = [sys.executable, "-c", NO_NUMPY, script, *args] if no_numpy else [sys.executable, script, *args]
-    return subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
+    # the guard resolves the engine from the tree it checks (template 0.14.006); a copy holds no pipeline, so the repository's is on the path
+    env = {**os.environ, "PYTHONPATH": os.pathsep.join(filter(None, [str(ROOT / "data-pipeline"), os.environ.get("PYTHONPATH")]))}
+    return subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT, env=env)

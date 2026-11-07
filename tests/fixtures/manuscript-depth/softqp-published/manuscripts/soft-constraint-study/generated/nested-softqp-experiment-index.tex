@@ -1,0 +1,16 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for softqp-experiment-index. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-softqp-experiment-index}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}experiments/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+protocol\_\allowbreak{}id & string & const=\allowbreak{}softqp-\allowbreak{}experiments-\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+artifacts & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+artifacts[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['path', 'bytes', 'sha256', 'schema'] & structural metadata /\allowbreak{} nested units\\
+artifacts[].\allowbreak{}path & string & pattern=\allowbreak{}\textasciicircum{}[a-\allowbreak{}z][a-\allowbreak{}z0-9-]*\textbackslash{}.\allowbreak{}(json\textbar{}\allowbreak{}csv\textbar{}\allowbreak{}jsonl)\$ & structural metadata /\allowbreak{} nested units\\
+artifacts[].\allowbreak{}bytes & integer & minimum=\allowbreak{}0 & bytes\\
+artifacts[].\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+artifacts[].\allowbreak{}schema & enumerated value & enum=\allowbreak{}['softqp-\allowbreak{}stream', 'softqp-\allowbreak{}campaign', 'softqp-\allowbreak{}datasets', 'softqp-\allowbreak{}trial', 'csv'] & structural metadata /\allowbreak{} nested units\\ % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+state & enumerated value & enum=\allowbreak{}['development', 'measured'] & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

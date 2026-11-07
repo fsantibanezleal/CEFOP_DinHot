@@ -1,3 +1,6 @@
 # LF in the repo for everything (keeps .sh + CI yaml correct on Linux); CRLF only for PowerShell on checkout.
 * text=auto eol=lf
 *.ps1 text eol=crlf
+# Immutable historical LaTeX/figure test sources are verified byte-for-byte.
+# Keep original newlines and archival whitespace; authored sources retain the normal policy.
+tests/fixtures/manuscript-depth/softqp-published/** -text -whitespace

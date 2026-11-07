@@ -134,6 +134,19 @@ def test_residue_guard_scans_the_helper_scripts_and_skips_its_own_tests(tmp_path
     assert "tests/test_guards.py" not in res.stdout
 
 
+def test_residue_capped_details_still_name_every_affected_path(tmp_path):
+    tree = _git_tree(tmp_path)
+    _put(tree, "a.md", "SIR\n" * 205)
+    _put(tree, "z.md", "EX02_epidemic\n")
+    result = _run("check_template_residue.py", str(tree))
+    assert result.returncode == 1, result.stdout
+    assert "206 line(s)" in result.stdout and "... and 6 more" in result.stdout
+    assert len(re.findall(r"^  [az]\.md:\d+:", result.stdout, flags=re.M)) == 200
+    assert "a.md:200:" in result.stdout and "a.md:201:" not in result.stdout
+    assert "z.md:1:" not in result.stdout
+    assert "Affected paths (2; detail limited to 200 hits):\n  a.md\n  z.md\n" in result.stdout
+
+
 def _instantiate_a_copy(tmp_path: Path, *, ci_edit=None, expected_exit: int = 0) -> tuple[Path, subprocess.CompletedProcess]:
     """A copy of the template, instantiated with --no-run: the copy and the script's result."""
     copy = tmp_path / "product"

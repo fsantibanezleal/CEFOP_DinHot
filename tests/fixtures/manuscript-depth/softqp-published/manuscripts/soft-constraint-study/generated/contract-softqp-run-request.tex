@@ -1,0 +1,12 @@
+\begin{table}[htbp]\centering\footnotesize
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-run-request schema 1.1.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-run-request}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule
+Field & Type & Constraint & Unit / role\\\midrule
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}run-\allowbreak{}request/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+case\_\allowbreak{}id & string & pattern=\allowbreak{}\textasciicircum{}C[0-9]\{2\}\$ & structural metadata /\allowbreak{} nested units\\
+base\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+lower\_\allowbreak{}multiplier & number & minimum=\allowbreak{}0.\allowbreak{}01; maximum=\allowbreak{}100 & dimensionless factor\\
+upper\_\allowbreak{}multiplier & number & minimum=\allowbreak{}0.\allowbreak{}01; maximum=\allowbreak{}100 & dimensionless factor\\
+quadratic\_\allowbreak{}multiplier & number & minimum=\allowbreak{}0; maximum=\allowbreak{}100 & dimensionless factor\\
+\bottomrule\end{tabularx}
+\end{table}

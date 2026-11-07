@@ -169,12 +169,46 @@ def environment(root):
     return values
 
 
+def safe_environment_component(value, *, runtime=False):
+    if not isinstance(value, str) or value.endswith("."):
+        return False
+    pattern = r"\.?[A-Za-z0-9][A-Za-z0-9_.-]*" if runtime else r"[A-Za-z0-9][A-Za-z0-9_.-]*"
+    stem = value.lstrip(".").split(".", 1)[0].upper()
+    reserved = {"CON", "PRN", "AUX", "NUL"} | {f"{prefix}{number}" for prefix in ("COM", "LPT") for number in range(1, 10)}
+    return re.fullmatch(pattern, value) is not None and stem not in reserved
+
+
 def environment_directory(root, name):
-    declared = {item["path"] for item in settings(root)["environments"]}
+    config = settings(root)
+    declared = {item["path"] for item in config["environments"]}
     candidate = Path(name)
     if name not in declared or candidate.is_absolute() or ".." in candidate.parts:
         raise Failure(f"Undeclared or invalid environment alias: {name}")
     directory = root / candidate
+    if config.get("external_environments_required"):
+        configured = environment(root).get("CAOS_VENVS_ROOT", "").strip()
+        if not configured or not Path(configured).is_absolute():
+            raise Failure("Configure an absolute external CAOS_VENVS_ROOT before initialization.")
+        if os.path.lexists(configured) and not Path(configured).is_dir():
+            raise Failure("External CAOS_VENVS_ROOT must be a directory, not a file or broken alias.")
+        base = external(Path(configured), root)
+        namespace = config.get("environment_namespace")
+        if (not safe_environment_component(namespace)
+                or not safe_environment_component(name, runtime=True) or len(candidate.parts) != 1):
+            raise Failure("External environment namespace and runtime must be safe single components.")
+        target = base / namespace / candidate
+        for component in (base / namespace, target):
+            if os.path.lexists(component) and (
+                component.is_symlink() or getattr(component, "is_junction", lambda: False)()
+                or not component.is_dir()
+            ):
+                raise Failure("External environment namespace/runtime must be directories without redirection.")
+        target = target.resolve()
+        if not target.is_relative_to(base) or inside(target, root):
+            raise Failure("External environment namespace escapes its declared root.")
+        if os.path.lexists(directory) and (not directory.is_dir() or directory.resolve() != target):
+            raise Failure("Existing runtime must be an alias to its declared external environment.")
+        return target
     if os.path.lexists(directory) and not directory.is_dir():
         raise Failure(f"Declared environment alias is unavailable or not a directory: {directory}")
     return directory
@@ -307,15 +341,18 @@ def check_shipped(root, config):
 
 def initialize(root, config, gpu=False, notebooks=False):
     prerequisites(root, False, False)
+    applicable = [item for item in config["environments"]
+                  if not item.get("when") or {"gpu": gpu, "notebooks": notebooks,
+                                             "api": api_active(root, config)}[item["when"]]]
+    if config.get("external_environments_required"):
+        for item in applicable:
+            environment_directory(root, item["path"])
     local = root / ".env"
     if not local.exists():
         with local.open("x", encoding="utf-8") as stream:
             stream.write((root / ".env.example").read_text(encoding="utf-8"))
     env = environment(root)
-    for item in config["environments"]:
-        when = item.get("when")
-        if when and not {"gpu": gpu, "notebooks": notebooks, "api": api_active(root, config)}[when]:
-            continue
+    for item in applicable:
         fingerprint = requirements_digest(root, item["requirements"])
         directory = environment_directory(root, item["path"])
         if not directory.exists():
@@ -376,6 +413,8 @@ def commands(root, rows, values, env):
 def source_identity(root, config):
     paths = [
         root / "VERSION",
+        root / "product.json",
+        root / "app/openapi.json",
         root / "scripts/local/workflow.json",
         root / "scripts/local/workflow.py",
         root / "scripts/local/producer_bridge.py",
@@ -401,17 +440,17 @@ def source_identity(root, config):
     return hashlib.sha256(json.dumps(values, sort_keys=True).encode()).hexdigest()
 
 
-def payload_hashes(stage, config):
+def payload_hashes(stage, config, *, directories=None):
     result = {}
     for name in config["promote"]:
-        directory = relative(stage, name)
+        directory = directories[name] if directories is not None else relative(stage, name)
         if not directory.is_dir():
             raise Failure(f"Incomplete stage: {name} is missing.")
         for path in directory.rglob("*"):
-            if path.is_symlink() or not inside(path, stage):
+            if path.is_symlink() or not inside(path, directory):
                 raise Failure("A staged payload cannot contain symlinks or escaped paths.")
             if path.is_file():
-                result[path.relative_to(stage).as_posix()] = digest(path)
+                result[(Path(name) / path.relative_to(directory)).as_posix()] = digest(path)
     return result
 
 
@@ -482,16 +521,25 @@ def check_readiness_states(root, config, ready, view):
         run([sys.executable, "-B", relative(root, checker), view], root)
 
 
+def check_admission_identity(root, config, stage, admitted):
+    if (source_identity(root, config) != admitted["source"]
+            or payload_hashes(stage, config) != admitted["files"]
+            or (admitted.get("receipt_sha256") is not None
+                and digest(stage / "local-generation.json") != admitted["receipt_sha256"])):
+        raise Failure("Stage source or payload fingerprint changed after admission.")
+    check_metadata_current(root, stage, config)
+
+
 def validate_stage(root, config, stage, python, env, receipt=False):
     stage = external(stage, root)
     if stage == stage.parent:
         raise Failure("A filesystem root is not a generation stage.")
-    if receipt:
-        record = json_read(stage / "local-generation.json")
-        if record["source"] != source_identity(root, config) or record["files"] != payload_hashes(
-            stage, config
-        ):
-            raise Failure("Stage source or payload fingerprint changed; generate a complete new candidate.")
+    receipt_bytes = (stage / "local-generation.json").read_bytes() if receipt else None
+    record = json.loads(receipt_bytes) if receipt else {
+        "source": source_identity(root, config), "files": payload_hashes(stage, config)}
+    admitted = {"source": record["source"], "files": dict(record["files"]),
+                "receipt_sha256": hashlib.sha256(receipt_bytes).hexdigest() if receipt else None}
+    check_admission_identity(root, config, stage, admitted)
     check_metadata_current(root, stage, config)
     version = (root / "VERSION").read_text().strip()
     missing = [name for name in required_paths(root, config) if not list(stage.glob(name))]
@@ -514,6 +562,8 @@ def validate_stage(root, config, stage, python, env, receipt=False):
     ):
         raise Failure("Missing or failed whole-bake validation.")
     commands(root, config["validators"], substitutions(root, stage, python), env)
+    check_admission_identity(root, config, stage, admitted)
+    return admitted
 
 
 def generate(root, config, env):
@@ -559,8 +609,10 @@ def generate(root, config, env):
         raise Failure(
             "Producer/contract/validation inputs changed during generation; the stage cannot be admitted."
         )
-    validate_stage(root, config, stage, python, child_env)
-    record = {"source": initial_source, "files": payload_hashes(stage, config)}
+    admitted = validate_stage(root, config, stage, python, child_env)
+    if admitted["source"] != initial_source:
+        raise Failure("Producer/contract/validation inputs changed during generation admission.")
+    record = {"source": admitted["source"], "files": admitted["files"]}
     (stage / "local-generation.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
     print(f"Validated sandbox: {stage}")
     return stage
@@ -583,7 +635,7 @@ def remove_owned(path, parent):
 
 
 def promote(root, config, stage, python, env):
-    validate_stage(root, config, stage, python, env, receipt=True)
+    admitted = validate_stage(root, config, stage, python, env, receipt=True)
     transaction = []
     try:
         for name in config["promote"]:
@@ -603,13 +655,19 @@ def promote(root, config, stage, python, env):
                 }
             )
             shutil.copytree(relative(stage, name), incoming)
+        check_admission_identity(root, config, stage, admitted)
+        incoming = {name: item["incoming"] for name, item in zip(config["promote"], transaction)}
+        if payload_hashes(stage, config, directories=incoming) != admitted["files"]:
+            raise Failure("Incoming bytes differ from the immutable admission receipt.")
         for item in transaction:
             if item["target"].exists():
                 os.replace(item["target"], item["backup"])
             os.replace(item["incoming"], item["target"])
             item["installed"] = True
-        if payload_hashes(root, config) != payload_hashes(stage, config):
-            raise Failure("Promoted bytes differ from the validated candidate.")
+            check_admission_identity(root, config, stage, admitted)
+        if payload_hashes(root, config) != admitted["files"]:
+            raise Failure("Promoted bytes differ from the immutable admission receipt.")
+        check_admission_identity(root, config, stage, admitted)
     except BaseException as original:
         errors = []
         for item in reversed(transaction):

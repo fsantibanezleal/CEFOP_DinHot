@@ -140,7 +140,8 @@ def test_the_runner_refuses_arguments_that_make_the_focus_check_measure_nothing(
 
 
 @pytest.mark.skipif(NODE is None, reason="needs node")
-def test_the_runner_still_accepts_a_route_list_that_keeps_the_app_route(tmp_path: Path) -> None:
+def test_the_runner_refuses_a_route_list_that_omits_declared_story_routes(tmp_path: Path) -> None:
     repo = make_tree(tmp_path / "repo", *GATE_INPUTS)
     r, args = run_gate(repo, "--routes", "/,/app", "--sizes", "1280x800")
-    assert r.returncode == 0 and args and "--require-focus" in args, (r.stderr, args)
+    assert r.returncode != 0 and args is None, (r.stderr, args)
+    assert "showcase routes" in r.stderr and "/story/method" in r.stderr and "ADR-0082" in r.stderr, r.stderr

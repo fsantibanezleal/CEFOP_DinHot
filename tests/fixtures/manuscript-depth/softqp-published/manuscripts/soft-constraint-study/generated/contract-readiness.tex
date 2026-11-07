@@ -1,0 +1,10 @@
+\begin{table}[htbp]\centering\footnotesize
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for readiness schema 2.0.1. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-readiness}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule
+Field & Type & Constraint & Unit / role\\\midrule
+schema & string & const=\allowbreak{}softqp.\allowbreak{}readiness/\allowbreak{}v2 & structural metadata /\allowbreak{} nested units\\
+product\_\allowbreak{}version & string & pattern=\allowbreak{}\textasciicircum{}\textbackslash{}d+\textbackslash{}.\allowbreak{}\textbackslash{}d\{2\}\textbackslash{}.\allowbreak{}\textbackslash{}d\{3\}\$ & structural metadata /\allowbreak{} nested units\\
+catalog\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+contracts & array & minItems=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+\bottomrule\end{tabularx}
+\end{table}

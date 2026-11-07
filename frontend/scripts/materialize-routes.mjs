@@ -13,7 +13,7 @@ if (!existsSync(index)) {
   console.error('[materialize-routes] dist/index.html is missing: run vite build first');
   process.exit(1);
 }
-const routes = STANDARD_ROUTES.map((r) => r.path).filter((p) => p !== '/');
+const routes = [...STANDARD_ROUTES.map((r) => r.path).filter((p) => p !== '/'), '/story/context', '/story/phase', '/story/decision', '/story/method'];
 for (const route of routes) {
   const dir = join(dist, route.replace(/^\//, ''));
   mkdirSync(dir, { recursive: true });

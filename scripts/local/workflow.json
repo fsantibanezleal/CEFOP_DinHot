@@ -1,4 +1,6 @@
 {
+  "external_environments_required": true,
+  "environment_namespace": "dinhot",
   "readiness_excludes": [
     "readiness"
   ],

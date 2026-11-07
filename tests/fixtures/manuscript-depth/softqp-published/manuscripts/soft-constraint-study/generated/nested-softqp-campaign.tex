@@ -1,0 +1,219 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for softqp-campaign. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-softqp-campaign}\\ % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}campaign/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\ % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+protocol & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['protocol\_\allowbreak{}id', 'phase', 'created', 'engine\_\allowbreak{}source', 'operating\_\allowbreak{}limits', 'accuracy', 'methods', 'backends', 'generator', 'seeds', 'repetitions', 'primary\_\allowbreak{}endpoint', 'secondary\_\allowbreak{}endpoints', 'robustness', 'stream', 'measurement\_\allowbreak{}scope', 'failure\_\allowbreak{}policy', 'claims'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}protocol\_\allowbreak{}id & string & const=\allowbreak{}softqp-\allowbreak{}experiments-\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}phase & string & const=\allowbreak{}registered before held-\allowbreak{}out generation & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}created & string & const=\allowbreak{}2026-10-31 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}engine\_\allowbreak{}source & string & const=\allowbreak{}d0c69ed9\allowbreak{}74d577ba\allowbreak{}02adbd48\allowbreak{}06332270\allowbreak{}d9425651 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}operating\_\allowbreak{}limits & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['blas\_\allowbreak{}threads', 'wall\_\allowbreak{}seconds', 'process\_\allowbreak{}memory\_\allowbreak{}limit\_\allowbreak{}bytes', 'parallel\_\allowbreak{}workers', 'trial\_\allowbreak{}timeout\_\allowbreak{}seconds'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}operating\_\allowbreak{}limits.\allowbreak{}blas\_\allowbreak{}threads & integer & const=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}operating\_\allowbreak{}limits.\allowbreak{}wall\_\allowbreak{}seconds & integer & const=\allowbreak{}7200 & s\\
+protocol.\allowbreak{}operating\_\allowbreak{}limits.\allowbreak{}process\_\allowbreak{}memory\_\allowbreak{}limit\_\allowbreak{}bytes & integer & const=\allowbreak{}4294967296 & bytes\\
+protocol.\allowbreak{}operating\_\allowbreak{}limits.\allowbreak{}parallel\_\allowbreak{}workers & integer & const=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}operating\_\allowbreak{}limits.\allowbreak{}trial\_\allowbreak{}timeout\_\allowbreak{}seconds & integer & const=\allowbreak{}10 & s\\
+protocol.\allowbreak{}accuracy & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['eps\_\allowbreak{}abs', 'eps\_\allowbreak{}rel', 'max\_\allowbreak{}iter', 'adaptive\_\allowbreak{}rho\_\allowbreak{}interval', 'normalized\_\allowbreak{}objective\_\allowbreak{}gap\_\allowbreak{}limit', 'hard\_\allowbreak{}row\_\allowbreak{}error\_\allowbreak{}limit'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}accuracy.\allowbreak{}eps\_\allowbreak{}abs & number & const=\allowbreak{}1e-07 & solver coordinate tolerance; model scaling applies\\
+protocol.\allowbreak{}accuracy.\allowbreak{}eps\_\allowbreak{}rel & number & const=\allowbreak{}1e-07 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+protocol.\allowbreak{}accuracy.\allowbreak{}max\_\allowbreak{}iter & integer & const=\allowbreak{}200000 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}accuracy.\allowbreak{}adaptive\_\allowbreak{}rho\_\allowbreak{}interval & integer & const=\allowbreak{}25 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}accuracy.\allowbreak{}normalized\_\allowbreak{}objective\_\allowbreak{}gap\_\allowbreak{}limit & number & const=\allowbreak{}1e-06 & dimensionless\\
+protocol.\allowbreak{}accuracy.\allowbreak{}hard\_\allowbreak{}row\_\allowbreak{}error\_\allowbreak{}limit & number & const=\allowbreak{}1e-06 & original row unit; synthetic coordinates\\
+protocol.\allowbreak{}methods & array & minItems=\allowbreak{}6; maxItems=\allowbreak{}6 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}methods[0] & string & const=\allowbreak{}lifted & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}methods[1] & string & const=\allowbreak{}generalized & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}methods[2] & string & const=\allowbreak{}asymmetric & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}methods[3] & string & const=\allowbreak{}daqp & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}methods[4] & string & const=\allowbreak{}flex & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}methods[5] & string & const=\allowbreak{}elastiqp & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}backends & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['lifted\_\allowbreak{}timed', 'lifted\_\allowbreak{}oracle', 'flex', 'elastiqp'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}backends.\allowbreak{}lifted\_\allowbreak{}timed & string & const=\allowbreak{}pinned native fork & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}backends.\allowbreak{}lifted\_\allowbreak{}oracle & string & const=\allowbreak{}independent stock OSQP with eps\_\allowbreak{}abs=\allowbreak{}eps\_\allowbreak{}rel=\allowbreak{}1e-9 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}backends.\allowbreak{}flex & string & const=\allowbreak{}fixed-\allowbreak{}parameter paper-\allowbreak{}equation reconstruction & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}backends.\allowbreak{}elastiqp & string & const=\allowbreak{}published 0.\allowbreak{}2.\allowbreak{}0 dual active set & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}generator & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['n', 'm\_\allowbreak{}per\_\allowbreak{}n', 'density', 'hessian\_\allowbreak{}condition', 'families', 'hard\_\allowbreak{}row\_\allowbreak{}fraction\_\allowbreak{}elastic', 'hard\_\allowbreak{}row\_\allowbreak{}fraction\_\allowbreak{}l1', 'row\_\allowbreak{}norm', 'q\_\allowbreak{}standard\_\allowbreak{}deviation', 'linear\_\allowbreak{}cost\_\allowbreak{}range', 'quadratic\_\allowbreak{}cost\_\allowbreak{}range', 'asymmetric\_\allowbreak{}upper\_\allowbreak{}factor\_\allowbreak{}range', 'lower', 'upper'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}generator.\allowbreak{}n & array & minItems=\allowbreak{}4; maxItems=\allowbreak{}4 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}generator.\allowbreak{}n[0] & integer & const=\allowbreak{}32 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}generator.\allowbreak{}n[1] & integer & const=\allowbreak{}64 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}generator.\allowbreak{}n[2] & integer & const=\allowbreak{}128 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}generator.\allowbreak{}n[3] & integer & const=\allowbreak{}256 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}generator.\allowbreak{}m\_\allowbreak{}per\_\allowbreak{}n & integer & const=\allowbreak{}2 & dimensionless\\
+protocol.\allowbreak{}generator.\allowbreak{}density & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+protocol.\allowbreak{}generator.\allowbreak{}density[0] & number & const=\allowbreak{}0.\allowbreak{}05 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+protocol.\allowbreak{}generator.\allowbreak{}density[1] & number & const=\allowbreak{}0.\allowbreak{}2 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+protocol.\allowbreak{}generator.\allowbreak{}hessian\_\allowbreak{}condition & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & dimensionless\\
+protocol.\allowbreak{}generator.\allowbreak{}hessian\_\allowbreak{}condition[0] & integer & const=\allowbreak{}1 & dimensionless\\
+protocol.\allowbreak{}generator.\allowbreak{}hessian\_\allowbreak{}condition[1] & integer & const=\allowbreak{}1000 & dimensionless\\
+protocol.\allowbreak{}generator.\allowbreak{}families & array & minItems=\allowbreak{}3; maxItems=\allowbreak{}3 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}generator.\allowbreak{}families[0] & string & const=\allowbreak{}symmetric-\allowbreak{}elastic & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}generator.\allowbreak{}families[1] & string & const=\allowbreak{}asymmetric-\allowbreak{}elastic & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}generator.\allowbreak{}families[2] & string & const=\allowbreak{}asymmetric-\allowbreak{}l1 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}generator.\allowbreak{}hard\_\allowbreak{}row\_\allowbreak{}fraction\_\allowbreak{}elastic & number & const=\allowbreak{}0.\allowbreak{}2 & dimensionless\\
+protocol.\allowbreak{}generator.\allowbreak{}hard\_\allowbreak{}row\_\allowbreak{}fraction\_\allowbreak{}l1 & integer & const=\allowbreak{}0 & dimensionless\\
+protocol.\allowbreak{}generator.\allowbreak{}row\_\allowbreak{}norm & integer & const=\allowbreak{}1 & row /\allowbreak{} decision unit; generator coordinates\\
+protocol.\allowbreak{}generator.\allowbreak{}q\_\allowbreak{}standard\_\allowbreak{}deviation & integer & const=\allowbreak{}3 & cost /\allowbreak{} decision unit\\
+protocol.\allowbreak{}generator.\allowbreak{}linear\_\allowbreak{}cost\_\allowbreak{}range & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & cost /\allowbreak{} row unit\\
+protocol.\allowbreak{}generator.\allowbreak{}linear\_\allowbreak{}cost\_\allowbreak{}range[0] & number & const=\allowbreak{}0.\allowbreak{}1 & cost /\allowbreak{} row unit\\
+protocol.\allowbreak{}generator.\allowbreak{}linear\_\allowbreak{}cost\_\allowbreak{}range[1] & number & const=\allowbreak{}1.\allowbreak{}0 & cost /\allowbreak{} row unit\\
+protocol.\allowbreak{}generator.\allowbreak{}quadratic\_\allowbreak{}cost\_\allowbreak{}range & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & cost /\allowbreak{} row unit squared\\
+protocol.\allowbreak{}generator.\allowbreak{}quadratic\_\allowbreak{}cost\_\allowbreak{}range[0] & number & const=\allowbreak{}0.\allowbreak{}5 & cost /\allowbreak{} row unit squared\\
+protocol.\allowbreak{}generator.\allowbreak{}quadratic\_\allowbreak{}cost\_\allowbreak{}range[1] & number & const=\allowbreak{}4.\allowbreak{}0 & cost /\allowbreak{} row unit squared\\
+protocol.\allowbreak{}generator.\allowbreak{}asymmetric\_\allowbreak{}upper\_\allowbreak{}factor\_\allowbreak{}range & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & dimensionless\\
+protocol.\allowbreak{}generator.\allowbreak{}asymmetric\_\allowbreak{}upper\_\allowbreak{}factor\_\allowbreak{}range[0] & number & const=\allowbreak{}1.\allowbreak{}5 & dimensionless\\
+protocol.\allowbreak{}generator.\allowbreak{}asymmetric\_\allowbreak{}upper\_\allowbreak{}factor\_\allowbreak{}range[1] & number & const=\allowbreak{}3.\allowbreak{}0 & dimensionless\\
+protocol.\allowbreak{}generator.\allowbreak{}lower & number & const=\allowbreak{}-0.\allowbreak{}4 & original row unit\\
+protocol.\allowbreak{}generator.\allowbreak{}upper & number & const=\allowbreak{}0.\allowbreak{}6 & original row unit\\
+protocol.\allowbreak{}seeds & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['development', 'heldout', 'robustness', 'order', 'bootstrap'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}seeds.\allowbreak{}development & array & minItems=\allowbreak{}3; maxItems=\allowbreak{}3 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}development[0] & integer & const=\allowbreak{}1000 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}development[1] & integer & const=\allowbreak{}1001 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}development[2] & integer & const=\allowbreak{}1002 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}heldout & array & minItems=\allowbreak{}6; maxItems=\allowbreak{}6 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}heldout[0] & integer & const=\allowbreak{}9000 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}heldout[1] & integer & const=\allowbreak{}9001 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}heldout[2] & integer & const=\allowbreak{}9002 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}heldout[3] & integer & const=\allowbreak{}9003 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}heldout[4] & integer & const=\allowbreak{}9004 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}heldout[5] & integer & const=\allowbreak{}9005 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}robustness & array & minItems=\allowbreak{}6; maxItems=\allowbreak{}6 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}robustness[0] & integer & const=\allowbreak{}8500 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}robustness[1] & integer & const=\allowbreak{}8501 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}robustness[2] & integer & const=\allowbreak{}8502 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}robustness[3] & integer & const=\allowbreak{}8503 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}robustness[4] & integer & const=\allowbreak{}8504 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}robustness[5] & integer & const=\allowbreak{}8505 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}order & integer & const=\allowbreak{}271828 & integer random seed\\
+protocol.\allowbreak{}seeds.\allowbreak{}bootstrap & integer & const=\allowbreak{}314159 & integer random seed\\
+protocol.\allowbreak{}repetitions & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['warmup\_\allowbreak{}per\_\allowbreak{}backend', 'measured', 'paired\_\allowbreak{}order', 'bootstrap\_\allowbreak{}seed\_\allowbreak{}clusters'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}repetitions.\allowbreak{}warmup\_\allowbreak{}per\_\allowbreak{}backend & integer & const=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}repetitions.\allowbreak{}measured & integer & const=\allowbreak{}7 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}repetitions.\allowbreak{}paired\_\allowbreak{}order & string & const=\allowbreak{}seeded random method order within each instance and repetition & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}repetitions.\allowbreak{}bootstrap\_\allowbreak{}seed\_\allowbreak{}clusters & integer & const=\allowbreak{}2000 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}primary\_\allowbreak{}endpoint & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['family', 'n\_\allowbreak{}minimum', 'density', 'quantity', 'minimum\_\allowbreak{}reduction', 'confidence', 'success\_\allowbreak{}condition'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}primary\_\allowbreak{}endpoint.\allowbreak{}family & string & const=\allowbreak{}asymmetric-\allowbreak{}elastic & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}primary\_\allowbreak{}endpoint.\allowbreak{}n\_\allowbreak{}minimum & integer & const=\allowbreak{}128 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}primary\_\allowbreak{}endpoint.\allowbreak{}density & number & const=\allowbreak{}0.\allowbreak{}05 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+protocol.\allowbreak{}primary\_\allowbreak{}endpoint.\allowbreak{}quantity & string & const=\allowbreak{}median paired relative reduction in cold end-\allowbreak{}to-\allowbreak{}end time against the faster of native compact lifting and DAQP & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}primary\_\allowbreak{}endpoint.\allowbreak{}minimum\_\allowbreak{}reduction & number & const=\allowbreak{}0.\allowbreak{}1 & dimensionless\\
+protocol.\allowbreak{}primary\_\allowbreak{}endpoint.\allowbreak{}confidence & string & const=\allowbreak{}two-\allowbreak{}sided 95 percent seed-\allowbreak{}cluster bootstrap interval has a lower endpoint above zero & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}primary\_\allowbreak{}endpoint.\allowbreak{}success\_\allowbreak{}condition & string & const=\allowbreak{}all compared cells satisfy external original-\allowbreak{}space acceptance; failures are retained & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}secondary\_\allowbreak{}endpoints & array & minItems=\allowbreak{}5; maxItems=\allowbreak{}5 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}secondary\_\allowbreak{}endpoints[0] & string & const=\allowbreak{}native solve/\allowbreak{}setup and update time & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}secondary\_\allowbreak{}endpoints[1] & string & const=\allowbreak{}iterations & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}secondary\_\allowbreak{}endpoints[2] & string & const=\allowbreak{}formulation dimensions and nonzeros & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}secondary\_\allowbreak{}endpoints[3] & string & const=\allowbreak{}accuracy versus conditioning & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}secondary\_\allowbreak{}endpoints[4] & string & const=\allowbreak{}within-\allowbreak{}method warm/\allowbreak{}cold stream measurements & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}robustness & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['n', 'm', 'density', 'hessian\_\allowbreak{}condition', 'same\_\allowbreak{}A\_\allowbreak{}q\_\allowbreak{}and\_\allowbreak{}costs\_\allowbreak{}within\_\allowbreak{}seed'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}robustness.\allowbreak{}n & integer & const=\allowbreak{}32 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}robustness.\allowbreak{}m & integer & const=\allowbreak{}64 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}robustness.\allowbreak{}density & number & const=\allowbreak{}0.\allowbreak{}1 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+protocol.\allowbreak{}robustness.\allowbreak{}hessian\_\allowbreak{}condition & array & minItems=\allowbreak{}4; maxItems=\allowbreak{}4 & dimensionless\\
+protocol.\allowbreak{}robustness.\allowbreak{}hessian\_\allowbreak{}condition[0] & integer & const=\allowbreak{}1 & dimensionless\\
+protocol.\allowbreak{}robustness.\allowbreak{}hessian\_\allowbreak{}condition[1] & integer & const=\allowbreak{}100 & dimensionless\\
+protocol.\allowbreak{}robustness.\allowbreak{}hessian\_\allowbreak{}condition[2] & integer & const=\allowbreak{}10000 & dimensionless\\
+protocol.\allowbreak{}robustness.\allowbreak{}hessian\_\allowbreak{}condition[3] & integer & const=\allowbreak{}1000000 & dimensionless\\
+protocol.\allowbreak{}robustness.\allowbreak{}same\_\allowbreak{}A\_\allowbreak{}q\_\allowbreak{}and\_\allowbreak{}costs\_\allowbreak{}within\_\allowbreak{}seed & boolean & const=\allowbreak{}True & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['case\_\allowbreak{}id', 'frames', 'horizon', 'dt\_\allowbreak{}seconds', 'initial\_\allowbreak{}state', 'velocity\_\allowbreak{}impulses', 'policy', 'methods', 'modes', 'timing'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}case\_\allowbreak{}id & string & const=\allowbreak{}C12 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}frames & integer & const=\allowbreak{}32 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}stream.\allowbreak{}horizon & integer & const=\allowbreak{}20 & count /\allowbreak{} integer identifier\\
+protocol.\allowbreak{}stream.\allowbreak{}dt\_\allowbreak{}seconds & number & const=\allowbreak{}0.\allowbreak{}2 & s\\
+protocol.\allowbreak{}stream.\allowbreak{}initial\_\allowbreak{}state & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & components: m and m/\allowbreak{}s\\
+protocol.\allowbreak{}stream.\allowbreak{}initial\_\allowbreak{}state[0] & number & const=\allowbreak{}1.\allowbreak{}6 & m\\
+protocol.\allowbreak{}stream.\allowbreak{}initial\_\allowbreak{}state[1] & number & const=\allowbreak{}0.\allowbreak{}0 & m/\allowbreak{}s\\
+protocol.\allowbreak{}stream.\allowbreak{}velocity\_\allowbreak{}impulses & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['8', '20'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}velocity\_\allowbreak{}impulses.\allowbreak{}8 & number & const=\allowbreak{}0.\allowbreak{}8 & m/\allowbreak{}s; key is frame index\\
+protocol.\allowbreak{}stream.\allowbreak{}velocity\_\allowbreak{}impulses.\allowbreak{}20 & number & const=\allowbreak{}-0.\allowbreak{}6 & m/\allowbreak{}s; key is frame index\\
+protocol.\allowbreak{}stream.\allowbreak{}policy & string & const=\allowbreak{}Independent stock lifting drives the common plant trajectory.\allowbreak{} Every compared method receives identical state inputs.\allowbreak{} These are paired solver observations, not separate controller rollouts.\allowbreak{} & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}methods & array & minItems=\allowbreak{}4; maxItems=\allowbreak{}4 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}methods[0] & string & const=\allowbreak{}lifted & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}methods[1] & string & const=\allowbreak{}generalized & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}methods[2] & string & const=\allowbreak{}asymmetric & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}methods[3] & string & const=\allowbreak{}daqp & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}modes & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}modes[0] & string & const=\allowbreak{}cold & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}modes[1] & string & const=\allowbreak{}warm & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}stream.\allowbreak{}timing & string & const=\allowbreak{}one documented stream observation per frame; no statistical superiority claim from it & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}measurement\_\allowbreak{}scope & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['cold\_\allowbreak{}end\_\allowbreak{}to\_\allowbreak{}end', 'generation', 'warm\_\allowbreak{}end\_\allowbreak{}to\_\allowbreak{}end', 'factorization', 'memory'] & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}measurement\_\allowbreak{}scope.\allowbreak{}cold\_\allowbreak{}end\_\allowbreak{}to\_\allowbreak{}end & string & const=\allowbreak{}validated original QP input to independently evaluated returned result; includes validation, formulation construction, setup and solve; excludes generator, module import and export & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}measurement\_\allowbreak{}scope.\allowbreak{}generation & string & const=\allowbreak{}measured separately & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}measurement\_\allowbreak{}scope.\allowbreak{}warm\_\allowbreak{}end\_\allowbreak{}to\_\allowbreak{}end & string & const=\allowbreak{}vector validation, update, solve and original-\allowbreak{}space evaluation; one initial workspace setup is recorded separately & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}measurement\_\allowbreak{}scope.\allowbreak{}factorization & string & const=\allowbreak{}backend setup currently includes linear-\allowbreak{}system preparation; isolated numeric factor time is not instrumented and cannot be inferred & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}measurement\_\allowbreak{}scope.\allowbreak{}memory & string & const=\allowbreak{}process RSS and campaign high-\allowbreak{}water mark are resource observations, not per-\allowbreak{}method native allocation peaks & structural metadata /\allowbreak{} nested units\\ % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+protocol.\allowbreak{}failure\_\allowbreak{}policy & string & const=\allowbreak{}Preserve incompatible, maximum-\allowbreak{}iteration, timeout, numerical and accuracy-\allowbreak{}rejected cells with reasons.\allowbreak{} Never replace an objective or drop a failed evaluation seed.\allowbreak{} & structural metadata /\allowbreak{} nested units\\
+protocol.\allowbreak{}claims & string & const=\allowbreak{}A successful implementation benchmark does not establish global algorithmic novelty, safety or universal solver superiority.\allowbreak{} Deep FlexQP trained weights are not available in this reconstruction.\allowbreak{} & structural metadata /\allowbreak{} nested units\\
+environment & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['python', 'platform', 'packages'] & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}python & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}platform & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}packages & object & additionalProperties=\allowbreak{}\{'type': 'string'\} & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}engine\_\allowbreak{}revision & string /\allowbreak{} null & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{40\}\$ & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}engine\_\allowbreak{}source\_\allowbreak{}dirty & boolean /\allowbreak{} null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}native\_\allowbreak{}binary\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+protocol\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+source\_\allowbreak{}sha256 & object & additionalProperties=\allowbreak{}\{'type': 'string', 'pattern': '\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$'\} & structural metadata /\allowbreak{} nested units\\
+observed\_\allowbreak{}wall\_\allowbreak{}seconds & number & minimum=\allowbreak{}0 & s\\
+worker\_\allowbreak{}peak\_\allowbreak{}rss\_\allowbreak{}bytes & integer & minimum=\allowbreak{}0 & bytes\\
+worker\_\allowbreak{}restarts & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+planned\_\allowbreak{}instances & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+completed\_\allowbreak{}instances & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+cells[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['split', 'n', 'density', 'condition', 'family', 'method', 'counts', 'median\_\allowbreak{}seconds', 'quantile\_\allowbreak{}25\_\allowbreak{}seconds', 'quantile\_\allowbreak{}75\_\allowbreak{}seconds', 'max\_\allowbreak{}normalized\_\allowbreak{}gap', 'max\_\allowbreak{}hard\_\allowbreak{}violation'] & structural metadata /\allowbreak{} nested units\\
+cells[].\allowbreak{}split & enumerated value & enum=\allowbreak{}['development', 'heldout', 'robustness'] & structural metadata /\allowbreak{} nested units\\
+cells[].\allowbreak{}n & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells[].\allowbreak{}density & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+cells[].\allowbreak{}condition & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+cells[].\allowbreak{}family & enumerated value & enum=\allowbreak{}['symmetric-\allowbreak{}elastic', 'asymmetric-\allowbreak{}elastic', 'asymmetric-\allowbreak{}l1'] & structural metadata /\allowbreak{} nested units\\
+cells[].\allowbreak{}method & enumerated value & enum=\allowbreak{}['lifted', 'generalized', 'asymmetric', 'daqp', 'flex', 'elastiqp'] & structural metadata /\allowbreak{} nested units\\
+cells[].\allowbreak{}counts & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}[] & structural metadata /\allowbreak{} nested units\\
+cells[].\allowbreak{}counts.\allowbreak{}accepted & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells[].\allowbreak{}counts.\allowbreak{}incompatible & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells[].\allowbreak{}counts.\allowbreak{}failed & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells[].\allowbreak{}counts.\allowbreak{}accuracy-\allowbreak{}rejected & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells[].\allowbreak{}counts.\allowbreak{}timeout & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells[].\allowbreak{}counts.\allowbreak{}resource-\allowbreak{}limit & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells[].\allowbreak{}counts.\allowbreak{}oracle-\allowbreak{}failed & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells[].\allowbreak{}median\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+cells[].\allowbreak{}median\_\allowbreak{}seconds (anyOf1) & number & minimum=\allowbreak{}0 & s\\
+cells[].\allowbreak{}median\_\allowbreak{}seconds (anyOf2) & null & See defined object /\allowbreak{} value type & s\\
+cells[].\allowbreak{}quantile\_\allowbreak{}25\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+cells[].\allowbreak{}quantile\_\allowbreak{}25\_\allowbreak{}seconds (anyOf1) & number & minimum=\allowbreak{}0 & s\\
+cells[].\allowbreak{}quantile\_\allowbreak{}25\_\allowbreak{}seconds (anyOf2) & null & See defined object /\allowbreak{} value type & s\\
+cells[].\allowbreak{}quantile\_\allowbreak{}75\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+cells[].\allowbreak{}quantile\_\allowbreak{}75\_\allowbreak{}seconds (anyOf1) & number & minimum=\allowbreak{}0 & s\\
+cells[].\allowbreak{}quantile\_\allowbreak{}75\_\allowbreak{}seconds (anyOf2) & null & See defined object /\allowbreak{} value type & s\\
+cells[].\allowbreak{}max\_\allowbreak{}normalized\_\allowbreak{}gap & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+cells[].\allowbreak{}max\_\allowbreak{}normalized\_\allowbreak{}gap (anyOf1) & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+cells[].\allowbreak{}max\_\allowbreak{}normalized\_\allowbreak{}gap (anyOf2) & null & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+cells[].\allowbreak{}max\_\allowbreak{}hard\_\allowbreak{}violation & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & original row units; see unit map\\
+cells[].\allowbreak{}max\_\allowbreak{}hard\_\allowbreak{}violation (anyOf1) & number & minimum=\allowbreak{}0 & original row units; see unit map\\
+cells[].\allowbreak{}max\_\allowbreak{}hard\_\allowbreak{}violation (anyOf2) & null & See defined object /\allowbreak{} value type & original row units; see unit map\\
+primary\_\allowbreak{}endpoint & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['state', 'median\_\allowbreak{}relative\_\allowbreak{}reduction', 'confidence\_\allowbreak{}interval\_\allowbreak{}95', 'paired\_\allowbreak{}samples', 'rejected\_\allowbreak{}pairs', 'seed\_\allowbreak{}clusters'] & structural metadata /\allowbreak{} nested units\\
+primary\_\allowbreak{}endpoint.\allowbreak{}state & enumerated value & enum=\allowbreak{}['met', 'not-\allowbreak{}established'] & structural metadata /\allowbreak{} nested units\\
+primary\_\allowbreak{}endpoint.\allowbreak{}median\_\allowbreak{}relative\_\allowbreak{}reduction & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary\_\allowbreak{}endpoint.\allowbreak{}median\_\allowbreak{}relative\_\allowbreak{}reduction (anyOf1) & number & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary\_\allowbreak{}endpoint.\allowbreak{}median\_\allowbreak{}relative\_\allowbreak{}reduction (anyOf2) & null & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary\_\allowbreak{}endpoint.\allowbreak{}confidence\_\allowbreak{}interval\_\allowbreak{}95 & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary\_\allowbreak{}endpoint.\allowbreak{}confidence\_\allowbreak{}interval\_\allowbreak{}95 (anyOf1) & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary\_\allowbreak{}endpoint.\allowbreak{}confidence\_\allowbreak{}interval\_\allowbreak{}95 (anyOf1)[] & number & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary\_\allowbreak{}endpoint.\allowbreak{}confidence\_\allowbreak{}interval\_\allowbreak{}95 (anyOf2) & null & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary\_\allowbreak{}endpoint.\allowbreak{}paired\_\allowbreak{}samples & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+primary\_\allowbreak{}endpoint.\allowbreak{}rejected\_\allowbreak{}pairs & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+primary\_\allowbreak{}endpoint.\allowbreak{}seed\_\allowbreak{}clusters & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}[] & structural metadata /\allowbreak{} nested units\\
+counts.\allowbreak{}accepted & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}incompatible & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}failed & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}accuracy-\allowbreak{}rejected & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}timeout & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}resource-\allowbreak{}limit & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}oracle-\allowbreak{}failed & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+artifacts & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+artifacts[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['path', 'bytes', 'sha256'] & structural metadata /\allowbreak{} nested units\\
+artifacts[].\allowbreak{}path & string & pattern=\allowbreak{}\textasciicircum{}[a-\allowbreak{}z][a-\allowbreak{}z0-9-]*\textbackslash{}.\allowbreak{}(json\textbar{}\allowbreak{}csv\textbar{}\allowbreak{}jsonl)\$ & structural metadata /\allowbreak{} nested units\\
+artifacts[].\allowbreak{}bytes & integer & minimum=\allowbreak{}0 & bytes\\
+artifacts[].\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

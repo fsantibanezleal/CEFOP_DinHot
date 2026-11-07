@@ -1,0 +1,12 @@
+{
+  "kind": "manuscript",
+  "title_support": [
+    "tab:main-results",
+    "fig:original-effect",
+    "fig:coupled-population"
+  ],
+  "claims": {
+    "BS-1": "sec:separable",
+    "BS-2": "sec:directional"
+  }
+}

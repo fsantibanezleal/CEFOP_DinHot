@@ -1,0 +1,93 @@
+\subsection{ElastiQP for pure linear elastic inequalities}\label{sec:elasti}
+ElastiQP provides a published dual active-set solver for elastic quadratic
+problems motivated by constrained robot control~\cite{elasti}. The product
+consumes its pinned public version~0.2.0 implementation as a separate comparison path.
+Its supported domain is not identified merely by the word elastic. The adapter
+admits positive-definite base curvature, pure linear finite-side prices, and
+hard equalities. It refuses quadratic side prices and hard inequalities that
+the implemented interface cannot preserve exactly.
+
+After finite-side conversion, the mathematical problem is
+\begin{equation}\label{eq:elasti-model}
+ \min_x\ \tfrac12x^\top P x+q^\top x+
+             \sum_j w_j(G_jx-h_j)_+
+ \quad\text{subject to}\quad Ex=e,\qquad P\succ0,\quad w_j>0.
+\end{equation}
+A lower interval side becomes the signed row $-A_i x\leq-\ell_i$ with its
+lower-side price. An upper side retains $A_i x\leq u_i$ and its upper-side
+price. Equality rows are placed in $E$, rather than replaced by two finite
+linear penalties. This construction makes the physical hard/soft distinction
+recoverable after solving.
+
+The elastic inequality multipliers lie in a bounded dual box. Conditional on
+an active dual configuration, the primal/equality calculation satisfies
+\begin{equation}\label{eq:elasti-kkt}
+ \begin{bmatrix}P&E^\top\\E&0\end{bmatrix}
+ \begin{bmatrix}x\\\nu\end{bmatrix}
+ =\begin{bmatrix}-q-G^\top\mu\\e\end{bmatrix},
+ \qquad 0\leq\mu\leq w.
+\end{equation}
+The expression explains the distinction between capped elastic multipliers
+and equality multipliers; it is not an instruction to build or invert this
+matrix independently of the library. The backend maintains the numerical
+structures appropriate to its algorithm. The adapter's task is to preserve the
+input model and recover the original coordinates and signs.
+
+Algorithm~\ref{alg:elasti} describes that boundary. In particular, a backend
+termination flag is interpreted using ElastiQP's own convention before the
+external evaluator recomputes the requested objective. Positive-definite
+curvature is checked rather than created through an undisclosed Hessian shift.
+A problem whose optimum is changed by a small regularizer is not a matched
+reference, even if the regularizer seems numerically harmless in a particular
+example. Likewise, a hard inequality is not silently converted to a costly
+elastic preference just because the original hard model is feasible.
+
+\begin{algorithm}[htbp]
+\caption{Preserve admitted pure linear interval prices and hard equalities in ElastiQP, then recover original row multipliers and independently evaluate the scientific objective.}\label{alg:elasti}
+\begin{algorithmic}[1]
+\Require Positive-definite original model with admitted pure linear soft sides
+\State Refuse quadratic prices, unsupported hard inequalities and conversion limits
+\State Form signed finite-side inequalities and retain hard equalities separately
+\State Call the pinned ElastiQP implementation with explicit numerical settings
+\State Recover $x$, finite-side multipliers and hard-equality multipliers
+\State Combine lower and upper multipliers in original row order
+\State Evaluate original objective, raw hard violation and oracle discrepancy
+\end{algorithmic}
+\end{algorithm}
+
+The conversion shares explicit implementation limits with the other dense
+reference adapters: admitted dimensions are bounded before numerical allocation.
+These limits are recorded as resource restrictions and do not imply that larger
+mathematical problems are ill-defined. Memory behavior depends on the converted
+finite-side count, equality structure and maintained active-set data. A runtime
+comparison must therefore preserve the conversion cost and the chosen timing
+boundary. Comparing only a selected inner iteration to another backend's full
+validation/export call would answer a different question.
+
+The published always-feasible elastic formulation concerns feasibility of the
+relaxed optimization representation. It does not mean every original operating
+inequality holds at a finite-price optimum. For example, if satisfying a comfort
+limit costs more in the base objective than the declared linear departure price,
+the optimizer may purchase a violation. Hard equality satisfaction remains a
+separate requirement. The application displays raw departure and hard-error
+quantities so an elastic status is not mistaken for a certificate of physical
+admissibility.
+
+In the original synthetic timing study, the pure linear family is the natural
+compatible domain for this reference. The quadratic elastic families remain
+incompatible rather than being rerun with their quadratic coefficient removed.
+This produces a heterogeneous but explicit method-case matrix. The comparison
+does not infer that one reference is universally stronger from a count of
+compatible cells; each compatibility rule follows the actual represented
+objective. The data retain excluded cells, backend failures and accuracy checks
+as different states, enabling a reader to determine whether an apparent runtime
+difference is numerical or simply a change in the problem being solved.
+The bounded elastic dual also explains a common modeling mistake. Reaching
+the upper multiplier price cap can be consistent with a positive departure
+at the optimum; it is not necessarily a failed active-set calculation.
+The price cap belongs to the chosen objective. Equality multipliers are
+not capped by that same finite-side price, because their constraints remain
+hard. Recovering those two multiplier classes separately prevents an apparently
+small aggregate residual from concealing softened dynamics. The exported
+original-space state therefore records policy, objective and feasibility
+together rather than presenting one generic elastic success label.

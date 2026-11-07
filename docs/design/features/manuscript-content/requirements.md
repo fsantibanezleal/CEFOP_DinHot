@@ -1,0 +1,18 @@
+# Requirements: manuscript content and native LaTeX sources
+
+These are prospective integration requirements for the content gate required by the current CAOS manuscript standard. They complement the existing DOI/version inventory gate; a metadata entry is not evidence of a complete manuscript. The template's teaching example does not claim a scientific publication merely because it contains a formatting blueprint or a test fixture.
+
+| ID | Requirement | Gate |
+|---|---|---|
+| MC-001 | WHEN a product manuscript is checked, THE guard SHALL require native LaTeX main/source files and a bibliography and SHALL reject a folder containing only Markdown, DOCX, HTML or plain text. | `tests/adversarial/test_manuscript_depth.py` |
+| MC-002 | WHEN a technical report or paper is checked, THE guard SHALL enforce the applicable complete section structure and current word/equation/figure/table/reference/algorithm floors, refusing statically unmeasurable active core TeX conditionals in the body. | `tests/adversarial/test_manuscript_depth.py`; `tests/adversarial/test_manuscript_review_regressions.py` |
+| MC-003 | WHEN method, contract or proposed-contribution coverage is checked, THE guard SHALL use authoritative product inventory membership and resolve mapped labels to sufficiently detailed regions, with each method and proposal in its own disjoint substantial region. Internal M, BS and NC identifiers SHALL be refused in reader-visible manuscript prose. | `tests/adversarial/test_manuscript_depth.py`; `tests/adversarial/test_manuscript_review_regressions.py` |
+| MC-004 | WHEN result-support labels, captions, uncertainty and title identity are checked, THE guard SHALL reject inappropriate labels, missing discussion and mismatched titles while preserving value-bearing numbers, signs, units and case. | `tests/adversarial/test_manuscript_depth.py`; `tests/adversarial/test_manuscript_review_regressions.py` |
+| MC-005 | WHEN the default CLI or CI gate runs, THE guard SHALL be read-only, portable and explicit about failures; template blueprints and frozen examples SHALL NOT silently become authored product manuscripts. | `tests/adversarial/test_manuscript_depth.py` |
+| MC-006 | WHEN a native formatting blueprint is supplied, THE template SHALL derive it from the authoritative CAOS LaTeX base with documented provenance, keep report and paper separate, and use sections for the paper. | `tests/adversarial/test_manuscript_templates.py` |
+| MC-007 | WHEN a blueprint or test fixture is incomplete, THEN THE publication path SHALL NOT represent it as a complete, reviewed or published manuscript. | `tests/adversarial/test_manuscript_templates.py` |
+| MC-008 | WHEN a frozen published example is used for validation, THE template SHALL preserve its exact source/numerical bytes, attribution, source identity and negative-result boundaries. | `tests/adversarial/test_manuscript_examples.py` |
+
+The guard is a mechanical admission floor. It cannot establish scientific validity, novelty, fidelity of rendered equations or publication readiness by counting alone. Those remain independent reviews. The existing published SoftQP examples demonstrate source structure and formatting; they are separate historical studies, not results of the template's epidemic teaching example.
+
+Mandatory publication acceptance remains an independent process requirement: a reviewer other than the writer validates actual sources, derivations, content, figures and every rendered page before any new Zenodo version is uploaded. Its source-bound review receipt is recorded separately. No synthetic unit test is presented as proof that this human/independent-agent review occurred.

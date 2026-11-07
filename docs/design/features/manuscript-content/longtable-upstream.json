@@ -1,0 +1,9 @@
+{
+  "scope": "Exact current longtable rule and two controls integrated as a derivative of the original export; no content floor relaxed.",
+  "source_commit": "9844fe9bea476ce2af6cc0822aec51d0cca06b64",
+  "current_management_merge": "871fcfe9a5e8bda4cd4f458bd1ffd15b64730c07",
+  "source_guard_sha256": "b77ed54f48ae0447ba6e042a1b6601b892f106df201b65df92a61954cf68a940",
+  "source_tests_sha256": "a756bf9d40f3e675597ac341c523b9d360600123e2acdac40d34424abe1716e7",
+  "test_block_sha256": "9c24ade3f6ce656aec46343d65eca3155ad0220af9a1e0991511a03c72c39cc1",
+  "port_note": "Both longtable controls are copied unchanged into the existing adversarial admission suite, importing prose from the original baseline fixture. Longtables still require descriptive captions, labels and discussion references."
+}

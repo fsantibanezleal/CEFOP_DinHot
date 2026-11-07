@@ -1,0 +1,92 @@
+\subsection{Published generalized slack projection}\label{sec:gsp}
+Generalized slack projection removes certain explicit slack variables from an
+OSQP-style split by replacing the box projection with a proximal operation. The
+published derivation and native implementation are due to Schwan, Lew and
+Plancher, building on slack elimination in ADMM~\cite{gsp,lew}. The implementation
+here preserves the authors' source identity and supported penalty families. It
+does not equate a citation to an executed method: compatible synthetic cases
+actually call the native backend and recover original-space objectives and duals.
+
+Let $C$ be the row interval box, $\Pi_C$ its projection, and $\Phi$ the supported
+slack penalty. The key residual/projection construction is
+\begin{equation}\label{eq:gsp-residual}
+ R_C(v)=v-\Pi_C(v),\qquad
+ T(v)=\Pi_C(v)+\prox_{\Phi/\rho}\bigl(R_C(v)\bigr),\quad \rho>0,
+\end{equation}
+with the corrective-slack versus violation-residual convention fixed consistently.
+The proximal operation itself is
+\begin{equation}\label{eq:gsp-prox}
+ \prox_{\Phi/\rho}(r)=\argmin_w\left\{\Phi(w)+\tfrac\rho2\|w-r\|_2^2\right\}.
+\end{equation}
+For the published unconditional penalties, sign symmetry and contraction behavior
+permit the generalized projection to represent the eliminated slack problem.
+These are mathematical assumptions, not implementation options that can be
+ignored when a requested lower price differs from an upper price.
+
+The supported published paths include symmetric quadratic, linear, elastic and
+selected Huber or grouped penalties. In C13 the mixed objective exercises that
+broader native penalty representation. By contrast, the authored side-asymmetric
+energy variants cannot be sent to this backend as if their coefficients were
+symmetric. The adapter returns an incompatible state with a reason rather than
+averaging the coefficients or solving a symmetric surrogate. This refusal is
+visible in both the method inventory and the cross-case displays.
+
+The modified proximal operation changes the row update without necessarily
+enlarging the original $x,z$ principal system. That property is useful when a
+problem repeatedly updates its vectors while retaining matrices and penalty
+structure. It does not remove the sparse system solve, guarantee invariant fill,
+or imply that every numerical parameter change is free. An adaptive ADMM penalty
+can require refactorization even when the matrix dimensions remain identical.
+The computational comparison consequently measures the complete specified
+operation rather than counting auxiliaries as a substitute for elapsed time.
+
+Algorithm~\ref{alg:gsp} separates compatibility, numerical execution and original
+acceptance. A prepared workspace may retain fixed matrices, a fixed hard mask,
+the finite-side pattern and the admitted penalty family. Only permitted vector
+changes are applied during repeated execution. Passing a different group layout
+or a different coefficient structure is not a valid vector-only update. The
+same restrictions apply to references and the candidate, avoiding a comparison
+that grants reuse only to one selected implementation.
+
+\begin{algorithm}[htbp]
+\caption{Execute the published generalized projection only on supported penalty semantics, retaining the original row system and independent objective and feasibility recovery.}\label{alg:gsp}
+\begin{algorithmic}[1]
+\Require Original problem, published penalty family and pinned backend
+\State Check symmetry, grouping and finite-side assumptions
+\If{the requested objective is unsupported}
+\State Return incompatible with the precise semantic reason
+\EndIf
+\State Prepare the original-row linear system and admitted penalty descriptors
+\State Iterate the native solve and generalized row operation \eqref{eq:gsp-residual}
+\State Recover original $x,y$; evaluate the requested original objective
+\State Report termination, hard violation, disagreement and numerical diagnostics
+\end{algorithmic}
+\end{algorithm}
+
+Convergence follows the underlying convex splitting result only within its
+stated assumptions, including appropriate solution existence and numerical
+parameter conditions~\cite{admm,eckstein}. The published proximal formula is not
+a blanket theorem for a sign-asymmetric, variable-metric or learned-parameter
+extension. The separate candidate derivations state precisely which broader
+penalties and fixed metrics are considered. Their accuracy and convergence
+claims do not retroactively enlarge the domain of the authors' code.
+
+Source attribution is substantive. The adapted native code is distributed by
+the separate engine; nested OSQP and QDLDL terms are retained alongside the
+OSQPSlack notice. The building source is reproduced with its original mixed
+penalties before authored variants are introduced. Preserving those distinctions
+allows a reader to identify what is reproduced, what is an adapter, and what is
+a mathematical extension. A plot that omits incompatible cells must retain their
+reasons elsewhere; otherwise absence can be mistaken for a successful zero-cost
+solution or evidence that a supported reference was never executed.
+
+The common projection notation does not erase differences between separable
+and shared-group costs. With independent quadratic prices, each row operation
+can be evaluated separately. A shared infinity-norm price requires a joint
+operation because changing one row's largest departure can alter the group's
+active coordinates. The published native descriptors encode that grouping.
+The source-faithful building case exercises precisely this distinction. A
+consumer that merely checks the number of rows, while dropping the group
+descriptor, could accept a well-formed numerical vector for the wrong
+optimization problem. Original objective reconstruction is therefore part
+of the reference comparison, not an optional display calculation.

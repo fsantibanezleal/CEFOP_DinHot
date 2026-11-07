@@ -1,0 +1,18 @@
+{
+  "scope": "Unpublished native formatting blueprints; not content-complete manuscripts or publication artifacts.",
+  "authority_url": "https://github.com/fsantibanezleal/CAOS_RESEARCH/blob/main/manuscripts/jacobian-conjecture/foundational/main.tex",
+  "authority_blob_sha": "584916b83180667a91df0a96d3482a758383a47d",
+  "observed_date": "2026-11-05",
+  "derived_from": {
+    "repository": "fsantibanezleal/CAOS_SoftQP",
+    "commit": "bbdd7909b2ee523881383764eb969eaab079d4de",
+    "path": "manuscripts/soft-constraint-study/base.tex",
+    "sha256": "1bd6177174edbc62e483cac0430aa697ca34f127a3d11dce4813e1bdcc74b3cf"
+  },
+  "adaptations": [
+    "Shared base retains article11pt, 1.1in margins, navy links, theorem family, ORCID support, boxed identity and running headers.",
+    "etoolbox makes unassigned draft DOI fields explicit and unlinked; publication must use actual reserved identifiers.",
+    "Blueprint titles/content are explicitly incomplete; no measured results or invented references."
+  ],
+  "base_sha256": "70b0729e58cc85006e65441682caf61a4cfd2b1d8957542caa7eaa5ee3ff8999"
+}

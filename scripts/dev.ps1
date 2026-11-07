@@ -1,21 +1,26 @@
-# Local dev: frontend dev server (+ the API only if app/ is activated). Dormant lanes are skipped.
-$ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot "..")
-
-$apiActive = (Test-Path requirements-api.txt) -and (Test-Path app/main.py) -and `
-  ((Get-Content requirements-api.txt | Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }).Count -gt 0)
-if ($apiActive) {
-  $vr = Join-Path ".venv" "Scripts\python.exe"
-  if (-not (Test-Path $vr)) { $vr = Join-Path ".venv" "bin/python" }
-  Write-Host "[dev] app/ active -> uvicorn :8000 (background)"
-  Start-Process $vr -ArgumentList "-m","uvicorn","app.main:app","--reload","--port","8000"
+param([switch]$Install, [switch]$Gpu, [switch]$Notebooks, [switch]$Release, [string]$FromStage,
+      [Parameter(ValueFromRemainingArguments=$true)][string[]]$Extra)
+$ErrorActionPreference = 'Stop'
+$python = if ($env:PYTHON) { $env:PYTHON } else { 'python' }
+if (-not (Get-Command $python -ErrorAction SilentlyContinue)) {
+  if ($Install -and (Get-Command winget -ErrorAction SilentlyContinue)) {
+    $ErrorActionPreference = 'Continue'
+    & winget install --id Python.Python.3.12 --exact
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    Write-Host 'Python installed. Open a new terminal and rerun 00_install-prereqs.'
+    exit 0
+  }
+  Write-Error 'Python is missing. Run 00_install-prereqs.ps1 -Install or install Python>=3.12.'
+  exit 1
 }
-
-if (Test-Path frontend/package.json) {
-  Set-Location frontend
-  if (-not (Test-Path node_modules)) { npm install }
-  # npm run dev copies the declared artifacts first (predev: scripts/copy-data.mjs)
-  npm run dev
-} else {
-  Write-Host "[dev] no frontend/ -- web lane dormant for this product."
-}
+$arguments = @((Join-Path $PSScriptRoot 'local/workflow.py'), 'dev')
+if ($Install) { $arguments += '--install' }
+if ($Gpu) { $arguments += '--gpu' }
+if ($Notebooks) { $arguments += '--notebooks' }
+if ($Release) { $arguments += '--release' }
+if ($FromStage) { $arguments += @('--from-stage', $FromStage) }
+$arguments += $Extra
+# Native warnings on stderr do not change a successful exit status in Windows PowerShell 5.1.
+$ErrorActionPreference = 'Continue'
+& $python @arguments
+exit $LASTEXITCODE

@@ -56,7 +56,10 @@ Checks, in increasing strength:
    from the row, a reason without a waiver and a row that says ``not applicable`` while ``product.json`` records no waiver are
    findings. ``frontend/scripts/gate.mjs`` holds the same rules and refuses to run the shell gate when they fail.
 
-6. **The three method tiers** (0.13.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): the ``## Method ladder`` is
+6. **The visualization catalog** (ADR-0082): ``## Visualization catalog`` is a table with the columns ``id``, ``question``,
+   ``data contract``, ``kind``, ``interactions``, ``linked views`` and ``placement``. Every row is specific, non-placeholder,
+   and the set names V1 through V6 exactly once; an inapplicable kind must give its reason and a replacement view of the same purpose.
+7. **The three method tiers** (0.13.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): the ``## Method ladder`` is
    a table ``| id | tier | method | acceptance criterion | gate |`` and each row's tier is ``classical``, ``sota`` (the state of
    the art) or ``beyond`` (beyond it). A product (a tree without ``.template-source``) needs a method in each tier, a section
    ``## Beyond the state of the art`` that lists at least one proposed method ``BS-<n>`` and never says "None claimed.", and a
@@ -781,6 +784,42 @@ def ladder_findings(stripped: str) -> list[str]:
     return out
 
 
+def visualization_catalog_findings(stripped: str) -> list[str]:
+    """Every CAOS app states the problem-specific data and interaction contract for the six ADR-0082 view kinds."""
+    body = section_text(stripped, "Visualization catalog")
+    if body is None:
+        return ["SDD.md has no '## Visualization catalog' (ADR-0082): add one row for each V1–V6 with question, data contract, interactions, linked views and placement"]
+    head = ["id", "question", "data contract", "kind", "interactions", "linked views", "placement"]
+    rows = table_rows(body, head)
+    if rows is None:
+        return ["SDD.md Visualization catalog needs a table with columns | id | question | data contract | kind | interactions | linked views | placement | (ADR-0082)"]
+    out: list[str] = []
+    seen: dict[str, int] = {}
+    for cells in rows:
+        if len(cells) != len(head):
+            out.append(f"SDD.md Visualization catalog row has {len(cells)} cells; expected {len(head)}")
+            continue
+        vid = cells[0].strip().upper()
+        match = re.search(r"\bV([1-6])\b", vid)
+        if not match:
+            out.append(f"SDD.md Visualization catalog row id {cells[0]!r} must identify V1 through V6")
+            continue
+        kind = f"V{match.group(1)}"
+        seen[kind] = seen.get(kind, 0) + 1
+        for label, value in zip(head[1:], cells[1:], strict=True):
+            if not value.strip() or value.strip().lower() in PLACEHOLDER or re.search(r"\b(TODO|TBD|TBC|placeholder|unknown)\b", value, re.I):
+                out.append(f"SDD.md {kind} {label} is empty or a placeholder; ADR-0082 requires a product-specific contract")
+        reasoned = bool(re.search(r"not applicable|inapplicable", cells[3], re.I))
+        if reasoned and (re.search(r"because|reason", cells[3], re.I) is None or len(cells[4].split()) < 3):
+            out.append(f"SDD.md {kind} kind waives applicability without a reason and a replacement purpose in interactions")
+    for kind in (f"V{i}" for i in range(1, 7)):
+        if seen.get(kind, 0) == 0:
+            out.append(f"SDD.md Visualization catalog is missing {kind} (ADR-0082)")
+        elif seen[kind] > 1:
+            out.append(f"SDD.md Visualization catalog lists {kind} {seen[kind]} times; each kind has one canonical row")
+    return out
+
+
 def sdd_findings() -> list[str]:
     if not SDD.is_file():
         return [f"{SDD.relative_to(ROOT).as_posix()} is missing"]
@@ -791,6 +830,7 @@ def sdd_findings() -> list[str]:
     out += sections_findings(text)
     out += app_kind_findings(text)
     stripped = strip_markup(text)
+    out += visualization_catalog_findings(stripped)
     out += ladder_findings(stripped)
     research = section_text(stripped, "Research basis")
     resources = section_text(stripped, "Resources")

@@ -1,0 +1,51 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for softqp-coupled-campaign. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-softqp-coupled-campaign}\\ % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema\_\allowbreak{}version & string & const=\allowbreak{}1.\allowbreak{}0.\allowbreak{}0 & structural metadata /\allowbreak{} nested units\\
+kind & string & const=\allowbreak{}directional-\allowbreak{}coupled-\allowbreak{}campaign & structural metadata /\allowbreak{} nested units\\ % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+protocol\_\allowbreak{}id & string & const=\allowbreak{}softqp-\allowbreak{}directional-\allowbreak{}coupled-\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+split & enumerated value & enum=\allowbreak{}['development', 'heldout', 'robustness'] & structural metadata /\allowbreak{} nested units\\
+environment & object & required=\allowbreak{}['packages', 'native\_\allowbreak{}binary\_\allowbreak{}sha256', 'registration', 'sdk\_\allowbreak{}python\_\allowbreak{}sha256', 'hardware'] & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}packages & object & additionalProperties=\allowbreak{}\{'type': 'string'\} & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}native\_\allowbreak{}binary\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}registration & object & required=\allowbreak{}['commit', 'protocol\_\allowbreak{}sha256', 'review\_\allowbreak{}sha256'] & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}registration.\allowbreak{}commit & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{40\}\$ & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}registration.\allowbreak{}protocol\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}registration.\allowbreak{}review\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}sdk\_\allowbreak{}python\_\allowbreak{}sha256 & object & additionalProperties=\allowbreak{}\{'\$ref': '\#/\allowbreak{}\$defs/\allowbreak{}hash'\} & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}hardware & object & required=\allowbreak{}['machine', 'processor', 'logical\_\allowbreak{}cpu\_\allowbreak{}count'] & structural metadata /\allowbreak{} nested units\\
+source\_\allowbreak{}sha256 & object & additionalProperties=\allowbreak{}\{'\$ref': '\#/\allowbreak{}\$defs/\allowbreak{}hash'\} & structural metadata /\allowbreak{} nested units\\
+inventory & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+inventory[] & object & required=\allowbreak{}['id', 'split', 'seed', 'family', 'curvature', 'quadratic'] & structural metadata /\allowbreak{} nested units\\
+datasets & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+datasets[] & object & required=\allowbreak{}['id', 'oracle\_\allowbreak{}state', 'oracle\_\allowbreak{}reason', 'oracle\_\allowbreak{}objectives', 'batch\_\allowbreak{}sha256'] & structural metadata /\allowbreak{} nested units\\
+datasets[].\allowbreak{}id & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+datasets[].\allowbreak{}oracle\_\allowbreak{}state & enumerated value & enum=\allowbreak{}['accepted', 'oracle-\allowbreak{}failed', 'failed', 'timeout', 'resource-\allowbreak{}limit'] & structural metadata /\allowbreak{} nested units\\
+datasets[].\allowbreak{}oracle\_\allowbreak{}reason & string /\allowbreak{} null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+datasets[].\allowbreak{}oracle\_\allowbreak{}objectives & array /\allowbreak{} null & See defined object /\allowbreak{} value type & model cost unit\\
+datasets[].\allowbreak{}oracle\_\allowbreak{}objectives[] & number & See defined object /\allowbreak{} value type & model cost unit\\
+datasets[].\allowbreak{}batch\_\allowbreak{}sha256 & string /\allowbreak{} null & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+counts & object & additionalProperties=\allowbreak{}\{'type': 'integer', 'minimum': 0\} & structural metadata /\allowbreak{} nested units\\
+primary & object & required=\allowbreak{}['established', 'pairs'] & structural metadata /\allowbreak{} nested units\\
+primary.\allowbreak{}established & boolean & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+primary.\allowbreak{}pairs & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+primary.\allowbreak{}pairs[] & object & required=\allowbreak{}['id', 'seed', 'reduction', 'fastest\_\allowbreak{}baseline', 'failure\_\allowbreak{}reasons', 'median\_\allowbreak{}seconds'] & structural metadata /\allowbreak{} nested units\\
+primary.\allowbreak{}pairs[].\allowbreak{}reduction & number & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary.\allowbreak{}pairs[].\allowbreak{}seed & integer & See defined object /\allowbreak{} value type & count /\allowbreak{} integer identifier\\
+primary.\allowbreak{}pairs[].\allowbreak{}failure\_\allowbreak{}reasons & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+primary.\allowbreak{}pairs[].\allowbreak{}failure\_\allowbreak{}reasons[] & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+primary.\allowbreak{}pairs[].\allowbreak{}median\_\allowbreak{}seconds & object & additionalProperties=\allowbreak{}\{'type': 'number', 'exclusiveMinimum': 0\} & s\\
+primary.\allowbreak{}estimate & number & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary.\allowbreak{}confidence\_\allowbreak{}interval & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary.\allowbreak{}confidence\_\allowbreak{}interval[] & number & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+primary.\allowbreak{}denominator & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+primary.\allowbreak{}seed\_\allowbreak{}clusters & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+primary.\allowbreak{}failed\_\allowbreak{}pairs & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+peak\_\allowbreak{}worker\_\allowbreak{}rss & integer & minimum=\allowbreak{}0 & bytes\\
+worker\_\allowbreak{}restarts & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+raw\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+csv\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

@@ -1,0 +1,20 @@
+\begin{table}[htbp]\centering\footnotesize
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-coupled-campaign schema 1.0.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-coupled-campaign} % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule
+Field & Type & Constraint & Unit / role\\\midrule
+schema\_\allowbreak{}version & string & const=\allowbreak{}1.\allowbreak{}0.\allowbreak{}0 & structural metadata /\allowbreak{} nested units\\
+kind & string & const=\allowbreak{}directional-\allowbreak{}coupled-\allowbreak{}campaign & structural metadata /\allowbreak{} nested units\\ % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+protocol\_\allowbreak{}id & string & const=\allowbreak{}softqp-\allowbreak{}directional-\allowbreak{}coupled-\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+split & enumerated value & enum=\allowbreak{}['development', 'heldout', 'robustness'] & structural metadata /\allowbreak{} nested units\\
+environment & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+source\_\allowbreak{}sha256 & object & additionalProperties=\allowbreak{}\{'\$ref': '\#/\allowbreak{}\$defs/\allowbreak{}hash'\} & structural metadata /\allowbreak{} nested units\\
+inventory & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+datasets & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+counts & object & additionalProperties=\allowbreak{}\{'type': 'integer', 'minimum': 0\} & structural metadata /\allowbreak{} nested units\\
+primary & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+peak\_\allowbreak{}worker\_\allowbreak{}rss & integer & minimum=\allowbreak{}0 & bytes\\
+worker\_\allowbreak{}restarts & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+raw\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+csv\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+\bottomrule\end{tabularx}
+\end{table}

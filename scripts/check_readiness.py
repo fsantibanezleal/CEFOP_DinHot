@@ -6,15 +6,42 @@ Usage: python scripts/check_readiness.py [repo_root]"""
 from __future__ import annotations
 
 import json
+import importlib.util
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(HERE / "data-pipeline"))
-
-from pipeline.core import readiness  # noqa: E402
-
 FIX = "python data-pipeline/run.py readiness"
+
+
+def custom_provider(root):
+    """An explicit read-only validate(root) hook, never an inferred template engine."""
+    config_path = root / "scripts/local/workflow.json"
+    if not config_path.is_file():
+        return None
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    name = config.get("readiness_provider")
+    if name is None:
+        if config.get("product_admission"):
+            raise ValueError("Custom product admission requires an explicit readiness_provider script")
+        return None
+    if not isinstance(name, str) or not name or Path(name).is_absolute() or ".." in Path(name).parts:
+        raise ValueError("readiness_provider must name a Python script inside the product")
+    path = root / name
+    if path.suffix != ".py" or not path.is_file() or not path.resolve().is_relative_to(root):
+        raise ValueError("readiness_provider is missing or escapes the product")
+    for component in (path, *path.parents):
+        if component == root:
+            break
+        if component.is_symlink() or getattr(component, "is_junction", lambda: False)():
+            raise ValueError("readiness_provider cannot contain redirected paths")
+    spec = importlib.util.spec_from_file_location("product_readiness_provider", path)
+    provider = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(provider)
+    validate = getattr(provider, "validate", None)
+    if not callable(validate):
+        raise ValueError("readiness_provider must implement validate(root)")
+    return validate
 
 
 def differences(fresh: dict, committed: dict) -> list[str]:
@@ -40,6 +67,18 @@ def differences(fresh: dict, committed: dict) -> list[str]:
 
 def main() -> int:
     root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else HERE
+    try:
+        provider = custom_provider(root)
+        if provider is not None:
+            if provider(root) is False:
+                raise ValueError("Custom product admission returned false")
+            print("readiness: current (declared product provider)")
+            return 0
+        sys.path.insert(0, str(root / "data-pipeline"))
+        from pipeline.core import readiness
+    except Exception as exc:  # Provider errors are refusals, never an absent-template import crash.
+        print(f"readiness: invalid admission provider\n  {exc}")
+        return 1
     derived = root / "data" / "derived"
     path = derived / "readiness.json"
     try:

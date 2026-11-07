@@ -1,0 +1,49 @@
+{
+  "name": "SoftQP Studio",
+  "slug": "softqp",
+  "tagline": {
+    "en": "Inspect priced constraints and complete negative timing evidence.",
+    "es": "Examina restricciones con costos y evidencia temporal negativa completa."
+  },
+  "repo": "https://github.com/fsantibanezleal/CAOS_SoftQP",
+  "visibility": "public",
+  "license": "MIT",
+  "holder": "Felipe Santibáñez-Leal",
+  "year": 2026,
+  "method_entrypoints": [
+    "softqp.solvers.solve",
+    "softqp.flex.solve_flex",
+    "softqp.elasti.solve_elastiqp",
+    "softqp.sessions.PreparedSolver",
+    "softqp.sessions.DaqpWorkspace",
+    "pipeline.optimality.kkt",
+    "pipeline.control.predict_states",
+    "pipeline.softqp_campaign.primary_endpoint",
+    "pipeline.coupled_lessons.run_comparison"
+  ],
+  "manuscripts": [
+    {
+      "kind": "technical-report",
+      "concept_doi": "10.5281/zenodo.23851659",
+      "title": "Soft-Constraint Quadratic Programming: Methods, Contracts, and Negative Timing Results",
+      "version": "0.01.002",
+      "covers": [
+        "BS-1",
+        "BS-2"
+      ]
+    },
+    {
+      "kind": "manuscript",
+      "concept_doi": "10.5281/zenodo.23875071",
+      "title": "Original-Row Proximal Updates for Side-Specific and Directional Peak Penalties: Two Negative Timing Studies",
+      "version": "0.02.002",
+      "covers": [
+        "BS-1",
+        "BS-2"
+      ]
+    }
+  ],
+  "method_packages": [
+    "softqp"
+  ]
+}

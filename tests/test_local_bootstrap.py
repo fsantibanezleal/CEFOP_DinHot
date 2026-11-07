@@ -434,6 +434,9 @@ def test_adversarial_shell_entrypoints_propagate_failure(workflow, tmp_path):
     for path in (ROOT / "scripts/local").glob("*"):
         if path.suffix in (".sh", ".ps1"):
             shutil.copyfile(path, destination / path.name)
+    for name in ("setup", "precompute", "dev"):
+        for suffix in (".sh", ".ps1"):
+            shutil.copyfile(ROOT / "scripts" / (name + suffix), destination.parent / (name + suffix))
     helper = destination / "workflow.py"
     shell = shutil.which("powershell") or shutil.which("pwsh")
     bash = bash_executable()
@@ -456,6 +459,11 @@ def test_adversarial_shell_entrypoints_propagate_failure(workflow, tmp_path):
             )
         if bash:
             invocations.append(([bash, str(destination / (name + ".sh")), *sh_extra], action))
+        legacy = {"init": "setup", "generate": "precompute", "dev": "dev"}.get(action)
+        if legacy and shell:
+            invocations.append(([shell, "-NoProfile", "-File", str(destination.parent / (legacy + ".ps1")), *ps_extra], action))
+        if legacy and bash:
+            invocations.append(([bash, str(destination.parent / (legacy + ".sh")), *sh_extra], action))
     assert invocations, "a supported shell is required for entrypoint verification"
     env = {**os.environ, "PYTHON": sys.executable.replace("\\", "/")}
     for code in (0, 23):

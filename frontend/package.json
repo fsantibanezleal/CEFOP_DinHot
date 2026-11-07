@@ -13,7 +13,8 @@
     "build": "node scripts/gen-contract-types.mjs --check && tsc --noEmit && vite build && node scripts/materialize-routes.mjs",
     "preview": "node scripts/serve.mjs",
     "test": "node --test scripts/codegen-compatibility.test.mjs && vitest run",
-    "gate": "node scripts/gate.mjs",
+    "check:story": "node scripts/check_story_mode.mjs",
+    "gate": "node scripts/check_story_mode.mjs && node scripts/gate.mjs",
     "engine:browser": "node scripts/engine-browser.mjs --assert"
   },
   "dependencies": {

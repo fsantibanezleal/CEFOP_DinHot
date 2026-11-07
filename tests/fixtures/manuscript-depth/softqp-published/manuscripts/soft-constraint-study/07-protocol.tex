@@ -1,0 +1,75 @@
+\section{Experimental protocol}\label{sec:protocol}
+The teaching catalog, original timing study, repeated-control stream and
+grouped repeated-forecast study answer different questions. They are not
+pooled into one statistical sample. Catalog cases establish semantic and
+numerical examples; the two registered studies test separately specified
+computational predictions; the stream describes reuse on a common physical
+trajectory. Benchmark methodology requires an explicit problem population,
+consistent success criteria and comparable timing boundaries~\cite{dolan,cutest}.
+A solver ranking obtained after removing unsupported or unsuccessful cells
+would otherwise mix representability, numerical reliability and speed.
+
+The original main grid uses dimensions 32,64,128 and 256, twice as many rows
+as variables, densities 0.05 and 0.2, and diagonal Hessian conditions 1 and 1000.
+Its three families are symmetric elastic, asymmetric elastic and asymmetric
+linear. Development seeds 1000--1002 and evaluation seeds 9000--9005 are
+distinct. The 24-instance robustness calculation uses dimension 32, density 0.1,
+six additional seeds and conditions 1,100,10000 and 1000000 while keeping the
+other generated quantities fixed within each seed. Together these populations
+contain 456 instances. Rows are normalized before the declared cost/target
+distribution is applied; independent unit and scaling examples are separate
+from a claim that this grid covers arbitrary physical row scaling.
+
+Each original backend has one warm-up and seven measured repetitions.
+Method order is randomized by the fixed ordering seed within an instance
+and repetition. The cold end-to-end boundary includes input validation,
+formulation construction, setup, solve and original evaluation. It excludes
+generation, module import and export. The primary population is the asymmetric
+elastic family with dimension at least 128 and density 0.05. Its 24 distinct
+problems and seven repetitions produce 168 paired observations across six
+evaluation seed clusters. Calling those 168 observations independent generated
+instances would be incorrect. The point estimate is the median paired reduction
+\begin{equation}\label{eq:original-score}
+ R_j=1-\frac{T_{\mathrm{candidate},j}}
+ {\min(T_{\mathrm{lift},j},T_{\mathrm{DAQP},j})},\qquad
+ \widehat R=\median_j R_j.
+\end{equation}
+The stored 95\% interval resamples seed clusters with the fixed 2000-resample
+procedure. It is not recomputed for the figures. Cluster resampling preserves
+dependence among repeated observations from the same generated seed;
+bootstrap accuracy with few clusters remains a limitation~\cite{efron,davison,cameron}.
+The prediction requires a reduction of at least 10\% and a lower interval
+endpoint above zero, together with complete original-space acceptance.
+
+Original numerical settings are absolute/relative solver tolerances of
+$10^{-7}$, an iteration limit of 200000, and adaptive penalty checks at interval 25.
+The separate stock lifting oracle uses tolerances of$10^{-9}$. External acceptance
+requires normalized objective discrepancy and maximum raw hard-row departure
+no larger than$10^{-6}$. Stationarity remains diagnostic in that protocol.
+Threading is limited to one BLAS thread; one worker is supervised with a 10 second
+trial deadline, a 7200 second total limit and a 4 GiB process-memory limit.
+These are protocol settings, not observed per-method resource costs.
+
+The C12 stream contains 32 frames of a horizon 20 double-integrator model with
+a 0.2 second physical step. An independent stock-lift oracle drives the common
+plant, with velocity impulses at frames 8 and 20. Every method receives the
+same physical state. Cold calls include preparation; warm calls record
+initial workspace setup separately from validation, vector update, solve
+and evaluation. There is one documented observation per frame. The stream
+supports descriptive reuse comparisons, not a statistical superiority claim
+or a comparison of independently controlled plants.
+
+The grouped study retains 48 development,144 held-out and 18 robustness instances.
+Each operation includes preparation/factorization and 32 updates, solves,
+physical recovery and independent accuracy checks. Library/process startup
+and serialization are excluded symmetrically from the inner timer; all
+compiled competitors are preloaded. The outer supervisor still retains
+startup, deadlines, process memory and cleanup outcomes. Nine method policies
+have one warm-up and three measured repetitions per instance, plus an oracle
+observation, yielding 7770 raw and 5670 measured method observations. The primary
+population contains all 144 held-out instances and six seed clusters. Its
+per-instance score compares the native median with the fastest compatible
+registered reference; failed pairs retain the specified score of$-1$.
+An absent native median or failed oracle cannot be replaced with a favorable
+successful subset. The registered minimum improvement and interval condition
+remain false regardless of which descriptive formulation plot is displayed.

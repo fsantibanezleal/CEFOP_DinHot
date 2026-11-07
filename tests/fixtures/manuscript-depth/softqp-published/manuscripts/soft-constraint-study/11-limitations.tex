@@ -1,0 +1,48 @@
+\section{Limitations}\label{sec:limitations}
+The inputs are transparent synthetic optimization models. The source-faithful
+building example preserves an open model rather than observations from an
+occupied building. Its battery and thermal parameters are not identified
+from a particular installation. The grouped thermal study uses a separate
+hourly RC forecast model. Neither model supports a claim about actual
+energy savings, occupant comfort, component ageing or operational safety.
+Those outcomes require measured disturbances, identification uncertainty,
+actuator behavior and a separately validated control policy.
+
+The timing studies were executed on one nonreserved host with explicit
+software identities and resource boundaries. Fixed seeds and randomized
+method order improve reproducibility but do not eliminate operating-system
+interference, thermal throttling, library maturity or language-level
+overhead. The Python/SciPy FlexQP reconstruction and native C backends
+are concrete implementations with different engineering histories. Their
+runtime difference is not a formulation-independent theorem. Backend setup
+includes linear-system preparation; isolated numeric factor time was not
+instrumented and cannot be inferred from a setup field.
+
+Statistical generalization is limited by the prospective populations and
+few seed clusters. Original repeated observations are dependent within
+generated problems and seeds. The cluster procedure respects a selected
+dependence structure, but six clusters do not guarantee accurate coverage
+under every disturbance or sampling process~\cite{cameron}. The grouped
+score includes the prescribed failed-pair treatment. Its negative median
+is not a universal latency multiplier. Unmatched method distributions and
+selected descriptive slices cannot replace either registered paired endpoint.
+
+The mathematical scope is also explicit. The group proximal identity uses
+nonempty closed boxes, contraction-monotone convex prices and a fixed
+positive diagonal metric. The native grouped interface requires disjoint
+groups and positive finite directional scales. The convergence statement
+assumes an attained saddle point and the specified relaxation range; it
+does not establish arbitrary adaptive metrics, overlapping groups,
+nonconvex curvature or every finite-precision infeasibility certificate.
+The synthetic robustness grid is finite, so passing it does not certify
+all nearly singular or physically scaled problems.
+
+Finally, the browser verifies and presents existing results and matching
+local-native imports. It has no browser-native optimizer or hosted
+optimization service, and the grouped research exchanges have no installed
+replay adapter. A published package, a schema example and a successful
+render are different kinds of availability evidence. Deep FlexQP's trained
+policy was unavailable and is not reproduced. The complete negative
+findings remain scientifically informative within these restrictions,
+without establishing algorithmic priority, superiority, practical adoption
+or a qualified production control system.

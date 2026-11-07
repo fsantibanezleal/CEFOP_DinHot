@@ -1,0 +1,9 @@
+# Frozen native-source examples
+
+This fixture preserves the native LaTeX sources and compact figures of the published SoftQP technical report and research paper at source tag `v0.01.002`, commit `bbdd7909b2ee523881383764eb969eaab079d4de`. [source.json](source.json) records attribution, CC BY 4.0 manuscript licensing, publication identifiers, scope exclusions and every file's SHA-256 and length. Tests check the complete inventory as well as each byte digest before using the documents as positive source-content controls.
+
+The report's original timing criterion and the paper's directional comparison both have negative outcomes. Those conclusions, source numbers and historical identities remain unchanged. Historical metadata in the fixture describe the archived scope; they do not waive the current ten-to-twelve-method/two-trained-model product bar. The source examples are not results of this template's epidemic simulator and are not new publications. Main compiled PDFs, raw data and publishing/admission sidecars are deliberately excluded.
+
+The two historical Markdown inventory files are stored under explicit `.md.fixture` names with their exact bytes and original path mapping. Their old source-repository links are historical evidence, not active template wiki links. The positive control restores all original paths into an external sandbox before running the actual content guard. The template's active-document path rule remains unchanged.
+
+The separate synthetic Python-generated text in the guard's unit tests is only a parser/floor fixture. Repetition there tests mechanical boundaries and is never acceptable scientific writing. The actual published sources provide the positive real-content control. Native formatting blueprints live in [templates/manuscripts](../../../templates/manuscripts/README.md), outside the authored manuscript inventory, and must fail the content bar if copied without being completed.

@@ -1,0 +1,12 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for api. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-api}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+detail & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['state', 'reason'] & structural metadata /\allowbreak{} nested units\\
+detail.\allowbreak{}state & string & const=\allowbreak{}missing & structural metadata /\allowbreak{} nested units\\
+detail.\allowbreak{}reason & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['en', 'es'] & structural metadata /\allowbreak{} nested units\\
+detail.\allowbreak{}reason.\allowbreak{}en & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+detail.\allowbreak{}reason.\allowbreak{}es & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

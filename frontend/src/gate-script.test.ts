@@ -64,18 +64,26 @@ afterAll(() => {
 describe('the gate script', () => {
   it('passes --require-focus to the shell gate, so every App built from the template must carry Focus mode', () => {
     expect(gate).toMatch(/'--require-focus'/);
+    expect(gate).toMatch(/'--require-showcase'/);
   });
 
   it('adversarial: the runner of the previous release, without the flag, or with the flag after the pass-through arguments, is refused (WB-014)', () => {
-    const holds = (source: string) => source.includes("'--require-focus'") && source.indexOf("'--require-focus'") < source.indexOf('...extra');
-    expect(holds(gate)).toBe(true);
-    expect(holds(gate.replace("...(waived ? [] : ['--require-focus']), ", ''))).toBe(false);
-    expect(holds(gate.replace("...(waived ? [] : ['--require-focus']), '--out', out, ...extra]", "'--out', out, ...extra, '--require-focus']"))).toBe(false);
+    const command = (source: string) => source.match(/return \[([\s\S]*?)\];/)?.[1] ?? '';
+    const current = command(gate);
+    expect(current).toContain("'--require-focus'");
+    expect(current).toContain("'--require-showcase'");
+    expect(current.indexOf("'--require-focus'")).toBeLessThan(current.indexOf('...extra'));
+    expect(current.indexOf("'--require-showcase'")).toBeLessThan(current.indexOf('...extra'));
+    expect(command(gate.replace("...(waived ? [] : ['--require-focus']), ", '')).includes("'--require-focus'")).toBe(false);
+    expect(command(gate.replace("'--require-showcase', '--routes', SHOWCASE_ROUTES, ", '')).includes("'--require-showcase'")).toBe(false);
+    const moved = command(gate.replace("'--require-showcase', '--routes', SHOWCASE_ROUTES, ", '').replace("'--out', out, ...extra]", "'--out', out, ...extra, '--require-showcase']"));
+    expect(moved.indexOf("'--require-showcase'")).toBeGreaterThan(moved.indexOf('...extra'));
   });
 
-  it('puts --require-focus before the pass-through arguments and the npm script does not drop it', () => {
+  it('puts mandatory Focus and Showcase checks before pass-through arguments', () => {
     expect(gate.indexOf("'--require-focus'")).toBeLessThan(gate.indexOf('...extra'));
-    expect(pkg.scripts.gate).toBe('node scripts/gate.mjs');
+    expect(gate.indexOf("'--require-showcase'")).toBeLessThan(gate.indexOf('...extra'));
+    expect(pkg.scripts.gate).toBe('node scripts/check_story_mode.mjs && node scripts/gate.mjs');
   });
 });
 
@@ -83,6 +91,7 @@ describe('the gate runner by the App kind (WB-014, WB-015)', () => {
   it('a workbench, with no app field: --require-focus and no --workbench, as before the App had a kind', () => {
     const r = run();
     expect(r.status).toBe(0);
+    expect(r.args).toContain('--require-showcase');
     expect(r.args).toContain('--require-focus');
     expect(r.args).not.toContain('--workbench');
     expect(r.args).not.toContain('--spa-fallback');
@@ -99,6 +108,7 @@ describe('the gate runner by the App kind (WB-014, WB-015)', () => {
     expect(at).toBeGreaterThanOrEqual(0);
     expect(r.args![at + 1]).toBe('');
     expect(r.args).toContain('--require-focus');
+    expect(r.args).toContain('--require-showcase');
   });
 
   it('a surface with a confirmed waiver: --workbench with an empty value and no --require-focus', () => {
@@ -107,7 +117,8 @@ describe('the gate runner by the App kind (WB-014, WB-015)', () => {
     const at = r.args!.indexOf('--workbench');
     expect(r.args![at + 1]).toBe('');
     expect(r.args).not.toContain('--require-focus');
-  });
+    expect(r.args).toContain('--require-showcase');
+  }, 15000);
 
   it('adversarial: no extra argument removes --require-focus when it applies', () => {
     for (const product of [{}, { app: 'surface' }]) {
@@ -167,13 +178,18 @@ describe('the gate runner by the App kind (WB-014, WB-015)', () => {
     expect(workbench.args).toBeNull();
   });
 
-  it('accepts a route list that keeps the App route, and a surface that names its own App route', () => {
-    expect(run({ extra: ['--routes', '/,/app'] }).args).toContain('--require-focus');
-    expect(run({ product: { app: 'surface' }, extra: ['--app-route', '/console', '--routes', '/,/console'] }).args).toContain('--require-focus');
+  it('requires all documented and story routes when a custom route list is supplied', () => {
+    const complete = '/app,/introduction,/methodology,/implementation,/experiments,/benchmark,/story/context,/story/phase,/story/decision,/story/method';
+    expect(run({ extra: ['--routes', complete] }).args).toContain('--require-showcase');
+    expect(run({ extra: ['--routes', '/,/app'] }).args).toBeNull();
+    expect(run({ product: { app: 'surface' }, extra: ['--app-route', '/console', '--routes', '/,/console'] }).args).toBeNull();
   });
 
-  it('a confirmed waiver may redirect the routes, since nothing requires Focus', () => {
-    expect(run({ product: waiver, sdd: waivedSdd, extra: ['--routes', '/introduction'] }).status).toBe(0);
+  it('a Focus waiver still cannot remove mandatory showcase routes', () => {
+    const r = run({ product: waiver, sdd: waivedSdd, extra: ['--routes', '/introduction'] });
+    expect(r.status).not.toBe(0);
+    expect(r.args).toBeNull();
+    expect(r.stderr).toContain('ADR-0082');
   });
 
   it('serves as nginx does when the deploy target is a VPS (--spa-fallback), and not on Pages or against a deployed URL', () => {

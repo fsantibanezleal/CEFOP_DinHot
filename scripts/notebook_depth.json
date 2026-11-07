@@ -1,0 +1,13 @@
+{
+  "authority": "CAOS notebook-content-bar, effective 2026-11-02",
+  "floors": {
+    "1": {
+      "equations": 1,
+      "sources": 3
+    },
+    "2": {
+      "equations": 2,
+      "sources": 4
+    }
+  }
+}

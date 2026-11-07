@@ -1,0 +1,10 @@
+\begin{table}[htbp]\centering\footnotesize
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-experiment-index schema 1.0.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-experiment-index}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule
+Field & Type & Constraint & Unit / role\\\midrule
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}experiments/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+protocol\_\allowbreak{}id & string & const=\allowbreak{}softqp-\allowbreak{}experiments-\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+artifacts & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+state & enumerated value & enum=\allowbreak{}['development', 'measured'] & structural metadata /\allowbreak{} nested units\\
+\bottomrule\end{tabularx}
+\end{table}

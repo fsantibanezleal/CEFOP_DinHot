@@ -1,0 +1,60 @@
+\documentclass[11pt]{article}
+\newcommand{\doctype}{Preprint}
+\newcommand{\docversion}{v0.02.002}
+\newcommand{\docdate}{2 November 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.23899142}
+\newcommand{\conceptdoi}{10.5281/zenodo.23875071}
+\newcommand{\docrepo}{github.com/fsantibanezleal/CAOS\_SoftQP}
+\newcommand{\docscope}{side-specific and directional peak penalties}
+\newcommand{\shorttitle}{Original-row proximal updates}
+\input{base.tex}
+\input{results.tex}
+\input{original-results.tex}
+\title{Original-Row Proximal Updates for Side-Specific and Directional Peak Penalties: Two Negative Timing Studies}
+\author{Felipe Santib\'a\~nez-Leal\,\orcidlink{0000-0002-0150-3246}\\
+\small CAOS Research program, \texttt{github.com/fsantibanezleal/CAOS\_SoftQP}}
+\date{\docdate}
+\hypersetup{pdftitle={Original-Row Proximal Updates for Side-Specific and Directional Peak Penalties: Two Negative Timing Studies},pdfauthor={Felipe Santibáñez-Leal}}
+\begin{document}
+\maketitle
+\thispagestyle{plain}
+\headerblock
+\begin{abstract}
+Original-row proximal updates can represent selected soft interval penalties
+without adding explicit departure variables to a quadratic program's principal
+system. We derive a side-specific separable linear--quadratic update and a
+directional disjoint group-peak update in a fixed positive diagonal metric.
+The grouped construction follows a box-residual identity under coordinate
+contractions and reduces its proximal operation to a weighted scalar threshold.
+Exact lifting, directional row splitting and compact epigraphs already express
+the same objectives; no expressibility or algorithmic-priority claim is made.
+We evaluate the two implementations in separate registered synthetic studies.
+The first contains 456 instances and 168 held-out accepted pairs: median
+relative cold end-to-end reduction \OriginalEstimate\%, with 95\% seed-cluster
+limits \OriginalLower\% and \OriginalUpper\%. The second contains 210
+repeated-forecast instances, with a 144-member held-out primary score of
+\PrimaryEstimate\%, limits \PrimaryLower\% and \PrimaryUpper\%, and
+\PrimaryFailed{} retained failed pairs. Neither predicted ten-percent timing
+improvement is established. Original-space objective, hard-row and dual
+checks distinguish mathematical equivalence from computational cost. Retained
+formulation, conditioning and workspace comparisons characterize components
+without asserting an unperformed causal ablation. The results show that fewer
+principal variables or rows do not by themselves establish a faster complete
+optimization operation on these tested populations.
+\end{abstract}
+\input{01-introduction.tex}
+\input{02-related.tex}
+\input{03-problem.tex}
+\input{04-separable.tex}
+\input{05-directional.tex}
+\input{06-theory.tex}
+\input{07-design.tex}
+\input{08-results.tex}
+\input{09-ablation.tex}
+\input{10-discussion.tex}
+\input{11-limitations.tex}
+\input{12-reproducibility.tex}
+\input{13-conclusions.tex}
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

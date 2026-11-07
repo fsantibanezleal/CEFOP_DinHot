@@ -1,0 +1,12 @@
+\begin{table}[htbp]\centering\footnotesize
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-coupled-lesson schema 1.0.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-coupled-lesson}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule
+Field & Type & Constraint & Unit / role\\\midrule
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}coupled-\allowbreak{}lesson/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+sdk\_\allowbreak{}version & string & const=\allowbreak{}0.\allowbreak{}2.\allowbreak{}0 & structural metadata /\allowbreak{} nested units\\
+worker\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+input\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+input & object & additionalProperties=\allowbreak{}False & structural metadata /\allowbreak{} nested units\\
+records & array & minItems=\allowbreak{}3; maxItems=\allowbreak{}3 & structural metadata /\allowbreak{} nested units\\
+\bottomrule\end{tabularx}
+\end{table}

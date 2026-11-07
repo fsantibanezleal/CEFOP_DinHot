@@ -1,0 +1,77 @@
+\section{Problem formulation}\label{sec:formulation}
+Let $x\in\R^n$ be the original decision vector. The symmetric matrix
+$P\in\R^{n\times n}$ is positive semidefinite, $q\in\R^n$ is finite, and
+$A\in\R^{m\times n}$ is sparse. Row $i$ describes the physical or normalized
+quantity $A_i x$ with endpoints $\ell_i\leq u_i$. An absent lower or upper
+endpoint is represented by an explicit missing-side value in the serialized
+model, not by an arbitrary large finite number. Let $\mathcal H$ be the hard
+row set and $\mathcal S$ its soft complement. The base objective is
+\begin{equation}\label{eq:base-objective}
+ f(x)=\tfrac12x^\top P x+q^\top x.
+\end{equation}
+The physical interpretation of a coefficient is determined by the decision's
+units and the chosen objective unit. If $x_j$ is a position in metres, its linear
+coefficient has objective units per metre, while the corresponding diagonal
+quadratic coefficient has objective units per square metre. A coefficient is not
+intrinsically dimensionless merely because it is stored as a floating-point value.
+
+For a scalar row value $z_i=A_i x$, define the nonnegative departures
+\begin{equation}\label{eq:departures}
+ v_{L,i}(z_i)=(\ell_i-z_i)_+,\qquad
+ v_{U,i}(z_i)=(z_i-u_i)_+.
+\end{equation}
+An absent side contributes zero and has no associated finite-side penalty term.
+The sign convention for a corrective slack is
+\begin{equation}\label{eq:corrective-slack}
+ s_i=v_{L,i}-v_{U,i},\qquad z_i+s_i\in[\ell_i,u_i].
+\end{equation}
+Thus an upper overshoot has negative corrective slack. Plots display the two
+nonnegative departures separately so opposite violations cannot cancel visually.
+The separable side price is
+\begin{equation}\label{eq:side-price}
+ g_i(z_i)=a_{L,i}v_{L,i}+a_{U,i}v_{U,i}
+       +\tfrac12b_{L,i}v_{L,i}^2+\tfrac12b_{U,i}v_{U,i}^2,
+ \qquad a_{L,i},a_{U,i},b_{L,i},b_{U,i}\geq0.
+\end{equation}
+These nonnegative coefficients define a proper closed convex function for a
+nonempty interval. A zero coefficient removes that portion of the price. Setting
+every soft coefficient to zero makes that preference free; it does not convert
+the row into a hard constraint. Hardness is a separate policy field.
+
+The complete separable problem is
+\begin{equation}\label{eq:separable-problem}
+ \min_x f(x)+\sum_{i\in\mathcal S}g_i(A_i x)
+ \quad\text{subject to}\quad
+ \ell_i\leq A_i x\leq u_i\quad(i\in\mathcal H).
+\end{equation}
+Mixed published examples additionally permit Huber and grouped penalties through
+their explicitly compatible adapters. They are not silently replaced by
+\eqref{eq:side-price}. The grouped extension uses disjoint sets $I_g$ and
+strictly positive directional scales $c_{U,i},c_{L,i}$:
+\begin{equation}\label{eq:group-peak}
+ M_g(z)=\max\{0,\max_{i\in I_g}c_{U,i}(z_i-u_i)_+,
+                   \max_{i\in I_g}c_{L,i}(\ell_i-z_i)_+\}.
+\end{equation}
+The corresponding price is $a_gM_g+\tfrac12b_gM_g^2$, with nonnegative $a_g,b_g$.
+If group rows use different physical quantities, the directional scales must
+convert their departures to a common peak unit. In the teaching example, inverse-
+metre scales make the peak dimensionless. Adding raw metres to degrees or energy
+would define no coherent physical maximum.
+
+The implementation refuses negative quadratic curvature, invalid sparse shapes,
+inconsistent vector lengths, reversed finite endpoints, nonpositive directional
+scales, and overlapping or empty groups. Positive semidefinite base curvature
+alone does not guarantee existence or uniqueness. Hard constraints can be
+infeasible, and zero-curvature directions can be unbounded. A valid input schema
+therefore establishes an admissible mathematical representation, not existence
+of an optimizer. The evaluator retains numerical termination and original-space
+acceptance separately. This distinction is important when an algorithm returns
+an iteration-limited candidate: a vector may be useful diagnostically without
+being counted as an accepted solution under the experimental rule.
+
+All algorithm comparisons preserve \eqref{eq:separable-problem} or its explicitly
+named grouped counterpart. A method that cannot represent the selected penalty
+is incompatible. Changing a quadratic price to a linear price, adding a Hessian
+regularizer, or relaxing a hard inequality would define another optimization
+problem. Such changes cannot serve as unannounced numerical repairs in a matched
+comparison, even if they make a backend return a successful status.

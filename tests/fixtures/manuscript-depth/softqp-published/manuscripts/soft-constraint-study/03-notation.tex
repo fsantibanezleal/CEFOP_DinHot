@@ -1,0 +1,60 @@
+\section{Notation and physical units}\label{sec:notation}
+Table~\ref{tab:notation} collects the mathematical quantities used in the model,
+algorithms and acceptance calculations. A single scalar objective unit is assumed
+within one optimization instance. This permits comparison of objective values
+between equivalent formulations of that instance, but does not permit adding
+objectives from different physical models or independently normalized examples.
+The sparse matrix entries inherit row-unit divided by decision-unit dimensions.
+Their numerical magnitude may change under unit conversion even when the physical
+problem and its optimizer remain identical.
+
+\begin{table}[htbp]\centering\small
+\caption{Notation and dimensions for the original-space soft quadratic model. Row and decision units belong to the physical metadata of each synthetic case rather than to a universal unit convention.}\label{tab:notation}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}\toprule
+Symbol & Meaning & Units\\\midrule
+$x_j$ & Original decision component & Declared decision unit\\
+$A_i x,\ell_i,u_i$ & Row value and interval endpoints & Declared row unit\\
+$v_{L,i},v_{U,i},s_i$ & Lower/upper departure and corrective slack & Row unit\\
+$f,F,g_i$ & Base, total and interval penalty objective & Objective unit\\
+$a_{L,i},a_{U,i}$ & Linear departure prices & Objective unit per row unit\\
+$b_{L,i},b_{U,i}$ & Quadratic departure prices & Objective unit per squared row unit\\
+$c_{L,i},c_{U,i}$ & Directional peak scales & Peak unit per row unit\\
+$y_i$ & Original row multiplier & Objective unit per row unit\\
+$H_{ii}$ & Positive proximal metric entry & Objective unit per squared row unit\\
+$r_{\rm stat}$ & Stationarity residual & Coordinatewise objective gradient unit\\
+$T,\Delta t$ & Measured duration and physical time step & Seconds, or explicit model hours\\
+$R_i$ & Paired relative timing reduction & Dimensionless; displayed as percent\\\bottomrule
+\end{tabularx}
+\end{table}
+
+A row transformation $z_i'=d_i z_i$ with $d_i>0$ transforms both endpoints by the
+same factor. To preserve a separable objective, the corresponding prices transform
+as $a_i'=a_i/d_i$ and $b_i'=b_i/d_i^2$. A directional peak scale transforms as
+$c_i'=c_i/d_i$. The row dual transforms reciprocally, $y_i'=y_i/d_i$, so its
+contribution to stationarity remains invariant. These rules distinguish a genuine
+unit change from a policy change. Altering only a directional scale changes the
+penalty's relative preference and can legitimately move the physical optimizer.
+
+The control examples use position in metres, velocity in metres per second and
+acceleration in metres per squared second. A metre-to-centimetre transformation
+must also transform position-sensitive objective and row coefficients. A seconds-
+to-milliseconds transformation changes discrete dynamic coefficients and the
+numerical representation of velocity and acceleration; changing labels alone is
+not a test of covariance. The hourly thermal grouped examples use a different
+time convention from the quarter-hour published building example. Their heater
+energy and comfort scales are interpreted within their own model, not transferred
+by matching variable names.
+
+Timing quantities are wall-clock durations with explicit measurement boundaries.
+They are not physical prediction times. A thirty-two-frame forecast operation
+can have one measured duration even though its model horizon spans hours or
+seconds. Likewise, a plotted input index is a population ordering, not a measured
+time axis. Keeping these meanings distinct prevents a computational scatter plot
+from being read as a physical control trajectory or an operational latency guarantee.
+
+The unit-aware reader distinguishes a zero value from an absent physical
+quantity. If the selected row unit contains no hard row, no maximum hard-row
+error in that unit exists. Reporting zero would incorrectly suggest a measured
+feasibility check. The same convention applies to unsupported method outputs:
+their objective and elapsed duration remain unavailable rather than receiving
+a numerical value that could enter a later sum or comparison.

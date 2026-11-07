@@ -1,0 +1,112 @@
+\section{Theory and its limits}\label{sec:theory}
+The local proximal identities must be separated from convergence of a full
+splitting algorithm and from finite-precision numerical acceptance. Each
+admitted scalar or directional proximal problem has a proper closed convex
+objective plus a positive quadratic metric. It therefore has a unique
+minimizer. The original QP itself may still be infeasible, unbounded or
+nonunique. A local row formula cannot remove those global possibilities.
+Standard proximal and monotone-operator results provide the appropriate
+framework for the distinction~\cite{prox,rockafellarppa,lions,eckstein}.
+
+For the grouped split define a graph-constrained function
+\begin{equation}\label{eq:paper-graph-function}
+ F(x,z)=\tfrac12x^\top P x+q^\top x+
+            \iota_{\{z=Ax\}}(x,z),
+\end{equation}
+and let $G$ contain the hard intervals and the admitted soft costs.
+The fixed block metric is $\mathcal M=\diag(S,H)$ with $S\succ0$ and
+positive diagonal $H$. The graph subproblem is uniquely defined because
+its reduced matrix $P+S+A^\top H A$ is positive definite. This is
+numerical regularization of a proximal subproblem, not an undisclosed
+addition to the scientific objective. The target problem remains the
+original constrained convex optimization model.
+
+Write $J_F,J_G$ for the proximal resolvents in this fixed metric and
+$R_F=2J_F-I$, $R_G=2J_G-I$ for their reflectors. The native consensus
+state uses the scaled dual $d$ and the following four updates:
+\begin{align}\label{eq:paper-consensus-updates}
+ u^{k+1}&=J_F(v^k-d^k),\\
+ h^{k+1}&=\alpha u^{k+1}+(1-\alpha)v^k,\nonumber\\
+ v^{k+1}&=J_G(h^{k+1}+d^k),\nonumber\\
+ d^{k+1}&=d^k+h^{k+1}-v^{k+1}.\nonumber
+\end{align}
+Define $s^k=v^k+d^k$ after a complete step, so $v^k=J_G(s^k)$.
+Substitution with this specific state gives
+\begin{equation}\label{eq:paper-relaxed-dr}
+ s^{k+1}=\left(1-\frac\alpha2\right)s^k+
+                    \frac\alpha2 R_F R_G(s^k),\qquad0<\alpha<2.
+\end{equation}
+Under an attained saddle point and the stated closed-convex assumptions,
+the standard fixed-metric splitting theory supplies convergence of the
+appropriate shadow variables. The relaxation range makes the displayed
+operator averaged in the relevant metric. Its fixed points are connected
+to primal/dual solutions through the resolvents, rather than being
+identified with raw numerical coordinates without that recovery.
+This interpretation follows established splitting results~\cite{admm,eckstein}.
+
+In original row variables, writing $S$ for the positive primal metric
+and $y=Hd_z$, the same graph solve and relaxed updates take the form
+\begin{align}\label{eq:paper-native-updates}
+ (P+S+A^\top HA)\widetilde x^{k+1}
+   &=Sx^k-q+A^\top(Hz^k-y^k),\\
+ x^{k+1}&=\alpha\widetilde x^{k+1}+(1-\alpha)x^k,\nonumber\\
+ z^{k+1}&=\prox_g^H\left(\alpha A\widetilde x^{k+1}
+                       +(1-\alpha)z^k+H^{-1}y^k\right),\nonumber\\
+ y^{k+1}&=y^k+H\left(\alpha A\widetilde x^{k+1}
+                       +(1-\alpha)z^k-z^{k+1}\right).\nonumber
+\end{align}
+The price function gains no relaxation factor. The grouped native
+implementation fixes a finite relaxation in the stated open interval
+and rejects adaptive penalty updates, automatic OSQP scaling, polishing,
+directional sensitivities and directional code generation. Its explicit
+row normalization is separate: $\bar A=DA$, $\bar\ell=D\ell$,
+$\bar u=Du$, $\bar c=c/D$, $y=D\bar y$ and
+$H_{\rm physical}=D\bar H D$. Setup chooses
+$D_i=\max(c_{L,i},c_{U,i})$ on soft rows and one on hard rows.
+This identifies the physical metric; it does not claim that a
+previously unnormalized iteration has the same trajectory.
+
+It is not a rate theorem for every admitted semidefinite QP. Stronger
+contraction or linear-rate conclusions need additional quantitative
+assumptions~\cite{giselsson}. Adaptive changes in the row metric or the
+relaxation parameter produce a different iteration and require their
+own conditions. The empirical original protocol's documented adaptation
+is evaluated numerically; the fixed-metric argument is not presented
+as a proof of every adaptive schedule in every implementation. Likewise,
+iteration-limited candidate vectors remain subject to the external
+acceptance rule regardless of their distance from a recent iterate.
+
+The diagonal assumption in the translated proximal identity cannot be
+discarded. Consider $C=(-\infty,0]\times\R$, $\Psi=\iota_{\{0\}}$,
+$v=(1,0)$ and
+\begin{equation}\label{eq:paper-dense-counterexample}
+ H=\begin{bmatrix}2&1\\1&2\end{bmatrix}.
+\end{equation}
+The residual formula would return the Euclidean box projection $(0,0)$.
+However, the true $H$-metric projection is $(0,1/2)$: fixing the active
+first coordinate at zero, differentiation of the quadratic in the
+second coordinate gives $-1+2z_2=0$. The metric is positive definite,
+and the residual indicator satisfies coordinate contraction monotonicity,
+yet the identity fails. Positive definiteness alone is therefore not
+an adequate replacement for a positive diagonal metric in that theorem.
+
+Equivalent formulations provide additional mathematical controls. A
+directional upper row is $c_{U,i}A_ix\leq c_{U,i}u_i$, while a lower
+row is $-c_{L,i}A_ix\leq-c_{L,i}\ell_i$. Their positive departures
+produce the same directional peak. A compact epigraph introduces
+$t_g\geq0$ and bounds every scaled departure by $t_g$, charging
+$a_gt_g+\tfrac12b_gt_g^2$. Nonnegative prices permit a tight epigraph
+at an optimum, with harmless nonuniqueness when the price is free.
+These are exact objective representations, not weakened reference
+problems. They motivate independent numerical comparisons without
+providing a theorem about which representation is fastest.
+
+Finally, original-space acceptance includes assumptions not proved by
+an algebraic identity alone. Sparse source conversion, finite precision,
+dual recovery and physical units can be wrong even when the intended
+formula is correct. Independent lifting, local Fenchel relations,
+hard-row complementarity and reciprocal scaling controls test those
+implementation boundaries. Such checks supply finite evidence on actual
+inputs. They do not replace the mathematical domain restrictions, nor
+establish operational safety, global priority or a complete-operation
+timing gain.

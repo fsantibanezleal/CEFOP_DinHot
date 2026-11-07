@@ -1,0 +1,97 @@
+\subsection{Directional disjoint group-peak proximal update}\label{sec:directional}
+The second proximal path prices the largest weighted departure within each
+disjoint group, using \eqref{eq:group-peak}. It permits unequal upper and lower
+scales and keeps the original interval-row representation in its principal
+system. Existing directional row splitting and compact epigraphs express the
+same objective, so row preservation is a representation property rather than
+an expressibility or priority result. Coordinatewise orthant monotonicity and
+weighted threshold calculations have established antecedents~\cite{orthant,weighted}.
+
+For a box $C$ and residual penalty $\Psi$, assume $\Psi$ is proper, closed,
+convex, nonnegative, minimized at zero, and nonincreasing under coordinate
+contractions $D=\diag(d_i)$ with $0\leq d_i\leq1$. For fixed diagonal $H\succ0$,
+the exact identity is
+\begin{equation}\label{eq:directional-prox}
+ \prox_{g_C}^{H}(v)=\Pi_C(v)+\prox_{\Psi}^{H}(v-\Pi_C(v)),\qquad
+ g_C(z)=\inf_{s\in C}\Psi(z-s).
+\end{equation}
+The proof clips each candidate to the coordinate segments between $\Pi_C(v)$
+and $v$. Both diagonal quadratic distance and the contraction-monotone penalty
+cannot increase. On those segments the problem is exactly the residual
+proximal problem. A dense positive metric does not support that coordinatewise
+argument; the theorem is not silently extended to arbitrary metric coupling.
+
+For one directional group let $r=v-\Pi_C(v)$, choosing $c_i$ from the active
+sign of each residual. A fixed candidate peak $t\geq0$ gives
+\begin{equation}\label{eq:directional-clipping}
+ w_i(t)=\operatorname{sign}(r_i)\min\{|r_i|,t/c_i\},\qquad
+ F(t)=at+\tfrac12bt^2+\tfrac12\sum_i h_i(|r_i|-t/c_i)_+^2.
+\end{equation}
+Sort the breakpoints $c_i|r_i|$ in descending order and examine a consistent active prefix $S$.
+Within that interval, a stationary threshold satisfies
+\begin{equation}\label{eq:directional-threshold}
+ t=\frac{\sum_{i\in S}h_i|r_i|/c_i-a}
+          {b+\sum_{i\in S}h_i/c_i^2}.
+\end{equation}
+The zero endpoint and empty active set are handled explicitly. If both prices
+vanish, the residual is returned unchanged; no zero denominator is evaluated.
+Sorting costs $O(k\log k)$ for a group of $k$ rows, followed by a prefix scan.
+This extra proximal work can outweigh savings from a smaller principal system.
+
+Algorithm~\ref{alg:directional} states the native operation. The local code
+refuses nonrepresentable arithmetic and uses local floating-point spacing at
+threshold boundaries. That treatment is important for row-scale covariance:
+a fixed absolute floor in departure units would change its meaning under a
+reciprocal scale transformation. Group membership remains disjoint in the
+implemented interface. Overlapping groups would require a different proximal
+calculation and are rejected rather than approximated as independent groups.
+
+\begin{algorithm}[htbp]
+\caption{Compute an exact directional group proximal operation in a fixed positive diagonal metric, with explicit free-price, threshold-endpoint and representability handling.}\label{alg:directional}
+\begin{algorithmic}[1]
+\Require Nonempty admitted interval box, disjoint groups and positive directional scales
+\State Compute $p=\Pi_C(v)$ and $r=v-p$; retain hard rows separately
+\For{each soft group}
+\If{$a=b=0$}\State Keep the residual unchanged
+\Else
+\State Sort the finite breakpoints $c_i|r_i|$ in descending order
+\State Find the consistent threshold interval using \eqref{eq:directional-threshold} and $t=0$
+\State Set the residual coordinates using \eqref{eq:directional-clipping}
+\EndIf
+\EndFor
+\State Return $p+w$ and continue fixed-metric relaxed splitting
+\end{algorithmic}
+\end{algorithm}
+
+The joint dual condition differs from independent coordinate price caps. The
+directional dual quantity is a sum of positive and negative multiplier parts
+divided by their corresponding scales. Its conjugate yields one group budget.
+The evaluator therefore checks every group's normalized Fenchel relation and
+every hard row's complementarity separately, alongside stationarity and bounded
+dual repair. A signed aggregate gap is retained diagnostically but cannot
+allow an erroneous soft subgradient to cancel a negative hard-row gap.
+
+The fixed-metric relaxation scope is $0<\alpha<2$ with the stated convexity
+and attained-saddle-point assumptions. No variable-metric or arbitrary adaptive-
+relaxation theorem is claimed. The complete repeated-forecast comparison uses
+public SDK 0.2 and includes matched row-split, compact epigraph and direct/proximal
+DAQP policies. Its primary score is \PrimaryEstimate\%, including all failed
+pairs under the prespecified rule. That result refutes the registered timing
+prediction on the tested population. It cannot be converted to a uniform
+slowdown multiplier, nor rescued by omitting oracle limits, unsuccessful native
+operations or semantically incompatible reference cells.
+The physical scale controls also separate two superficially similar edits.
+Multiplying an original row and its bounds by a positive conversion factor,
+while dividing both directional scales by that factor, preserves the peak
+and physical optimizer. Multiplying only the upper directional scale changes
+the relative policy price. The teaching example intentionally exercises both
+operations and compares actual native, row-split and epigraph answers. Its
+hard coupling equality remains exact while the selected physical allocation
+can change under the policy edit. This demonstrates the model's semantics;
+it is not an additional performance experiment. The same distinction is
+enforced in the research batch's unit arrays and source digests so that a
+recorded scale conversion cannot silently become a new optimization objective.
+Keeping those arrays attached to the original rows is essential when the
+reference expands their representation into signed one-sided constraints.
+The expanded reference retains a recoverable mapping to each original lower
+or upper side, so its dual comparison tests the same physical quantity.

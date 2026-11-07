@@ -1,0 +1,7 @@
+# Research contribution and custom admission boundaries
+
+| ID | Requirement | Verification |
+|---|---|---|
+| RA-001 | A manuscript SHALL cover declared method identifiers or other declared novel contributions. A non-method study SHALL use NC identifiers from the SDD Novel contributions section; it SHALL NOT have to claim an unrelated forecasting method. Identifiers in another section or code fences SHALL NOT authorize coverage. Empty and unknown coverage SHALL remain invalid. | `tests/test_check_manuscripts.py`, `tests/test_novel_contribution_manuscripts.py` |
+| RA-002 | WHEN a product declares a readiness_provider Python script, THE readiness gate SHALL invoke that script's read-only validate(root) interface without importing the template engine. A missing, redirected, malformed or unsuccessful provider SHALL fail with a diagnostic. Products using custom admission SHALL declare the provider explicitly. The template's default readiness computation SHALL remain available. | `tests/test_custom_readiness_provider.py`, `tests/contracts/contract_schemas.py` |
+| RA-003 | Notebook execution SHALL resolve the same declared notebook runtime and external role root as initialization, support a product-specific runtime name, and refuse a missing or ambiguous external runtime instead of silently using a legacy local directory or unrelated interpreter. | `tests/test_notebook_environment.py` |

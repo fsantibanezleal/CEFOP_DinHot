@@ -21,14 +21,15 @@ What it does, in order:
      tests of the base guards that need the example), with the feature rows whose gate is one of those tests;
   7. writes a README for the product (its name, taglines, badges, the `## Areas` section that scripts/check_readme_areas.py
      holds, how to run it);
-  8. unless --no-run: bakes the cases, runs the tests, builds the web once, and reports what of the example remains
-     (scripts/check_template_residue.py), which is the list of what the product replaces next.
+  8. unless --no-run: invokes the guarded external initializer. Example replacement, explicit external generation,
+     validation and promotion remain product-owner integration work; instantiation never bakes inside the checkout.
 Stdlib only.
 """
 from __future__ import annotations
 
 import argparse
 import datetime as dt
+import importlib.util
 import json
 import re
 import shutil
@@ -37,6 +38,16 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def portable_slug(value: str) -> bool:
+    if not re.fullmatch(r"[a-z][a-z0-9-]*", value):
+        return False
+    spec = importlib.util.spec_from_file_location(
+        "local_runtime_policy", Path(__file__).resolve().parent / "local/workflow.py")
+    policy = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(policy)
+    return policy.safe_environment_component(value)
 OWNER = "fsantibanezleal"
 HOLDER = "Felipe Santibáñez-Leal"
 
@@ -197,11 +208,20 @@ def readme(a: argparse.Namespace) -> str:
         "## Run it",
         "",
         "```bash",
-        "./scripts/setup.sh                     # the pipeline environment (.venv-pipeline); setup.ps1 on Windows",
-        "./scripts/precompute.sh                # the canonical bake into data/derived (a release operation)",
-        ".venv-pipeline/bin/python -m pytest    # the pipeline tests, sandboxed",
-        "./scripts/setup.sh --notebooks         # the notebook environment (.venv-notebooks); setup.ps1 -Notebooks on Windows",
-        "python scripts/run_notebooks.py --check # every notebook runs top to bottom (a local release gate, never CI)",
+        ': "${CAOS_VENVS_ROOT:?Export the absolute external runtime role root}"',
+        ': "${CAOS_TEMP_ROOT:?Export the absolute external scratch role root}"',
+        "bash scripts/local/00_install-prereqs.sh",
+        "bash scripts/local/01_init.sh          # external declared runtimes and locked frontend dependencies",
+        "bash scripts/local/02_generate-data.sh # only when generation is needed; writes a fresh external stage",
+        "# Inspect the stage, then explicitly use --release --from-stage '<stage>' for local artifact promotion.",
+        "bash scripts/local/03_dev.sh           # validated local artifacts and owned frontend/API processes",
+        f'pipeline_python="$CAOS_VENVS_ROOT/{a.slug}/.venv-pipeline/bin/python"',
+        f'[ -f "$pipeline_python" ] || pipeline_python="$CAOS_VENVS_ROOT/{a.slug}/.venv-pipeline/Scripts/python.exe"',
+        f'"$pipeline_python" -m pytest --basetemp "$CAOS_TEMP_ROOT/{a.slug}-tests"',
+        "bash scripts/setup.sh --notebooks     # optional external teaching runtime; setup.ps1 -Notebooks on Windows",
+        f'notebook_python="$CAOS_VENVS_ROOT/{a.slug}/.venv-notebooks/bin/python"',
+        f'[ -f "$notebook_python" ] || notebook_python="$CAOS_VENVS_ROOT/{a.slug}/.venv-notebooks/Scripts/python.exe"',
+        '"$notebook_python" scripts/run_notebooks.py --check --tmp "$CAOS_TEMP_ROOT"',
         "cd frontend && npm ci && npm run build && npm test && npm run gate",
         "```",
         "",
@@ -210,7 +230,7 @@ def readme(a: argparse.Namespace) -> str:
         "- [docs/design/SDD.md](docs/design/SDD.md): the design, every requirement with its gate.",
         "- [docs/](docs/README.md): architecture, guides, cases and frameworks.",
         "",
-        f"Licensed under the MIT License (see [LICENSE](LICENSE)). Deployed to {a.deploy}"
+        f"Licensed under the MIT License (see [LICENSE](LICENSE)). Configured deployment target: {a.deploy}"
         + (f" at {site}" if site else "")
         + ".",
         "",
@@ -238,14 +258,14 @@ def main() -> int:
     p.add_argument("--tagline-es", required=True)
     p.add_argument("--holder", default=HOLDER)
     p.add_argument("--year", type=int, default=dt.date.today().year)
-    p.add_argument("--no-run", action="store_true", help="skip the bake, tests and build")
+    p.add_argument("--no-run", action="store_true", help="write identity only; skip guarded external initialization")
     a = p.parse_args()
 
     if not (ROOT / ".template-source").exists():
         print("instantiate: this tree is not the template (no .template-source); it was instantiated already")
         return 2
-    if not re.fullmatch(r"[a-z][a-z0-9-]*", a.slug):
-        print("instantiate: --slug is lower-case letters, digits and hyphens")
+    if not portable_slug(a.slug):
+        print("instantiate: --slug uses lower-case letters, digits and hyphens, excluding portable reserved names")
         return 2
     if a.name.strip() in {"", "CAOS Product"} or not a.tagline_en.strip() or not a.tagline_es.strip():
         print("instantiate: --name, --tagline-en and --tagline-es must be the product's own")
@@ -277,6 +297,9 @@ def main() -> int:
         "method_entrypoints": [],
     }
     write("product.json", json.dumps(product, indent=2, ensure_ascii=False) + "\n")
+    workflow = json.loads((ROOT / "scripts/local/workflow.json").read_text(encoding="utf-8"))
+    workflow.update(external_environments_required=True, environment_namespace=a.slug)
+    write("scripts/local/workflow.json", json.dumps(workflow, indent=2) + "\n")
     pkg_path = ROOT / "frontend" / "package.json"
     pkg = json.loads(pkg_path.read_text(encoding="utf-8"))
     pkg.update({"name": f"{a.slug}-frontend", "version": "0.1.0", "license": "MIT"})
@@ -344,18 +367,9 @@ def main() -> int:
     if a.no_run:
         print("instantiate: done (--no-run). Next: replace the example; scripts/check_template_residue.py lists it.")
         return 0
-    venv = next((c for c in (ROOT / ".venv-pipeline" / "Scripts" / "python.exe", ROOT / ".venv-pipeline" / "bin" / "python") if c.exists()), None)
-    py = str(venv) if venv else sys.executable
-    ok = run([py, "data-pipeline/run.py"], ROOT) and run([py, "-m", "pytest", "-q"], ROOT)
-    npm = shutil.which("npm")
-    if npm:
-        front = ROOT / "frontend"
-        ok = run([npm, "ci"], front) and run([npm, "run", "build"], front) and run([npm, "test"], front) and ok
-    else:
-        print("  npm not found: build the web with `cd frontend && npm ci && npm run build`")
-    run([py, "scripts/check_template_residue.py"], ROOT)
-    print("instantiate: done. The residue list above is what this product replaces next (the example model, cases,")
-    print("pages and diagrams); the guards fail until it is gone.")
+    ok = run([sys.executable, "scripts/local/workflow.py", "init"], ROOT)
+    print("instantiate: identity written. Replace the example, then use scripts/local/02_generate-data for external")
+    print("generation and explicit validated promotion. Run the product tests and frontend build before delivery.")
     return 0 if ok else 1
 
 

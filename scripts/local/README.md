@@ -1,7 +1,7 @@
 # Local workflow
 
 Run commands from any directory using the entrypoint's absolute path, or from the repository root as below.
-The numbered steps share workflow.py and the declarative workflow.json. Flat setup/dev/precompute scripts remain compatible.
+The numbered steps share workflow.py and the declarative workflow.json. The flat setup/dev/precompute entrypoints forward to the same helper. Flat precompute now also stages externally; only --release/-Release requests local artifact replacement.
 
 ## 00: system prerequisites
 
@@ -22,7 +22,14 @@ Bash: bash scripts/local/01_init.sh
 
 Initialization copies nonsecret .env.example defaults only if .env is absent. Existing .env bytes are preserved;
 dotenv assignments are literal values, never shell commands. Exported process variables take precedence.
-Declared ignored venvs and locked frontend dependencies are provisioned. Recursive requirements and package-lock
+Set an absolute external CAOS_VENVS_ROOT in the process environment or an existing .env before initialization.
+Declared runtimes are provisioned at CAOS_VENVS_ROOT/environment_namespace/runtime; instantiate writes the product slug
+as the namespace. There is no repository or system-temp fallback. Missing, internal, redirected or non-directory
+targets refuse before .env creation or dependency installation. Runtime lookup creates nothing. Existing repository
+aliases are accepted only when they resolve to the exact declared external runtime. Historical internal environments
+must be preserved separately; initialization never moves or overwrites them.
+
+Declared external venvs and locked frontend dependencies are provisioned. Recursive requirements and package-lock
 fingerprints are stamped only after a successful install; a matching installation is reused. A failed native
 process is a failure, while successful native stderr warnings remain warnings.
 
@@ -72,7 +79,7 @@ workflow's process trees. It does not kill a pre-existing process or install dep
 
 Run the focused behavioral suite with the initialized pipeline interpreter:
 
-python -m pytest tests/test_local_bootstrap.py tests/test_bootstrap_regressions.py -q
+python -m pytest tests/test_local_bootstrap.py tests/test_bootstrap_regressions.py tests/test_bootstrap_admission.py -q
 
 The fixtures execute fake producers and local HTTP/frontend subprocesses in external temporary repositories,
 not training or release promotion in this checkout. Use the existing smoke scripts for the full product gates.

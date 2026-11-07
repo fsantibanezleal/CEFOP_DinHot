@@ -1,0 +1,97 @@
+\subsection{Side-specific interval proximal update}\label{sec:asymmetric}
+The side-specific projection path evaluates the separable penalty
+\eqref{eq:side-price} inside an original-row OSQP-style iteration. Its narrow
+implementation property is that lower and upper linear/quadratic coefficients
+enter the row operation without adding independent departure variables to the
+principal system. Unequal side costs already have established formulations,
+including the DAQP interface. The question tested by the original experiment
+is computational cost against equivalent lifting, not whether unequal prices
+can be modeled for the first time.
+
+For a temporary scalar value $v$ and positive numerical metric $\rho$, the row
+operation solves
+\begin{equation}\label{eq:asym-subproblem}
+ z^+=\argmin_z\{g_i(z)+\tfrac\rho2(z-v)^2\}.
+\end{equation}
+It has the closed form
+\begin{equation}\label{eq:asym-prox}
+z^+=\begin{cases}
+\ell_i-\dfrac{[\rho(\ell_i-v)-a_{L,i}]_+}{\rho+b_{L,i}},&v<\ell_i,\\[5pt]
+v,&\ell_i\leq v\leq u_i,\\[3pt]
+u_i+\dfrac{[\rho(v-u_i)-a_{U,i}]_+}{\rho+b_{U,i}},&v>u_i.
+\end{cases}
+\end{equation}
+An absent side is omitted. A hard row uses exact interval projection. The
+positive denominator follows from $\rho>0$ and nonnegative quadratic price;
+the formula remains defined for a pure linear or a zero-price soft side.
+
+To derive the upper branch, write $d=z-u_i>0$. Differentiating the exterior
+quadratic yields $(\rho+b_{U,i})d=\rho(v-u_i)-a_{U,i}$. If its right-hand side
+is nonpositive, the exterior optimum is inadmissible and the endpoint satisfies
+the subgradient condition. Otherwise division gives the positive departure.
+The lower branch follows by reflecting the displacement and using the lower
+coefficients. Inside the interval the price is zero and $z=v$ minimizes the
+proximal displacement. Strong convexity of \eqref{eq:asym-subproblem} establishes
+uniqueness, including at the interval endpoints.
+
+This scalar derivation is an application of established proximal convex
+analysis~\cite{prox,moreau,rockafellarppa}. It is not a proof of arbitrary adaptive
+ADMM behavior, a finite-precision error theorem or a global priority claim.
+Within a fixed positive metric and an attained primal and dual solution, the
+underlying splitting framework supplies the relevant convergence argument.
+Unit conversion must transform the side prices, row coefficients and dual
+coordinates consistently. A positive absolute tolerance in physical departure
+units cannot by itself establish covariance across metres and centimetres.
+
+Algorithm~\ref{alg:asym} identifies the actual native procedure. The separate
+engine owns the C/C++ update, Python bindings, scaling and objective recovery.
+The product consumes the public SDK in an isolated profile. Grouped and Huber
+costs do not become supported merely because their scalar notation resembles
+an elastic price. The separable adapter refuses them; the mixed C13 model uses
+the published generalized projection or exact lifting instead.
+
+\begin{algorithm}[htbp]
+\caption{Apply side-specific scalar proximal updates in the original interval rows while preserving hard policy and independently recovering the requested objective and dual conditions.}\label{alg:asym}
+\begin{algorithmic}[1]
+\Require Admitted separable original problem, side prices and positive row metric
+\State Prepare the fixed-shape original-row native workspace
+\For{each row-update operation}
+\State Project hard rows; apply \eqref{eq:asym-prox} to each admitted soft row
+\State Continue the native primal/dual splitting update
+\EndFor
+\State Recover original $x,y$ and physical lower/upper departures
+\State Evaluate the original objective and method-specific termination criteria
+\State Compare accepted outputs to the independent equivalent lift
+\end{algorithmic}
+\end{algorithm}
+
+The implementation must preserve more than the scalar minimizer. Original
+objective evaluation, the dual conjugate, scaling, recession behavior and
+fixed-shape repeated updates have independent controls. A stationary vector
+can still violate the soft subgradient relation. The diagnostic proximal test
+$z=\prox_g^{H_0}(z+H_0^{-1}y)$ checks that relation at the original row value rather than
+selecting a derivative arbitrarily at a kink. Here $H_0$ is an explicitly
+positive diagonal diagnostic metric; its numeric identity applies only in
+canonical diagnostic coordinates. Signed slack cancellation is
+prevented by separate lower and upper departure arrays.
+
+The original held-out endpoint does not establish the registered computational
+gain. Its median relative reduction is \OriginalEstimate\%, with a confidence
+interval crossing zero. Correctness and retained original dimensions therefore
+coexist with a negative timing conclusion. A favorable selected family, one
+small scalar matrix or a quick warm update cannot replace that primary result.
+The implementation remains a complete executable method within its supported
+domain; its scientific limitations are stated through the full comparison,
+not hidden by relabeling the failed prediction as a different acceptance rule.
+Endpoint behavior supplies useful concrete controls. A sufficiently large
+linear price relative to one temporary proximal displacement maps that
+displacement exactly to the preferred endpoint. This is a statement about
+one proximal subproblem, not a guarantee that a finite price enforces the
+original row for every possible model or iteration. Setting the quadratic
+price to zero leaves a genuine one-sided soft-threshold operation. Setting
+both prices to zero leaves a free preference, while an explicit hard mask
+still projects exactly. Confusing these three cases changes the optimization
+policy even though each resulting program can remain convex and solvable.
+The scalar analytic cases and independently recovered original dual signs
+test these distinctions without relying on matching backend status integers
+or comparing an auxiliary representation to itself.

@@ -35,13 +35,15 @@ FIELDS = ("kind", "concept_doi", "title", "version", "covers")
 CONCEPT_DOI = re.compile(r"^10\.5281/zenodo\.([1-9]\d*)$")
 RELEASE = re.compile(r"^(\d+)\.(\d{2})\.(\d{3})$")
 BS_ID = re.compile(r"^BS-\d+$")
+COVER_ID = re.compile(r"^(?:BS|NC)-\d+$")
 BEYOND_SECTION = "Beyond the state of the art"
+NOVEL_SECTION = "Novel contributions"
 PLACEHOLDER = {"", "-", "?", "todo", "tbd", "tba", "unknown", "n/a", "na", "none", "placeholder", "..."}
 API = "https://zenodo.org/api/records/{}"
 
 
-def beyond_claims(root: Path) -> set[str] | None:
-    """The ``BS-<n>`` identifiers of the SDD's section on the beyond, None when the SDD or the section is absent."""
+def section_claims(root: Path, section: str, pattern: str) -> set[str] | None:
+    """Read identifiers only inside their declared SDD section, outside code fences."""
     sdd = root / "docs" / "design" / "SDD.md"
     if not sdd.is_file():
         return None
@@ -50,15 +52,22 @@ def beyond_claims(root: Path) -> set[str] | None:
     for line in sdd.read_text(encoding="utf-8").splitlines():
         if re.match(r"^\s*(```+|~~~+)", line):
             fenced = not fenced
+            continue
+        if fenced:
+            continue
         if not fenced and (m := re.match(r"^##\s+(?:\d+\.\s*)?(.+?)\s*$", line)) and not line.startswith("###"):
             if body is not None:
                 break
-            if m[1].strip().lower() == BEYOND_SECTION.lower():
+            if m[1].strip().lower() == section.lower():
                 body = []
             continue
         if body is not None:
             body.append(line)
-    return None if body is None else set(re.findall(r"\bBS-\d+\b", "\n".join(body)))
+    return None if body is None else set(re.findall(pattern, "\n".join(body)))
+
+
+def beyond_claims(root: Path) -> set[str] | None:
+    return section_claims(root, BEYOND_SECTION, r"\bBS-\d+\b")
 
 
 def release_of(text: str) -> tuple[int, int, int] | None:
@@ -89,10 +98,10 @@ def entry_findings(i: int, entry: object) -> list[str]:
             out.append(f"{at}: version {version!r} is not X.XX.XXX: a technical report follows the product's releases")
     covers = entry.get("covers")
     if "covers" in entry:
-        if not (isinstance(covers, list) and all(isinstance(c, str) and BS_ID.match(c) for c in covers)):
-            out.append(f"{at}: covers is not a list of claim ids of the form BS-<n>")
+        if not (isinstance(covers, list) and all(isinstance(c, str) and COVER_ID.fullmatch(c) for c in covers)):
+            out.append(f"{at}: covers is not a list of claim ids of the form BS-<n> or NC-<n>")
         elif kind == "manuscript" and not covers:
-            out.append(f"{at}: a manuscript covers at least one claim (covers: [\"BS-1\"]): it reports a beyond-the-state-of-the-art method")
+            out.append(f"{at}: a manuscript covers at least one declared method or novel contribution (covers)")
     return out
 
 
@@ -136,6 +145,11 @@ def findings_of(root: Path, release: bool = False) -> list[str]:
             for c in e.get("covers", []) if isinstance(e, dict) and isinstance(e.get("covers"), list) else []:
                 if isinstance(c, str) and BS_ID.match(c) and c not in claims:
                     out.append(f"product.json manuscripts[{i}] covers {c}, which the SDD's section '{BEYOND_SECTION}' does not list")
+    novel = section_claims(root, NOVEL_SECTION, r"\bNC-\d+\b") or set()
+    for i, entry in enumerate(dicts):
+        for claim in entry.get("covers", []) if isinstance(entry.get("covers"), list) else []:
+            if isinstance(claim, str) and claim.startswith("NC-") and claim not in novel:
+                out.append(f"product.json manuscripts[{i}] covers {claim}, which the SDD's section '{NOVEL_SECTION}' does not list")
     version_file = root / "VERSION"
     current = release_of(version_file.read_text(encoding="utf-8")) if version_file.is_file() else None
     if current is not None:

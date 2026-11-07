@@ -1,0 +1,12 @@
+\begin{table}[htbp]\centering\footnotesize
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-coupled-batch schema 1.0.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-coupled-batch}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule
+Field & Type & Constraint & Unit / role\\\midrule
+schema\_\allowbreak{}version & string & const=\allowbreak{}1.\allowbreak{}0.\allowbreak{}0 & structural metadata /\allowbreak{} nested units\\
+kind & string & const=\allowbreak{}directional-\allowbreak{}coupled-\allowbreak{}peak-\allowbreak{}batch & structural metadata /\allowbreak{} nested units\\
+description & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+problem & object & additionalProperties=\allowbreak{}False & structural metadata /\allowbreak{} nested units\\
+updates & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}512 & structural metadata /\allowbreak{} nested units\\
+units & object & additionalProperties=\allowbreak{}\{'type': 'string', 'minLength': 1\} & structural metadata /\allowbreak{} nested units\\
+\bottomrule\end{tabularx}
+\end{table}

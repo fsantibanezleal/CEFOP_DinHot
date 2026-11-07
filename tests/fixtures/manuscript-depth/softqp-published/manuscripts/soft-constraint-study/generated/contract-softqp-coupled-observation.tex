@@ -1,0 +1,32 @@
+\begingroup\footnotesize
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}p{.32\textwidth}>{\raggedright\arraybackslash}p{.25\textwidth}@{}}
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-coupled-observation schema 1.0.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-coupled-observation}\\
+\toprule Field & Type & Constraint & Unit / role\\\midrule\endfirsthead
+\toprule Field & Type & Constraint & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema\_\allowbreak{}version & string & const=\allowbreak{}1.\allowbreak{}0.\allowbreak{}0 & structural metadata /\allowbreak{} nested units\\
+kind & string & const=\allowbreak{}directional-\allowbreak{}coupled-\allowbreak{}observation & structural metadata /\allowbreak{} nested units\\
+role & enumerated value & enum=\allowbreak{}['oracle', 'method'] & structural metadata /\allowbreak{} nested units\\
+id & string & pattern=\allowbreak{}\textasciicircum{}(development\textbar{}\allowbreak{}heldout\textbar{}\allowbreak{}robustness)-[0-9]\{4\}\$ & structural metadata /\allowbreak{} nested units\\
+split & enumerated value & enum=\allowbreak{}['development', 'heldout', 'robustness'] & structural metadata /\allowbreak{} nested units\\
+seed & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+family & enumerated value & enum=\allowbreak{}['sparse', 'thermal'] & structural metadata /\allowbreak{} nested units\\
+curvature & enumerated value & enum=\allowbreak{}['positive-\allowbreak{}definite', 'semidefinite', 'zero-\allowbreak{}hessian'] & structural metadata /\allowbreak{} nested units\\
+quadratic & number & minimum=\allowbreak{}0 & cost /\allowbreak{} peak unit squared\\
+method & enumerated value & enum=\allowbreak{}['\_\allowbreak{}\_\allowbreak{}oracle\_\allowbreak{}\_\allowbreak{}', 'native', 'epigraph-\allowbreak{}default', 'epigraph-\allowbreak{}fixed', 'row-\allowbreak{}split-\allowbreak{}default', 'row-\allowbreak{}split-\allowbreak{}fixed', 'daqp-\allowbreak{}direct', 'daqp-\allowbreak{}prox-\allowbreak{}auto', 'daqp-\allowbreak{}prox-\allowbreak{}forced', 'daqp-\allowbreak{}lp-\allowbreak{}model'] & structural metadata /\allowbreak{} nested units\\
+repetition & integer /\allowbreak{} null & minimum=\allowbreak{}-1; maximum=\allowbreak{}2 & count /\allowbreak{} integer identifier\\
+warmup & boolean & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+state & enumerated value & enum=\allowbreak{}['accepted', 'failed', 'accuracy-\allowbreak{}rejected', 'incompatible', 'oracle-\allowbreak{}failed', 'resource-\allowbreak{}limit', 'timeout'] & structural metadata /\allowbreak{} nested units\\
+reason & string /\allowbreak{} null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+elapsed\_\allowbreak{}seconds & number /\allowbreak{} null & exclusiveMinimum=\allowbreak{}0 & s\\
+batch\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+predeclared\_\allowbreak{}incompatible & boolean & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames & array & maxItems=\allowbreak{}32 & count /\allowbreak{} integer identifier\\
+backend\_\allowbreak{}results & array & maxItems=\allowbreak{}32 & structural metadata /\allowbreak{} nested units\\
+objectives & array /\allowbreak{} null & maxItems=\allowbreak{}32 & model cost unit\\
+n & integer & minimum=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+group\_\allowbreak{}size & integer & minimum=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+condition & number & minimum=\allowbreak{}1 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+horizon & integer & minimum=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+zones & integer & minimum=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+\end{longtable}\endgroup
