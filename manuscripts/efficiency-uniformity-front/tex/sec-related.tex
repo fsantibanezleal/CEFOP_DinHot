@@ -31,13 +31,11 @@ The studio of which this method is a part also holds learned models, and the fro
 
 The weighted-sum scalarization is the oldest way to generate Pareto points: minimize a convex combination of the objectives and vary the weights~\cite{miettinen}. Its drawbacks for the generation of a Pareto set are documented~\cite{das1997}; one of them is that evenly spaced weights do not give evenly distributed points,
 a property that the normal-boundary intersection method of Das and Dennis was proposed to provide for a general nonlinear multicriteria problem, with the computational efficiency of continuation-type algorithms~\cite{das1998}. Another is structural: a weighted sum with positive weights can never return a point that lies above the segment between two attainable points,
-a statement that Remark~
-ef{rem:convex} proves for the present problem. Evolutionary algorithms such as the strength Pareto
+a statement that Remark~\ref{rem:convex} proves for the present problem. Evolutionary algorithms such as the strength Pareto
 approach and the elitist non-dominated sorting genetic algorithm approximate a front with a population of candidates and use no gradient~\cite{zitzler1999,deb}. Numerical continuation methods follow a solution curve of a parametrized problem~\cite{allgower}, and a homotopy approach extends the idea to the manifold of Pareto-critical points of a smooth multiobjective problem~\cite{hillermeier}.
 Steepest-descent methods for multicriteria problems and the multiple-gradient descent algorithm look, at a point, for a direction along which every objective decreases~\cite{fliege,desideri}.
 Fronts are compared with quality indicators, and the hypervolume, the measure of the region of the objective space that a front dominates up to a reference point, is among those that the performance-assessment literature analyses~\cite{zitzler2003}; the cost of computing it as the number of objectives grows is the subject of~\cite{beume}, and in two dimensions
-a sweep over the points sorted by one objective suffices (Algorithm~
-ef{alg:hv}).
+a sweep over the points sorted by one objective suffices (Algorithm~\ref{alg:hv}).
 The same ideas have recently moved to machine learning, where the trade-off between tasks is posed as multiobjective optimization~\cite{sener}, solved with Pareto methods~\cite{lin}, and learned as a whole front by hypernetworks~\cite{navon}. The method of this paper takes the first of these ideas, the weighted sum with a warm start, applies it to an optics problem in which the weight has a physical reading
 (Proposition~\ref{prop:shift}), and states with a proof and a measurement what the weighted sum guarantees there.
 
