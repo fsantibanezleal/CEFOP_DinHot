@@ -16,7 +16,7 @@ import {
   type CaseDef,
   type RailSection,
 } from '@fasl-work/caos-app-shell';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadCase, loadIndex, useArtifact, type CaseData } from '../api/artifacts';
 import type { Text, Trap } from '../lib/contract.types';
 import { baselineName, cghApplies } from '../lib/ort';
@@ -114,6 +114,15 @@ function backendLine(lang: 'en' | 'es', used: 'cpu' | 'gpu' | null, gpu: GpuProb
   return es ? `WebGPU no disponible: ${shortReason(gpu.reason)}. Se usa CPU.` : `WebGPU unavailable: ${shortReason(gpu.reason)}. CPU is used.`;
 }
 
+/** The method the URL asks for, on the first load of the case it names (the story's exit writes `?case=...&method=...`): the parameter when the case lists that method, else the case's reference method. */
+export function initialMethod(search: string, caseId: string, methods: readonly string[], reference: string): string {
+  const q = new URLSearchParams(search);
+  const named = q.get('case');
+  const wanted = q.get('method');
+  if ((named !== null && named !== caseId) || !wanted || !methods.includes(wanted)) return reference;
+  return wanted;
+}
+
 export function Workbench() {
   const lang = useShellLang();
   const readiness = useReadiness();
@@ -126,6 +135,8 @@ export function Workbench() {
   const refused = entry?.status === 'refused';
   const loaded = useArtifact((s) => (selected && !refused ? loadCase(selected, s) : new Promise<CaseData>(() => undefined)), [selected, refused]);
   const [methodId, setMethodId] = useState<string | null>(null);
+  // the URL as the page was opened: read once, used for the first load of the case it names, then dropped (a method picked later is the reader's)
+  const firstSearch = useRef<string | null>(typeof window === 'undefined' ? null : window.location.search);
   const [rail, setRail] = useState<Rail | null>(null);
   const [editError, setEditError] = useState<Text | null>(null);
   // The open group is the workbench's (a controlled value of the shell), so a view can open another: the optical train opens Device effects
@@ -142,7 +153,9 @@ export function Workbench() {
   useEffect(() => {
     if (data) {
       setRail(railOf(data));
-      setMethodId(data.manifest.params.reference_method);
+      const p = data.manifest.params;
+      setMethodId(firstSearch.current === null ? p.reference_method : initialMethod(firstSearch.current, data.manifest.case_id, p.methods, p.reference_method));
+      firstSearch.current = null;
       setEditError(null);
     }
   }, [data]);

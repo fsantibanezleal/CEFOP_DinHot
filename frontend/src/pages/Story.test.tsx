@@ -10,7 +10,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { BenchmarkResults } from '../lib/contract.types';
 import { trainCallouts } from '../workbench/OpticalTrain';
 import { slmCallouts, slmRow } from '../workbench/SlmSection';
-import { methodCallouts } from '../workbench/MethodAtWork';
+import { methodCallouts, spreadText } from '../workbench/MethodAtWork';
 import { methodName } from '../workbench/model';
 import { realCase, realSelection } from '../workbench/test-real';
 import {
@@ -121,7 +121,7 @@ describe('the headlines are computed from the artifacts', () => {
     expect(f.ideal.spread).toBe(m.history[m.history.length - 1].rel_std_pct);
     expect(f.device.spread).toBe(m.final.rel_std_pct);
     expect(f.device.spread).toBeGreaterThan(f.ideal.spread);
-    expect(f.headline.en).toContain(methodName(DEVICE_STEP_METHOD).en);
+    expect(f.headline.en.toLowerCase()).toContain(methodName(DEVICE_STEP_METHOD).en.toLowerCase());
     expect(f.headline.es).toContain(methodName(DEVICE_STEP_METHOD).es);
     expect(f.headline.en).toMatch(/from 0\.0045% to 13\.4%/);
     expect(f.headline.es).toMatch(/de 0,0045% a 13,4%/);
@@ -148,10 +148,56 @@ describe('the headlines are computed from the artifacts', () => {
     expect(f.gs.spread.median).toBe(gs.rel_std_pct.median);
     expect(f.gs.seeds).toBe(gs.n_seeds);
     expect(f.headline.en).toContain(methodName(WEIGHTED_GS).en);
-    expect(f.summary.en).toContain(`${f.best.seeds} seeds`);
-    expect(f.summary.en).toContain(`${f.gs.seeds} for`);
-    expect(f.summary.en).toContain('Square 10 x 10');
+    expect(f.summary.en).toContain(`${f.best.seeds}, ${f.gs.seeds} and ${f.fixed.seeds} seeds`);
+    expect(f.summary.en).toContain('Random 100 traps');
     expect(f.summary.en).toContain('100 iterations');
+  });
+
+  it('compare, on the device: the device-aware method against weighted GS and phase-fixed weighted GS on G3, with every seed count and the device named', () => {
+    const b = bench();
+    expect(COMPARE_CELL).toEqual({ geometry: 'G3', device: 'device', budget: 100 });
+    const f = must(compareFinding(b));
+    const row = (m: string) => b.rows.find((r) => r.method === m && r.geometry === 'G3' && r.device === 'device' && r.budget_kind === 'iterations' && r.budget === 100 && r.params === 'default')!;
+    expect(f.best.method).toBe('B1');
+    expect(f.gs.method).toBe(WEIGHTED_GS);
+    expect(f.fixed.method).toBe('M07');
+    expect(f.headline.en).toBe(`Device-aware WGS: ${spreadText(row('B1').rel_std_pct.median, 'en')}% spread against ${spreadText(row('M06').rel_std_pct.median, 'en')}% for Weighted GS`);
+    for (const lang of ['en', 'es'] as const) {
+      const s = f.summary[lang];
+      expect(s).toContain(`${row('B1').n_seeds}, ${row('M06').n_seeds} ${lang === 'es' ? 'y' : 'and'} ${row('M07').n_seeds}`);
+      expect(s).toContain(methodName('M07')[lang]);
+      expect(s).toContain(spreadText(row('M07').rel_std_pct.median, lang));
+      expect(s).not.toMatch(/ideal SLM|SLM ideal/);
+    }
+    expect(f.summary.en).toContain('modelled SLM');
+    expect(f.summary.es).toContain('SLM modelado');
+    for (const x of f.facts) expect(x.source).toContain('device');
+    expect(f.facts.map((x) => x.label.en).join('|')).toContain(methodName('M07').en);
+  });
+
+  it('compare, on an ideal cell: the ideal SLM is named from the cell, not from a fixed text', () => {
+    const f = must(compareFinding(bench(), { geometry: 'G1', device: 'ideal', budget: 100 }));
+    expect(f.summary.en).toContain('ideal SLM');
+    expect(f.summary.es).toContain('SLM ideal');
+    expect(f.summary.en).not.toContain('modelled');
+  });
+
+  it('compare, without the G3 device rows: the step states what is absent', () => {
+    const b = clone(bench());
+    b.rows = b.rows.filter((r) => !(r.geometry === 'G3' && r.device === 'device'));
+    const m = compareFinding(b) as Missing;
+    expect(m.missing.en).toContain('is not in the artifact');
+    expect(m.missing.en).toContain('G3');
+    const html = render('compare', { bench: { state: 'ready', data: b } });
+    expect(html).toContain('data-missing');
+  });
+
+  it('device: the headline reads as a sentence that starts on the device, with the numbers from the artifact', () => {
+    const f = must(deviceFinding(c08));
+    expect(f.headline.en.startsWith('On the device, ')).toBe(true);
+    expect(f.headline.en).toBe(`On the device, phase-fixed weighted GS spread rises from ${spreadText(f.ideal.spread, 'en')}% to ${spreadText(f.device.spread, 'en')}%`);
+    expect(f.headline.en).toMatch(/rises from 0\.0045% to 13\.4%/);
+    expect(f.headline.es).toMatch(/^Dispersión del /);
   });
 
   it('hold: the stiffness and the corner frequency of the bead', () => {
@@ -341,6 +387,18 @@ describe('linked views in the story', () => {
     const pts = comparePoints(bench(), { ...COMPARE_CELL });
     const L = compareLayout(868, 420);
     const xs = nudgeDots(pts, L);
+    for (let i = 0; i < pts.length; i++)
+      for (let j = 0; j < i; j++) expect(Math.hypot(xs[i] - xs[j], L.y(pts[i].spread.median) - L.y(pts[j].spread.median)), `${pts[i].method} ${pts[j].method}`).toBeGreaterThanOrEqual(12);
+  });
+
+  it('on a phone-wide stage every dot stays inside the plot and no two touch', () => {
+    const pts = comparePoints(bench(), { ...COMPARE_CELL });
+    const L = compareLayout(390, 420);
+    const xs = nudgeDots(pts, L);
+    for (const x of xs) {
+      expect(x).toBeGreaterThanOrEqual(L.plot.x);
+      expect(x).toBeLessThanOrEqual(L.plot.x + L.plot.w);
+    }
     for (let i = 0; i < pts.length; i++)
       for (let j = 0; j < i; j++) expect(Math.hypot(xs[i] - xs[j], L.y(pts[i].spread.median) - L.y(pts[j].spread.median)), `${pts[i].method} ${pts[j].method}`).toBeGreaterThanOrEqual(12);
   });

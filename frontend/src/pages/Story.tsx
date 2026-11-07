@@ -57,9 +57,20 @@ export const stepDef = (id: string): StepDef => STEP_DEFS.find((s) => s.id === i
 
 /** The device step's method: the weighted GS with fixed phase (M07) optimizes against the ideal model, so its own history is the ideal-device value and its final is the case device's. */
 export const DEVICE_STEP_METHOD = 'M07';
-/** The cell of the benchmark the compare step names: the 10 x 10 square, an ideal SLM, 100 iterations, default parameters. */
-export const COMPARE_CELL = { geometry: 'G1', device: 'ideal', budget: 100 } as const;
+/** The cell of the benchmark the compare step names: 100 random traps on the modelled device (where the device-aware method is meant to work), 100 iterations, default parameters. */
+export const COMPARE_CELL = { geometry: 'G3', device: 'device', budget: 100 } as const;
 export const WEIGHTED_GS = 'M06';
+/** The second comparator on the cell: the weighted GS with fixed phase, the device step's method. */
+export const PHASE_FIXED_GS = DEVICE_STEP_METHOD;
+
+/** The device of a benchmark cell, named from the cell: `ideal` is the ideal SLM; any other is the modelled device of the benchmark protocol (short form for a subline). */
+export function cellDevice(device: string, lang: Lang, short = false): string {
+  if (device === 'ideal') return lang === 'es' ? 'SLM ideal' : 'ideal SLM';
+  if (short) return lang === 'es' ? 'SLM modelado' : 'modelled SLM';
+  return lang === 'es' ? 'el SLM modelado (fase de 4 bits, diafonía, factor de llenado)' : 'the modelled SLM (4-bit phase, crosstalk, fill factor)';
+}
+/** A method name inside a sentence: its first letter in lower case unless the name opens with an acronym ("WGS ...", "GS ..."). */
+export const inSentence = (name: string): string => (/^[A-Z]{2,}/.test(name) ? name : name.charAt(0).toLowerCase() + name.slice(1));
 
 export interface Finding {
   headline: Tx;
@@ -104,7 +115,7 @@ export function deviceFinding(data: CaseData): (Finding & { ideal: { spread: num
   return {
     ideal,
     device,
-    headline: both((l) => (l === 'en' ? `The device lifts ${nameOf(id, l)} spread from ${spreadText(ideal.spread, l)}% to ${spreadText(device.spread, l)}%` : `Dispersión del ${nameOf(id, l)}: de ${spreadText(ideal.spread, l)}% a ${spreadText(device.spread, l)}%`)),
+    headline: both((l) => (l === 'en' ? `On the device, ${inSentence(nameOf(id, l))} spread rises from ${spreadText(ideal.spread, l)}% to ${spreadText(device.spread, l)}%` : `Dispersión del ${nameOf(id, l)}: de ${spreadText(ideal.spread, l)}% a ${spreadText(device.spread, l)}%`)),
     summary: both((l) =>
       l === 'en'
         ? `${bits === null ? 'Unquantized' : `${bits}-bit`} phase, crosstalk and a fill factor of ${num(dev.fill_factor, l, 2)} cost ${num((ideal.eff - device.eff) * 100, l, 1)} points of efficiency${refFinal ? `; ${nameOf(ref, l)} (${ref}), which models the device, holds ${spreadText(refFinal.rel_std_pct, l)}%` : ''}.`
@@ -169,28 +180,33 @@ export function comparePoints(bench: BenchmarkResults, cell: CompareCell): Compa
   return pts.sort((a, b) => a.spread.median - b.spread.median || b.eff.median - a.eff.median);
 }
 
-export function compareFinding(bench: BenchmarkResults): (Finding & { best: ComparePoint; gs: ComparePoint; cell: CompareCell }) | Missing {
-  const cell: CompareCell = { ...COMPARE_CELL };
+export function compareFinding(bench: BenchmarkResults, at: CompareCell = COMPARE_CELL): (Finding & { best: ComparePoint; gs: ComparePoint; fixed: ComparePoint; cell: CompareCell }) | Missing {
+  const cell: CompareCell = { ...at };
   const pts = comparePoints(bench, cell);
   const gs = pts.find((p) => p.method === WEIGHTED_GS);
+  const fixed = pts.find((p) => p.method === PHASE_FIXED_GS);
   const best = pts[0];
   const geo = bench.geometries.find((g) => g.id === cell.geometry);
-  if (!best || !gs || !geo) return absent(`The cell ${cell.geometry} at ${cell.budget} iterations, or the weighted GS row on it,`, `La celda ${cell.geometry} a ${cell.budget} iteraciones, o la fila del GS ponderado en ella,`);
+  if (!best || !gs || !fixed || !geo) return absent(`The cell ${cell.geometry} on ${cellDevice(cell.device, 'en')} at ${cell.budget} iterations, or the weighted GS or phase-fixed weighted GS row on it,`, `La celda ${cell.geometry} en ${cellDevice(cell.device, 'es')} a ${cell.budget} iteraciones, o la fila del GS ponderado o del GS ponderado de fase fija en ella,`);
   const short = (id: string, l: Lang) => (id === 'B1' ? (l === 'en' ? 'Device-aware WGS' : 'WGS con dispositivo') : nameOf(id, l));
+  const where = `${cell.geometry}, ${cell.device}, ${cell.budget}`;
+  const src = (p: ComparePoint) => `benchmark rows[${p.method}, ${where}].rel_std_pct.median`;
   return {
     best,
     gs,
+    fixed,
     cell,
     headline: both((l) => (l === 'en' ? `${short(best.method, l)}: ${spreadText(best.spread.median, l)}% spread against ${spreadText(gs.spread.median, l)}% for ${nameOf(gs.method, l)}` : `${short(best.method, l)}: dispersión ${spreadText(best.spread.median, l)}% frente a ${spreadText(gs.spread.median, l)}% del ${nameOf(gs.method, l)}`)),
     summary: both((l) =>
       l === 'en'
-        ? `Median spread on ${geo.name.en} at ${cell.budget} iterations, ideal SLM: ${best.seeds} seeds for ${short(best.method, l)}, ${gs.seeds} for ${nameOf(gs.method, l)}.`
-        : `Dispersión mediana en ${geo.name.es} a ${cell.budget} iteraciones, SLM ideal: ${best.seeds} semillas de ${short(best.method, l)}, ${gs.seeds} de ${nameOf(gs.method, l)}.`,
+        ? `${geo.name.en}, ${cell.budget} iterations, ${cellDevice(cell.device, l, true)}: ${best.seeds}, ${gs.seeds} and ${fixed.seeds} seeds; ${nameOf(fixed.method, l)} ${spreadText(fixed.spread.median, l)}%.`
+        : `${geo.name.es}, ${cell.budget} iteraciones, ${cellDevice(cell.device, l, true)}: ${best.seeds}, ${gs.seeds} y ${fixed.seeds} semillas; ${nameOf(fixed.method, l)} ${spreadText(fixed.spread.median, l)}%.`,
     ),
     facts: [
-      { label: both((l) => `${nameOf(best.method, l)}, median spread`), value: both((l) => `${spreadText(best.spread.median, l)} %`), source: `benchmark rows[${best.method}, ${cell.geometry}, ${cell.budget}].rel_std_pct.median` },
-      { label: both((l) => `${nameOf(gs.method, l)}, median spread`), value: both((l) => `${spreadText(gs.spread.median, l)} %`), source: `benchmark rows[${gs.method}, ${cell.geometry}, ${cell.budget}].rel_std_pct.median` },
-      { label: bi('Seeds', 'Semillas'), value: bi(`${best.seeds} and ${gs.seeds}`, `${best.seeds} y ${gs.seeds}`), source: 'benchmark rows[].n_seeds' },
+      { label: both((l) => `${nameOf(best.method, l)}, median spread`), value: both((l) => `${spreadText(best.spread.median, l)} %`), source: src(best) },
+      { label: both((l) => `${nameOf(gs.method, l)}, median spread`), value: both((l) => `${spreadText(gs.spread.median, l)} %`), source: src(gs) },
+      { label: both((l) => `${nameOf(fixed.method, l)}, median spread`), value: both((l) => `${spreadText(fixed.spread.median, l)} %`), source: src(fixed) },
+      { label: bi('Seeds', 'Semillas'), value: bi(`${best.seeds}, ${gs.seeds} and ${fixed.seeds}`, `${best.seeds}, ${gs.seeds} y ${fixed.seeds}`), source: `benchmark rows[${where}].n_seeds` },
     ],
   };
 }
@@ -297,13 +313,23 @@ export function compareLayout(width: number, height: number): CompareLayout {
   };
 }
 
-/** The x of each dot, moved right in steps of one dot until it touches no earlier dot (two methods may share a median; each stays reachable). */
+/** The x of each dot, moved aside in steps of one dot (right, left, two right, ...) until it touches no earlier dot and stays inside the plot (two methods may share a median; each stays reachable). */
 export function nudgeDots(pts: readonly ComparePoint[], L: CompareLayout, r = 12): number[] {
   const placed: { x: number; y: number }[] = [];
+  const lo = L.plot.x;
+  const hi = L.plot.x + L.plot.w;
   return pts.map((p) => {
-    let x = L.x(p.eff.median);
+    const x0 = L.x(p.eff.median);
     const y = L.y(p.spread.median);
-    while (placed.some((q) => Math.hypot(q.x - x, q.y - y) < r)) x += r;
+    let x = x0;
+    for (let k = 0; k <= 2 * Math.ceil((hi - lo) / r); k++) {
+      const c = x0 + (k % 2 === 1 ? 1 : -1) * Math.ceil(k / 2) * r;
+      if (c < lo || c > hi) continue;
+      if (!placed.some((q) => Math.hypot(q.x - c, q.y - y) < r)) {
+        x = c;
+        break;
+      }
+    }
     placed.push({ x, y });
     return x;
   });
@@ -311,7 +337,7 @@ export function nudgeDots(pts: readonly ComparePoint[], L: CompareLayout, r = 12
 
 export function compareCallouts(f: { best: ComparePoint; gs: ComparePoint; cell: CompareCell }, lang: Lang, L: CompareLayout, width: number, height: number): SceneCalloutDef[] {
   const at = (p: ComparePoint) => ({ x: Math.min(0.95, Math.max(0.05, L.x(p.eff.median) / width)), y: Math.min(0.95, Math.max(0.2, L.y(p.spread.median) / height)) });
-  const cellText = `${f.cell.geometry}, ${f.cell.budget}`;
+  const cellText = `${f.cell.geometry}, ${f.cell.device}, ${f.cell.budget}`;
   return [
     { id: 'best', eyebrow: { en: 'LOWEST SPREAD', es: 'MENOR DISPERSIÓN' }, value: spreadText(f.best.spread.median, lang), unit: '%', state: 'normal', anchor: at(f.best), source: { en: `${nameOf(f.best.method, 'en')}: benchmark rows[${f.best.method}, ${cellText}].rel_std_pct.median`, es: `${nameOf(f.best.method, 'es')}: benchmark rows[${f.best.method}, ${cellText}].rel_std_pct.median` } },
     { id: 'gs', eyebrow: { en: 'WEIGHTED GS', es: 'GS PONDERADO' }, value: spreadText(f.gs.spread.median, lang), unit: '%', state: 'warning', anchor: at(f.gs), source: { en: `${nameOf(f.gs.method, 'en')}: benchmark rows[${f.gs.method}, ${cellText}].rel_std_pct.median`, es: `${nameOf(f.gs.method, 'es')}: benchmark rows[${f.gs.method}, ${cellText}].rel_std_pct.median` } },
@@ -328,7 +354,7 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
   const geo = bench.geometries.find((g) => g.id === cell.geometry);
   const front = pts.filter((p) => p.onFront).sort((a, b) => a.eff.median - b.eff.median);
   return (
-    <PlotCard fill title={{ en: 'Spread against efficiency, by method', es: 'Dispersión contra eficiencia, por método' }} lane="replay" provenance="synthetic" note={{ en: `${geo?.name.en ?? cell.geometry}, ${cell.budget} iterations, ${cell.device === 'ideal' ? 'ideal SLM' : 'case device'}, default parameters. Each point is a method's median over its seeds with the quartile range drawn; the line joins the methods no other beats on both axes. A median of zero sits on the floor of the axis.`, es: `${geo?.name.es ?? cell.geometry}, ${cell.budget} iteraciones, ${cell.device === 'ideal' ? 'SLM ideal' : 'dispositivo del caso'}, parámetros por defecto. Cada punto es la mediana de un método sobre sus semillas con el rango intercuartil dibujado; la línea une los métodos que ningún otro supera en ambos ejes. Una mediana de cero queda en el piso del eje.` }}>
+    <PlotCard fill title={{ en: 'Spread against efficiency, by method', es: 'Dispersión contra eficiencia, por método' }} lane="replay" provenance="synthetic" note={{ en: `${geo?.name.en ?? cell.geometry}, ${cell.budget} iterations, ${cellDevice(cell.device, 'en')}, default parameters. Each point is a method's median over its seeds with the quartile range drawn; the line joins the methods no other beats on both axes. A median of zero sits on the floor of the axis.`, es: `${geo?.name.es ?? cell.geometry}, ${cell.budget} iteraciones, ${cellDevice(cell.device, 'es')}, parámetros por defecto. Cada punto es la mediana de un método sobre sus semillas con el rango intercuartil dibujado; la línea une los métodos que ningún otro supera en ambos ejes. Una mediana de cero queda en el piso del eje.` }}>
       <ReadinessNote ids={['benchmark-results']} />
       <div className="dh-cmp" data-caos-flow="" data-compare-cell={`${cell.geometry}|${cell.device}|${cell.budget}`}>
         <Stage label={{ en: 'Median spread against median efficiency of each method, with the quartile ranges and the Pareto front', es: 'Dispersión mediana contra eficiencia mediana de cada método, con los rangos intercuartiles y el frente de Pareto' }}>
@@ -557,7 +583,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
   const setup = c02 ? setupFinding(c02) : notLoaded('The case C02', 'El caso C02', loaded.c02);
   const dev = c08 ? deviceFinding(c08) : notLoaded('The case C08', 'El caso C08', loaded.c08);
   const method = c02 ? methodFinding(c02) : notLoaded('The case C02', 'El caso C02', loaded.c02);
-  const compare = bench ? compareFinding(bench) : notLoaded('The benchmark', 'El benchmark', loaded.bench);
+  const compare = bench ? compareFinding(bench, cell) : notLoaded('The benchmark', 'El benchmark', loaded.bench);
   const hold = c01 ? holdFinding(c01) : notLoaded('The case C01', 'El caso C01', loaded.c01);
   const findings: Record<StepId, Finding | Missing> = { setup, device: dev, method, compare, hold };
   const cursor = useLinkedView((s) => s.cursor);
@@ -641,7 +667,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
     if (active.id === 'setup' && sel) return <StoryFocal sel={sel} />;
     if (active.id === 'method' && point && sel) return <p>{t('At the scrubbed iteration', 'En la iteración elegida')} <strong>{point.iteration}</strong>: {t('spread', 'dispersión')} <strong>{spreadText(point.relStdPct, lang)} %</strong>, {t('efficiency', 'eficiencia')} <strong>{num(point.efficiency * 100, lang, 1)} %</strong>.</p>;
     if (active.id === 'compare' && bench) {
-      const geos = bench.geometries.filter((g) => bench.rows.some((r) => r.geometry === g.id));
+      const geos = bench.geometries.filter((g) => bench.rows.some((r) => r.geometry === g.id && r.device === cell.device));
       return (
         <div className="dh-story-picks">
           <ChipGroup id="story-geometry" label={{ en: 'Geometry', es: 'Geometría' }} value={cell.geometry} onChange={(v) => onCell?.({ ...cell, geometry: v })} options={geos.map((g) => ({ id: g.id, label: { en: g.id, es: g.id }, hint: g.name }))} />
