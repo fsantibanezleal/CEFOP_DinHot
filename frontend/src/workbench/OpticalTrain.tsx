@@ -301,6 +301,16 @@ export function OpticalTrainDrawing(p: DrawingProps) {
   const textBlock = (id: TrainId) => {
     const b = L.items[id];
     const i = byId[id];
+    if (rows && id === 'focal') {
+      // the focal row holds the face-on array at its right: the texts stack at its left
+      return (
+        <g key={`t-${id}`} pointerEvents="none">
+          <text x={b.x + 22} y={b.y + b.h / 2 - 8} fill="var(--color-fg)" fontSize="12" fontWeight="700" letterSpacing="0.4">{i.name.toUpperCase()}</text>
+          <text x={b.x + 22} y={b.y + b.h / 2 + 8} fill="var(--color-fg)" fontSize="12" fontFamily="var(--font-mono)">{i.value}</text>
+          <text x={b.x + 22} y={b.y + b.h / 2 + 23} fill="var(--color-fg-subtle)" fontSize="11">{i.detail}</text>
+        </g>
+      );
+    }
     if (rows) {
       return (
         <g key={`t-${id}`} pointerEvents="none">
