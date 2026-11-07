@@ -6,7 +6,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const ID = /(?<![\w-])(?:M\d{2}|B[1-5])(?![\w-])/;
+const ID = /(?<![\w.-])(?:M\d{2}|B[1-5])(?![\w-])/;
 const EXACT = /^(?:M\d{2}|B[1-5])$/;
 const STRING = /'((?:\\.|[^'\\\n])*)'|"((?:\\.|[^"\\\n])*)"|`((?:\\.|[^`\\])*)`/g;
 const JSX_TEXT = />([^<>{}]*[A-Za-z][^<>{}]*)</g;

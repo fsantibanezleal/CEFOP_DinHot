@@ -12,6 +12,7 @@
 // worker. The WASM binary is the one in the pinned npm package (1.31.1), bundled by Vite as an asset of the site: no CDN is asked.
 import type { ModelCard, Setup, Text, Trap } from './contract.types';
 import { conform, MODEL_CARD, SCHEMAS } from './contract.types';
+import { ID } from './methodIds';
 
 export type SlotId = 'cgh-net' | 'warmstart-model';
 
@@ -31,7 +32,7 @@ export const CGH_GRID = 128;
 export const WARMSTART_MAX_TRAPS = 1024;
 
 /** The method ids of the learned slots in the ladder: M17 is cgh-net, B3 the warm start. */
-export const SLOT_METHOD: Record<SlotId, string> = { 'cgh-net': 'M17', 'warmstart-model': 'B3' };
+export const SLOT_METHOD: Record<SlotId, string> = { 'cgh-net': ID.M17, 'warmstart-model': ID.B3 };
 
 export interface SlotAnswer {
   slot: SlotId;

@@ -22,6 +22,7 @@ import { type Trap, TrapSet, checkInField } from './traps';
 import * as tp from './trapphys';
 import { type HistoryEntry, type MethodRun, type Result, type Target, makeBudget } from './types';
 import { phaseFromCoeffs } from './zernike';
+import { ID } from '../../lib/methodIds';
 
 /** A params record, with or without its `case_id` (a manifest carries the record without it). */
 export type ParamsLike = Omit<ParamsRecord, 'case_id'> & { case_id?: string };
@@ -245,19 +246,19 @@ export function buildRun(p: ParamsLike, method: string, o: CaseOptions = {}, ini
   const device = (o.device ?? 'case') === 'ideal' ? null : deviceOf(p);
   let target = targetOf(p, o.traps);
   const options: Record<string, unknown> = { ...(o.extra ?? {}) };
-  if (method === 'M14' && p.aberration && options.injected === undefined) options.injected = aberrationCoeffs(p);
+  if (method === ID.M14 && p.aberration && options.injected === undefined) options.injected = aberrationCoeffs(p);
   // M07's default form is the FFT one, which needs traps on bins; an edited or off-bin target uses the point form (identical on bins)
-  if (method === 'M07' && options.form === undefined && target.kind === 'traps') {
+  if (method === ID.M07 && options.form === undefined && target.kind === 'traps') {
     try { checkOnBins(setup, target.traps); } catch { options.form = 'point'; }
   }
-  if (method === 'M12' && p.feedback) {
+  if (method === ID.M12 && p.feedback) {
     options.gain ??= p.feedback.gain;
     if (options.camera === undefined) {
       const c = p.feedback.camera;
       options.camera = new EmulatedCamera(p.seed, { gainRms: c.gain_rms, noiseRms: c.noise_rms, blurBins: c.blur_bins, rolloff: false });
     }
   }
-  if (method === 'M16' && p.rearrangement && options.atoms === undefined && target.kind === 'traps') {
+  if (method === ID.M16 && p.rearrangement && options.atoms === undefined && target.kind === 'traps') {
     const r = p.rearrangement, sites = new Map(target.traps.traps.map((t) => [t.id, t]));
     const loaded = randomLoading(p).map((id) => sites.get(id) as Trap);
     options.atoms = new TrapSet(loaded);

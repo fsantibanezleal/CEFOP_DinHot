@@ -71,8 +71,8 @@ export function richCase(o: RichOptions = {}): CaseData {
     device,
     target: { kind: 'traps', traps },
     aberration: o.aberration ? { noll: { '4': 0.06, '6': 0.04, '8': -0.03 } } : null,
-    methods: ['M04', 'M06', 'M17'],
-    reference_method: 'M04',
+    methods: [ID.M04, ID.M06, ID.M17],
+    reference_method: ID.M04,
     budget: { iterations: 30, time_s: null },
     seed: 20261028,
     feedback: o.feedback ? { gain: 0.7, steps: 6, camera: { gain_rms: 0.02, noise_rms: 0.01, blur_bins: 0.5 } } : null,
@@ -113,7 +113,7 @@ export function richCase(o: RichOptions = {}): CaseData {
       M17: { history: [], final: fin(0.7, 0.9), trap_intensity: trapI(0.12) },
     },
     reference: {
-      method: 'M04',
+      method: ID.M04,
       phase_u8: b64(phase),
       focal: { size: SIZE, bin_um: BIN, db_floor: -40, intensity_db_u8: b64(focal) },
       axial: o.threeD ? { trap_id: 0, z_um: [-3, 8], nz: 24, nx: 17, xz_u8: b64(new Uint8Array(24 * 17).map((_, i) => 40 + Math.round(200 * Math.exp(-(((i % 17) - 8) ** 2 + (Math.floor(i / 17) - 8) ** 2) / 20)))) } : null,
@@ -143,7 +143,7 @@ export function richCase(o: RichOptions = {}): CaseData {
           min_transient: 0.93,
         }
       : null,
-    summary: { best_method: 'M06', notes: { en: 'Synthetic.', es: 'Sintético.' } },
+    summary: { best_method: ID.M06, notes: { en: 'Synthetic.', es: 'Sintético.' } },
   };
   return { manifest, trace };
 }
@@ -151,6 +151,7 @@ export function richCase(o: RichOptions = {}): CaseData {
 import { coeffArray } from './zernike';
 import { replayMaps, replayResult, trapsOf, type Selection } from './model';
 import { paramsFor } from './run';
+import { ID } from '../lib/methodIds';
 
 /** A Selection on the replay lane of a case, as the workbench builds it with no live engine; `over` replaces fields. */
 export function selectionFor(data: CaseData, over: Partial<Selection> = {}): Selection {

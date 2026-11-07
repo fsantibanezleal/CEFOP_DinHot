@@ -4,6 +4,7 @@
 // whatever the document holds: a method, a geometry or a budget that is absent is absent from the page, never typed into it.
 import { KIND_NAME, kindOfTier, LADDER, type Kind } from '../methodology/ladder';
 import type { BenchmarkResults, BenchmarkRow, Text } from '../../lib/contract.types';
+import { ID } from '../../lib/methodIds';
 
 export type Lang = 'en' | 'es';
 export type Device = 'ideal' | 'device';
@@ -146,7 +147,7 @@ export function hypervolume(pts: Point[]): number {
 
 /** The front of B5 for a geometry, as points, ordered by lambda; empty when the document has none. */
 export function frontOf(res: BenchmarkResults, geometry: string): { lambda: number; e: number; u: number }[] {
-  const f = res.pareto.find((p) => p.geometry === geometry && p.method === 'B5');
+  const f = res.pareto.find((p) => p.geometry === geometry && p.method === ID.B5);
   return (f?.points ?? []).map((p) => ({ lambda: p.lambda, e: p.efficiency, u: p.uniformity })).sort((a, b) => a.lambda - b.lambda);
 }
 
@@ -209,10 +210,10 @@ export const CRITERIA = {
 } as const;
 
 /** The strongest baseline of a proposed method in this benchmark's matrix, by the SDD row that names it (M07 for B1 and B4). */
-export const BASELINE_OF: Record<string, string> = { B1: 'M07', B4: 'M07' };
+export const BASELINE_OF: Record<string, string> = { B1: ID.M07, B4: ID.M07 };
 
 /** The hypervolume test of B5 in one geometry: the front against the union of the published points of the SDD criterion, at one cell. */
-export const B5_PUBLISHED = ['M04', 'M05', 'M09', 'M06'] as const;
+export const B5_PUBLISHED = [ID.M04, ID.M05, ID.M09, ID.M06] as const;
 export interface B5Cell {
   geometry: string;
   hvFront: number;

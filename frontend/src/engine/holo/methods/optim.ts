@@ -18,6 +18,7 @@ import type { Rng } from '../rng';
 import type { TrapSet } from '../traps';
 import type { HistoryEntry, MethodModule, MethodRun, RunContext } from '../types';
 import { now } from './common';
+import { ID } from '../../../lib/methodIds';
 
 /** The starting phase: `init` (validated) or `nPix^2` uniform random phases drawn in C order from `rng`. */
 export function startPhaseRandom(setup: Setup, rng: Rng, init: Float64Array | null): Float64Array {
@@ -544,7 +545,7 @@ function* m10(ctx: RunContext): MethodRun {
     if (expired(deadline)) break;
   }
   if (last === null) last = (cost as Cost).valueGrad(phi).aux; // a zero-iteration run: evaluate the start
-  return { phi: modTwoPi(phi), history, fields: last, meta: { method: 'M10', iterations: done, deviceAware: false } };
+  return { phi: modTwoPi(phi), history, fields: last, meta: { method: ID.M10, iterations: done, deviceAware: false } };
 }
 
 function* m11(ctx: RunContext): MethodRun {
@@ -570,10 +571,10 @@ function* m11(ctx: RunContext): MethodRun {
     yield entry;
   }
   const fields = cost.valueGrad(res.x).aux;
-  return { phi: modTwoPi(res.x), history, fields, meta: { method: 'M11', lr, paperLr: 0.001, deviceAware: device !== null } };
+  return { phi: modTwoPi(res.x), history, fields, meta: { method: ID.M11, lr, paperLr: 0.001, deviceAware: device !== null } };
 }
 
 export const optimMethods: MethodModule[] = [
-  { spec: { id: 'M10', name: 'Conjugate-gradient minimization', family: 'optimization', lane: 'both', targets: ['traps', 'field'], dims: [2, 3] }, run: m10 },
-  { spec: { id: 'M11', name: 'Wirtinger gradient descent with Adam', family: 'optimization', lane: 'both', targets: ['traps', 'field'], dims: [2, 3] }, run: m11 },
+  { spec: { id: ID.M10, name: 'Conjugate-gradient minimization', family: 'optimization', lane: 'both', targets: ['traps', 'field'], dims: [2, 3] }, run: m10 },
+  { spec: { id: ID.M11, name: 'Wirtinger gradient descent with Adam', family: 'optimization', lane: 'both', targets: ['traps', 'field'], dims: [2, 3] }, run: m11 },
 ];

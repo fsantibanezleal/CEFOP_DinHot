@@ -16,13 +16,14 @@ import { Trap, TrapSet } from '../traps';
 import type { HistoryEntry, MethodModule, MethodRun, RunContext } from '../types';
 import { Recorder, ampTargets, angle, fftBackproject, fftFields, mean, now, polar, requireKinds, startPhase, trapsOf } from './common';
 import * as gs from './gs';
+import { ID } from '../../../lib/methodIds';
 
 // ---- M12 ----
 
 const VARIANTS = ['nogrette', 'kim', 'nogrette-printed'];
 
 function* m12(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M12');
+  requireKinds(ctx.target, ['traps'], ID.M12);
   const { setup, budget, rng, init, options: o } = ctx;
   const variant: string = o.variant ?? 'nogrette';
   const gain: number = o.gain ?? 0.7;
@@ -95,7 +96,7 @@ function* m12(ctx: RunContext): MethodRun {
     yield entry;
     if (budget.timeS !== null && entry.timeS >= budget.timeS) break;
   }
-  return { phi, history, fields: v, meta: { method: 'M12', variant, gain, openLoopRelStd: openLoop, cameraSeed: camera.seed, nInner } };
+  return { phi, history, fields: v, meta: { method: ID.M12, variant, gain, openLoopRelStd: openLoop, cameraSeed: camera.seed, nInner } };
 }
 
 // ---- M14 ----
@@ -115,7 +116,7 @@ function vector(c: ArrayLike<number> | null | undefined, name: string): Float64A
 }
 
 function* m14(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M14');
+  requireKinds(ctx.target, ['traps'], ID.M14);
   const { setup, budget, rng, init, options: o } = ctx;
   const mode: string = o.mode ?? 'recover';
   if (mode !== 'recover' && mode !== 'correct') throw new Error(`mode must be 'recover' or 'correct', got '${mode}'`);
@@ -153,7 +154,7 @@ function* m14(ctx: RunContext): MethodRun {
 
   let phiBase: Float64Array;
   if (init === null) {
-    const base = yield* gs.runTraps('M06', setup, traps, { iterations: o.baseIterations ?? 30, timeS: null }, rng, null, 'point', gs.ruleGsw, {});
+    const base = yield* gs.runTraps(ID.M06, setup, traps, { iterations: o.baseIterations ?? 30, timeS: null }, rng, null, 'point', gs.ruleGsw, {});
     phiBase = base.phi;
   } else phiBase = Float64Array.from(init);
 
@@ -178,7 +179,7 @@ function* m14(ctx: RunContext): MethodRun {
     const ph2 = Float64Array.from(wrapped, (p, q) => p + TWO_PI * wInj[q]);
     const v = trapFieldsFromFft(fftFocalField(ph2, setup), setup, traps);
     yield rec.add(1, v);
-    return { phi: wrapped, history: rec.history, fields: v, meta: { method: 'M14', mode, coefficients: kVec, baseEfficiency: baseEff, uncorrectedEfficiency: uncorrectedEff } };
+    return { phi: wrapped, history: rec.history, fields: v, meta: { method: ID.M14, mode, coefficients: kVec, baseEfficiency: baseEff, uncorrectedEfficiency: uncorrectedEff } };
   }
 
   const camera: EmulatedCamera = o.camera ?? new EmulatedCamera(rng.nextU32(), { gainRms: 0, rolloff: false });
@@ -218,7 +219,7 @@ function* m14(ctx: RunContext): MethodRun {
   const phi = wrapPhase(Float64Array.from(phiBase, (p, q) => p - TWO_PI * wCorr[q]));
   return {
     phi, history: rec.history, fields: v,
-    meta: { method: 'M14', mode, coefficients: cHat, baseEfficiency: baseEff, uncorrectedEfficiency: uncorrectedEff, sweeps: k, elapsedS: now() - t0 },
+    meta: { method: ID.M14, mode, coefficients: cHat, baseEfficiency: baseEff, uncorrectedEfficiency: uncorrectedEff, sweeps: k, elapsedS: now() - t0 },
   };
 }
 
@@ -287,7 +288,7 @@ export function ringPhaseProfile(phi: ArrayLike<number>, setup: RunContext['setu
 }
 
 function* m15(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M15');
+  requireKinds(ctx.target, ['traps'], ID.M15);
   const { setup, budget, rng, init, options: o } = ctx;
   let traps = trapsOf(ctx.target);
   const charge: number | null = o.charge ?? null;
@@ -296,7 +297,7 @@ function* m15(ctx: RunContext): MethodRun {
     traps = traps.map(() => ({ charge }));
   }
   if (!traps.charge.some((c) => c !== 0)) throw new Error('Laguerre-Gaussian vortices need at least one trap with a non-zero charge (Trap.charge or the charge keyword)');
-  const res = yield* gs.runTraps('M15', setup, traps, budget, rng, init, 'point', gs.ruleGsw, {});
+  const res = yield* gs.runTraps(ID.M15, setup, traps, budget, rng, init, 'point', gs.ruleGsw, {});
   res.meta.traps = traps;
   res.fields = pointTrapFields(res.phi, setup, traps);
   return res;
@@ -380,7 +381,7 @@ export function countCrossings(starts: number[][], ends: number[][]): number {
 }
 
 function* m16(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M16');
+  requireKinds(ctx.target, ['traps'], ID.M16);
   const { setup, budget, rng, options: o } = ctx;
   const atoms: TrapSet | undefined = o.atoms;
   if (!atoms) throw new Error('Hungarian rearrangement needs atoms: the TrapSet of the loaded atom positions');
@@ -409,7 +410,7 @@ function* m16(ctx: RunContext): MethodRun {
     } catch {
       form = 'point';
     }
-    const r = yield* gs.runTraps('M07', setup, ts, budget, rng, null, form, gs.ruleWgsFixed, { nFix }, { nFix });
+    const r = yield* gs.runTraps(ID.M07, setup, ts, budget, rng, null, form, gs.ruleWgsFixed, { nFix }, { nFix });
     return pointFields(r.fields);
   }
   const r0 = yield* wgs(tsStart);
@@ -437,7 +438,7 @@ function* m16(ctx: RunContext): MethodRun {
   }
   return {
     phi: frames[frames.length - 1], history: rec.history, fields: vs[vs.length - 1],
-    meta: { method: 'M16', frames, nSteps, assignment: f, minRatio, moved, crossings, trapSequence: seq, alpha, maxStepBins: step },
+    meta: { method: ID.M16, frames, nSteps, assignment: f, minRatio, moved, crossings, trapSequence: seq, alpha, maxStepBins: step },
   };
 }
 
@@ -450,8 +451,8 @@ function pointFields(v: Cx): { amp: Float64Array; psi: Float64Array } {
 const S = (id: string, name: string, family: string, targets: readonly ('traps' | 'field')[], dims: readonly (2 | 3)[]) => ({ id, name, family, lane: 'live' as const, targets, dims });
 
 export const controlMethods: MethodModule[] = [
-  { spec: S('M12', 'Closed-loop weighted GS on an emulated camera', 'control', ['traps'], [2]), run: m12 },
-  { spec: S('M14', 'Zernike correction and sensorless modal recovery', 'control', ['traps'], [2, 3]), run: m14 },
-  { spec: S('M15', 'Laguerre-Gaussian vortex traps', 'GS', ['traps'], [2, 3]), run: m15 },
-  { spec: S('M16', 'Hungarian assignment and linear phase interpolation', 'control', ['traps'], [2]), run: m16 },
+  { spec: S(ID.M12, 'Closed-loop weighted GS on an emulated camera', 'control', ['traps'], [2]), run: m12 },
+  { spec: S(ID.M14, 'Zernike correction and sensorless modal recovery', 'control', ['traps'], [2, 3]), run: m14 },
+  { spec: S(ID.M15, 'Laguerre-Gaussian vortex traps', 'GS', ['traps'], [2, 3]), run: m15 },
+  { spec: S(ID.M16, 'Hungarian assignment and linear phase interpolation', 'control', ['traps'], [2]), run: m16 },
 ];

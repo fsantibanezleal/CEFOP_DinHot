@@ -11,6 +11,7 @@ import { entryFor, loadReadiness, modelAnswers } from '../readiness/readiness';
 import { getEngine, NotLive, type Engine, type Progress } from './engine';
 import { liveMaps, type DeviceChoice, type MapSet, type MethodResult } from './model';
 import { LiveScheduler } from './scheduler';
+import { ID } from '../lib/methodIds';
 
 export function useEngine(): Engine | null {
   const [engine, setEngine] = useState<Engine | null>(null);
@@ -120,11 +121,11 @@ export function useLiveRun(inp: LiveInputs): LiveState & { cancel: () => void } 
   const [state, setState] = useState<LiveState>(IDLE);
   const { data, methodId, device, iterations, backend, traps, edited, aberration, aberrationEdited, engine, slots } = inp;
   const liveOk = !!engine?.available && engine.client.liveMethods().includes(methodId);
-  const cghFit = methodId === 'M17' && slots.cgh?.answered === 'model' && !!data ? cghApplies(data.manifest.params.setup, traps, slots.cgh.card) : null;
+  const cghFit = methodId === ID.M17 && slots.cgh?.answered === 'model' && !!data ? cghApplies(data.manifest.params.setup, traps, slots.cgh.card) : null;
   const cghByModel = !!cghFit?.ok;
   const cghWhy = cghFit && !cghFit.ok ? cghFit.reason : null;
   // The slot a method uses, for the label: cgh-net serves M17, the warm start serves M07.
-  const slot = methodId === 'M17' ? slots.cgh : methodId === 'M07' ? slots.warm : null;
+  const slot = methodId === ID.M17 ? slots.cgh : methodId === ID.M07 ? slots.warm : null;
   const slotLabel = slot ? { slot: slot.slot, answered: cghWhy ? ('baseline' as const) : slot.answered } : null;
 
   const sched = useRef<LiveScheduler | null>(null);
@@ -163,7 +164,7 @@ export function useLiveRun(inp: LiveInputs): LiveState & { cancel: () => void } 
           if (!isCurrent()) return;
           const wrapped = Float32Array.from(phase, (p) => ((p % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI));
           setState({
-            maps: { lane: 'live', method: 'M17', nPix: slots.cgh.card.grid ?? 128, pad: trace.grid.pad, binUm: trace.grid.bin_um, halfFieldUm: trace.grid.half_field_um, phase: wrapped, displayed: null, focal: null, axial: null, shape: null, backend: 'cpu', fallbackReason: null, timeMs: null },
+            maps: { lane: 'live', method: ID.M17, nPix: slots.cgh.card.grid ?? 128, pad: trace.grid.pad, binUm: trace.grid.bin_um, halfFieldUm: trace.grid.half_field_um, phase: wrapped, displayed: null, focal: null, axial: null, shape: null, backend: 'cpu', fallbackReason: null, timeMs: null },
             result: null,
             running: false,
             progress: null,
@@ -175,10 +176,10 @@ export function useLiveRun(inp: LiveInputs): LiveState & { cancel: () => void } 
         }
         if (!engine) return;
         // M17's baseline is M19 (multi-plane GS) at 30 iterations, as the Python slot answers; the warm start feeds M07 its trap phases when the released model answers.
-        const method = methodId === 'M17' ? 'M19' : methodId;
-        const run = methodId === 'M17' ? 30 : iterations;
+        const method = methodId === ID.M17 ? ID.M19 : methodId;
+        const run = methodId === ID.M17 ? 30 : iterations;
         let trapPhases: Float64Array | undefined;
-        if (methodId === 'M07' && slots.warm?.answered === 'model') {
+        if (methodId === ID.M07 && slots.warm?.answered === 'model') {
           trapPhases = await predictWarmstart(traps, data.trace.grid.half_field_um, m.params.setup);
         }
         const res = await engine.client.run(

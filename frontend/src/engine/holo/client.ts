@@ -13,12 +13,13 @@ import type { ParamsRecord } from '../../lib/contract.types';
 import type { ParamsLike, Progress, TrapEdit } from './engine';
 import type { InMsg, OutMsg, RunOptions } from './runner';
 import { AbortError, NotLive } from './types';
+import { ID } from '../../lib/methodIds';
 
 export { AbortError, NotLive };
 export type { Progress };
 
 /** The ported methods (a static copy of `methods/index.ts` so the page does not import the engine; a test keeps them equal). */
-export const LIVE_METHODS: readonly string[] = ['M01', 'M02', 'M03', 'M04', 'M05', 'M06', 'M07', 'M08', 'M10', 'M11', 'M12', 'M14', 'M15', 'M16', 'M19'];
+export const LIVE_METHODS: readonly string[] = [ID.M01, ID.M02, ID.M03, ID.M04, ID.M05, ID.M06, ID.M07, ID.M08, ID.M10, ID.M11, ID.M12, ID.M14, ID.M15, ID.M16, ID.M19];
 
 export interface RunRequest {
   params: ParamsRecord;

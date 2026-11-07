@@ -9,6 +9,7 @@ import { useReadiness } from '../../readiness/useReadiness';
 import { budgetText, CRITERIA, pickRows, shownId, type Lang } from './data';
 import { CellControls, Note, Pending, Ready, TableWrap, useBench, useNum, useResolved } from './shared';
 import { WARM } from './warm';
+import { ID } from '../../lib/methodIds';
 
 function Answers({ slot }: { slot: 'cgh-net' | 'warmstart-model' }) {
   const lang = useShellLang() as Lang;
@@ -16,7 +17,7 @@ function Answers({ slot }: { slot: 'cgh-net' | 'warmstart-model' }) {
   const doc = useReadiness();
   if (doc === undefined) return null;
   const who = modelAnswers(doc, slot);
-  const base = slot === 'cgh-net' ? 'M19' : (es ? 'el arranque aleatorio de GS ponderado con fase fija' : 'the random start of phase-fixed weighted GS');
+  const base = slot === 'cgh-net' ? ID.M19 : (es ? 'el arranque aleatorio de GS ponderado con fase fija' : 'the random start of phase-fixed weighted GS');
   return (
     <span data-slot={slot} data-answers={who}>
       {who === 'model' ? (es ? 'responde el modelo publicado' : 'the released model answers') : es ? `responde la línea base (${base})` : `the baseline answers (${base})`}
@@ -109,8 +110,8 @@ function PairTable({ res, c14 }: { res: BenchmarkResults; c14: CaseManifest | un
   const rows = budget
     ? res.geometries.flatMap((g) => {
         const picked = pickRows(res, g.id, device, budget, view);
-        const a = picked.find((p) => p.method === 'M17');
-        const b = picked.find((p) => p.method === 'M19');
+        const a = picked.find((p) => p.method === ID.M17);
+        const b = picked.find((p) => p.method === ID.M19);
         return a && b ? [{ g, a, b }] : [];
       })
     : [];

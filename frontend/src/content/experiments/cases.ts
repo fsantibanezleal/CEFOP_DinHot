@@ -34,6 +34,7 @@ import {
   type CaseView,
   type Metric,
 } from './data';
+import { ID } from '../../lib/methodIds';
 
 export type Lang = 'en' | 'es';
 
@@ -310,8 +311,8 @@ export const CASES: Record<string, CaseText> = {
         steps: f.n(L.steps, { decimals: 0 }),
         fb0: f.n(L.first, { digits: 3 }),
         fbN: f.n(L.last, { digits: 3 }),
-        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
-        sd04: nfmt(f, metricOf(v, 'M04', 'rel_std_pct'), { digits: 3 }),
+        sd06: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
+        sd04: nfmt(f, metricOf(v, ID.M04, 'rel_std_pct'), { digits: 3 }),
         pubFinal: f.n(KIM_DISORDERED.finalPct, { digits: 3 }),
         pubSteps: f.n(KIM_DISORDERED.steps, { decimals: 0 }),
         pubFoci: f.n(KIM_DISORDERED.foci, { decimals: 0 }),
@@ -347,22 +348,22 @@ export const CASES: Record<string, CaseText> = {
       const pub = (id: string, k: 'efficiency' | 'uniformity') => f.n(DILEONARDO_TABLE.find((r) => r.method === id)?.[k], { digits: 2 });
       const pubV = (id: string, k: 'efficiency' | 'uniformity') => DILEONARDO_TABLE.find((r) => r.method === id)?.[k] ?? 0;
       const mv = (id: string, k: Metric) => metricOf(v, id, k) ?? 0;
-      const uni = { m01: mv('M01', 'uniformity'), m02: mv('M02', 'uniformity'), m04: mv('M04', 'uniformity'), m06: mv('M06', 'uniformity') };
-      const eff = { m04: mv('M04', 'efficiency'), m06: mv('M06', 'efficiency') };
-      const pubEff = { m04: pubV('M04', 'efficiency'), m06: pubV('M06', 'efficiency') };
+      const uni = { m01: mv(ID.M01, 'uniformity'), m02: mv(ID.M02, 'uniformity'), m04: mv(ID.M04, 'uniformity'), m06: mv(ID.M06, 'uniformity') };
+      const eff = { m04: mv(ID.M04, 'efficiency'), m06: mv(ID.M06, 'efficiency') };
+      const pubEff = { m04: pubV(ID.M04, 'efficiency'), m06: pubV(ID.M06, 'efficiency') };
       const orderKept = uni.m06 > uni.m04 && uni.m04 > uni.m02 && uni.m02 >= uni.m01;
       const effBelow = eff.m04 < pubEff.m04 && eff.m06 < pubEff.m06;
       return {
         ...common(v, f),
-        u01: g('M01', 'uniformity'),
-        u02: g('M02', 'uniformity'),
-        u04: g('M04', 'uniformity'),
-        u06: g('M06', 'uniformity'),
-        e04: g('M04', 'efficiency'),
-        e06: g('M06', 'efficiency'),
-        p04: pub('M04', 'efficiency'),
-        p06: pub('M06', 'efficiency'),
-        pu02: pub('M02', 'uniformity'),
+        u01: g(ID.M01, 'uniformity'),
+        u02: g(ID.M02, 'uniformity'),
+        u04: g(ID.M04, 'uniformity'),
+        u06: g(ID.M06, 'uniformity'),
+        e04: g(ID.M04, 'efficiency'),
+        e06: g(ID.M06, 'efficiency'),
+        p04: pub(ID.M04, 'efficiency'),
+        p06: pub(ID.M06, 'efficiency'),
+        pu02: pub(ID.M02, 'uniformity'),
         pubPix: f.n(DILEONARDO.pixels, { decimals: 0 }),
         kept: orderKept ? (f.lang === 'es' ? 'se conserva' : 'is kept') : f.lang === 'es' ? 'NO se conserva' : 'is NOT kept',
         effCmp: effBelow ? (f.lang === 'es' ? 'quedan bajo' : 'fall below') : f.lang === 'es' ? 'no quedan bajo' : 'do not fall below',
@@ -401,9 +402,9 @@ export const CASES: Record<string, CaseText> = {
       const t = v.manifest.params.target as { radius_um?: number };
       const d = v.manifest.params.device;
       const low = lowest(v, 'rel_std_pct');
-      const e13 = metricOf(v, 'M13', 'rel_std_pct');
-      const e10 = metricOf(v, 'M10', 'rel_std_pct');
-      const eff13 = metricOf(v, 'M13', 'efficiency');
+      const e13 = metricOf(v, ID.M13, 'rel_std_pct');
+      const e10 = metricOf(v, ID.M10, 'rel_std_pct');
+      const eff13 = metricOf(v, ID.M13, 'efficiency');
       const removed = e13 !== undefined && e10 !== undefined && e10 > 0 ? 1 - e13 / e10 : undefined;
       return {
         ...common(v, f),
@@ -430,7 +431,7 @@ export const CASES: Record<string, CaseText> = {
     extra: (v, f) => {
       const low = lowest(v, 'rel_std_pct');
       const cond = pick(SCHROFF_DISC.conditions, f.lang);
-      const e13 = metricOf(v, 'M13', 'efficiency');
+      const e13 = metricOf(v, ID.M13, 'efficiency');
       return [
         { label: f.lang === 'es' ? `Error de señal mínimo (porcentaje, ${low?.id ?? DASH})` : `Lowest signal error (percent, ${low?.id ?? DASH})`, published: `< ${f.n(SCHROFF_DISC.errorBelowPct, { digits: 2 })} (${cond})`, range: null, here: nfmt(f, low?.value, { digits: 4 }), reading: ratioText(f, low?.value, SCHROFF_DISC.errorBelowPct) },
         { label: f.lang === 'es' ? `Eficiencia de CG con modelo del dispositivo (porcentaje)` : `Efficiency of device-aware CG (percent)`, published: `${f.n(SCHROFF_DISC.effLowPct, { digits: 2 })} - ${f.n(SCHROFF_DISC.effHighPct, { digits: 2 })} (${cond})`, range: null, here: e13 === undefined ? DASH : f.n(e13 * 100, { digits: 3 }), reading: e13 === undefined ? null : e13 * 100 >= SCHROFF_DISC.effLowPct && e13 * 100 <= SCHROFF_DISC.effHighPct ? (f.lang === 'es' ? 'dentro de la banda publicada' : 'inside the published band') : f.lang === 'es' ? 'fuera de la banda publicada' : 'outside the published band' },
@@ -463,9 +464,9 @@ export const CASES: Record<string, CaseText> = {
         dz: f.n(dz, { digits: 3 }),
         naPupil: f.n(geo.naPupil, { digits: 3 }),
         dof: f.n(geo.dofUm, { digits: 3 }),
-        sdGs: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
-        effGs: nfmt(f, metricOf(v, 'M06', 'efficiency'), { decimals: 3 }),
-        sd19: nfmt(f, metricOf(v, 'M19', 'rel_std_pct'), { digits: 3 }),
+        sdGs: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
+        effGs: nfmt(f, metricOf(v, ID.M06, 'efficiency'), { decimals: 3 }),
+        sd19: nfmt(f, metricOf(v, ID.M19, 'rel_std_pct'), { digits: 3 }),
         pub: f.n(POLIN_ARRAY.withinPct, { decimals: 0 }),
       };
     },
@@ -504,10 +505,10 @@ export const CASES: Record<string, CaseText> = {
         prov: real
           ? es ? 'el modelo publicado, ejecutado por onnxruntime en el precálculo' : 'the released model, run by onnxruntime in the bake'
           : es ? 'la línea base del espacio, el método de GS multiplano a treinta iteraciones, porque no hay un modelo publicado' : 'the baseline of the slot, multi-plane GS at thirty iterations, because no model is released',
-        eff19: nfmt(f, metricOf(v, 'M19', 'efficiency'), { decimals: 3 }),
-        sd19: nfmt(f, metricOf(v, 'M19', 'rel_std_pct'), { digits: 3 }),
-        eff06: nfmt(f, metricOf(v, 'M06', 'efficiency'), { decimals: 3 }),
-        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
+        eff19: nfmt(f, metricOf(v, ID.M19, 'efficiency'), { decimals: 3 }),
+        sd19: nfmt(f, metricOf(v, ID.M19, 'rel_std_pct'), { digits: 3 }),
+        eff06: nfmt(f, metricOf(v, ID.M06, 'efficiency'), { decimals: 3 }),
+        sd06: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
       };
     },
   },
@@ -529,9 +530,9 @@ export const CASES: Record<string, CaseText> = {
       ...common(v, f),
       ...vortices(v, f),
       validity: validity(v, f),
-      sdGs: nfmt(f, metricOf(v, 'M15', 'rel_std_pct'), { digits: 3 }),
-      sd09: nfmt(f, metricOf(v, 'M09', 'rel_std_pct'), { digits: 3 }),
-      eff09: nfmt(f, metricOf(v, 'M09', 'efficiency'), { decimals: 3 }),
+      sdGs: nfmt(f, metricOf(v, ID.M15, 'rel_std_pct'), { digits: 3 }),
+      sd09: nfmt(f, metricOf(v, ID.M09, 'rel_std_pct'), { digits: 3 }),
+      eff09: nfmt(f, metricOf(v, ID.M09, 'efficiency'), { decimals: 3 }),
     }),
   },
 
@@ -566,7 +567,7 @@ export const CASES: Record<string, CaseText> = {
     },
     vals: (v, f) => {
       const d = v.manifest.params.device;
-      const e07 = metricOf(v, 'M07', 'efficiency');
+      const e07 = metricOf(v, ID.M07, 'efficiency');
       return {
         ...common(v, f),
         bits: f.n(d?.bit_depth, { decimals: 0 }),
@@ -574,10 +575,10 @@ export const CASES: Record<string, CaseText> = {
         q: f.n(d?.crosstalk?.q, { digits: 3 }),
         fill: f.n(d?.fill_factor, { digits: 3 }),
         flicker: f.n(d?.flicker_rad, { digits: 2 }),
-        sd07: nfmt(f, metricOf(v, 'M07', 'rel_std_pct'), { digits: 3 }),
-        u07: nfmt(f, metricOf(v, 'M07', 'uniformity'), { decimals: 3 }),
+        sd07: nfmt(f, metricOf(v, ID.M07, 'rel_std_pct'), { digits: 3 }),
+        u07: nfmt(f, metricOf(v, ID.M07, 'uniformity'), { decimals: 3 }),
         eff07: nfmt(f, e07, { decimals: 3 }),
-        recovers: (refOf(v.manifest)?.uniformity ?? 0) > (metricOf(v, 'M07', 'uniformity') ?? 1) ? (f.lang === 'es' ? 'recupera uniformidad' : 'wins back uniformity') : f.lang === 'es' ? 'no recupera uniformidad' : 'does not win back uniformity',
+        recovers: (refOf(v.manifest)?.uniformity ?? 0) > (metricOf(v, ID.M07, 'uniformity') ?? 1) ? (f.lang === 'es' ? 'recupera uniformidad' : 'wins back uniformity') : f.lang === 'es' ? 'no recupera uniformidad' : 'does not win back uniformity',
       };
     },
   },
@@ -597,7 +598,7 @@ export const CASES: Record<string, CaseText> = {
     },
     vals: (v, f) => {
       const ab = v.manifest.params.aberration;
-      const e06 = metricOf(v, 'M06', 'efficiency');
+      const e06 = metricOf(v, ID.M06, 'efficiency');
       const eRef = refOf(v.manifest)?.efficiency;
       const g = e06 && eRef !== undefined ? eRef / e06 : undefined;
       return {
@@ -605,8 +606,8 @@ export const CASES: Record<string, CaseText> = {
         nModes: f.n(ab ? Object.keys(ab.noll).length : 0, { decimals: 0 }),
         rms: f.n(aberrationRmsWaves(v.manifest), { digits: 3 }),
         eff06: nfmt(f, e06, { decimals: 3 }),
-        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
-        eff04: nfmt(f, metricOf(v, 'B4', 'efficiency'), { decimals: 3 }),
+        sd06: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
+        eff04: nfmt(f, metricOf(v, ID.B4, 'efficiency'), { decimals: 3 }),
         gain: f.n(g, { digits: 3 }),
         gainPct: g === undefined ? DASH : f.n((g - 1) * 100, { digits: 3 }),
         cmpWord: g !== undefined && (g - 1) * 100 > NOGRETTE_ABERRATION.depthGainPct ? (f.lang === 'es' ? 'mayor' : 'larger') : f.lang === 'es' ? 'menor o igual' : 'smaller or equal',
@@ -616,7 +617,7 @@ export const CASES: Record<string, CaseText> = {
       };
     },
     extra: (v, f) => {
-      const e06 = metricOf(v, 'M06', 'efficiency');
+      const e06 = metricOf(v, ID.M06, 'efficiency');
       const eRef = refOf(v.manifest)?.efficiency;
       const g = e06 && eRef !== undefined ? (eRef / e06 - 1) * 100 : undefined;
       const rms = aberrationRmsWaves(v.manifest);
@@ -659,9 +660,9 @@ export const CASES: Record<string, CaseText> = {
         fill0: f.n(fr?.filling[0], { decimals: 3 }),
         fillN: f.n(fr?.filling[fr.filling.length - 1], { decimals: 3 }),
         minT: f.n(fr?.min_transient, { decimals: 3 }),
-        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
-        sd07: nfmt(f, metricOf(v, 'M07', 'rel_std_pct'), { digits: 3 }),
-        sd02: nfmt(f, metricOf(v, 'B2', 'rel_std_pct'), { digits: 3 }),
+        sd06: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
+        sd07: nfmt(f, metricOf(v, ID.M07, 'rel_std_pct'), { digits: 3 }),
+        sd02: nfmt(f, metricOf(v, ID.B2, 'rel_std_pct'), { digits: 3 }),
         dt: f.n(dt, { digits: 3 }),
       };
     },

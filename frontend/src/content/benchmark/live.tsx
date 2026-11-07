@@ -11,10 +11,11 @@ import { getEngine, type Engine } from '../../workbench/engine';
 import { P } from '../bi';
 import { median } from './data';
 import { Note, Ready, TableWrap, useBench, useNum, WRAP } from './shared';
+import { ID } from '../../lib/methodIds';
 
 /** One warm-up and this many timed runs: the first run of a worker pays for its modules and its plans, so it is not timed into the median. */
 const TIMED_RUNS = 4;
-const METHODS = ['M04', 'M06', 'M07'];
+const METHODS = [ID.M04, ID.M06, ID.M07];
 
 interface Outcome {
   method: string;
@@ -42,7 +43,7 @@ function LivePanel({ res }: { res: BenchmarkResults | null }) {
   const es = lang === 'es';
   const { data } = useBench();
   const { n, d } = useNum();
-  const [method, setMethod] = useState('M07');
+  const [method, setMethod] = useState<string>(METHODS[2]);
   const [backend, setBackend] = useState<'auto' | 'cpu'>('auto');
   const [state, setState] = useState<State>({ phase: 'idle' });
   const engineRef = useRef<Engine | null>(null);

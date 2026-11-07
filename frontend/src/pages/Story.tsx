@@ -24,6 +24,7 @@ import { ActionsContext, CASE_ROWS, type Actions } from '../workbench/ui';
 import { coeffArray } from '../workbench/zernike';
 import '../workbench/workbench.css';
 import './story.css';
+import { ID } from '../lib/methodIds';
 
 type Lang = 'en' | 'es';
 const bi = (en: string, es: string) => ({ en, es });
@@ -33,7 +34,7 @@ export const wordCount = (text: string): number => text.trim().split(/\s+/).filt
 /** A name of a method in the page language: the catalog name, never the engine id alone. */
 const nameOf = (id: string, lang: Lang): string => methodName(id)[lang];
 /** A method's name where room is short (a point label, a headline): the device-aware WGS drops its "model of the device" tail. */
-const short = (id: string, l: Lang): string => (id === 'B1' ? (l === 'en' ? 'Device-aware WGS' : 'WGS con dispositivo') : nameOf(id, l));
+const short = (id: string, l: Lang): string => (id === ID.B1 ? (l === 'en' ? 'Device-aware WGS' : 'WGS con dispositivo') : nameOf(id, l));
 /** The artifact path a fact cites, with the method named instead of its engine id. */
 const traceSource = (id: string, path: string): Tx => both((l) => `trace, ${nameOf(id, l)}: ${path}`);
 type Tx = { en: string; es: string };
@@ -60,10 +61,10 @@ export const STEP_DEFS: readonly StepDef[] = [
 export const stepDef = (id: string): StepDef => STEP_DEFS.find((s) => s.id === id) ?? STEP_DEFS[0];
 
 /** The device step's method: the weighted GS with fixed phase (M07) optimizes against the ideal model, so its own history is the ideal-device value and its final is the case device's. */
-export const DEVICE_STEP_METHOD = 'M07';
+export const DEVICE_STEP_METHOD = ID.M07;
 /** The cell of the benchmark the compare step names: 100 random traps on the modelled device (where the device-aware method is meant to work), 100 iterations, default parameters. */
 export const COMPARE_CELL = { geometry: 'G3', device: 'device', budget: 100 } as const;
-export const WEIGHTED_GS = 'M06';
+export const WEIGHTED_GS = ID.M06;
 /** The second comparator on the cell: the weighted GS with fixed phase, the device step's method. */
 export const PHASE_FIXED_GS = DEVICE_STEP_METHOD;
 

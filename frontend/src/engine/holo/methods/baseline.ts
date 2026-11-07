@@ -13,6 +13,7 @@ import type { MethodModule, MethodRun, RunContext } from '../types';
 import { TrapSet, rint } from '../traps';
 import { Recorder, ampTargets, angle, requireKinds, srStart, toCx, trapsOf } from './common';
 import * as gs from './gs';
+import { ID } from '../../../lib/methodIds';
 
 function fieldTarget(ctx: RunContext): Extract<RunContext['target'], { kind: 'field' }> {
   if (ctx.target.kind !== 'field') throw new Error('this method needs a shaped-field target');
@@ -22,23 +23,23 @@ function fieldTarget(ctx: RunContext): Extract<RunContext['target'], { kind: 'fi
 // ---- M01 / M02 / M03 ----
 
 function* m01(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M01');
+  requireKinds(ctx.target, ['traps'], ID.M01);
   const { setup, budget } = ctx, traps = trapsOf(ctx.target);
   const rec = new Recorder(budget, traps.weight);
   const phi = angle(pointTrapBackproject(toCx(ampTargets(traps)), setup, traps));
   const v = pointTrapFields(phi, setup, traps);
   yield rec.add(1, v);
-  return { phi, history: rec.history, fields: v, meta: { method: 'M01' } };
+  return { phi, history: rec.history, fields: v, meta: { method: ID.M01 } };
 }
 
 function* m02(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M02');
+  requireKinds(ctx.target, ['traps'], ID.M02);
   const { setup, budget, rng } = ctx, traps = trapsOf(ctx.target);
   const rec = new Recorder(budget, traps.weight);
   const phi = srStart(setup, traps, rng);
   const v = pointTrapFields(phi, setup, traps);
   yield rec.add(1, v);
-  return { phi, history: rec.history, fields: v, meta: { method: 'M02' } };
+  return { phi, history: rec.history, fields: v, meta: { method: ID.M02 } };
 }
 
 /** The random partition of the pixels, one trap per pixel with equal share (a share proportional to the weight otherwise). */
@@ -65,7 +66,7 @@ function owners(nPix: number, weights: Float64Array, rng: RunContext['rng']): In
 }
 
 function* m03(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M03');
+  requireKinds(ctx.target, ['traps'], ID.M03);
   const { setup, budget, rng } = ctx, traps = trapsOf(ctx.target);
   const rec = new Recorder(budget, traps.weight);
   const n = setup.nPix;
@@ -90,7 +91,7 @@ function* m03(ctx: RunContext): MethodRun {
   const out = wrapPhase(phi);
   const v = pointTrapFields(out, setup, traps);
   yield rec.add(1, v);
-  return { phi: out, history: rec.history, fields: v, meta: { method: 'M03', owner } };
+  return { phi: out, history: rec.history, fields: v, meta: { method: ID.M03, owner } };
 }
 
 // ---- M04 to M08 ----
@@ -101,32 +102,32 @@ function* m04(ctx: RunContext): MethodRun {
   const startWaves = o.startWaves === undefined ? gs.START_WAVES : o.startWaves;
   if (target.kind === 'field') {
     if (form !== 'fft') throw new Error("a shaped-field target needs form='fft'");
-    return yield* gs.runField('M04', setup, target, budget, rng, init, 1, startWaves);
+    return yield* gs.runField(ID.M04, setup, target, budget, rng, init, 1, startWaves);
   }
-  return yield* gs.runTraps('M04', setup, target.traps, budget, rng, init, form, gs.ruleGs, {});
+  return yield* gs.runTraps(ID.M04, setup, target.traps, budget, rng, init, form, gs.ruleGs, {});
 }
 
 function* m05(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M05');
+  requireKinds(ctx.target, ['traps'], ID.M05);
   const { setup, budget, rng, init, options: o } = ctx;
   const alpha = o.alpha ?? 0.5, scale = o.scale ?? 'mean';
   if (!(alpha >= 0 && alpha <= 1)) throw new Error(`alpha must be in [0, 1], got ${alpha}`);
   if (scale !== 'mean' && scale !== 'absolute') throw new Error(`scale must be 'mean' or 'absolute', got '${scale}'`);
-  return yield* gs.runTraps('M05', setup, trapsOf(ctx.target), budget, rng, init, gs.checkForm(o.form ?? 'point'), gs.ruleGaa, { alpha, scale }, { alpha, scale });
+  return yield* gs.runTraps(ID.M05, setup, trapsOf(ctx.target), budget, rng, init, gs.checkForm(o.form ?? 'point'), gs.ruleGaa, { alpha, scale }, { alpha, scale });
 }
 
 function* m06(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M06');
+  requireKinds(ctx.target, ['traps'], ID.M06);
   const { setup, budget, rng, init, options: o } = ctx;
-  return yield* gs.runTraps('M06', setup, trapsOf(ctx.target), budget, rng, init, gs.checkForm(o.form ?? 'point'), gs.ruleGsw, {});
+  return yield* gs.runTraps(ID.M06, setup, trapsOf(ctx.target), budget, rng, init, gs.checkForm(o.form ?? 'point'), gs.ruleGsw, {});
 }
 
 function* m07(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M07');
+  requireKinds(ctx.target, ['traps'], ID.M07);
   const { setup, budget, rng, init, options: o } = ctx;
   const nFix = o.nFix ?? 12;
   if (!Number.isInteger(nFix) || nFix < 1) throw new Error(`n_fix must be a positive integer, got ${nFix}`);
-  const res = yield* gs.runTraps('M07', setup, trapsOf(ctx.target), budget, rng, init, gs.checkForm(o.form ?? 'fft'), gs.ruleWgsFixed, { nFix });
+  const res = yield* gs.runTraps(ID.M07, setup, trapsOf(ctx.target), budget, rng, init, gs.checkForm(o.form ?? 'fft'), gs.ruleWgsFixed, { nFix });
   const st = res.meta.state as gs.RuleState;
   res.meta.nFix = nFix;
   res.meta.psi = st.psi ?? st.psiLast;
@@ -134,9 +135,9 @@ function* m07(ctx: RunContext): MethodRun {
 }
 
 function* m08(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['field'], 'M08');
+  requireKinds(ctx.target, ['field'], ID.M08);
   const { setup, budget, rng, init, options: o } = ctx;
-  return yield* gs.runField('M08', setup, fieldTarget(ctx), budget, rng, init, o.mixing ?? 0.3, o.startWaves === undefined ? gs.START_WAVES : o.startWaves);
+  return yield* gs.runField(ID.M08, setup, fieldTarget(ctx), budget, rng, init, o.mixing ?? 0.3, o.startWaves === undefined ? gs.START_WAVES : o.startWaves);
 }
 
 // ---- M19 ----
@@ -182,7 +183,7 @@ function sphereIndex(setup: RunContext['setup'], dz: number, nz: number): Int32A
 }
 
 function* m19(ctx: RunContext): MethodRun {
-  requireKinds(ctx.target, ['traps'], 'M19');
+  requireKinds(ctx.target, ['traps'], ID.M19);
   const { setup, budget, rng, init, options: o } = ctx;
   const traps = trapsOf(ctx.target), n = setup.nPix;
   const { ix, iy, iz, snapped, dz, nz } = plan19(setup, traps, o.dzM ?? null, o.nz ?? null);
@@ -242,21 +243,21 @@ function* m19(ctx: RunContext): MethodRun {
     yield rec.add(k, v);
     if (rec.done(k)) break;
   }
-  return { phi, history: rec.history, fields: v, meta: { method: 'M19', snapped, dzM: dz, nz, iterations: k } };
+  return { phi, history: rec.history, fields: v, meta: { method: ID.M19, snapped, dzM: dz, nz, iterations: k } };
 }
 
 const mods = (m: MethodModule['spec'], run: MethodModule['run']): MethodModule => ({ spec: m, run });
 const S = (id: string, name: string, family: string, lane: 'live' | 'both', targets: readonly ('traps' | 'field')[], dims: readonly (2 | 3)[]) => ({ id, name, family, lane, targets, dims });
 
 export const baselineMethods: MethodModule[] = [
-  mods(S('M01', 'Superposition of prisms and lenses', 'analytic', 'live', ['traps'], [2, 3]), m01),
-  mods(S('M02', 'Random superposition', 'analytic', 'live', ['traps'], [2, 3]), m02),
-  mods(S('M03', 'Random mask', 'analytic', 'live', ['traps'], [2, 3]), m03),
-  mods(S('M04', 'Gerchberg-Saxton', 'GS', 'live', ['traps', 'field'], [2, 3]), m04),
-  mods(S('M05', 'Generalized adaptive additive GS', 'GS', 'live', ['traps'], [2, 3]), m05),
-  mods(S('M06', 'Weighted GS', 'GS', 'live', ['traps'], [2, 3]), m06),
-  mods(S('M07', 'Phase-fixed weighted GS', 'GS', 'live', ['traps'], [2]), m07),
-  mods(S('M08', 'Mixed-region amplitude freedom', 'GS', 'live', ['field'], [2]), m08),
-  mods(S('M19', 'Volumetric 3D GS (multi-plane)', 'GS', 'both', ['traps'], [3]), m19),
+  mods(S(ID.M01, 'Superposition of prisms and lenses', 'analytic', 'live', ['traps'], [2, 3]), m01),
+  mods(S(ID.M02, 'Random superposition', 'analytic', 'live', ['traps'], [2, 3]), m02),
+  mods(S(ID.M03, 'Random mask', 'analytic', 'live', ['traps'], [2, 3]), m03),
+  mods(S(ID.M04, 'Gerchberg-Saxton', 'GS', 'live', ['traps', 'field'], [2, 3]), m04),
+  mods(S(ID.M05, 'Generalized adaptive additive GS', 'GS', 'live', ['traps'], [2, 3]), m05),
+  mods(S(ID.M06, 'Weighted GS', 'GS', 'live', ['traps'], [2, 3]), m06),
+  mods(S(ID.M07, 'Phase-fixed weighted GS', 'GS', 'live', ['traps'], [2]), m07),
+  mods(S(ID.M08, 'Mixed-region amplitude freedom', 'GS', 'live', ['field'], [2]), m08),
+  mods(S(ID.M19, 'Volumetric 3D GS (multi-plane)', 'GS', 'both', ['traps'], [3]), m19),
 ];
 

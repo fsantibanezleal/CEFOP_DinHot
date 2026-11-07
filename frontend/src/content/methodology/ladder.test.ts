@@ -65,7 +65,7 @@ describe('the ladder on the Methodology page', () => {
     };
     for (const [file, topics] of Object.entries(files)) {
       const source = readFileSync(new URL(file, import.meta.url), 'utf8');
-      const shown = [...source.matchAll(/<MethodTable ids=\{\[([^\]]*)\]\} \/>/g)].flatMap((m) => [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]));
+      const shown = [...source.matchAll(/<MethodTable ids=\{\[([^\]]*)\]\} \/>/g)].flatMap((m) => [...m[1].matchAll(/ID\.(\w+)/g)].map((x) => x[1]));
       const planned = PLAN.filter((topic) => topics.includes(topic.id)).flatMap((topic) => topic.ids);
       expect(shown.sort(), file).toEqual(planned.sort());
     }

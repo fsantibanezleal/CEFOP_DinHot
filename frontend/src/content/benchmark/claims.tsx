@@ -14,6 +14,7 @@ import { verdictLine } from './pareto';
 import { RECORDED } from './recorded';
 import { defaultBudget, Note, Ready, TableWrap, useBench, useNum, WRAP } from './shared';
 import { WARM, type WarmRecord } from './warm';
+import { ID } from '../../lib/methodIds';
 
 const VERDICT_TEXT: Record<Verdict, { en: string; es: string }> = {
   supported: { en: 'supported', es: 'sustentada' },
@@ -128,18 +129,18 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
   const es = lang === 'es';
   const { data } = useBench();
   const { n, d } = useNum();
-  const rec1 = recorded('B1');
-  const rec2 = recorded('B2');
-  const rec4 = recorded('B4');
+  const rec1 = recorded(ID.B1);
+  const rec2 = recorded(ID.B2);
+  const rec4 = recorded(ID.B4);
   const budget = defaultBudget(res);
-  const s1 = useMemo(() => summarise(ratioCells(res, 'B1', 'M07', 'device'), res, CRITERIA.b1), [res]);
-  const s4 = useMemo(() => summarise(ratioCells(res, 'B4', 'M07', 'device'), res, CRITERIA.b4), [res]);
-  const s4ideal = useMemo(() => summarise(ratioCells(res, 'B4', 'M07', 'ideal'), res, CRITERIA.b4), [res]);
+  const s1 = useMemo(() => summarise(ratioCells(res, ID.B1, ID.M07, 'device'), res, CRITERIA.b1), [res]);
+  const s4 = useMemo(() => summarise(ratioCells(res, ID.B4, ID.M07, 'device'), res, CRITERIA.b4), [res]);
+  const s4ideal = useMemo(() => summarise(ratioCells(res, ID.B4, ID.M07, 'ideal'), res, CRITERIA.b4), [res]);
   const b5 = budget ? b5Cells(res, budget) : [];
   const v5 = verdictOf(b5.map((c) => c.hvFront >= c.hvPublished));
   const c08 = c08Ratio(data.c08.state === 'ready' ? data.c08.data : undefined);
-  const b3skipped = skippedIn(res).filter((s) => s.method === 'B3');
-  const b2rows = res.rows.filter((r) => r.method === 'B2').length;
+  const b3skipped = skippedIn(res).filter((s) => s.method === ID.B3);
+  const b2rows = res.rows.filter((r) => r.method === ID.B2).length;
   const b4aber = rec4.medianFactor >= CRITERIA.b4.sigmaFactor && rec4.efficiencyRatio >= CRITERIA.b4.effRatio;
   const b1rec = rec1.medianFactor >= CRITERIA.b1.sigmaFactor && rec1.efficiencyRatio >= CRITERIA.b1.effRatio;
   // B2: the acceptance task, the long lattice moves and C10 at 137 frames meet the threshold; C10 at equal frames does not (LPI leads)
@@ -152,11 +153,11 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
   const v4: Verdict = b4aber ? 'partly' : 'not-supported';
 
   const sdd = (row: string) => (es ? `la fila de ${methodName(row).es} del SDD` : `the ${methodName(row).en} row of the SDD`);
-  const recordedRows = ['B1', 'B2', 'B4'].map(sdd);
-  const recordedTests = ['B1', 'B2', 'B4'].map((k) => RECORDED[k].test).join(', ');
+  const recordedRows = [ID.B1, ID.B2, ID.B4].map(sdd);
+  const recordedTests = [ID.B1, ID.B2, ID.B4].map((k) => RECORDED[k].test).join(', ');
   const summaryRows: { id: string; baseline: string; matrix: string; recorded: string; verdict: Verdict; test: string }[] = [
     {
-      id: 'B1',
+      id: ID.B1,
       baseline: es ? 'GS ponderado con fase fija (igual al WGS-Kim de slmsuite)' : 'Phase-fixed weighted GS (equal to slmsuite WGS-Kim)',
       matrix: s1.cells.length
         ? es
@@ -167,20 +168,20 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
         ? `mediana ${n(rec1.medianFactor)} veces (${n(rec1.lowFactor)} a ${n(rec1.highFactor)} en ${rec1.seeds} semillas) con ${n(rec1.efficiencyRatio)} de la eficiencia; ${n(rec1.fullDeviceFactor)} veces en el dispositivo C08 (las tres semillas del caso generado)`
         : `median ${n(rec1.medianFactor)} times (${n(rec1.lowFactor)} to ${n(rec1.highFactor)} over ${rec1.seeds} seeds) at ${n(rec1.efficiencyRatio)} of the efficiency; ${n(rec1.fullDeviceFactor)} times on the C08 device (the three seeds of the baked case)`,
       verdict: v1,
-      test: RECORDED['B1'].test,
+      test: RECORDED[ID.B1].test,
     },
     {
-      id: 'B2',
+      id: ID.B2,
       baseline: es ? 'Interpolación lineal de fase' : 'Linear phase interpolation',
       matrix: es ? `no se mide en la matriz: sus celdas puntúan cada cuadro de forma estática (${b2rows} filas de secuencia acotada por parpadeo), no la intensidad transitoria` : `not measured by the matrix: its cells score each frame statically (${b2rows} flicker-bounded sequence rows), not the transient intensity`,
       recorded: es
         ? `Secuencia acotada por parpadeo ${n(rec2.b2Low)} a ${n(rec2.b2High)} contra ${n(rec2.lpiLow)} a ${n(rec2.lpiHigh)} de LPI con un paso máximo de ${n(rec2.acceptancePeakStep)} unidades de Fourier por cuadro; ${rec2.longSeedsMet} de ${rec2.longSeeds} semillas de los movimientos largos dentro de la cota de ${n(rec2.stepLimit)}; con ${rec2.c10EqualFrames} cuadros en C10, LPI lidera en toda semilla`
         : `Flicker-bounded sequence ${n(rec2.b2Low)} to ${n(rec2.b2High)} against ${n(rec2.lpiLow)} to ${n(rec2.lpiHigh)} for LPI at a peak step of ${n(rec2.acceptancePeakStep)} Fourier units per frame; ${rec2.longSeedsMet} of ${rec2.longSeeds} seeds of the long moves within the ${n(rec2.stepLimit)} step bound; at ${rec2.c10EqualFrames} frames on C10, LPI leads in every seed`,
       verdict: v2,
-      test: RECORDED['B2'].test,
+      test: RECORDED[ID.B2].test,
     },
     {
-      id: 'B3',
+      id: ID.B3,
       baseline: es ? 'Arranque aleatorio de GS ponderado con fase fija' : 'Phase-fixed weighted GS random start',
       matrix: b3skipped.length ? (es ? `${b3skipped.length} ${b3skipped.length === 1 ? 'celda de arranque aprendido no corrida' : 'celdas de arranque aprendido no corridas'}: ${b3skipped[0].reason.es}` : `${b3skipped.length} learned warm start ${b3skipped.length === 1 ? 'cell' : 'cells'} not run: ${b3skipped[0].reason.en}`) : es ? 'sin celdas de arranque aprendido listadas como no corridas' : 'no learned warm start cell listed as not run',
       recorded: warm
@@ -192,8 +193,8 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
       test: 'tests/learned/test_b3_warm_start.py',
     },
     {
-      id: 'B4',
-      baseline: es ? 'M07' : 'M07',
+      id: ID.B4,
+      baseline: es ? ID.M07 : ID.M07,
       matrix: s4.cells.length
         ? es
           ? `sin aberración en la matriz; contra el dispositivo C08, factor de mediana ${n(s4.medFactor)} y razón de eficiencia ${n(s4.medRatio)} en ${s4.cells.length} geometrías (en el ideal, ${n(s4ideal.medFactor)})`
@@ -203,10 +204,10 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
         ? `aberraciones: mediana ${n(rec4.medianFactor)} veces (${n(rec4.lowFactor)} a ${n(rec4.highFactor)} en ${rec4.seeds} semillas, ${rec4.ensemble} muestras) con ${n(rec4.efficiencyRatio)} de la eficiencia; errores de puntería: ${n(rec4.pointingFactor)} veces`
         : `aberrations: median ${n(rec4.medianFactor)} times (${n(rec4.lowFactor)} to ${n(rec4.highFactor)} over ${rec4.seeds} seeds, ${rec4.ensemble} samples) at ${n(rec4.efficiencyRatio)} of the efficiency; pointing errors: ${n(rec4.pointingFactor)} times`,
       verdict: v4,
-      test: RECORDED['B4'].test,
+      test: RECORDED[ID.B4].test,
     },
     {
-      id: 'B5',
+      id: ID.B5,
       baseline: es ? 'Gerchberg-Saxton, aditivo adaptativo generalizado, el método de GS ponderado y búsqueda directa (sus puntos)' : 'Gerchberg-Saxton, generalized adaptive additive, the weighted GS method and direct search (their points)',
       matrix: b5.length
         ? es
@@ -253,7 +254,7 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
         </table>
       </TableWrap>
 
-      <Block id="B1">
+      <Block id={ID.B1}>
         <P
           en={
             <>
@@ -269,7 +270,7 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
         <Slice cells={s1.cells} />
       </Block>
 
-      <Block id="B2">
+      <Block id={ID.B2}>
         <P
           en={
             <>
@@ -284,7 +285,7 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
         />
       </Block>
 
-      <Block id="B3">
+      <Block id={ID.B3}>
         <P
           en={
             <>
@@ -301,7 +302,7 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
         {warm ? <Bs3Table rec={warm} /> : null}
       </Block>
 
-      <Block id="B4">
+      <Block id={ID.B4}>
         <P
           en={
             <>
@@ -316,7 +317,7 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
         />
       </Block>
 
-      <Block id="B5">
+      <Block id={ID.B5}>
         <P
           en={
             <>

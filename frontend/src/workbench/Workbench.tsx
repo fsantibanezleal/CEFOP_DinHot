@@ -38,6 +38,7 @@ import { useTrapLink } from './trapLink';
 import { ActionsContext, CASE_ROWS, LOADING, localizeDecimals, Pending, type Actions, type EditMode } from './ui';
 import { coeffArray, J_MAX } from './zernike';
 import './workbench.css';
+import { ID } from '../lib/methodIds';
 
 interface Rail {
   caseId: string;
@@ -516,13 +517,13 @@ export function Workbench() {
   const variantOf = (id: string) => {
     const lane1 = laneOf(id, liveMethods);
     const slotNote =
-      id === 'M17'
+      id === ID.M17
         ? slots.cgh?.answered === 'model'
           ? cghFit && !cghFit.ok
             ? { en: `${cghFit.reason.en} The baseline answers.`, es: `${cghFit.reason.es} Responde la línea base.` }
             : { en: 'The released cgh-net answers in your browser.', es: 'El cgh-net publicado responde en su navegador.' }
           : { en: `No released cgh-net: ${baselineName('cgh-net').en} answers.`, es: `No hay cgh-net publicado: responde ${baselineName('cgh-net').es}.` }
-        : id === 'B3'
+        : id === ID.B3
           ? slots.warm?.answered === 'model'
             ? { en: `The released warm start feeds ${PHASE_FIXED.en} its trap phases.`, es: `El arranque aprendido publicado entrega a ${PHASE_FIXED.es} las fases de las trampas.` }
             : { en: `No released warm start: ${baselineName('warmstart-model').en}.`, es: `No hay arranque aprendido publicado: ${baselineName('warmstart-model').es}.` }
@@ -594,7 +595,7 @@ export function Workbench() {
             }
             variants={{
               // M17 is offered only where the three-plane cgh-net applies (128 x 128 SLM, padding 1, traps on its planes)
-              variants: (params?.methods ?? []).filter((id) => id !== 'M17' || !data || cghApplies(data.manifest.params.setup, traps, slots.cgh?.card ?? null).ok).map(variantOf),
+              variants: (params?.methods ?? []).filter((id) => id !== ID.M17 || !data || cghApplies(data.manifest.params.setup, traps, slots.cgh?.card ?? null).ok).map(variantOf),
               activeId: method,
               onSelect: setMethodId,
               title: { en: 'Method', es: 'Método' },
@@ -621,7 +622,7 @@ export function Workbench() {
   );
 }
 
-const PHASE_FIXED = methodName('M07');
+const PHASE_FIXED = methodName(ID.M07);
 
 function ContextView({ sel }: { sel: Selection | null }) {
   const lang = useShellLang();
