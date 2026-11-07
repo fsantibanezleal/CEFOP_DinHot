@@ -114,8 +114,8 @@ export function ParetoView({ sel }: { sel: Selection }) {
       lane="replay"
       dataKey={stateKey}
       note={{
-        en: 'The Pareto fronts of the benchmark (method B5, one per geometry) with the final point of every method this case ran. Up and to the right is better on both.',
-        es: 'Los frentes de Pareto del benchmark (método B5, uno por geometría) con el punto final de cada método que corrió este caso. Arriba y a la derecha es mejor en ambos.',
+        en: 'The Pareto fronts of the benchmark (the efficiency-uniformity front, one per geometry) with the final point of every method this case ran. Up and to the right is better on both.',
+        es: 'Los frentes de Pareto del benchmark (el frente eficiencia-uniformidad, uno por geometría) con el punto final de cada método que corrió este caso. Arriba y a la derecha es mejor en ambos.',
       }}
     >
       <Fill rows={['benchmark-results']}>

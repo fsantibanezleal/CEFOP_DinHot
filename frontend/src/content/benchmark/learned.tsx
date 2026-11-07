@@ -16,7 +16,7 @@ function Answers({ slot }: { slot: 'cgh-net' | 'warmstart-model' }) {
   const doc = useReadiness();
   if (doc === undefined) return null;
   const who = modelAnswers(doc, slot);
-  const base = slot === 'cgh-net' ? 'M19' : (es ? 'el arranque aleatorio de M07' : 'the random start of M07');
+  const base = slot === 'cgh-net' ? 'M19' : (es ? 'el arranque aleatorio de GS ponderado con fase fija' : 'the random start of phase-fixed weighted GS');
   return (
     <span data-slot={slot} data-answers={who}>
       {who === 'model' ? (es ? 'responde el modelo publicado' : 'the released model answers') : es ? `responde la línea base (${base})` : `the baseline answers (${base})`}
@@ -52,7 +52,7 @@ function MetricsTable({ metrics }: { metrics: ModelMetrics }) {
           {cgh ? (
             <>
               <tr data-slot="cgh-net">
-                <td className="caos-col-text" rowSpan={2}>cgh-net (M17)</td>
+                <td className="caos-col-text" rowSpan={2}>cgh-net</td>
                 <td className="caos-col-text" rowSpan={2}><Answers slot="cgh-net" /></td>
                 <td rowSpan={2}>{cgh.held_out_n}</td>
                 <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>{es ? 'exactitud sobre la de la línea base, con el mismo reloj' : 'accuracy over the baseline at the same wall-clock'}</td>
@@ -70,23 +70,23 @@ function MetricsTable({ metrics }: { metrics: ModelMetrics }) {
             </>
           ) : (
             <tr data-slot="cgh-net">
-              <td className="caos-col-text">cgh-net (M17)</td>
+              <td className="caos-col-text">cgh-net</td>
               <td className="caos-col-text"><Answers slot="cgh-net" /></td>
               <td colSpan={4} className="caos-col-text">{es ? 'Sin entrada en el documento de métricas: no hay modelo publicado.' : 'No entry in the metrics document: no released model.'}</td>
             </tr>
           )}
           {warm ? (
             <tr data-slot="warmstart-model">
-              <td className="caos-col-text">warmstart-model (B3)</td>
+              <td className="caos-col-text">warmstart-model</td>
               <td className="caos-col-text"><Answers slot="warmstart-model" /></td>
               <td>{warm.held_out_n}</td>
               <td className="caos-col-text">{es ? 'iteraciones hasta 1 por ciento, modelo' : 'iterations to 1 percent, model'}</td>
               <td>{n(warm.iterations_to_1pct.model.median)} [{n(warm.iterations_to_1pct.model.q1)}, {n(warm.iterations_to_1pct.model.q3)}]</td>
-              <td className="caos-col-text">{es ? 'arranque aleatorio de M07' : 'M07 random start'}: {n(warm.iterations_to_1pct.random.median)}</td>
+              <td className="caos-col-text">{es ? 'arranque aleatorio de GS ponderado con fase fija' : 'Phase-fixed weighted GS random start'}: {n(warm.iterations_to_1pct.random.median)}</td>
             </tr>
           ) : (
             <tr data-slot="warmstart-model">
-              <td className="caos-col-text">warmstart-model (B3)</td>
+              <td className="caos-col-text">warmstart-model</td>
               <td className="caos-col-text"><Answers slot="warmstart-model" /></td>
               <td colSpan={4} className="caos-col-text" style={{ whiteSpace: 'normal' }}>
                 {es ? 'Sin entrada: no hay modelo publicado.' : 'No entry: no released model.'}
@@ -122,13 +122,13 @@ function PairTable({ res, c14 }: { res: BenchmarkResults; c14: CaseManifest | un
       <CellControls res={res} prefix="learned" />
       {rows.length === 0 ? (
         <p className="caos-pending" data-state="unavailable">
-          {es ? `Ninguna geometría del documento tiene filas de M17 y de M19 con ${budget ? budgetText(budget).es : 'este presupuesto'} sobre este dispositivo.` : `No geometry of the document has rows of both M17 and M19 at ${budget ? budgetText(budget).en : 'this budget'} on this device.`}
+          {es ? `Ninguna geometría del documento tiene filas de CNN no supervisada y de GS multiplano con ${budget ? budgetText(budget).es : 'este presupuesto'} sobre este dispositivo.` : `No geometry of the document has rows of both unsupervised CNN and multi-plane GS at ${budget ? budgetText(budget).en : 'this budget'} on this device.`}
         </p>
       ) : (
         <TableWrap>
           <table className="caos-table" data-state="ready" data-table="m17-m19">
             <caption>
-              {es ? 'M17 y su línea base M19 en la matriz, con la misma geometría, dispositivo y presupuesto.' : 'M17 and its baseline M19 in the matrix, on the same geometry, device and budget.'}
+              {es ? 'La CNN no supervisada y su línea base, GS multiplano, en la matriz, con la misma geometría, dispositivo y presupuesto.' : 'The unsupervised CNN and its baseline, multi-plane GS, in the matrix, on the same geometry, device and budget.'}
             </caption>
             <thead>
               <tr>
@@ -160,8 +160,8 @@ function PairTable({ res, c14 }: { res: BenchmarkResults; c14: CaseManifest | un
       {m17 && m19 ? (
         <p className="caos-plot-note" lang={lang} data-case="C14">
           {es
-            ? `En el caso C14 generado, M17 tiene eficiencia ${n(m17.efficiency)}, uniformidad ${n(m17.uniformity)} y desviación estándar relativa ${n(m17.rel_std_pct)} por ciento, y M19 ${n(m19.efficiency)}, ${n(m19.uniformity)} y ${n(m19.rel_std_pct)}.`
-            : `In the baked case C14, M17 has efficiency ${n(m17.efficiency)}, uniformity ${n(m17.uniformity)} and relative standard deviation ${n(m17.rel_std_pct)} percent, and M19 ${n(m19.efficiency)}, ${n(m19.uniformity)} and ${n(m19.rel_std_pct)}.`}
+            ? `En el caso C14 generado, el método de CNN no supervisada tiene eficiencia ${n(m17.efficiency)}, uniformidad ${n(m17.uniformity)} y desviación estándar relativa ${n(m17.rel_std_pct)} por ciento, y GS multiplano ${n(m19.efficiency)}, ${n(m19.uniformity)} y ${n(m19.rel_std_pct)}.`
+            : `In the baked case C14, the unsupervised CNN method has efficiency ${n(m17.efficiency)}, uniformity ${n(m17.uniformity)} and relative standard deviation ${n(m17.rel_std_pct)} percent, and multi-plane GS ${n(m19.efficiency)}, ${n(m19.uniformity)} and ${n(m19.rel_std_pct)}.`}
           {same ? (es ? ' Las dos filas coinciden en los dígitos mostrados, de modo que esa fila de caso no mide la red: lo que la mide son las métricas reservadas de la tabla anterior.' : ' The two rows agree to the digits shown, so that case row does not measure the network: what measures it is the held-out metrics of the table above.') : ''}
         </p>
       ) : null}
@@ -176,13 +176,13 @@ export function LearnedTopic() {
       <P
         en={
           <>
-            DinHot has two learned slots. The multi-plane network of M17 is built in the setting of DeepCGH <Cite id="eybposh2020" />: three plane amplitudes in, one phase out, trained without labels on a loss that is the accuracy itself, and judged against the volumetric GS of Whyte and Courtial <Cite id="whyte2005" /> given the same wall-clock. The warm-start network of B3 predicts the starting trap phases of the phase-fixed WGS. A learned slot is shown only against its published baseline on held-out volumes or geometries, never against a number from a paper, and the table says which model answered: the released network, or the baseline that answers when the slot is in training state.
-          </>
+ DinHot has two learned slots. The multi-plane network of unsupervised CNN is built in the setting of DeepCGH <Cite id="eybposh2020" />: three plane amplitudes in, one phase out, trained without labels on a loss that is the accuracy itself, and judged against the volumetric GS of Whyte and Courtial <Cite id="whyte2005" /> given the same wall-clock. The warm-start network of learned warm start predicts the starting trap phases of the phase-fixed WGS. A learned slot is shown only against its published baseline on held-out volumes or geometries, never against a number from a paper, and the table says which model answered: the released network, or the baseline that answers when the slot is in training state.
+ </>
         }
         es={
           <>
-            DinHot tiene dos espacios aprendidos. La red multiplano de M17 se construye en el planteamiento de DeepCGH <Cite id="eybposh2020" />: tres amplitudes de plano de entrada, una fase de salida, entrenada sin etiquetas con una pérdida que es la propia exactitud, y se juzga contra el GS volumétrico de Whyte y Courtial <Cite id="whyte2005" /> con el mismo reloj. La red de arranque de B3 predice las fases iniciales de las trampas del WGS de fase fija. Un espacio aprendido se muestra solo frente a su línea base publicada sobre volúmenes o geometrías reservados, nunca contra un número de un artículo, y la tabla dice qué modelo respondió: la red publicada, o la línea base que responde cuando el espacio está en estado de entrenamiento.
-          </>
+ DinHot tiene dos espacios aprendidos. La red multiplano de CNN no supervisada se construye en el planteamiento de DeepCGH <Cite id="eybposh2020" />: tres amplitudes de plano de entrada, una fase de salida, entrenada sin etiquetas con una pérdida que es la propia exactitud, y se juzga contra el GS volumétrico de Whyte y Courtial <Cite id="whyte2005" /> con el mismo reloj. La red de arranque aprendido predice las fases iniciales de las trampas del WGS de fase fija. Un espacio aprendido se muestra solo frente a su línea base publicada sobre volúmenes o geometrías reservados, nunca contra un número de un artículo, y la tabla dice qué modelo respondió: la red publicada, o la línea base que responde cuando el espacio está en estado de entrenamiento.
+ </>
         }
       />
       <Note ids={['cgh-net', 'warmstart-model', 'model-metrics']} />

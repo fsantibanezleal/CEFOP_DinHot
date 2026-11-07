@@ -44,7 +44,7 @@ export function LanesFigure() {
       <Box x={440} y={90} w={200} h={52} lines={[t('Web Worker, CPU path', 'Web Worker, vía CPU'), t('15 methods', '15 métodos')]} />
       <Box x={0} y={170} w={200} h={52} lines={[t('Lane gate', 'Compuerta de carril'), '1500 ms, 256 KiB']} />
       <Box x={220} y={170} w={200} h={52} lines={[t('Trace of the case', 'Traza del caso'), t('within the byte gate', 'dentro de la compuerta')]} />
-      <Box x={440} y={170} w={200} h={52} lines={[t('WebGPU, optional', 'WebGPU, opcional'), 'M04, M06, M07']} />
+      <Box x={440} y={170} w={200} h={52} lines={[t('WebGPU, optional', 'WebGPU, opcional'), 'Gerchberg-Saxton, weighted GS, phase-fixed weighted GS']} />
       <Arrow id={id} x1={200} y1={36} x2={220} y2={36} />
       <Arrow id={id} x1={420} y1={36} x2={440} y2={36} />
       <Arrow id={id} x1={100} y1={62} x2={100} y2={90} />

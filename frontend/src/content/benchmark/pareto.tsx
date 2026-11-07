@@ -24,13 +24,13 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
   const front = frontOf(res, geometry);
   const pts = [
     ...rows.map((p) => ({ kind: p.kind ?? 'none', u: p.row.uniformity.median, e: p.row.efficiency.median, name: `${shownId(p.method)}` })),
-    ...front.map((p) => ({ kind: 'front' as const, u: p.u, e: p.e, name: `B5, lambda ${formatNumber(p.lambda, lang, { digits: 3 })}` })),
+    ...front.map((p) => ({ kind: 'front' as const, u: p.u, e: p.e, name: `Efficiency-uniformity front, lambda ${formatNumber(p.lambda, lang, { digits: 3 })}` })),
   ];
   const xs = pts.map((p) => p.u);
   const kinds = [...KIND_ORDER, 'none' as const, 'front' as const].filter((k) => pts.some((p) => p.kind === k));
   const series = kinds.map((k) => ({
     id: k,
-    label: k === 'front' ? { en: 'B5 front (continuation over lambda)', es: 'Frente de B5 (continuación en lambda)' } : k === 'none' ? { en: 'not on the ladder', es: 'fuera de la escalera' } : KIND_TEXT[k],
+    label: k === 'front' ? { en: 'Efficiency-uniformity front (continuation over lambda)', es: 'Frente de frente eficiencia-uniformidad (continuación en lambda)' } : k === 'none' ? { en: 'not on the ladder', es: 'fuera de la escalera' } : KIND_TEXT[k],
     mode: 'points' as const,
     size: k === 'front' ? 7 : 10,
     values: pts.map((p) => (p.kind === k ? p.e : null)),
@@ -51,7 +51,7 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
       ) : null}
       {front.length === 0 ? (
         <p className="caos-pending" data-state="unavailable">
-          {es ? 'El documento no trae un frente de B5 para ninguna geometría; la comparación de hipervolumen no puede hacerse.' : 'The document holds no B5 front for any geometry; the hypervolume comparison cannot be made.'}
+          {es ? 'El documento no trae un frente de eficiencia-uniformidad para ninguna geometría; la comparación de hipervolumen no puede hacerse.' : 'The document holds no efficiency-uniformity front for any geometry; the hypervolume comparison cannot be made.'}
         </p>
       ) : null}
       {pts.length > 0 ? (
@@ -60,8 +60,8 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
           lane="offline"
           provenance="synthetic"
           note={{
-            en: `Methods at ${budgetText(budget).en}, parameters at their paper defaults. The front of B5 is computed on the ideal device whatever device is chosen. Up and to the right is better on both axes.`,
-            es: `Métodos con ${budgetText(budget).es}, con los parámetros por defecto de su artículo. El frente de B5 se calcula sobre el dispositivo ideal sea cual sea el elegido. Arriba y a la derecha es mejor en ambos ejes.`,
+            en: `Methods at ${budgetText(budget).en}, parameters at their paper defaults. The front of efficiency-uniformity front is computed on the ideal device whatever device is chosen. Up and to the right is better on both axes.`,
+            es: `Métodos con ${budgetText(budget).es}, con los parámetros por defecto de su artículo. El frente eficiencia-uniformidad se calcula sobre el dispositivo ideal sea cual sea el elegido. Arriba y a la derecha es mejor en ambos ejes.`,
           }}
         >
           <UPlotChart
@@ -88,8 +88,8 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
           <table className="caos-table" data-state="ready" data-table="bs5">
             <caption>
               {es
-                ? `La prueba de B5 en cada geometría con frente, con ${budgetText(budget).es}: el hipervolumen del frente de B5 contra el de la unión de los puntos de M04, M05, M06 y M09 (el criterio de la escalera), y qué puntos de esos cuatro domina algún punto del frente.`
-                : `The B5 test on each geometry with a front, at ${budgetText(budget).en}: the hypervolume of the B5 front against that of the union of the M04, M05, M06 and M09 points (the ladder's criterion), and which of those four points some front point dominates.`}
+                ? `La prueba de frente eficiencia-uniformidad en cada geometría con frente, con ${budgetText(budget).es}: el hipervolumen del frente eficiencia-uniformidad contra el de la unión de los puntos de Gerchberg-Saxton, aditivo adaptativo generalizado, el método de GS ponderado y búsqueda directa (el criterio de la escalera), y qué puntos de esos cuatro domina algún punto del frente.`
+                : `The efficiency-uniformity front test on each geometry with a front, at ${budgetText(budget).en}: the hypervolume of the efficiency-uniformity front against that of the union of the Gerchberg-Saxton, generalized adaptive additive, the weighted GS method and direct search points (the ladder's criterion), and which of those four points some front point dominates.`}
             </caption>
             <thead>
               <tr>
@@ -129,30 +129,30 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
 export function verdictLine(v: ReturnType<typeof verdictOf>, es: boolean): string {
   switch (v) {
     case 'supported':
-      return es ? 'Veredicto de B5 en esta celda: sustentado en todas las geometrías con frente.' : 'Verdict of B5 in this cell: supported on every geometry with a front.';
+      return es ? 'Veredicto de frente eficiencia-uniformidad en esta celda: sustentado en todas las geometrías con frente.' : 'Verdict of efficiency-uniformity front in this cell: supported on every geometry with a front.';
     case 'partly':
-      return es ? 'Veredicto de B5 en esta celda: sustentado en algunas geometrías y no en otras.' : 'Verdict of B5 in this cell: supported on some geometries and not on others.';
+      return es ? 'Veredicto de frente eficiencia-uniformidad en esta celda: sustentado en algunas geometrías y no en otras.' : 'Verdict of efficiency-uniformity front in this cell: supported on some geometries and not on others.';
     case 'not-supported':
-      return es ? 'Veredicto de B5 en esta celda: no sustentado en ninguna geometría con frente.' : 'Verdict of B5 in this cell: not supported on any geometry with a front.';
+      return es ? 'Veredicto de frente eficiencia-uniformidad en esta celda: no sustentado en ninguna geometría con frente.' : 'Verdict of efficiency-uniformity front in this cell: not supported on any geometry with a front.';
     default:
-      return es ? 'Veredicto de B5 en esta celda: sin datos (el documento no trae frente o faltan los métodos del criterio).' : 'Verdict of B5 in this cell: no data (the document holds no front or lacks the methods of the criterion).';
+      return es ? 'Veredicto de frente eficiencia-uniformidad en esta celda: sin datos (el documento no trae frente o faltan los métodos del criterio).' : 'Verdict of efficiency-uniformity front in this cell: no data (the document holds no front or lacks the methods of the criterion).';
   }
 }
 
 export function ParetoTopic() {
   const { data } = useBench();
   return (
-    <DocSection title={{ en: 'Pareto fronts: B5 against the single points', es: 'Frentes de Pareto: B5 frente a los puntos sueltos' }} id="pareto" area="comparison" refs={['dileonardo2007']}>
+    <DocSection title={{ en: 'Pareto fronts: efficiency-uniformity front against the single points', es: 'Frentes de Pareto: el método de frente eficiencia-uniformidad frente a los puntos sueltos' }} id="pareto" area="comparison" refs={['dileonardo2007']}>
       <P
         en={
           <>
-            Every method trades efficiency against uniformity, and the published tables give each one a single trade-off point at the weight or mixing parameter its authors chose <Cite id="dileonardo2007" />. B5 (engine id B5) computes the whole front by a continuation over a trade-off parameter, so the question the chart answers is where the single points of the other methods sit relative to the best trade-off attainable on the same task. A point under the front is a method that gives up light or uniformity that the front shows can be kept; a point on it is a trade-off that the front cannot improve on.
-          </>
+            Every method trades efficiency against uniformity, and the published tables give each one a single trade-off point at the weight or mixing parameter its authors chose <Cite id="dileonardo2007" />. Efficiency-uniformity front (engine id efficiency-uniformity front) computes the whole front by a continuation over a trade-off parameter, so the question the chart answers is where the single points of the other methods sit relative to the best trade-off attainable on the same task. A point under the front is a method that gives up light or uniformity that the front shows can be kept; a point on it is a trade-off that the front cannot improve on.
+ </>
         }
         es={
           <>
-            Cada método intercambia eficiencia por uniformidad, y las tablas publicadas dan a cada uno un solo punto de ese intercambio, en el peso o el parámetro de mezcla que eligieron sus autores <Cite id="dileonardo2007" />. B5 (identificador de motor B5) calcula el frente completo por continuación sobre un parámetro de intercambio, de modo que la pregunta que responde el gráfico es dónde quedan los puntos sueltos de los demás métodos respecto del mejor intercambio alcanzable en la misma tarea. Un punto bajo el frente es un método que cede luz o uniformidad que el frente muestra que puede conservarse; un punto sobre él es un intercambio que el frente no puede mejorar.
-          </>
+            Cada método intercambia eficiencia por uniformidad, y las tablas publicadas dan a cada uno un solo punto de ese intercambio, en el peso o el parámetro de mezcla que eligieron sus autores <Cite id="dileonardo2007" />. Frente eficiencia-uniformidad (identificador de motor frente eficiencia-uniformidad) calcula el frente completo por continuación sobre un parámetro de intercambio, de modo que la pregunta que responde el gráfico es dónde quedan los puntos sueltos de los demás métodos respecto del mejor intercambio alcanzable en la misma tarea. Un punto bajo el frente es un método que cede luz o uniformidad que el frente muestra que puede conservarse; un punto sobre él es un intercambio que el frente no puede mejorar.
+ </>
         }
       />
       <Note ids={['benchmark-results']} />

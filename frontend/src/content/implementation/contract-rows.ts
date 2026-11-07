@@ -55,7 +55,7 @@ export const CONTRACT_ROWS: ContractRow[] = [
     id: 'cgh-net',
     version: '1.0.1',
     owner: 'data-pipeline/pipeline/stages/train.py',
-    what: { en: 'The model slot target amplitude to phase mask: a card and an ONNX graph. The volumetric GS (M19) at 30 iterations is its baseline.', es: 'El espacio de modelo amplitud objetivo a máscara de fase: una ficha y un grafo ONNX. El GS volumétrico (M19) a 30 iteraciones es su línea base.' },
+    what: { en: 'The model slot target amplitude to phase mask: a card and an ONNX graph. The volumetric GS at 30 iterations is its baseline.', es: 'El espacio de modelo amplitud objetivo a máscara de fase: una ficha y un grafo ONNX. El GS volumétrico a 30 iteraciones es su línea base.' },
     reader: { en: 'lib/ort.ts, in the browser', es: 'lib/ort.ts, en el navegador' },
   },
   {
@@ -63,7 +63,7 @@ export const CONTRACT_ROWS: ContractRow[] = [
     version: '1.0.1',
     owner: 'data-pipeline/pipeline/stages/train.py',
     what: { en: 'The model slot trap list to trap phases: a card and an ONNX graph. The random trap phases of the portable RNG are its baseline.', es: 'El espacio de modelo lista de trampas a fases de trampas: una ficha y un grafo ONNX. Las fases aleatorias de las trampas del RNG portable son su línea base.' },
-    reader: { en: 'lib/ort.ts, in the browser; its phases start the live M07 run', es: 'lib/ort.ts, en el navegador; sus fases inician la corrida en vivo de M07' },
+    reader: { en: 'lib/ort.ts, in the browser; its phases start the live phase-fixed weighted GS run', es: 'lib/ort.ts, en el navegador; sus fases inician la corrida en vivo de GS ponderado con fase fija' },
   },
   {
     id: 'model-metrics',

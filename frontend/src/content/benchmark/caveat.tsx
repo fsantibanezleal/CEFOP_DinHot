@@ -33,8 +33,8 @@ function Limits({ res }: { res: BenchmarkResults }) {
       es: `${skipped} celdas no se corrieron porque un método no acepta el objetivo o la dimensión; están listadas, no son cero, y un resumen por tipo de método que las omite compara menos métodos en esas geometrías.`,
     },
     {
-      en: 'The quantities of B1, B2 and B4 that the matrix cannot reproduce are recorded values of the acceptance tests, labelled as such; B3 is refuted and B4 gives no robustness to pointing errors at its acceptance budget. The learned models are judged on generated held-out volumes and geometries, not on experimental data, against a baseline given the same wall-clock.',
-      es: 'Las cantidades de B1, B2 y B4 que la matriz no puede reproducir son valores registrados de las pruebas de aceptación, rotulados como tales; B3 está refutada y B4 no da robustez a errores de puntería con su presupuesto de aceptación. Los modelos aprendidos se juzgan sobre volúmenes y geometrías reservados generados, no sobre datos experimentales, contra una línea base con el mismo reloj.',
+      en: 'The quantities of device-aware WGS, the flicker-bounded sequence method and aberration-robust hologram that the matrix cannot reproduce are recorded values of the acceptance tests, labelled as such; the learned warm start method is refuted and aberration-robust hologram gives no robustness to pointing errors at its acceptance budget. The learned models are judged on generated held-out volumes and geometries, not on experimental data, against a baseline given the same wall-clock.',
+      es: 'Las cantidades de WGS con modelo del dispositivo, el método de secuencia acotada por parpadeo y holograma robusto a aberraciones que la matriz no puede reproducir son valores registrados de las pruebas de aceptación, rotulados como tales; el arranque aprendido está refutado y holograma robusto a aberraciones no da robustez a errores de puntería con su presupuesto de aceptación. Los modelos aprendidos se juzgan sobre volúmenes y geometrías reservados generados, no sobre datos experimentales, contra una línea base con el mismo reloj.',
     },
   ];
   return (

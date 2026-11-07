@@ -47,44 +47,44 @@ export function Methodology() {
               id: 'superposition-gs',
               label: t('Superposition and Gerchberg-Saxton', 'Superposición y Gerchberg-Saxton'),
               tabs: [
-                { id: 'analytic', label: t('Analytic (M01 to M03)', 'Analíticos (M01 a M03)'), content: <AnalyticTopic /> },
-                { id: 'gs', label: t('GS family and 3D GS (M04 to M06, M19)', 'Familia GS y GS 3D (M04 a M06, M19)'), content: <GsTopic /> },
-                { id: 'phase-fixed', label: t('Phase-fixed WGS (M07)', 'WGS de fase fija (M07)'), content: <PhaseFixedTopic /> },
+                { id: 'analytic', label: t('Analytic', 'Analíticos'), content: <AnalyticTopic /> },
+                { id: 'gs', label: t('GS family and 3D GS', 'Familia GS y GS 3D'), content: <GsTopic /> },
+                { id: 'phase-fixed', label: t('Phase-fixed WGS', 'WGS de fase fija'), content: <PhaseFixedTopic /> },
               ],
             },
             {
               id: 'optimization',
               label: t('Optimization', 'Optimización'),
               tabs: [
-                { id: 'direct', label: t('Direct search (M09)', 'Búsqueda directa (M09)'), content: <DirectTopic /> },
-                { id: 'gradient', label: t('Gradient methods (M10, M11, M13)', 'Métodos de gradiente (M10, M11, M13)'), content: <GradientTopic /> },
+                { id: 'direct', label: t('Direct search', 'Búsqueda directa'), content: <DirectTopic /> },
+                { id: 'gradient', label: t('Gradient methods', 'Métodos de gradiente'), content: <GradientTopic /> },
               ],
             },
             {
               id: 'shaped-potentials',
               label: t('Shaped potentials, vortices and aberrations', 'Potenciales con forma, vórtices y aberraciones'),
               tabs: [
-                { id: 'shaped', label: t('MRAF and transport (M08, M18)', 'MRAF y transporte (M08, M18)'), content: <ShapedTopic /> },
-                { id: 'aberration', label: t('Aberrations and vortices (M14, M15)', 'Aberraciones y vórtices (M14, M15)'), content: <AberrationTopic /> },
+                { id: 'shaped', label: t('MRAF and transport', 'MRAF y transporte'), content: <ShapedTopic /> },
+                { id: 'aberration', label: t('Aberrations and vortices', 'Aberraciones y vórtices'), content: <AberrationTopic /> },
               ],
             },
             {
               id: 'feedback',
               label: t('Feedback, motion and learning', 'Realimentación, movimiento y aprendizaje'),
               tabs: [
-                { id: 'loop', label: t('Feedback and rearrangement (M12, M16)', 'Retroalimentación y reordenamiento (M12, M16)'), content: <LoopTopic /> },
-                { id: 'cnn', label: t('CNN hologram (M17)', 'Holograma CNN (M17)'), content: <CnnTopic /> },
+                { id: 'loop', label: t('Feedback and rearrangement', 'Retroalimentación y reordenamiento'), content: <LoopTopic /> },
+                { id: 'cnn', label: t('CNN hologram', 'Holograma CNN'), content: <CnnTopic /> },
               ],
             },
             {
               id: 'proposed',
               label: t('Proposed methods', 'Métodos propuestos'),
               tabs: [
-                { id: 'device-aware-wgs', label: t('Device-aware WGS (B1)', 'WGS consciente del dispositivo (B1)'), content: <Bs1Topic /> },
-                { id: 'flicker-bounded', label: t('Flicker-bounded sequence (B2)', 'Secuencia acotada en parpadeo (B2)'), content: <Bs2Topic /> },
-                { id: 'learned-warm-start', label: t('Learned warm start, refuted (B3)', 'Arranque aprendido, refutado (B3)'), content: <Bs3Topic /> },
-                { id: 'robust-hologram', label: t('Aberration-robust hologram (B4)', 'Holograma robusto a aberraciones (B4)'), content: <Bs4Topic /> },
-                { id: 'pareto-front', label: t('Efficiency-uniformity front (B5)', 'Frente eficiencia-uniformidad (B5)'), content: <Bs5Topic /> },
+                { id: 'device-aware-wgs', label: t('Device-aware WGS', 'WGS consciente del dispositivo'), content: <Bs1Topic /> },
+                { id: 'flicker-bounded', label: t('Flicker-bounded sequence', 'Secuencia acotada en parpadeo'), content: <Bs2Topic /> },
+                { id: 'learned-warm-start', label: t('Learned warm start, refuted', 'Arranque aprendido, refutado'), content: <Bs3Topic /> },
+                { id: 'robust-hologram', label: t('Aberration-robust hologram', 'Holograma robusto a aberraciones'), content: <Bs4Topic /> },
+                { id: 'pareto-front', label: t('Efficiency-uniformity front', 'Frente eficiencia-uniformidad'), content: <Bs5Topic /> },
               ],
             },
           ]}

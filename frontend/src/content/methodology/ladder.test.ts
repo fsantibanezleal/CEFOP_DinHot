@@ -75,6 +75,6 @@ describe('the ladder on the Methodology page', () => {
 
   it('keeps the page within six groups and names a design record file for every row', () => {
     expect(new Set(PLAN.map((t) => t.group)).size).toBeLessThanOrEqual(6);
-    for (const row of LADDER) expect(row.record, row.id).toMatch(/^(M|B)\d+-.+\.md$/);
+    for (const row of LADDER) expect(row.slug, row.id).toMatch(/^.+\.md$/);
   });
 });

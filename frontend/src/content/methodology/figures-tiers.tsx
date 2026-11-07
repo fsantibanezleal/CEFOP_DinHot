@@ -110,7 +110,7 @@ export function TransientFigure({ t }: { t: Tr }) {
       <Label x={X0 + 260} y={Y0 + 30}>{t('frames of the trajectory, in time', 'cuadros de la trayectoria, en el tiempo')}</Label>
       <Label x={36} y={110} kind="tick">I / mean</Label>
       <Label x={250} y={176} kind="tick">{t('frames not optimized (LPI)', 'cuadros sin optimizar (LPI)')}</Label>
-      <Label x={330} y={46} kind="tick">{t('optimized frames, locked phases (B2)', 'cuadros optimizados, fases ligadas (B2)')}</Label>
+      <Label x={330} y={46} kind="tick">{t('optimized frames, locked phases', 'cuadros optimizados, fases ligadas')}</Label>
       <Label x={X0 + 260} y={Y0 + 50} kind="note">{t('schematic of the mechanism, not a result', 'esquema del mecanismo, no un resultado')}</Label>
     </Svg>
   );
@@ -128,8 +128,8 @@ export function RobustFigure({ t }: { t: Tr }) {
       <path d="M 70 150 C 250 148 380 120 590 80" className="dg-curve" />
       <Label x={X0 + 260} y={Y0 + 32}>{t('residual aberration, drawn from the prior', 'aberración residual, sorteada del a priori')}</Label>
       <Label x={40} y={100} kind="tick">σ</Label>
-      <Label x={520} y={22} anchor="end" kind="tick">{t('nominal phase-fixed WGS (M07)', 'WGS de fase fija nominal (M07)')}</Label>
-      <Label x={560} y={104} anchor="end" kind="tick">{t('robust hologram (B4)', 'holograma robusto (B4)')}</Label>
+      <Label x={520} y={22} anchor="end" kind="tick">{t('nominal phase-fixed WGS', 'WGS de fase fija nominal')}</Label>
+      <Label x={560} y={104} anchor="end" kind="tick">{t('robust hologram', 'holograma robusto')}</Label>
       <Label x={X0 + 260} y={Y0 + 54} kind="note">{t('sigma points: ± s_a √8 on one mode at a time; schematic, not a result', 'puntos sigma: ± s_a √8 en un modo a la vez; esquema, no un resultado')}</Label>
     </Svg>
   );

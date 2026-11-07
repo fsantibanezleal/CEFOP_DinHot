@@ -17,7 +17,7 @@ export const BENCHMARK_CITATIONS: Citation[] = [
     id: 'slmsuite',
     label: { en: 'slmsuite 0.5.0', es: 'slmsuite 0.5.0' },
     citation:
-      'slmsuite: a Python package for holography with spatial light modulators (MIT licence; release 0.5.0 of 2026-10-05, PyPI project slmsuite). Its weighted GS is the phase-fixed form of Kim et al. 2019; the benchmark of DinHot uses it as a cross-check of M07, not as a method of the matrix.',
+      'slmsuite: a Python package for holography with spatial light modulators (MIT licence; release 0.5.0 of 2026-10-05, PyPI project slmsuite). Its weighted GS is the phase-fixed form of Kim et al. 2019; the benchmark of DinHot uses it as a cross-check of phase-fixed weighted GS, not as a method of the matrix.',
     url: 'https://github.com/slmsuite/slmsuite',
   },
 ];

@@ -107,15 +107,15 @@ export function AnalyticFigure({ t }: { t: Tr }) {
   return (
     <Svg h={230} label={t('Phasor sum of prisms and lenses, the same with random phases, and the pixel subdomains of the random mask', 'Suma de fasores de prismas y lentes, la misma con fases aleatorias, y los subdominios de píxeles de la máscara aleatoria')}>
       <ArrowDefs id={id} />
-      <Label x={110} y={28}>{t('M01: arg of the sum', 'M01: arg de la suma')}</Label>
+      <Label x={110} y={28}>{t('Prisms and lenses: arg of the sum', 'Prismas y lentes: arg de la suma')}</Label>
       {a.segs}
       <Arrow id={id} x1={50} y1={120} x2={a.x} y2={a.y} dashed />
       <Label x={110} y={190} kind="tick">exp(iΔ)</Label>
-      <Label x={310} y={28}>{t('M02: random θ_m added', 'M02: se suma θ_m aleatorio')}</Label>
+      <Label x={310} y={28}>{t('Random superposition: random θ_m added', 'Superposición aleatoria: se suma θ_m aleatorio')}</Label>
       {b.segs}
       <Arrow id={id} x1={250} y1={120} x2={b.x} y2={b.y} dashed />
       <Label x={310} y={190} kind="tick">exp(i(Δ + θ_m))</Label>
-      <Label x={525} y={28}>{t('M03: one trap per pixel', 'M03: una trampa por píxel')}</Label>
+      <Label x={525} y={28}>{t('Random mask: one trap per pixel', 'Máscara aleatoria: una trampa por píxel')}</Label>
       {CELL.map((row, r) =>
         row.map((c, k) => <rect key={`${r}-${k}`} x={465 + k * 15} y={45 + r * 15} width={14} height={14} style={{ fill: TRAP_FILL[c], opacity: 0.8 }} />),
       )}
@@ -173,21 +173,21 @@ export function CostFigure({ t }: { t: Tr }) {
   return (
     <Svg h={250} label={t('Conjugate gradient, Wirtinger descent and device-aware conjugate gradient as three loops', 'Gradiente conjugado, descenso de Wirtinger y gradiente conjugado consciente del dispositivo como tres lazos')}>
       <ArrowDefs id={id} />
-      <Label x={110} y={22}>M10</Label>
+      <Label x={110} y={22}>conjugate gradient</Label>
       <Box x={20} y={34} w={180} h={40} lines={[t('two FFTs: C and ∂C/∂φ', 'dos FFT: C y ∂C/∂φ')]} />
       <Box x={20} y={102} w={180} h={40} lines={['d = g + γ d_prev']} />
       <Box x={20} y={170} w={180} h={40} lines={[t('line step along d', 'paso en línea a lo largo de d')]} tone="good" />
       <Arrow id={id} x1={110} y1={74} x2={110} y2={102} />
       <Arrow id={id} x1={110} y1={142} x2={110} y2={170} />
-      <Label x={320} y={22}>M11</Label>
+      <Label x={320} y={22}>Wirtinger gradient with Adam</Label>
       <Box x={230} y={34} w={180} h={40} lines={[t('forward model P(φ)', 'modelo directo P(φ)')]} />
       <Box x={230} y={102} w={180} h={40} lines={[t('Wirtinger gradient', 'gradiente de Wirtinger')]} />
       <Box x={230} y={170} w={180} h={40} lines={[t('Adam step on φ', 'paso de Adam sobre φ')]} tone="good" />
       <Arrow id={id} x1={320} y1={74} x2={320} y2={102} />
       <Arrow id={id} x1={320} y1={142} x2={320} y2={170} />
-      <Label x={530} y={22}>M13</Label>
+      <Label x={530} y={22}>device-aware CG</Label>
       <Box x={440} y={34} w={180} h={40} lines={[t('device: K * Uφ, quantizer', 'dispositivo: K * Uφ, cuantizador')]} tone="accent" />
-      <Box x={440} y={102} w={180} h={40} lines={[t('cost C of M10 on the field', 'costo C de M10 sobre el campo')]} />
+      <Box x={440} y={102} w={180} h={40} lines={[t('cost C of conjugate gradient on the field', 'costo C de gradiente conjugado sobre el campo')]} />
       <Box x={440} y={170} w={180} h={40} lines={[t('adjoint of K: gradient', 'adjunto de K: gradiente')]} tone="good" />
       <Arrow id={id} x1={530} y1={74} x2={530} y2={102} />
       <Arrow id={id} x1={530} y1={142} x2={530} y2={170} />
@@ -287,7 +287,7 @@ export function CnnFigure({ t }: { t: Tr }) {
       <Arrow id={id} x1={380} y1={68} x2={410} y2={68} />
       <Arrow id={id} x1={520} y1={68} x2={550} y2={68} />
       <PathArrow id={id} d="M 590 96 L 590 140 L 195 140 L 195 96" label={t('gradient to θ (training, offline)', 'gradiente hacia θ (entrenamiento, fuera de línea)')} lx={392} ly={158} dashed />
-      <Box x={140} y={180} w={250} h={52} lines={[t('baseline: M19', 'línea base: M19'), t('same wall-clock', 'igual tiempo de reloj')]} />
+      <Box x={140} y={180} w={250} h={52} lines={[t('baseline: multi-plane GS', 'línea base: GS multiplano'), t('same wall-clock', 'igual tiempo de reloj')]} />
       <Label x={410} y={212} anchor="start" kind="note">{t('held-out volumes', 'volúmenes reservados')}</Label>
     </Svg>
   );
