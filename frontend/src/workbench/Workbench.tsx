@@ -34,6 +34,7 @@ import { isShaped, methodLabel, replayMaps, replayResult, trapsOf, UnavailableCo
 import { paramsFor, useEngine, useGpuProbe, useLiveRun, useSlots, type GpuProbe } from './run';
 import { addTrap, deleteTrap, moveTrap } from './traps';
 import { TrapsGroup } from './TrapsGroup';
+import { useTrapLink } from './trapLink';
 import { ActionsContext, CASE_ROWS, LOADING, localizeDecimals, Pending, type Actions, type EditMode } from './ui';
 import { coeffArray, J_MAX } from './zernike';
 import './workbench.css';
@@ -169,6 +170,9 @@ export function Workbench() {
     for (let j = 2; j <= J_MAX; j++) if (coeffs[j - 1] !== 0) o[String(j)] = coeffs[j - 1];
     return o;
   }, [coeffs]);
+
+  // One trap selection across the views: the workbench's trap and the shell's linked `selectedId` are the same selection.
+  useTrapLink(selected ?? '', r?.trapId ?? null, traps, (id) => patch({ trapId: id }));
 
   const live = useLiveRun({
     data,
