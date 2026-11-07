@@ -18,6 +18,7 @@ const Experiments = lazy(() => import('./pages/Experiments').then((module) => ({
 const Implementation = lazy(() => import('./pages/Implementation').then((module) => ({ default: module.Implementation })));
 const Introduction = lazy(() => import('./pages/Introduction').then((module) => ({ default: module.Introduction })));
 const Methodology = lazy(() => import('./pages/Methodology').then((module) => ({ default: module.Methodology })));
+const Story = lazy(() => import('./pages/Story').then((module) => ({ default: module.Story })));
 const Workbench = lazy(() => import('./workbench/Workbench').then((module) => ({ default: module.Workbench })));
 
 const config: ShellConfig = {
@@ -29,6 +30,7 @@ const config: ShellConfig = {
   license: { en: `${product.license} licence`, es: `Licencia ${product.license}` },
   visibility: product.visibility === 'private' ? 'private' : 'public',
   contain: true,
+  immersiveRoutes: ['/story'],
   architecture,
 };
 
@@ -41,6 +43,7 @@ export function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/app" element={<Workbench />} />
+            <Route path="/story/:step" element={<Story />} />
             <Route path="/introduction" element={<Introduction />} />
             <Route path="/methodology" element={<Methodology />} />
             <Route path="/implementation" element={<Implementation />} />
