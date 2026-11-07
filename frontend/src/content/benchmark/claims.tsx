@@ -9,7 +9,7 @@ import type { BenchmarkResults, CaseManifest } from '../../lib/contract.types';
 import { P } from '../bi';
 import { methodName } from '../../workbench/model';
 import { LADDER } from '../methodology/ladder';
-import { budgetText, CRITERIA, b5Cells, median, ratioCells, skippedIn, verdictOf, type Lang, type Verdict, type RatioCell } from './data';
+import { budgetText, nameIds, CRITERIA, b5Cells, median, ratioCells, skippedIn, verdictOf, type Lang, type Verdict, type RatioCell } from './data';
 import { verdictLine } from './pareto';
 import { RECORDED } from './recorded';
 import { defaultBudget, Note, Ready, TableWrap, useBench, useNum, WRAP } from './shared';
@@ -183,7 +183,7 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
     {
       id: ID.B3,
       baseline: es ? 'Arranque aleatorio de GS ponderado con fase fija' : 'Phase-fixed weighted GS random start',
-      matrix: b3skipped.length ? (es ? `${b3skipped.length} ${b3skipped.length === 1 ? 'celda de arranque aprendido no corrida' : 'celdas de arranque aprendido no corridas'}: ${b3skipped[0].reason.es}` : `${b3skipped.length} learned warm start ${b3skipped.length === 1 ? 'cell' : 'cells'} not run: ${b3skipped[0].reason.en}`) : es ? 'sin celdas de arranque aprendido listadas como no corridas' : 'no learned warm start cell listed as not run',
+      matrix: b3skipped.length ? (es ? `${b3skipped.length} ${b3skipped.length === 1 ? 'celda de arranque aprendido no corrida' : 'celdas de arranque aprendido no corridas'}: ${nameIds(b3skipped[0].reason.es, 'es')}` : `${b3skipped.length} learned warm start ${b3skipped.length === 1 ? 'cell' : 'cells'} not run: ${nameIds(b3skipped[0].reason.en, 'en')}`) : es ? 'sin celdas de arranque aprendido listadas como no corridas' : 'no learned warm start cell listed as not run',
       recorded: warm
         ? es
           ? `mediana de ${n(warm.metrics.iterations_to_1pct.model.median)} iteraciones contra ${n(warm.metrics.iterations_to_1pct.random.median)} del arranque aleatorio (${n(ratio3)} veces, el criterio pide ${CRITERIA.b3.iterationFactor}); el control sin red gana lo mismo`

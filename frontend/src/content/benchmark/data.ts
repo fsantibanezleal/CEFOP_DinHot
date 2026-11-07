@@ -36,6 +36,8 @@ const kindRank = (method: string) => {
 };
 /** The name of a method on the ladder, in a language; the id itself when the ladder does not know it. */
 export const nameOf = (method: string, lang: Lang): string => ladderOf(method)?.name[lang] ?? method;
+/** A text of the artifact (a reason a cell was not run) with the ids it holds replaced by the method names. */
+export const nameIds = (text: string, lang: Lang): string => text.replace(/(?<![\w.-])(M\d{2}|B[1-5])(?![\w-])/g, (m) => nameOf(m, lang));
 /** The id the reader sees: the engine id of the method (M01 to M19, B1 to B5). */
 export function shownId(method: string): string {
   return ladderOf(method)?.engine ?? method;

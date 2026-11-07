@@ -4,7 +4,7 @@
 import { BarChart, Cite, DocSection, PlotCard, useShellLang, type BarDatum } from '@fasl-work/caos-app-shell';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import { bestOfKind, bestPublished, budgetText, KIND_ORDER, KIND_TEXT, mostUniform, nameOf, pickRows, shownId, type Lang, type Picked } from './data';
+import { bestOfKind, bestPublished, budgetText, KIND_ORDER, KIND_TEXT, mostUniform, nameOf, pickRows, type Lang, type Picked } from './data';
 import { CellControls, Note, Ready, TableWrap, KIND_LEGEND, KIND_TONE, useBench, useNum, useResolved } from './shared';
 
 function KindBody({ res }: { res: BenchmarkResults }) {
@@ -18,7 +18,7 @@ function KindBody({ res }: { res: BenchmarkResults }) {
     const b = bestOfKind(rows, kind);
     return b ? (
       <td key={key} className="caos-col-text" style={{ whiteSpace: 'normal' }}>
-        {shownId(b.method)} {b.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : ''}
+        {nameOf(b.method, lang)} {b.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : ''}
         <span className="caos-plot-note" style={{ display: 'block' }}>
           {pct(b.row.rel_std_pct.median)}, {es ? 'eficiencia' : 'efficiency'} {n(b.row.efficiency.median)}
         </span>
@@ -37,7 +37,7 @@ function KindBody({ res }: { res: BenchmarkResults }) {
   const bars: BarDatum[] = byGeometry.flatMap(({ g, rows }) =>
     KIND_ORDER.flatMap((kind) => {
       const b = bestOfKind(rows, kind);
-      return b ? [{ id: `${g.id}-${kind}`, label: { en: `${g.id} ${KIND_TEXT[kind].en}`, es: `${g.id} ${KIND_TEXT[kind].es}` }, value: b.row.uniformity.median, tone: KIND_TONE[kind], hint: { en: `${shownId(b.method)} ${nameOf(b.method, 'en')}`, es: `${shownId(b.method)} ${nameOf(b.method, 'es')}` } }] : [];
+      return b ? [{ id: `${g.id}-${kind}`, label: { en: `${g.id} ${KIND_TEXT[kind].en}`, es: `${g.id} ${KIND_TEXT[kind].es}` }, value: b.row.uniformity.median, tone: KIND_TONE[kind], hint: { en: `${nameOf(b.method, 'en')}`, es: `${nameOf(b.method, 'es')}` } }] : [];
     }),
   );
   const whole = byGeometry.flatMap(({ rows }) => rows);
@@ -119,10 +119,10 @@ function KindBody({ res }: { res: BenchmarkResults }) {
                   <tr key={`${g.id}-${p.method}`}>
                     <td className="caos-col-text">{g.id}</td>
                     <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
-                      {shownId(p.method)} {p.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : view === 'tuned' ? (es ? '(por defecto)' : '(default)') : ''}
+                      {nameOf(p.method, lang)} {p.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : view === 'tuned' ? (es ? '(por defecto)' : '(default)') : ''}
                     </td>
                     <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
-                      {base ? `${shownId(base.method)} ${base.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : view === 'tuned' ? (es ? '(por defecto)' : '(default)') : ''}` : es ? 'sin fila' : 'no row'}
+                      {base ? `${nameOf(base.method, lang)} ${base.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : view === 'tuned' ? (es ? '(por defecto)' : '(default)') : ''}` : es ? 'sin fila' : 'no row'}
                     </td>
                     <td>{n(factor)}</td>
                     <td>{n(ratio)}</td>
@@ -136,8 +136,8 @@ function KindBody({ res }: { res: BenchmarkResults }) {
       <p className="caos-plot-note" lang={lang}>
         {overall
           ? es
-            ? `En todo el documento, en esta celda, el método más uniforme es ${shownId(overall.method)} (${pct(overall.row.rel_std_pct.median)}).`
-            : `Across every geometry of this cell the most uniform method is ${shownId(overall.method)} (${pct(overall.row.rel_std_pct.median)}).`
+            ? `En todo el documento, en esta celda, el método más uniforme es ${nameOf(overall.method, 'es')} (${pct(overall.row.rel_std_pct.median)}).`
+            : `Across every geometry of this cell the most uniform method is ${nameOf(overall.method, 'en')} (${pct(overall.row.rel_std_pct.median)}).`
           : ''}
       </p>
     </>

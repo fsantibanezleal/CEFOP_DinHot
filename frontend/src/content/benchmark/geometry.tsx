@@ -12,8 +12,8 @@ import {
   budgetText,
   geometryOf,
   methodsIn,
+  nameIds,
   nameOf,
-  shownId,
   skippedIn,
   KIND_ORDER,
   KIND_TEXT,
@@ -84,7 +84,7 @@ export function MethodsTable({ res, geometry }: { res: BenchmarkResults; geometr
             <tr key={`${p.method}-${p.params}`} data-method={p.method} data-tier={p.kind ?? 'none'} data-params={p.params}>
               <td className="caos-col-text">{p.kind ? KIND_TEXT[p.kind][lang] : '-'}</td>
               <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
-                {shownId(p.method)} {nameOf(p.method, lang)}
+                {nameOf(p.method, lang)}
               </td>
               <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
                 <ParamsTag p={p} view={view} />
@@ -101,11 +101,11 @@ export function MethodsTable({ res, geometry }: { res: BenchmarkResults; geometr
             <tr key={`skip-${s.method}`} data-method={s.method} data-skipped="true">
               <td className="caos-col-text">{kindShort(s.method, lang)}</td>
               <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
-                {shownId(s.method)} {nameOf(s.method, lang)}
+                {nameOf(s.method, lang)}
               </td>
               <td className="caos-col-text">{es ? 'no corrida' : 'not run'}</td>
               <td colSpan={6} className="caos-col-text" style={{ ...WRAP, whiteSpace: 'normal' }}>
-                {s.reason[lang]}
+                {nameIds(s.reason[lang], lang)}
               </td>
             </tr>
           ))}
@@ -127,7 +127,7 @@ function MetricBars({ rows, pick, title, axis, view }: { rows: Picked[]; pick: (
     label: barLabel(p, p.method, view as 'default' | 'tuned'),
     value: pick(p),
     tone: KIND_TONE[p.kind ?? 'none'],
-    hint: { en: `${shownId(p.method)} ${nameOf(p.method, 'en')}`, es: `${shownId(p.method)} ${nameOf(p.method, 'es')}` },
+    hint: { en: `${nameOf(p.method, 'en')}`, es: `${nameOf(p.method, 'es')}` },
   }));
   return (
     <PlotCard title={title} lane="offline" provenance="synthetic">
@@ -171,7 +171,7 @@ function LogPoints({ rows, pick, title, axis, unit, floor, view }: { rows: Picke
         readout={(i) => {
           const p = rows[i];
           if (!p) return '';
-          return `${shownId(p.method)} ${nameOf(p.method, lang)}: ${formatNumber(pick(p), lang, { digits: 3 })}`;
+          return `${nameOf(p.method, lang)}: ${formatNumber(pick(p), lang, { digits: 3 })}`;
         }}
       />
     </PlotCard>
@@ -191,8 +191,8 @@ function Reading({ res, geometry }: { res: BenchmarkResults; geometry: string })
     const nmEs = kind === 'published' ? 'los métodos publicados' : 'los métodos propuestos';
     if (!b) return es ? `entre ${nmEs} no corrió ninguno en esta celda` : `no ${nm} method ran in this cell`;
     return es
-      ? `entre ${nmEs} el más uniforme es ${shownId(b.method)} (${pct(b.row.rel_std_pct.median)}, con eficiencia ${n(b.row.efficiency.median)})`
-      : `among the ${nm} methods the most uniform is ${shownId(b.method)} (${pct(b.row.rel_std_pct.median)}, at efficiency ${n(b.row.efficiency.median)})`;
+      ? `entre ${nmEs} el más uniforme es ${nameOf(b.method, 'es')} (${pct(b.row.rel_std_pct.median)}, con eficiencia ${n(b.row.efficiency.median)})`
+      : `among the ${nm} methods the most uniform is ${nameOf(b.method, 'en')} (${pct(b.row.rel_std_pct.median)}, at efficiency ${n(b.row.efficiency.median)})`;
   });
   return (
     <P

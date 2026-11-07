@@ -3,7 +3,7 @@
 import { Callout, DocSection, useShellLang } from '@fasl-work/caos-app-shell';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import { skippedIn } from './data';
+import { nameOf, skippedIn } from './data';
 import { Note, Ready, useBench } from './shared';
 
 function Limits({ res }: { res: BenchmarkResults }) {
@@ -25,8 +25,8 @@ function Limits({ res }: { res: BenchmarkResults }) {
       es: 'Toda geometría es sintética y el dispositivo C08 es un modelo cuyos parámetros de diafonía vienen de una calibración publicada; ninguna fila es una medición en una SLM física, y un método que gana aquí puede perder en un dispositivo que el modelo no describe.',
     },
     {
-      en: tuned.length ? `Only the methods that declare a tuning grid have tuned rows (${tuned.join(', ')} in this document), so a tuned view compares those methods at their best grid point with the others at their labelled default; it is not a comparison of every family at its optimum.` : 'This document holds no tuned row, so every comparison is between default parameters.',
-      es: tuned.length ? `Solo los métodos que declaran una rejilla de ajuste tienen filas ajustadas (${tuned.join(', ')} en este documento), de modo que una vista ajustada compara esos métodos en su mejor punto de la rejilla con los demás en su valor por defecto rotulado; no es una comparación de cada familia en su óptimo.` : 'Este documento no trae filas ajustadas, así que toda comparación es entre parámetros por defecto.',
+      en: tuned.length ? `Only the methods that declare a tuning grid have tuned rows (${tuned.map((m) => nameOf(m, 'en')).join(', ')} in this document), so a tuned view compares those methods at their best grid point with the others at their labelled default; it is not a comparison of every family at its optimum.` : 'This document holds no tuned row, so every comparison is between default parameters.',
+      es: tuned.length ? `Solo los métodos que declaran una rejilla de ajuste tienen filas ajustadas (${tuned.map((m) => nameOf(m, 'es')).join(', ')} en este documento), de modo que una vista ajustada compara esos métodos en su mejor punto de la rejilla con los demás en su valor por defecto rotulado; no es una comparación de cada familia en su óptimo.` : 'Este documento no trae filas ajustadas, así que toda comparación es entre parámetros por defecto.',
     },
     {
       en: `${skipped} cells were not run because a method does not accept the target or the dimension; they are listed, not zero, and a summary by kind of method that skips them compares fewer methods on those geometries.`,

@@ -6,7 +6,7 @@ import type { BenchmarkResults, CaseManifest, ModelMetrics } from '../../lib/con
 import { P } from '../bi';
 import { modelAnswers } from '../../readiness/readiness';
 import { useReadiness } from '../../readiness/useReadiness';
-import { budgetText, CRITERIA, pickRows, shownId, type Lang } from './data';
+import { budgetText, CRITERIA, pickRows, nameOf, type Lang } from './data';
 import { CellControls, Note, Pending, Ready, TableWrap, useBench, useNum, useResolved } from './shared';
 import { WARM } from './warm';
 import { ID } from '../../lib/methodIds';
@@ -146,7 +146,7 @@ function PairTable({ res, c14 }: { res: BenchmarkResults; c14: CaseManifest | un
                 [a, b].map((p) => (
                   <tr key={`${g.id}-${p.method}`}>
                     <td className="caos-col-text">{g.id}</td>
-                    <td className="caos-col-text">{shownId(p.method)}</td>
+                    <td className="caos-col-text">{nameOf(p.method, es ? 'es' : 'en')}</td>
                     <td>{n(p.row.efficiency.median)}</td>
                     <td>{n(p.row.uniformity.median)}</td>
                     <td>{n(p.row.rel_std_pct.median)}</td>

@@ -4,7 +4,7 @@ import { Cite, DocSection, Equation, useShellLang } from '@fasl-work/caos-app-sh
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { Note, Ready, TableWrap, useBench } from './shared';
 import { P } from '../bi';
-import { budgetText, budgetsOf, methodsIn, skippedIn, kindOf, KIND_ORDER, KIND_TEXT } from './data';
+import { budgetText, budgetsOf, methodsIn, nameOf, skippedIn, kindOf, KIND_ORDER, KIND_TEXT } from './data';
 
 function ProtocolBody({ res }: { res: BenchmarkResults }) {
   const lang = useShellLang();
@@ -23,7 +23,7 @@ function ProtocolBody({ res }: { res: BenchmarkResults }) {
     [es ? 'Presupuestos presentes en las filas' : 'Budgets present in the rows', list(budgets.map((b) => budgetText(b)[lang])), es ? 'Leídos de las filas del documento.' : 'Read from the rows of the document.'],
     [es ? 'Geometrías' : 'Geometries', list(res.geometries.map((g) => g.id)), es ? 'Cada una con su nombre y su número de trampas en la pestaña de resultados.' : 'Each with its name and its trap count on its results tab.'],
     [es ? 'Métodos con alguna fila' : 'Methods with at least one row', `${ran.size} ${es ? 'de' : 'of'} ${methods.length}`, es ? 'Un método sin fila en una celda está en la lista de celdas no corridas, con su razón.' : 'A method with no row in a cell is on the list of cells not run, with its reason.'],
-    [es ? 'Métodos con filas ajustadas' : 'Methods with tuned rows', tuned.size ? list([...tuned].sort()) : '-', es ? 'Solo un método que declara una rejilla de ajuste tiene filas ajustadas, y con el mismo número de corridas de ajuste que los demás.' : 'Only a method that declares a tuning grid has tuned rows, with the same number of tuning runs as the others.'],
+    [es ? 'Métodos con filas ajustadas' : 'Methods with tuned rows', tuned.size ? list([...tuned].sort().map((m) => nameOf(m, lang))) : '-', es ? 'Solo un método que declara una rejilla de ajuste tiene filas ajustadas, y con el mismo número de corridas de ajuste que los demás.' : 'Only a method that declares a tuning grid has tuned rows, with the same number of tuning runs as the others.'],
     [es ? 'Celdas no corridas' : 'Cells not run', String(skippedIn(res).length), es ? 'Cada una con la razón del método; aparecen en la tabla de la geometría y en la de procedencia.' : 'Each with the reason of the method; they are listed in the table of the geometry and in the provenance table.'],
   ];
   const counts = KIND_ORDER.map((kind) => ({ kind, n: methods.filter((m) => kindOf(m) === kind).length }));

@@ -473,7 +473,7 @@ export const CASES: Record<string, CaseText> = {
     extra: (v, f) => {
       const r = refOf(v.manifest);
       return [
-        { label: f.lang === 'es' ? `Dispersión relativa de las trampas (porcentaje, ${v.manifest.params.reference_method})` : `Relative spread of the traps (percent, ${v.manifest.params.reference_method})`, published: `${f.n(POLIN_ARRAY.withinPct, { decimals: 0 })} (${pick(POLIN_ARRAY.conditions, f.lang)})`, range: null, here: nfmt(f, r?.rel_std_pct, { digits: 3 }), reading: ratioText(f, r?.rel_std_pct, POLIN_ARRAY.withinPct) },
+        { label: f.lang === 'es' ? `Dispersión relativa de las trampas (porcentaje, ${methodName(v.manifest.params.reference_method).es})` : `Relative spread of the traps (percent, ${methodName(v.manifest.params.reference_method).en})`, published: `${f.n(POLIN_ARRAY.withinPct, { decimals: 0 })} (${pick(POLIN_ARRAY.conditions, f.lang)})`, range: null, here: nfmt(f, r?.rel_std_pct, { digits: 3 }), reading: ratioText(f, r?.rel_std_pct, POLIN_ARRAY.withinPct) },
       ];
     },
   },
@@ -679,17 +679,19 @@ export function bakeRows(v: CaseView, f: Fmt): Row[] {
   const shaped = isShaped(m);
   const verdict = (x: number | undefined, rg: [number, number] | null): string | null =>
     x === undefined || rg === null ? null : inside(x, rg) ? (es ? 'dentro' : 'inside') : es ? 'fuera' : 'outside';
+  const refEs = methodName(m.params.reference_method).es;
+  const refEn = methodName(m.params.reference_method).en;
   const rangeText = (rg: [number, number] | null, o: { digits?: number; decimals?: number }) => (rg === null ? null : `${f.n(rg[0], o)} - ${f.n(rg[1], o)}`);
   if (r) {
     const defs: [Metric, string, string, { digits?: number; decimals?: number }][] = shaped
       ? [
-          ['efficiency', `Eficiencia de ${ref}`, `Efficiency of ${ref}`, { decimals: 3 }],
-          ['rel_std_pct', `Error de señal de ${ref} (porcentaje)`, `Signal error of ${ref} (percent)`, { digits: 3 }],
+          ['efficiency', `Eficiencia de ${refEs}`, `Efficiency of ${refEn}`, { decimals: 3 }],
+          ['rel_std_pct', `Error de señal de ${refEs} (porcentaje)`, `Signal error of ${refEn} (percent)`, { digits: 3 }],
         ]
       : [
-          ['efficiency', `Eficiencia de ${ref}`, `Efficiency of ${ref}`, { decimals: 3 }],
-          ['uniformity', `Uniformidad de ${ref}`, `Uniformity of ${ref}`, { decimals: 3 }],
-          ['rel_std_pct', `Desviación estándar relativa de ${ref} (porcentaje)`, `Relative standard deviation of ${ref} (percent)`, { digits: 3 }],
+          ['efficiency', `Eficiencia de ${refEs}`, `Efficiency of ${refEn}`, { decimals: 3 }],
+          ['uniformity', `Uniformidad de ${refEs}`, `Uniformity of ${refEn}`, { decimals: 3 }],
+          ['rel_std_pct', `Desviación estándar relativa de ${refEs} (porcentaje)`, `Relative standard deviation of ${refEn} (percent)`, { digits: 3 }],
         ];
     for (const [k, lab_es, lab_en, o] of defs) {
       const rg = rangeOf(m, ref, k);
