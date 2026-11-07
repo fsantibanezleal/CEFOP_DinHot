@@ -1,0 +1,8 @@
+\begin{table}[t]\centering\footnotesize
+\caption{Top-level fields of the contract \texttt{readiness}, read from its schema file: type, requirement, unit (a dash marks an identifier, a count or a dimensionless quantity) and the range or constant the schema states.}\label{tab:contract-readiness}
+\begin{tabular}{@{}l l c l >{\raggedright\arraybackslash}p{0.3\textwidth}@{}}\toprule Field & Type & Req. & Unit & Range\\\midrule
+\texttt{\scriptsize schema} & const & yes & - & = example.readiness/v1\\
+\texttt{\scriptsize product\_version} & string & yes & - & pattern\\
+\texttt{\scriptsize catalog\_sha256} & string & yes & - & pattern\\
+\texttt{\scriptsize contracts} & array of object & yes & - & 1 to items\\
+\bottomrule\end{tabular}\end{table}

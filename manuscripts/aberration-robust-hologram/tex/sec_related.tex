@@ -1,0 +1,70 @@
+\section{Related work}\label{sec:related}
+
+\subsection{Hologram computation for trap arrays}
+
+Three families of method compute the phase of an array of point traps. The first is direct: random-mask encoding multiplexes the phase-only filters of the single traps without iteration and is extremely fast, at the price of an
+uneven result~\cite{montes2006}. The second is the Gerchberg--Saxton (GS) iteration and its weighted variants. Di Leonardo et al.\ replace the amplitudes in the trap plane by the target amplitudes and reweight them by the ratio of the mean to the
+achieved amplitude, which equalizes the traps in the ideal model~\cite{dileonardo2007}; Kim et al.\ freeze the focal-plane phase after a few weighted iterations (phase-fixed WGS) so that the weights stay effective, and report 91.2 percent
+efficiency with a non-uniformity below 0.5 percent on an array of $50\times30$ foci~\cite{kim2019}. The same procedure computes the holograms of the largest tweezer arrays~\cite{ebadi2021,manetsch2025}. The third family minimizes a cost.
+Polin et al.\ search the phase of one pixel at a time~\cite{polin2005}; Pasienski and DeMarco free the amplitude outside a signal region so that the signal region is matched more closely~\cite{pasienski2008}; Harte et al.\ minimize a
+power of the intensity error with conjugate gradients and remove the vortices that the basic cost leaves~\cite{harte2014}, and Bowman et al.\ extend the minimization to control phase and amplitude of the field together~\cite{bowman2017}.
+All of them optimize the hologram for the nominal system: a perfect lens, an ideal SLM and a known beam.
+
+\subsection{Gradient models of the optical path and learned generators}
+
+When the cost is differentiable in the phase, any propagation model can be placed in the loop. Chakravarthula et al.\ derive Wirtinger gradients of a hologram loss and minimize it with the Adam optimizer~\cite{chakravarthula2019};
+neural holography adds a calibrated model and a camera in the training loop~\cite{peng2020}. Learned generators trade the iteration for a network: a U-Net trained without labels on the plane images computes holograms of volumes~\cite{eybposh2020},
+and a convolutional network of modest size computes three-dimensional holograms for displays~\cite{shi2021}; the three-dimensional extension of Gerchberg--Saxton propagates the field plane by plane~\cite{whyte2005}.
+Schroff et al.\ place a crosstalk model of the SLM in a conjugate-gradient minimization with automatic differentiation, lower the error of shaped potentials and pay about ten minutes per hologram~\cite{schroff2023}, while Persson et al.\ modify a weighted
+GS to account for pixel crosstalk~\cite{persson2012}. These works put a model of the device in the optimization; none puts a distribution of device or system states there.
+
+\subsection{Aberrations of the optical train and their correction}
+
+Aberrations are a long-standing limit of optical systems, and their treatment has two parts, measurement and compensation. Zernike polynomials are the usual basis to describe a wavefront; their general properties and the Zernike representation of
+turbulence are given by Noll~\cite{noll1976}, and Mah\'ajan relates the Strehl ratio of circular and annular pupils to the variance of the phase aberration, finding the exponential of minus that variance a better approximation than the Mar\'echal formula~\cite{mahajan1983}.
+Adaptive optics corrects aberrations in microscopy~\cite{booth2007}. For the SLM itself, the surface deviations are corrected from the shape of a single optical vortex created by the modulator~\cite{jesacher2007}, and an in situ wavefront
+correction by complex modulation compensates the aberrations of the whole optical train for micromanipulation~\cite{cizmar2010}. In tweezer arrays the wavefront is measured and its opposite is added to the hologram phase~\cite{nogrette2014}, with
+the same single Zernike set serving the whole array in the 256-atom and 6,100-atom machines~\cite{ebadi2021,manetsch2025}. Position-dependent aberrations are treated per site or per patch: a modified GS algorithm with aberrations measured over the full field~\cite{machu2025}, and per-site propagation
+kernels combined in one hologram over about 50 isoplanatic patches with eight aberration modes~\cite{christen2025}.
+
+\subsection{Rearrangement and moving traps, and the role of uniformity}
+
+The need for uniform traps comes from the use of the arrays. A logical quantum processor on up to 280 physical qubits is built on reconfigurable atom arrays~\cite{bluvstein2023}, and such arrays are brought to a defect-free configuration by moving traps. An SLM-only approach for rearrangement uses
+GS with zero padding and weighted feedback~\cite{kim2019oe}, and linear phase interpolation computes two endpoint WGS holograms and interpolates between them to keep the spot intensity above 70 percent while atoms move~\cite{knottnerus2025}.
+In every one of these uses the trap depth varies with the intensity of the trap, so the spread of the intensities, and not only their mean, sets the quality of the array. The same holds for the loading of atoms into the traps and for the gates applied to them: a site that is dimmer than its neighbours is a site that differs from them. For the same reason the quantity that this paper controls is the spread of the intensities over the traps of one array, evaluated over the family of optical conditions that the array may meet, because an experiment runs its sequences in one of those conditions and not in the nominal one.
+
+\subsection{Robust and stochastic optimization}
+
+Minimizing the expectation of a cost over a random parameter is stochastic programming, and requiring the cost to hold over an uncertainty set is robust optimization; the latter is developed with its theory and applications by Ben-Tal et al.~\cite{bental2009}.
+The expectation can be replaced by a small deterministic set of points, as the unscented transformation does to propagate a mean and a covariance through a nonlinear map~\cite{julier2004}; the optimizers used here are the Fletcher--Reeves nonlinear conjugate gradient~\cite{fletcher1964} with a strong-Wolfe line
+search~\cite{nocedal2006}, and Adam~\cite{kingma2015} for the sampled variant. The choice between the two ways of taking the expectation is a choice between a smooth deterministic cost that a line search can use and a noisy cost that needs a stochastic optimizer; the second reaches any prior, including one that cannot be written as a phase offset (such as random displacements of the traps), and the first reaches the aberration prior with a few function evaluations per step. Both rely on the same property of the problem, that the forward map is a finite sum of complex exponentials of the phases, so that value and gradient of the cost at any perturbed system are closed forms that cost one forward and one adjoint evaluation of the point-trap model.
+
+\subsection{Position of the proposed method}
+
+Table~\ref{tab:related} lists the works that bound the gap with what each assumes and where it falls short for the task of this paper: uniform point traps whose intensities stay uniform when the optical system differs from the nominal one. The proposed
+method takes the cost and the solver from the minimization family, the start from phase-fixed WGS, the Zernike basis and the additive aberration model from the correction literature, and the expectation from stochastic programming. Each piece is published; the
+combination, the derivation of why the expected cost lowers the intensity spread, and the measurement of its scope are the contribution. The method is not an aberration correction: it takes no wavefront measurement, it leaves the correction in place and designs for what the
+correction leaves.
+
+\begin{table}[t]
+\centering\small
+\caption{Published methods that bound the gap: what each assumes and where it falls short for uniform point traps under residual aberrations. The last row is the proposed method.}
+\label{tab:related}
+\begin{tabular}{@{}p{3.6cm} p{4.4cm} p{6.0cm}@{}}
+\toprule
+Work & Assumes & Falls short for residual aberrations\\
+\midrule
+Random-mask encoding~\cite{montes2006} & ideal model, no iteration & uneven traps; no aberration in the design\\
+Weighted GS~\cite{dileonardo2007} & ideal optical system & equalizes the nominal model only\\
+Phase-fixed WGS~\cite{kim2019} & ideal optical system, camera feedback afterwards & spread under aberration set by the system; feedback needed\\
+Direct search~\cite{polin2005} & ideal model, one pixel at a time & cost grows with the pixel count; nominal only\\
+Mixed-region freedom~\cite{pasienski2008} & shaped field with a noise region & efficiency falls for sparse point traps\\
+Conjugate gradient~\cite{harte2014,bowman2017} & ideal model, full field & minimizes the nominal cost\\
+Wirtinger gradients~\cite{chakravarthula2019} & differentiable model & one model state per run\\
+Crosstalk in the loop~\cite{schroff2023,persson2012} & a fitted device model & one device state; about ten minutes per hologram~\cite{schroff2023}\\
+Global Zernike correction~\cite{nogrette2014,ebadi2021,manetsch2025} & one wavefront for the field & residual varies across the field\\
+Per-site correction~\cite{machu2025,christen2025} & aberrations measured over the field & needs the measurement; point estimate per site\\
+Aberration-robust hologram (this paper) & a prior on the residual & nominal spread rises slightly; prior must be measured\\
+\bottomrule
+\end{tabular}
+\end{table}

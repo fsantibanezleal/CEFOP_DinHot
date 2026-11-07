@@ -1,0 +1,146 @@
+% Methods M17 to M19.
+
+\subsection{Unsupervised convolutional network for three-plane holograms (M17)}\label{sec:m17}
+
+The learned method replicates, in the setting of its own paper and at the size of this product, DeepCGH of Eybposh et al.~\cite{eybposh}: an unsupervised U-Net maps the target amplitudes of several planes to one SLM phase, trained with a loss that propagates the hologram to every plane through a differentiable model. The source reports that the network is at least ten times faster than Gerchberg--Saxton and more accurate on volume targets, with a stated number of iterations for each iterative method and a stated test-set size. A first version of this product on a single plane tied with GS and was rejected; the method was rebuilt in the setting of the paper, a volume of three planes. No source that was read compares a learned method against weighted GS on the uniformity of hundreds of point traps; a supervised variant for tweezers~\cite{ren2024} reports a time per hologram well below that of GS on about twenty sites. The problem the method answers is a hologram for a three-plane point target by one network pass, in tens of milliseconds, when the target changes at interaction rate; the baseline it must beat is the volumetric Gerchberg--Saxton of Section~\ref{sec:m19} at the same wall-clock.
+
+\textbf{Network and loss.} The network is a U-Net of 14 channels that predicts one complex focal field per plane; a constant inverse discrete Fourier transform (a matrix product) and the lens phase of each plane carry each field to the SLM, the fields are summed, and the output is the phase of the sum. The exported graph is below the size limit of the browser release, and every operator is in the list the browser runtime supports. Eybposh et al.~\cite{eybposh} define the accuracy of a volume as the cosine similarity of the target and reconstructed intensities, $\sum I\hat I/\sqrt{\sum I^2\sum\hat I^2}$ over all voxels (their Eq.~3). DinHot scores, and trains with, a per-plane overlap that has the same range and the same maximum but not the same value, so the accuracies of this report are not comparable number for number with those of the source; the same definition is used for the loss, the baseline and the evaluation. The plane field is the centred orthonormal Fourier transform of $A\,e^{i(\phi-Zq)}$ with $q$ the quadratic lens term and $Z$ the defocus of the plane at the aperture edge, and with $T_p$ and $I_p$ the unit-sum plane intensities of the target and of the hologram,
+\begin{equation}
+\mathrm{AC}=\frac1P\sum_{p=1}^{P}\frac{2\sum T_pI_p}{\sum T_p^2+\sum I_p^2},\qquad \mathcal L=1-\mathrm{AC}.
+\label{eq:m17}
+\end{equation}
+The depths are $-8$, $0$ and $+8$ SLM-limited Rayleigh ranges $z_{R,\mathrm{SLM}}$, where
+\begin{equation}
+z_{R,\mathrm{SLM}}=\frac{\lambda f^2}{\pi R^2},\qquad R=\frac{n_{\mathrm{pix}}\,p}{2},
+\label{eq:m17-zr}
+\end{equation}
+which makes the defocus phase at the aperture edge exactly $Z$ radians. The torch forward model is verified against the point-trap model of the engine at a trap of that depth.
+
+\textbf{Inference and fall-back.} With the model released, the hybrid runs the network and then the volumetric GS from the network's phase in what is left of the time budget; the refinement is kept only if it raises the volume accuracy of the network's mask, because the volumetric GS is a point-voxel method whose refinement can lower the accuracy of the full plane images. With no released model the baseline answers, the volumetric GS at 30 iterations, and the result carries the provenance \texttt{baseline}, the missing-data rule of the catalog row of the model (Section~\ref{sec:data}). The released graph is specific to its crop: a $128\times128$ SLM with no padding, three planes, traps at integer lateral bins within a stated distance of the axis and no vortex; any other setup is refused with the requirement named.
+
+\textbf{Pseudocode.} Algorithm~\ref{alg:m17} lists the inference.
+
+\begin{algorithm}[t]
+\caption{Inference of the volume network with the refinement and the fall-back (training is offline and not part of the run).}
+\label{alg:m17}
+\begin{algorithmic}[1]
+\Require three-plane target traps within the stated lateral limit, released model (or none), wall-clock budget, refinement flag
+\State build the network input from the traps: unit-energy amplitudes of the three planes (spots of one bin width)
+\If{no model is released} \State \Return volumetric GS from the random superposition for 30 iterations, with the provenance \texttt{baseline} \EndIf
+\State $\phi_{\mathrm{net}}\gets$ network output for the three planes (one pass)
+\If{refinement is on and time remains} \State $\phi_{\mathrm{ref}}\gets$ volumetric GS started from $\phi_{\mathrm{net}}$ in the remaining budget
+  \If{$\mathrm{AC}(\phi_{\mathrm{ref}})>\mathrm{AC}(\phi_{\mathrm{net}})$ by Eq.~\eqref{eq:m17}} \State \Return $\phi_{\mathrm{ref}}$ \EndIf
+\EndIf
+\State \Return $\phi_{\mathrm{net}}$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Training, parameters and how they were chosen.} Training is offline on a graphics processor and never in the continuous-integration run or the browser; it runs \cghSteps{} steps with a stated batch size, data seed, initialization seed and learning rate recorded in the training record of the model contract, and the schedule was restarted once with a shorter total. The depths and the lateral limit are DinHot's choices. The refinement is on by default, though the evaluation recommends calling with it off, because the refinement was never kept on the held-out set. The network answers in about \cghNetMs{} ms.
+
+\textbf{Acceptance criterion and gate.} On held-out three-plane volumes the network start followed by the refinement inside the same wall-clock budget reaches a higher accuracy than the volumetric GS alone (Table~\ref{tab:ladder}); the code and the test implement the median per-volume ratio of the hybrid to the baseline above one. The gate reads the committed metrics (at least 150 held-out volumes and a median ratio above one), recomputes on a sample of the held-out volumes when the released graph and the held-out file are available, and checks the fall-back, the budget and the error messages. The measurement of this report is: \acc{M17}. The held-out volumes are \cghN{} (a generated set of four kinds plus two benchmark layouts), the budget is the median time of the baseline at 30 iterations, \cghBudgetS{} s, and the ratio is above one on \cghShareAbove{} percent of the volumes; the graph agrees with its training framework on the plane intensities to $\cghParity$ of the maximum, while the phase of a near-zero SLM field is ill conditioned, so the parity claim is made on intensities. The single-plane version, measured against GS, gave a median ratio of \cghTwoDMed{} on \cghTwoDN{} held-out targets and was not released.
+
+\textbf{Limits.} The model is specific to its crop and planes, as DeepCGH also trains one model per resolution and plane set; the advantage is on plane images and not on trap uniformity, since the volumetric GS optimizes trap uniformity and the accuracy measure scores full plane images, ghosts and blur included, which is what the network optimizes. The module is \texttt{m17\_cgh\_net}; the web encoder builds the three-plane input that the model card declares.
+
+\subsection{Optimal-transport initialized MRAF (M18)}\label{sec:m18}
+
+Mixed-region amplitude freedom from a random start leaves speckle that it removes slowly. An optimal-transport map between the input beam and the target intensity gives a smooth phase that already sends the light roughly to the right place, so that MRAF starts close to its answer. The solutions replicated are those of Swan et al.~\cite{swan}, whose table of six targets compares MRAF with and without the initialization, and, for the memory-light dual form, Torchylo et al.~\cite{torchylo}. The MRAF stage is the rule of Section~\ref{sec:m08}. Under the stationary-phase approximation the SLM phase satisfies the Monge--Amp\`ere equation
+\begin{equation}
+G^2\big(\nabla\phi(\mathbf x)\big)\,\det\big(\nabla^2\phi(\mathbf x)\big)=g^2(\mathbf x),
+\label{eq:m18}
+\end{equation}
+with $g^2$ the input intensity and $G^2$ the target intensity; the quadratic-cost optimal-transport map $\gamma$ between them is integrated, $\phi(\mathbf x)=\int\gamma(\mathbf s)\cdot d\mathbf s$, and seeds the iteration.
+
+\textbf{Entropic transport.} The separable Sinkhorn form uses a plan $\Gamma=uKv$ with a separable kernel $K=K_x\otimes K_y$ and the updates
+\begin{equation}
+u\leftarrow g^2\oslash(\Lambda v\Lambda),\qquad v\leftarrow G^2\oslash(\Lambda^{\mathsf T}u\Lambda^{\mathsf T}),
+\label{eq:m18-sinkhorn}
+\end{equation}
+evaluated as matrix products of the one-dimensional kernels, so that the memory is linear in the number of pixels. The updates are Eqs.~(7) and (8) of Torchylo et al.~\cite{torchylo}; the implementation is the same pair of updates, evaluated as matrix products of the symmetric one-dimensional kernel, with the kernel width of their $\Lambda_{jK}=\exp[-(j-K)^2/(2n^2\varepsilon)]$ in bins, and is checked by the marginals and by recovery tests. The cost is half the squared distance between the SLM pixel coordinate and the focal bin coordinate; the kernel width is the entropic parameter times the squared grid size in bins, because the coordinates are not normalized. The barycentric map $T(\mathbf x)=\sum_y\Gamma(\mathbf x,y)\,y/\sum_y\Gamma(\mathbf x,y)$ (the identity where the plan has no mass) is integrated to a potential with $\nabla\Psi=T$ by a least-squares Poisson solve on a mirror-extended grid, which is exact for a curl-free map and its least-squares projection otherwise, and the stationary-phase relation $k=(n_{\mathrm{fft}}/2\pi)\,d\phi/dj$ gives $\phi=(2\pi/n_{\mathrm{fft}})\Psi$. The projection removes the small curl that the barycentric map of an entropic plan has.
+
+\textbf{MRAF stage and fixed point.} Then the rule of Eq.~\eqref{eq:m08} runs with the mixing $m$; it is the update of Pasienski and DeMarco~\cite{pasienski} (their Eq.~1). The source keeps the power of the target constant across iterations and gives no numerical normalization; DinHot scales the target amplitude so that its power equals the input power, and rescaling to the current signal-region power instead drains the signal region, which was measured. With mixing $m$ the fixed point of the stage is near the efficiency that solves
+\begin{equation}
+\eta=\frac{m^2}{m^2+(1-m)^2(1-\eta)},
+\label{eq:m18-fixed}
+\end{equation}
+so that the efficiency of the method is in the MRAF class and not in the class the paper reports.
+
+\textbf{Pseudocode.} Algorithm~\ref{alg:m18} lists the seed and the iteration.
+
+\begin{algorithm}[t]
+\caption{Optimal-transport seed by the separable Sinkhorn iteration, followed by the mixed-region iteration of Eq.~\eqref{eq:m08}.}
+\label{alg:m18}
+\begin{algorithmic}[1]
+\Require shaped target (amplitude, mask), mixing $m$, entropic parameter $\varepsilon$, Sinkhorn iterations $K_{\mathrm{OT}}$, MRAF iterations $K$, optional start
+\If{no start is given}
+  \State $g^2\gets A^2/\sum A^2$ (input intensity); $G^2\gets T^2/\sum T^2$ on the mask (target intensity); kernels $K_x=K_y=\exp[-(x-y)^2/(2\sigma^2)]$, $\sigma^2=\varepsilon n_{\mathrm{fft}}^2$ bins squared
+  \State $v\gets$ indicator of $G^2>0$
+  \For{$l=1,\dots,K_{\mathrm{OT}}$}
+    \State $u\gets g^2\oslash(K_yvK_x^{\mathsf T})$; $v\gets G^2\oslash(K_y^{\mathsf T}uK_x)$ where $G^2>0$, else $0$
+  \EndFor
+  \State barycentric map $T(\mathbf x)\gets$ the Sinkhorn plan's mean target coordinate (the identity where the plan has no mass)
+  \State $\Psi\gets$ least-squares potential with $\nabla\Psi=T$ (Poisson solve on a mirror-extended grid); $\phi\gets(2\pi/n_{\mathrm{fft}})\Psi$ wrapped to $[0,2\pi)$
+\EndIf
+\State scale the target amplitude so that its power equals the input power; $E\gets\mathcal F[Ae^{i\phi}]$
+\For{$k=1,\dots,K$}
+  \State $G\gets mT$ on the mask, $(1-m)|E|$ elsewhere, times $e^{i\arg E}$; $\phi\gets\arg\mathcal F^{-1}[G]$; $E\gets\mathcal F[Ae^{i\phi}]$; record the error
+\EndFor
+\State \Return $\phi$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Parameters.} The mixing has the default \defv{M18}{mix}, in the range reported for MRAF and larger than the mixing of mixed-region amplitude freedom; the entropic parameter has the default \defv{M18}{eps}, the Sinkhorn value of the source for coordinates normalized by the image size; the number of Sinkhorn iterations is DinHot's choice, \defv{M18}{otiterations}, with the marginal test run on a smooth problem. A supplied initial phase replaces the transport seed, which is what the random-start baseline of the acceptance test uses.
+
+\textbf{Complexity.} The separable Sinkhorn needs memory linear in the number of pixels and matrix products of the one-dimensional kernels, then $O(P\log P)$ per MRAF iteration; the method is baked, and runs at a live size of a $128\times128$ focal grid and at a baked size of $256\times256$.
+
+\textbf{Acceptance criterion and gate.} The error is lower than that of MRAF from a random start on the shaped targets (Table~\ref{tab:ladder}). The gate runs a disc, a ring and a line at the live size and the first two at the baked size, with 100 MRAF iterations at the default mixing, and requires the initialized error to be below the minimum of two random starts and the efficiency above 0.3; component tests check both Sinkhorn marginals, that the barycentric map of a pure shift is a shift, that the gradient integration recovers a known potential, that the seed moves the beam onto a displaced blob, and determinism; a mutation run that replaces the seed by a random phase fails the tests. The measurement of this report is: \acc{M18}. The error is about an order of magnitude lower than the random start. The published errors are lower, with higher efficiency, than those of this product (the fixed point of Eq.~\eqref{eq:m18-fixed} bounds the efficiency here).
+
+\textbf{Limits.} The efficiency does not reach the range of the paper; the model is the ideal device, so scored on the crosstalk device of case C04 the error is close to that of the device-aware method and far above the ideal-device acceptance values. The module is \texttt{m18\_ot\_mraf}.
+
+\subsection{Multi-plane Gerchberg--Saxton, the volumetric form (M19)}\label{sec:m19}
+
+The established method for placing traps at several depths from one hologram is the form of Whyte and Courtial~\cite{whyte}: a three-dimensional Gerchberg--Saxton between a real-space volume (the target) and a $k$-space field restricted to the Ewald sphere, which is a three-dimensional Fourier pair and not a plane-by-plane propagation. It is the baseline of the learned network of Section~\ref{sec:m17}, which is compared with it at equal wall-clock, and it is the alternative to the three-dimensional form of the weighted point-trap model (an axial term in the delay) against which the lattice test of weighted GS measures it. The constraint is the Ewald sphere $k_0^2=k_x^2+k_y^2+k_z^2$ with $k_z>0$: in the discrete implementation, for each $(k_x,k_y)$ only the $k_z$ element nearest to $\sqrt{k_0^2-k_x^2-k_y^2}$ carries the field, and all others are zero (a hemisphere one element thick). One iteration is
+\begin{equation}
+K[k_x,k_y,k_z^{\mathrm{sph}}]=A_je^{i\phi_j},\qquad U=\mathcal F_{3D}K,\qquad
+U'=a_me^{i\arg U}\ \text{at the target voxels, 0 elsewhere},
+\label{eq:m19}
+\end{equation}
+\begin{equation}
+\phi_j=\arg\big(\mathcal F_{3D}^{-1}U'\big)[k_x,k_y,k_z^{\mathrm{sph}}],\qquad a_m=\sqrt{w_m},
+\label{eq:m19-back}
+\end{equation}
+and the SLM amplitude is reset to the beam. The hologram is the $k$-space phase on the sphere projected onto the SLM plane.
+
+\textbf{Mapping to the engine.} The mapping is derived in the module and not in the source. SLM pixel $j$ is the lateral frequency $\boldsymbol\xi=(x_j,y_j)/(\lambda f)$; the lateral voxel is one bin times the padding, $dx=\lambda f/(n_{\mathrm{pix}}p)$, so that a trap at $x_m$ sits on voxel $\operatorname{round}(x_m/dx)$; in $z$ the voxel pitch is a parameter and the carrier $k_0z$ is removed (baseband), so that the sphere element is
+\begin{equation}
+i_z=\operatorname{round}\Big(n_z\,dz\,\frac{1-\sqrt{1-s}}{\lambda_m}\Big)\bmod n_z,\qquad s=(\lambda_m\xi)^2,\quad\lambda_m=\frac{\lambda}{n_{\mathrm{imm}}},
+\label{eq:m19-sphere}
+\end{equation}
+which in the paraxial limit is the lens term of the point-trap model. The lateral origin is put on the optical axis by a linear ramp, and the start is the random superposition of the snapped traps.
+
+\textbf{Pseudocode.} Algorithm~\ref{alg:m19} lists the iteration.
+
+\begin{algorithm}[t]
+\caption{Volumetric Gerchberg--Saxton with the Ewald-sphere constraint on the grid of the engine.}
+\label{alg:m19}
+\begin{algorithmic}[1]
+\Require point traps, axial pitch $dz$, axial size $n_z$, iteration budget $K$, start $\phi^0$
+\State snap each trap to its voxel $(\operatorname{round}(x_m/dx),\operatorname{round}(y_m/dx),\operatorname{round}(z_m/dz))$ (refuse two traps on one voxel); compute the sphere index $i_z(j)$ of every SLM pixel by Eq.~\eqref{eq:m19-sphere}
+\State $\phi\gets\phi^0$ (the random superposition of the snapped traps when no start is given)
+\For{$k=1,\dots,K$}
+  \State $K\gets0$; $K[i_z(j),j]\gets A_je^{i\phi_j}$ for every pixel $j$; $U\gets\mathcal F_{3D}K$ (with the ramp that puts the origin on the axis)
+  \State $U'\gets0$; $U'_m\gets a_m\,U_m/|U_m|$ at the target voxels
+  \State $\phi_j\gets\arg\big(\mathcal F_{3D}^{-1}U'\big)[i_z(j),j]$; record the trap fields of the snapped traps
+\EndFor
+\State \Return $\phi$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Parameters.} The axial voxel pitch defaults to the smallest gap between the distinct plane depths of the target, the finest axial structure that the target contains; the number of axial elements is the next power of two of at least a stated minimum and of eight times the largest sphere index plus one, which sets the length of the three-dimensional transform. There is no per-plane weighting, because the source has none (the weak experimental match that the paper reports is a secondary statement that was not read).
+
+\textbf{Complexity and limits of the construction.} One iteration is two three-dimensional transforms of a complex volume of $n_z\times n_{\mathrm{pix}}\times n_{\mathrm{pix}}$, whose size grows with $n_z$. The depth extent $n_z\,dz$ is a period: the sphere elements wrap modulo $n_z$ at the corners of the square SLM, producing periodic replicas of the volume. The axial placement error at depth $z$ is about $\pi z/(n_z\,dz)$ radians. The axial resolution is set by the aperture, with a depth of field of about $2\lambda/\mathrm{NA}^2$ and $\mathrm{NA}=n_{\mathrm{pix}}p/(2f)$, so planes closer than that cannot be told apart by any hologram. The method runs live at small size and baked at full size.
+
+\textbf{Acceptance criterion and gate.} On a three-plane target every plane mean is within 25 percent of the overall mean (Table~\ref{tab:ladder}); the plane intensity band is defined by the test, since the design document does not define it. The gate places three planes a depth of field apart with a $5\times5$ grid of traps on each, the planes shifted laterally, 20 iterations and two seeds, and requires each plane mean within the band and a final efficiency above 0.3; companion tests check that the reported fields equal the point-trap model of the snapped traps, that a single off-plane trap is focused, that the efficiency rises, and that two traps on one voxel are refused. The measurement of this report is: \acc{M19}. The within-plane spread is reported and not bounded; it is high, and it is higher still in the bake, so that the method equalizes the planes and not the traps, while the point-trap three-dimensional form of weighted GS reaches a spread of about one percent on the same case. No plane-by-plane variant exists in this build.
+
+\textbf{Why the planes interact.} In a plane-by-plane propagation each plane's constraint acts on a field that is propagated independently, and the hologram is the average of the back-projections, so the planes do not see each other. In the Ewald-sphere form there is one three-dimensional field, and an update at one depth changes the field at the others through the three-dimensional transform, so that the amplitude constraint at the target voxels of every plane is imposed on the same hologram at once; this is the property that the source demonstrates and that the acceptance test measures as plane means within a band.
+
+\textbf{Implementation.} The module is \texttt{m19\_multiplane}, whose output is checked against an independent evaluation of the point-trap model.

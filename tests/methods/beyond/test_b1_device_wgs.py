@@ -63,6 +63,19 @@ def test_without_a_device_the_loop_uses_the_ideal_model():
     assert res.history[-1]["rel_std"] < 5.0 and not res.meta["device_aware"]
 
 
+def test_the_weight_update_can_be_switched_off_and_the_default_keeps_it():
+    """``weights=False`` is the ablation option (BL-046): the weights stay at one and the run differs from the default."""
+    s = make_setup(64)
+    traps = bin_grid(s, 4, 4, 8)
+    dev = Device(crosstalk=(1.24, 1.8), bit_depth=5)
+    on = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(4))
+    off = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(4), weights=False)
+    assert on.meta["weight_update"] and not off.meta["weight_update"]
+    assert off.meta["weights"] == [1.0] * len(traps)
+    assert any(abs(w - 1.0) > 1e-6 for w in on.meta["weights"])
+    assert not np.array_equal(on.phi, off.phi)
+
+
 def test_deterministic_for_a_seed():
     s = make_setup(32)
     traps = bin_grid(s, 2, 2, 16)

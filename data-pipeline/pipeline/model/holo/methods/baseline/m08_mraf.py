@@ -10,7 +10,7 @@ to the input power. In the signal region the amplitude is forced to $m T$, in th
 $1-m$), so power not needed for the shape drains into the noise region; $m = 1$ is plain GS (zero noise region).
 Default ``mixing = 0.3`` (the paper reports 0.30 to 0.40 for MRAF; on DinHot's grid 0.3 gives error 0.03 and 0.4 gives
 0.10 for a disc of 60 bins radius, efficiency 0.18 against 0.41). Start: a Fresnel-lens phase of ``start_waves`` = 20 waves
-at the aperture edge (the paper states no start, UNVERIFIED; a random start leaves speckle that MRAF removes slowly, error
+at the aperture edge (DinHot's choice; a random start leaves speckle that MRAF removes slowly, error
 0.3 after 100 iterations); ``start_waves=None`` draws a uniform random phase through ``rng``; ``init`` overrides both. Offset-MRAF variants (Gaunt, Bruce, van Bijnen) are not implemented:
 their primary papers were not opened (dossier D1.4).
 History per iteration: ``efficiency`` = power fraction in the signal region, ``uniformity`` and ``rel_std`` of the ratio

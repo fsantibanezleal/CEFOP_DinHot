@@ -12,7 +12,7 @@
 
 ## Tier and role
 
-State of the art, replicated: the practical method for large point arrays. The solution replicated is Kim, Kim, Lee and Ahn, Opt. Lett.
+State of the art, replicated: the practical method for large point arrays. The solution replicated is Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund, Opt. Lett.
 44, 3178 (2019), https://doi.org/10.1364/OL.44.003178 (arXiv https://arxiv.org/abs/1903.09286): after an initial number $N$ of weighted-GS
 iterations the focal-plane phase is frozen, so later iterations adjust amplitudes only and the weights stay effective; the same
 procedure is used in the 1000-tweezer experiments of Ebadi et al. 2021 (https://arxiv.org/abs/2012.12281) and, through the references
@@ -48,7 +48,7 @@ laser amplitude introduces a focal phase change $\delta\psi_i$ that makes $g_i$ 
 
 In the code (`rule_wgs_fixed`, `_gs.py` lines 95 to 107): $b = |V|/a$; `state['w'] *= mean(b)/b`; for $k < N$ the phase is `angle(v)`; at
 $k = N$ the phase is stored, `state['psi'] = angle(v)`; for $k > N$ it is the stored one; the coefficient is `w * a * exp(1j * psi)`.
-UNVERIFIED (docstring): the source does not define $B_i$ (taken as the field amplitude, as in M06) nor whether the $N$-th iteration already
+DinHot's choices (docstring), because the source does not settle them: it does not define $B_i$ (taken as the field amplitude, as in M06) nor say whether the $N$-th iteration already
 uses the frozen phase (here it computes it; the red run of T1 shows that freezing one iteration late turns the port's parity test red).
 
 ## Defaults
@@ -129,7 +129,7 @@ case has its own optics, listed in `data/derived/manifests/`):
 
 ## References
 
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286
 - Ebadi et al. 2021, https://arxiv.org/abs/2012.12281
 - Manetsch et al. 2025, https://arxiv.org/abs/2403.12021
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913 (the weights of M06)

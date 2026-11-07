@@ -2,7 +2,7 @@
  * Control methods M12, M14, M15 and M16 (the live lane).
  *
  * Python counterparts: `methods/control/m12_closed_loop.py`, `m14_zernike.py`, `m15_vortex.py`, `m16_rearrangement.py`
- * (each docstring there carries the model, the dossier section and the UNVERIFIED items). Keywords (camelCase) in
+ * (each docstring there carries the model, the dossier section and the readings that are DinHot's own). Keywords (camelCase) in
  * `ctx.options`: M12 `variant`, `gain`, `camera`, `nInner`, `nStart`, `start`; M14 `mode`, `injected`, `known`, `camera`,
  * `modes`, `trialWaves`, `baseIterations`; M15 `charge`; M16 `atoms` (a TrapSet), `alpha`, `maxStepBins`, `nFix`.
  */
@@ -19,7 +19,7 @@ import * as gs from './gs';
 
 // ---- M12 ----
 
-const VARIANTS = ['nogrette', 'kim'];
+const VARIANTS = ['nogrette', 'kim', 'nogrette-printed'];
 
 function* m12(ctx: RunContext): MethodRun {
   requireKinds(ctx.target, ['traps'], 'M12');
@@ -30,7 +30,7 @@ function* m12(ctx: RunContext): MethodRun {
   if (!VARIANTS.includes(variant)) throw new Error(`variant must be one of [${VARIANTS.map((v) => `'${v}'`).join(', ')}], got '${variant}'`);
   if (!(gain > 0 && gain <= 1)) throw new Error(`gain must be in (0, 1], got ${gain}`);
   if (start !== 'gsw' && start !== 'gs') throw new Error(`start must be 'gsw' or 'gs', got '${start}'`);
-  const nInner: number = o.nInner ?? (variant === 'nogrette' ? 1 : 3);
+  const nInner: number = o.nInner ?? (variant === 'kim' ? 3 : 1);
   const nStart: number = o.nStart ?? 30;
   if (nInner < 1 || nStart < 1) throw new Error('n_inner and n_start must be >= 1');
   const traps = trapsOf(ctx.target);
@@ -60,8 +60,10 @@ function* m12(ctx: RunContext): MethodRun {
     const mw = wOf(meas);
     const mm = mean(mw);
     const rho = mw.map((x) => Math.max(x / mm, 1e-3));
-    if (variant === 'nogrette') {
-      a = a.map((ai, i) => ai * Math.sqrt(1 / (1 - gain * (1 - rho[i]))));
+    if (variant === 'nogrette' || variant === 'nogrette-printed') {
+      // 'nogrette-printed': the printed rule, the target from the latest measurement alone (the factor acts on the base amplitudes)
+      const base = variant === 'nogrette' ? a : aBase;
+      a = base.map((ai, i) => ai * Math.sqrt(1 / (1 - gain * (1 - rho[i]))));
       const state: gs.RuleState = { a: Float64Array.from(a), w: new Float64Array(M).fill(1) };
       for (let j = 1; j <= nInner; j++) {
         ({ v } = fftFields(phi, setup, traps));

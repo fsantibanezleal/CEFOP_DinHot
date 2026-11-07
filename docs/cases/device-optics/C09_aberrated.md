@@ -91,4 +91,4 @@ The App has up to six groups (Hologram, Focal plane, Traps, Convergence, Dynamic
 
 ## Notes
 
-The bands are provisional. The record injects Noll 4, 5, 6, 7, 8 and 11 with 0.08, 0.07, 0.05, 0.06, -0.05 and 0.04 waves. Noll indices above 11 and the Noll 1976 ordering are UNVERIFIED ([P03](../../frameworks/P03_zernike.md)).
+The bands are provisional. The record injects Noll 4, 5, 6, 7, 8 and 11 with 0.08, 0.07, 0.05, 0.06, -0.05 and 0.04 waves. The Noll ordering above index 11 follows the rule of the engine and was not compared with Noll 1976, whose text was not available in full ([P03](../../frameworks/P03_zernike.md)).

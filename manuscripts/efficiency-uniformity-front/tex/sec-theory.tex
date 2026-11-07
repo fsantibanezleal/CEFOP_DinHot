@@ -1,0 +1,95 @@
+\section{Theory: what the weighted loss guarantees}\label{sec:theory}
+
+This section states what can be proved about the loss of Eq.~\ref{eq:loss} and the continuation of Eq.~\ref{eq:continuation}, and what stays a conjecture supported by measurement. The propositions concern the loss objectives $E$ and $S$ of Eqs.~\ref{eq:E} and~\ref{eq:S}; the figures of merit $e$ and $u$ of
+Eq.~\ref{eq:eu} are related to them in Proposition~\ref{prop:bound}. The conditions under which each statement holds are part of it, and the last subsection lists them.
+
+\subsection{The weight raises the target uniformly}
+
+\begin{proposition}[shifted target]\label{prop:shift}
+For $\lambda\in[0,1)$ define
+\begin{equation}
+\delta_\lambda=\frac{\lambda}{2(1-\lambda)}\,\frac{\sum_mT_m^2}{e_0}.\label{eq:delta}
+\end{equation}
+Then for every hologram $\phi$,
+\begin{equation}
+L_\lambda(\phi)=\frac{1-\lambda}{\sum_kT_k^2}\sum_m\big(I_m-T_m-\delta_\lambda\big)^2\;-\;\frac{1-\lambda}{\sum_kT_k^2}\Big(2\delta_\lambda\sum_mT_m+M\delta_\lambda^2\Big).\label{eq:shift}
+\end{equation}
+The second term does not depend on $\phi$. When the weights are equal, $T_m=\tau=e_0/M$, $\delta_\lambda=\tau\,\lambda/(2(1-\lambda))$ and the shifted target has the total light $e_0\,\big(1+\lambda/(2(1-\lambda))\big)$.
+\end{proposition}
+\begin{proof}
+Write $a=(1-\lambda)/\sum_kT_k^2$ and $b=\lambda/e_0$, so that $L_\lambda=a\sum_m(I_m-T_m)^2-b\sum_mI_m$ and $b/a=2\delta_\lambda$ by Eq.~\ref{eq:delta}. For each trap, $(I_m-T_m)^2-2\delta_\lambda I_m=(I_m-T_m-\delta_\lambda)^2-2\delta_\lambda T_m-\delta_\lambda^2$, which is checked by expanding the square.
+Summing over the traps and multiplying by $a$ gives Eq.~\ref{eq:shift}. For equal weights $\sum_kT_k^2=e_0^2/M$ and $\delta_\lambda=\lambda e_0/(2(1-\lambda)M)$, and the total of the shifted target is $e_0+M\delta_\lambda$.
+\end{proof}
+
+The proposition has three consequences that the experiments use. First, a minimizer of $L_\lambda$ is the best approximation, in the sense of the sum of squares, of a flat target that is brighter than the start by the factor $1+\lambda/(2(1-\lambda))$ in the total, so the weight $\lambda=1/2$ asks for 50 percent more light than the start and
+$\lambda=2/3$ asks for twice as much. Second, because the efficiency of any hologram is bounded, there is a weight beyond which the target is out of reach. If $e_{\max}$ is the largest efficiency that the minimizers reach and $r=e_{\max}/e_0-1$, the shifted target equals that largest efficiency at
+\begin{equation}
+\lambda^\ast=\frac{2r}{1+2r},\label{eq:lamstar}
+\end{equation}
+and for $\lambda>\lambda^\ast$ the loss asks for more light than any hologram of the family delivers, so the minimizers move along the front toward lower uniformity with almost no gain in light. Since the total light cannot exceed one, the requested total is attainable at most up to $\lambda_1=2(1-e_0)/(2-e_0)$, which is
+an upper bound for $\lambda^\ast$ that needs no run of the method. Third, a grid of weights that is linear in $\lambda$ spends most of its points beyond $\lambda^\ast$ when $r$ is small, and a grid that is linear in the requested total, $\lambda_k=2r_k/(1+2r_k)$ with $r_k$ linear between $0$ and $1/e_0-1$, spaces the points evenly in what is asked.
+The ablation of Section~\ref{sec:ablation} compares the two schedules and a quadratic one. The measured value of $\lambda^\ast$ on the task is reported in Section~\ref{sec:results}, from the largest efficiency of each front.
+
+\subsection{Monotonicity and what a weighted sum reaches}
+
+\begin{proposition}[monotone path and critical points]\label{prop:mono}
+(a) Let $\lambda_1<\lambda_2<1$ and let $\phi_1,\phi_2$ be global minimizers of $L_{\lambda_1},L_{\lambda_2}$. Then $S(\phi_1)\le S(\phi_2)$ and $E(\phi_1)\le E(\phi_2)$: along the weights the light does not decrease and the error does not decrease.
+(b) If $\nabla L_\lambda(\phi)=0$ with $\lambda\in(0,1)$, then no direction $d$ satisfies both $\nabla E(\phi)^{\top}d<0$ and $\nabla S(\phi)^{\top}d>0$: the hologram is Pareto critical for the pair $(E,-S)$.
+\end{proposition}
+\begin{proof}
+(a) Dividing by $1-\lambda$, $\phi_i$ minimizes $E-\mu_iS$ with $\mu_i=\lambda_i/(1-\lambda_i)$ and $\mu_1<\mu_2$. Then $E_1-\mu_1S_1\le E_2-\mu_1S_2$ and $E_2-\mu_2S_2\le E_1-\mu_2S_1$. Adding the two inequalities gives $(\mu_2-\mu_1)(S_2-S_1)\ge0$, so $S_2\ge S_1$. The first inequality then gives $E_1-E_2\le\mu_1(S_1-S_2)\le0$.
+(b) $\nabla L_\lambda=(1-\lambda)\nabla E-\lambda\nabla S=0$. For any $d$, $(1-\lambda)\nabla E^{\top}d=\lambda\nabla S^{\top}d$, and the two weights are positive, so $\nabla E^{\top}d<0$ forces $\nabla S^{\top}d<0$.
+\end{proof}
+
+Part (a) says that the front of the loss objectives is traversed in one direction as $\lambda$ grows; the engine's unit test checks that direction on a small array, and Section~\ref{sec:results} counts the violations on the front of every seed, where the minimizers are local and the guarantee of the global statement is not available. Part (b) says that the points that the continuation produces
+are candidates for Pareto optimality of the loss objectives wherever the conjugate-gradient iteration has converged; it is a necessary condition, and after $K$ iterations the gradient is small and not zero. The relation to the figures of merit is the subject of the next subsection: $u$ is not a function of $E$, so a front point of the loss is not guaranteed to be Pareto optimal in $(e,u)$, and the readout of Algorithm~\ref{alg:front}
+keeps only the non-dominated points of the plane $(e,u)$, which is why the number of non-dominated points can be smaller than $n_\lambda$.
+
+\begin{remark}[points that a weighted sum cannot reach]\label{rem:convex}
+Let $y=(E(\phi),-S(\phi))$ be the objective vector of a hologram and suppose that two attainable vectors $y^{a},y^{b}$ and $\theta\in[0,1]$ exist with $y_i>\theta y^{a}_i+(1-\theta)y^{b}_i$ in both coordinates $i$. Then no weights $(1-\lambda,\lambda)$ with $\lambda\in[0,1]$ make $\phi$ a minimizer of $L_\lambda$,
+because $(1-\lambda)y_1+\lambda y_2>\theta\,L_\lambda(y^{a})+(1-\theta)\,L_\lambda(y^{b})\ge\min\{L_\lambda(y^{a}),L_\lambda(y^{b})\}$ for every $\lambda$.
+\end{remark}
+The remark states the structural limit of every weighted-sum method that the multiobjective literature documents~\cite{das1997,miettinen}: a dent of the front toward the origin is invisible to the weights. On the present problem the limit applies to the pair $(E,-S)$; whether the image of the front in $(e,u)$ has dents is a question that the measured fronts answer
+(Section~\ref{sec:results}).
+
+\subsection{Bounds that tie the loss to the figures of merit}
+
+\begin{proposition}[spread and uniformity from the error]\label{prop:bound}
+Let the weights be equal, $T_m=\tau=e_0/M$, and let $e$ be the efficiency of a hologram with intensities $I_m$. Then
+\begin{equation}
+\frac{\sigma}{100}\le\sqrt{E}\,\frac{e_0}{e},\qquad u\ge1-\sqrt{M\,E}.\label{eq:bounds}
+\end{equation}
+The first inequality is an equality if and only if $e=e_0$.
+\end{proposition}
+\begin{proof}
+With $\bar I=e/M$, $\sum_m(I_m-\tau)^2=\sum_m(I_m-\bar I)^2+M(\bar I-\tau)^2\ge M\operatorname{std}^2(I)$, and $E=\sum_m(I_m-\tau)^2/(M\tau^2)$ by Eq.~\ref{eq:E}. Hence $\operatorname{std}(I)\le\tau\sqrt E$, and dividing by $\bar I$ gives the first bound with $\tau/\bar I=e_0/e$; equality needs $\bar I=\tau$, that is $e=e_0$.
+For the second, each term of the sum is at most the sum, so $|I_m-\tau|\le\tau\sqrt{ME}=:\tau a$ for every trap. If $a<1$ then $\max_mI_m\le\tau(1+a)$ and $\min_mI_m\ge\tau(1-a)$. The function $(x-y)/(x+y)$ increases in $x$ and decreases in $y$, so $1-u=(\max I-\min I)/(\max I+\min I)\le\big((1+a)-(1-a)\big)/\big((1+a)+(1-a)\big)=a$. For $a\ge1$ the bound reads $u\ge1-a$, which is at most zero, and it holds because $u\ge0$.
+\end{proof}
+
+The first bound makes the relative standard deviation a quantity that the loss controls: the spread of the front cannot exceed $100\sqrt E\,e_0/e$ percent, and it is an equality when the efficiency equals that of the start, which the uniform end of the front nearly does. The second bound is weaker, because it passes through the largest deviation of one trap and because $M$ multiplies the error: for $M=\nTraps$ traps a
+guaranteed uniformity of 0.9 requires $E\le10^{-4}$. Section~\ref{sec:results} measures both bounds on every front point, together with the minimum of the slack, and Figure~\ref{fig:bound} plots the first. The bounds hold for any hologram and any weights $\lambda$; they are properties of the two objectives and not of the optimizer, and they give the front its meaning
+for the engineering quantities: a point with a small $E$ has a small spread and a high uniformity, and the loss pays for light by letting $E$ grow.
+
+\subsection{The warm start}
+
+\begin{proposition}[gradient of a neighbouring weight]\label{prop:warm}
+For any $\lambda,\lambda'\in[0,1]$, $L_{\lambda'}=L_\lambda-(\lambda'-\lambda)(E+S)$, and therefore $\nabla L_{\lambda'}(\phi)=\nabla L_\lambda(\phi)-(\lambda'-\lambda)\nabla(E+S)(\phi)$. At a stationary point $\phi_\lambda$ of $L_\lambda$ the gradient of the next problem is $-(\lambda'-\lambda)\nabla(E+S)(\phi_\lambda)$, of norm proportional to the step in the weight.
+If $\nabla^2L_\lambda(\phi_\lambda)$ is nonsingular on the complement of the global-phase direction, the stationary points form a differentiable curve with tangent $\mathrm{d}\phi/\mathrm{d}\lambda=\big[\nabla^2L_\lambda\big]^{-1}\nabla(E+S)$.
+\end{proposition}
+\begin{proof}
+$L_\lambda=(1-\lambda)E-\lambda S=E-\lambda(E+S)$, so the first identity is the difference of two such expressions, and the second is its gradient. At a stationary point of $L_\lambda$ the first term vanishes. Differentiating $\nabla L_\lambda(\phi(\lambda))=0$ with respect to $\lambda$ gives $\nabla^2L_\lambda\,\phi'-\nabla(E+S)=0$; the loss is invariant under $\phi\mapsto\phi+c$ because the intensities are, so the Hessian has the constant vector in its kernel, and the inversion is on the complement.
+\end{proof}
+
+The identity explains the warm start. A cold start of the problem at weight $\lambda'$ from the same start hologram for every weight begins with a gradient of fixed size, $\nabla L_{\lambda'}(\phi_{\mathrm{start}})$, whereas a warm start begins at the previous solution with a gradient of size $(\lambda'-\lambda)\|\nabla(E+S)\|$, with $\lambda'-\lambda=1/(n_\lambda-1)$ on a linear grid. With a fixed number $K$ of
+iterations per weight the warm start therefore spends its iterations on a correction of the order of the step, and the cold start on a displacement of the order of the whole range. The ablation compares the two at equal cost. The tangent formula also names the failure of the continuation: where the Hessian on the complement becomes singular the curve has a turning point or a branch point,
+and the warm start can jump to another branch. The measured fronts show whether this happens on the task of the paper.
+
+\subsection{Conjecture, evidence and conditions}
+
+\begin{conjecture}[one branch]\label{conj:branch}
+On the ideal device with trap targets and the start of Algorithm~\ref{alg:front}, the warm-started minimizers $\phi^{(k)}$ lie on one connected branch of local minimizers of $L_\lambda$, so that the points $(e_k,u_k)$ trace a monotone curve of $(e,u)$ in which a larger weight gives a higher efficiency and a lower uniformity.
+\end{conjecture}
+The evidence that Section~\ref{sec:results} reports is the count of seeds in which the efficiency, the error $E$ and the uniformity change monotonically along $\lambda$ over all \nLambda{} points, the comparison of the warm-started front with the cold-started one at equal cost, and the agreement of the fronts of different seeds in the position of their ends.
+The conjecture is not proved: global minimizers are not computed, the conjugate-gradient iteration is stopped after $K$ steps, and the loss is not convex. What is proved is conditional. Proposition~\ref{prop:shift} and the identity of Proposition~\ref{prop:warm} hold for every hologram and every weight. Proposition~\ref{prop:mono}(a) needs global minimizers
+and Proposition~\ref{prop:mono}(b) needs stationarity. The bounds of Proposition~\ref{prop:bound} are stated for equal weights, the case of every task of the paper, and are not claimed for unequal ones.
+All of them are statements about the ideal device: with a device in the loop the intensities are no longer the squared moduli of Eq.~\ref{eq:forward}, and the method of this paper does not take a device.

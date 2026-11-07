@@ -159,7 +159,7 @@
    "id": "B4",
    "tier": "beyond",
    "method": "Aberration-robust hologram",
-   "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (limited by the spot width: 1.04 times)",
+   "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (1.04 times at the acceptance budget; 1.48 times at 0.10 bins and 0.912 of the efficiency with a displacement prior alone and five times the budget)",
    "gate": "tests/methods/beyond/test_b4_robust.py"
   },
   {
@@ -2274,12 +2274,16 @@
     "ideal": {
      "n": 5,
      "sigma": 0.0,
+     "q1": 0.0,
+     "q3": 0.0,
      "eff": 0.751421,
      "time_s": 17.701064
     },
     "device": {
      "n": 5,
      "sigma": 17.114947,
+     "q1": 10.725278,
+     "q3": 23.504616,
      "eff": 0.500741,
      "time_s": 615.53502
     }
@@ -2289,12 +2293,16 @@
     "ideal": {
      "n": 6,
      "sigma": 0.0,
+     "q1": 0.0,
+     "q3": 0.097166,
      "eff": 0.755646,
      "time_s": 2.5102805000000004
     },
     "device": {
      "n": 5,
      "sigma": 20.753407,
+     "q1": 20.462318,
+     "q3": 24.561441,
      "eff": 0.503487,
      "time_s": 2.533672
     }
@@ -2304,12 +2312,16 @@
     "ideal": {
      "n": 6,
      "sigma": 0.005997,
+     "q1": 0.0,
+     "q3": 0.1278255,
      "eff": 0.7544705,
      "time_s": 1.0285630000000001
     },
     "device": {
      "n": 5,
      "sigma": 20.665836,
+     "q1": 20.238966,
+     "q3": 27.549768,
      "eff": 0.502998,
      "time_s": 0.911872
     }
@@ -2319,12 +2331,16 @@
     "ideal": {
      "n": 5,
      "sigma": 0.402414,
+     "q1": 0.394282,
+     "q3": 0.407607,
      "eff": 0.743783,
      "time_s": 25.548348
     },
     "device": {
      "n": 5,
      "sigma": 20.52157,
+     "q1": 20.16823,
+     "q3": 24.5061,
      "eff": 0.498882,
      "time_s": 26.857378
     }
@@ -2334,12 +2350,16 @@
     "ideal": {
      "n": 6,
      "sigma": 0.31369800000000003,
+     "q1": 0.280493,
+     "q3": 0.3567895,
      "eff": 0.774028,
      "time_s": 56.552443
     },
     "device": {
      "n": 5,
      "sigma": 20.659148,
+     "q1": 20.271832,
+     "q3": 24.610569,
      "eff": 0.528998,
      "time_s": 67.652403
     }
@@ -2349,12 +2369,16 @@
     "ideal": {
      "n": 6,
      "sigma": 135.736943,
+     "q1": 66.027405,
+     "q3": 135.736943,
      "eff": 0.39893,
      "time_s": 0.0044425
     },
     "device": {
      "n": 5,
      "sigma": 174.756446,
+     "q1": 26.749654,
+     "q3": 175.182452,
      "eff": 0.278623,
      "time_s": 0.004662
     }
@@ -2364,12 +2388,16 @@
     "ideal": {
      "n": 6,
      "sigma": 25.4123105,
+     "q1": 19.2575535,
+     "q3": 32.620816,
      "eff": 0.710243,
      "time_s": 0.0053025
     },
     "device": {
      "n": 5,
      "sigma": 31.09893,
+     "q1": 21.054473,
+     "q3": 49.12298,
      "eff": 0.477757,
      "time_s": 0.005384
     }
@@ -2379,12 +2407,16 @@
     "ideal": {
      "n": 6,
      "sigma": 78.27770749999999,
+     "q1": 75.390668,
+     "q3": 82.2157495,
      "eff": 0.015261,
      "time_s": 0.068184
     },
     "device": {
      "n": 5,
      "sigma": 89.056219,
+     "q1": 84.84126,
+     "q3": 93.84915,
      "eff": 0.013004,
      "time_s": 0.068283
     }
@@ -2394,12 +2426,16 @@
     "ideal": {
      "n": 6,
      "sigma": 14.411010000000001,
+     "q1": 11.3594555,
+     "q3": 14.8576585,
      "eff": 0.79918,
      "time_s": 0.8178725
     },
     "device": {
      "n": 5,
      "sigma": 31.151263,
+     "q1": 21.876441,
+     "q3": 32.984291,
      "eff": 0.52293,
      "time_s": 0.897189
     }
@@ -2409,12 +2445,16 @@
     "ideal": {
      "n": 6,
      "sigma": 9.109073500000001,
+     "q1": 7.815455999999999,
+     "q3": 10.570757,
      "eff": 0.7804085000000001,
      "time_s": 1.0501155
     },
     "device": {
      "n": 5,
      "sigma": 23.632994,
+     "q1": 21.086121,
+     "q3": 30.117731,
      "eff": 0.514093,
      "time_s": 1.19721
     }
@@ -2424,12 +2464,16 @@
     "ideal": {
      "n": 6,
      "sigma": 0.2966105,
+     "q1": 0.194996,
+     "q3": 0.346496,
      "eff": 0.77476,
      "time_s": 0.722928
     },
     "device": {
      "n": 5,
      "sigma": 20.729978,
+     "q1": 20.392506,
+     "q3": 27.404173,
      "eff": 0.517783,
      "time_s": 0.792698
     }
@@ -2439,12 +2483,16 @@
     "ideal": {
      "n": 5,
      "sigma": 0.011994,
+     "q1": 0.0,
+     "q3": 0.165447,
      "eff": 0.751429,
      "time_s": 0.550758
     },
     "device": {
      "n": 5,
      "sigma": 26.440886,
+     "q1": 20.238966,
+     "q3": 27.549768,
      "eff": 0.502998,
      "time_s": 0.582764
     }
@@ -2459,12 +2507,16 @@
     "ideal": {
      "n": 6,
      "sigma": 0.058789499999999995,
+     "q1": 0.056776999999999994,
+     "q3": 0.060015,
      "eff": 0.6414394999999999,
      "time_s": 57.58591
     },
     "device": {
      "n": 5,
      "sigma": 20.491498,
+     "q1": 20.396161,
+     "q3": 23.367467,
      "eff": 0.430679,
      "time_s": 56.485747
     }
@@ -2474,12 +2526,16 @@
     "ideal": {
      "n": 6,
      "sigma": 2.6490205,
+     "q1": 1.9533445,
+     "q3": 2.9841360000000003,
      "eff": 0.750882,
      "time_s": 0.6615245000000001
     },
     "device": {
      "n": 5,
      "sigma": 21.135793,
+     "q1": 20.407701,
+     "q3": 24.744173,
      "eff": 0.485628,
      "time_s": 0.707353
     }
@@ -2489,12 +2545,16 @@
     "ideal": {
      "n": 6,
      "sigma": 1.199603,
+     "q1": 0.91385,
+     "q3": 1.242709,
      "eff": 0.7757345,
      "time_s": 0.401016
     },
     "device": {
      "n": 5,
      "sigma": 14.430121,
+     "q1": 11.423856,
+     "q3": 15.160436,
      "eff": 0.510353,
      "time_s": 7.16736
     }
@@ -2504,12 +2564,16 @@
     "ideal": {
      "n": 2,
      "sigma": 19.1073785,
+     "q1": 18.5094885,
+     "q3": 19.5854425,
      "eff": 0.8222754999999999,
      "time_s": 7.177811
     },
     "device": {
      "n": 2,
      "sigma": 34.0274885,
+     "q1": 25.9451195,
+     "q3": 35.115353999999996,
      "eff": 0.57544,
      "time_s": 7.008813
     }
@@ -2519,12 +2583,16 @@
     "ideal": {
      "n": 5,
      "sigma": 2.233433,
+     "q1": 1.960674,
+     "q3": 2.667961,
      "eff": 0.737237,
      "time_s": 0.766349
     },
     "device": {
      "n": 5,
      "sigma": 16.754742,
+     "q1": 14.171582,
+     "q3": 17.516677,
      "eff": 0.485525,
      "time_s": 65.905484
     }
@@ -2534,12 +2602,16 @@
     "ideal": {
      "n": 6,
      "sigma": 0.8253295,
+     "q1": 0.683105,
+     "q3": 1.021396,
      "eff": 0.74247,
      "time_s": 0.48172
     },
     "device": {
      "n": 5,
      "sigma": 20.476435,
+     "q1": 20.081433,
+     "q3": 27.519427,
      "eff": 0.511126,
      "time_s": 0.464849
     }
@@ -2554,6 +2626,8 @@
     "ideal": {
      "n": 1,
      "sigma": 16.438965,
+     "q1": 15.008166,
+     "q3": 17.308641,
      "eff": 0.889885,
      "time_s": 6.937257
     },
@@ -3167,6 +3241,18 @@
    "plane means over overall mean 0.938, 0.987 and 1.075 and 0.926, 1.034 and 1.039 on three planes",
    "2",
    "tests/methods/baseline/test_m19_multiplane.py"
+  ],
+  [
+   "B1",
+   "crosstalk device, 10 x 10 task: relative standard deviation 0.20 [0.16, 0.30] percent against 5.21 [4.75, 5.46] for M07 at 100 iterations (a factor 26 [16, 33]) at 0.995 [0.991, 0.997] of its efficiency; 4-bit device with fill 0.85: 0.72 [0.60, 1.16] against 5.73 [5.13, 5.88] (a factor 7.9 [5.0, 8.6]) at 0.990 [0.983, 0.996] of its efficiency; taken from the companion manuscript's beyond.json, 5 and 3 seeds",
+   "5 and 3",
+   "manuscripts/device-aware-flicker-bounded/data/measure.py (beyond.json)"
+  ],
+  [
+   "B2",
+   "4 x 4 lattice, two columns moved by four bins in 13 frames: lowest transient intensity of a moving trap 0.920 [0.915, 0.932] of its mean against 0.654 [0.551, 0.709] for linear phase interpolation; largest per-frame spread 0.34 [0.14, 0.39] against 22.8 [19.2, 27.0] percent; taken from the companion manuscript's beyond.json, 5 seeds",
+   "5",
+   "manuscripts/device-aware-flicker-bounded/data/measure.py (beyond.json)"
   ],
   [
    "B4",

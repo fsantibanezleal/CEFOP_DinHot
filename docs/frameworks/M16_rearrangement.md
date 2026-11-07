@@ -37,8 +37,7 @@ GS holograms whose free phases jump between steps. Source: arXiv 2501.01391 (rea
 
 Defaults (`run`, line 134): `alpha = 1.5`, `max_step_bins = pad` (one Fourier unit $\lambda f/(n_{pix}p)$), `n_fix = 12`; `atoms` (a `TrapSet` of loaded positions) is required.
 Output: `phi` is the last frame; `meta` has `frames`, `n_steps`, `assignment`, `min_ratio` (per trap: the minimum over the steps of $I_m(s)$ divided by its mean),
-`moved`, `crossings` and `trap_sequence`. UNVERIFIED: the paper gives the unit as $\lambda f/(mL)$ with $m\approx0.41$ in prose; the equations above are the extraction's rendering
-of the described procedure, and the wrapped phase difference (shortest phase path) is DinHot's reading of "interpolate linearly".
+`moved`, `crossings` and `trap_sequence`. The paper (Knottnerus et al., arXiv:2501.01391, Section 3) chooses the number of holograms so that the longest trajectory advances at most one Fourier unit, $\lambda f/L\approx0.45\ \mu$m, per hologram, and describes the procedure in prose; the equations above are DinHot's rendering of it, and the wrapped phase difference (shortest phase path) is DinHot's choice.
 
 ## Acceptance criterion and test
 

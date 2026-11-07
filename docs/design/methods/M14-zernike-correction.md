@@ -48,7 +48,7 @@ unit rms over the disc, so the rms wavefront error is the root sum of squares of
 `mode='recover'` (default): the merit is the summed measured trap intensity $M(\hat c) = \sum_m I_m$ from the emulated camera
 (`core/camera.py`, default: ideal gains, no noise, no roll-off, seeded from `rng`, line 112). Under the Marechal approximation
 $M \propto \exp[-(2\pi\sigma)^2]$, with $\sigma$ the residual wavefront rms in waves, so $\ln M$ is a parabola in each coefficient
-(UNVERIFIED against Noll 1976: the paper was not opened; the approximation is quoted from the physics research record). One sweep
+(the exponential Strehl form that Mahajan 1983, J. Opt. Soc. Am. 73, 860, https://doi.org/10.1364/JOSA.73.000860, compares with the Marechal expansion). One sweep
 visits the modes of `modes`; for each it evaluates $M$ at $\hat c_j - \delta$, $\hat c_j$, $\hat c_j + \delta$, fits the parabola
 to $\ln M$ and moves to its vertex,
 
@@ -112,8 +112,8 @@ case has its own optics and aberration, listed in `data/derived/manifests/`):
 
 ## Limits and failure modes
 
-- UNVERIFIED: the Noll ordering beyond $j = 11$ and the signs ($j = 12$ to 21 follow a rule stated in `core/zernike.py` that was not
-  checked against Noll 1976).
+- The Noll ordering beyond $j = 11$ and the signs ($j = 12$ to 21 follow a rule stated in `core/zernike.py`) were not compared with
+  Noll 1976, whose text was not available in full.
 - The merit assumes a roughly Gaussian response in each coefficient; strong aberrations break it.
 - The camera is an emulation; the recovery is shown against stated errors, not an instrument.
 - A global set cannot correct aberrations that vary across the field (the gap BS-4 starts from).
@@ -122,4 +122,4 @@ case has its own optics and aberration, listed in `data/derived/manifests/`):
 
 - Nogrette et al. 2014, Phys. Rev. X 4, 021034, https://arxiv.org/abs/1402.5329
 - Ebadi et al. 2021, https://arxiv.org/abs/2012.12281
-- Noll 1976, J. Opt. Soc. Am. 66, 207, https://doi.org/10.1364/JOSA.66.000207 (not opened, UNVERIFIED)
+- Noll 1976, J. Opt. Soc. Am. 66, 207, https://doi.org/10.1364/JOSA.66.000207 (paywalled; the text was not available in full)

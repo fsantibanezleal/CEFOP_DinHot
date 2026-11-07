@@ -1,6 +1,6 @@
 r"""M09 direct search with the efficiency-uniformity cost of Polin et al. (algorithms dossier D2.1).
 
-Source: Polin, Hovhannisyan, Sorensen, Optics Express 13, 5831 (2005), https://doi.org/10.1364/OPEX.13.005831 (cost
+Source: Polin, Ladavac, Lee, Roichman, Grier, Optics Express 13, 5831 (2005), https://doi.org/10.1364/OPEX.13.005831 (cost
 eqs (11) to (13)); the benchmark numbers on the 10x10 task are Di Leonardo et al. 2007,
 https://doi.org/10.1364/OE.15.001913 (direct search from SR, ``f = 0.5``: ``u = 1.00``, ``e = 0.68`` after 1.3 N steps).
 

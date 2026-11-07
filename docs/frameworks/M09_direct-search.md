@@ -6,7 +6,7 @@
 | Lane | baked |
 | Targets, dimensions | traps, 2D and 3D |
 | Module and entrypoint | `data-pipeline/pipeline/model/holo/methods/optim/m09_direct_search.py`, `SPEC` line 39, `run` line 55 |
-| Anchor | Polin, Hovhannisyan and Sorensen, Opt. Express 13, 5831 (2005) |
+| Anchor | Polin, Ladavac, Lee, Roichman and Grier, Opt. Express 13, 5831 (2005) |
 
 ## Purpose
 
@@ -59,5 +59,5 @@ $N$ pixels.
 
 ## References
 
-- Polin, Hovhannisyan and Sorensen 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
+- Polin, Ladavac, Lee, Roichman and Grier 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913

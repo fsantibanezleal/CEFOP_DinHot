@@ -8,8 +8,9 @@ the aperture is 8 rad), the output one phase for the 128 x 128 SLM (``n_pix = 12
 focal field per plane, a constant inverse DFT and the plane's lens phase carry each to the SLM, they are summed and the output is the
 phase of the sum. The loss is ``1 - AC`` with ``AC`` the mean over the planes of
 ``2 sum(T I) / (sum T^2 + sum I^2)`` (unit-sum plane intensities ``T`` of the target and ``I`` of the hologram, the plane field being
-the centred orthonormal FFT of ``A exp(i (phi - Z q))``); DeepCGH's own accuracy formula was not read (UNVERIFIED), this definition is
-used for the loss, the baseline and the evaluation alike.
+the centred orthonormal FFT of ``A exp(i (phi - Z q))``); this is DinHot's per-plane form, used for the loss, the baseline and the
+evaluation alike. DeepCGH (Eybposh et al. 2020, Opt. Express 28, 26636, Eq. 3) defines the accuracy as the cosine similarity
+of the intensity volumes over all voxels; the evaluation reports it next to this one (``_planes.cosine_volume_accuracy``).
 
 Targets are point voxels (equal weights, integer lateral bins, equal counts per plane), the form M19 takes: ``Target.from_traps`` with
 traps on the three plane depths. The hybrid runs M19 (volumetric 3D GS, Whyte and Courtial 2005) from the network's phase in what is

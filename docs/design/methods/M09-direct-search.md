@@ -15,7 +15,7 @@
 The established optimization method of holographic optical tweezers: visit every SLM pixel in random order, try every phase level
 and keep the best, against an explicit cost that trades efficiency for uniformity with one weight. It is a classical baseline
 because it is the reference "perfect uniformity" method of Di Leonardo, Ianni and Ruocco 2007 (uniformity 1.00 on the 10x10 task) and
-because it is the explicit-cost ancestor of the gradient methods (M10, M11). Sources: Polin, Hovhannisyan and Sorensen, Opt. Express
+because it is the explicit-cost ancestor of the gradient methods (M10, M11). Sources: Polin, Ladavac, Lee, Roichman and Grier, Opt. Express
 13, 5831 (2005), https://doi.org/10.1364/OPEX.13.005831, cost Eqs. (11) to (13); the benchmark numbers are Di Leonardo et al. 2007
 (https://doi.org/10.1364/OE.15.001913).
 
@@ -115,5 +115,5 @@ source gives no quantitative result for it).
 
 ## References
 
-- Polin, Hovhannisyan and Sorensen 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
+- Polin, Ladavac, Lee, Roichman and Grier 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913

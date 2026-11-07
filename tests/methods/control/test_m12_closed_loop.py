@@ -75,3 +75,55 @@ def test_validation(setup256, grid10):
     n = setup256.n_fft
     with pytest.raises(ValueError, match="traps"):
         m.run(setup256, Target.from_field(np.ones((n, n)), np.ones((n, n), bool)), budget=Budget(1), rng=Rng(1))
+
+
+# ---- the rule as Nogrette et al. 2014 print it (Eq. 3): the new target intensity from the latest measurement alone
+
+def test_printed_variant_is_registered_and_the_default_stays_cumulative():
+    assert m.VARIANTS == ("nogrette", "kim", "nogrette-printed")
+    import inspect
+    assert inspect.signature(m.run).parameters["variant"].default == "nogrette"
+
+
+def test_printed_variant_equals_the_cumulative_one_at_the_first_iteration_and_differs_from_the_second(setup256, grid10):
+    t = Target.from_traps(grid10)
+    runs = {}
+    for v in ("nogrette", "nogrette-printed"):
+        cam = EmulatedCamera(seed=11, gain_rms=0.19, noise_rms=0.0, blur_bins=0.0, rolloff=False)
+        runs[v] = [m.run(setup256, t, budget=Budget(k), rng=Rng(11), camera=cam, variant=v) for k in (1, 2)]
+    assert np.array_equal(runs["nogrette"][0].phi, runs["nogrette-printed"][0].phi)            # a = a_base: the same first step
+    assert not np.array_equal(runs["nogrette"][1].phi, runs["nogrette-printed"][1].phi)        # the memory differs from the second
+    assert runs["nogrette-printed"][1].meta["variant"] == "nogrette-printed"
+
+
+def test_printed_variant_target_is_the_base_times_the_factor_of_the_latest_measurement_only(setup256, grid10, monkeypatch):
+    """Both variants share iteration 1, so the factor f2 of the second measurement is the same: cumulative a2 = a1 f2, printed a2 = a_base f2."""
+    seen = []
+    orig = m._gs.rule_gs
+    monkeypatch.setattr(m._gs, "rule_gs", lambda state, v, j: (seen.append(state["a"].copy()), orig(state, v, j))[1])
+    a_base = m.amp_targets(grid10)
+    out = {}
+    for v in ("nogrette", "nogrette-printed"):
+        seen.clear()
+        cam = EmulatedCamera(seed=12, gain_rms=0.19, noise_rms=0.0, blur_bins=0.0, rolloff=False)
+        m.run(setup256, Target.from_traps(grid10), budget=Budget(2), rng=Rng(12), camera=cam, variant=v, gain=0.7)
+        out[v] = list(seen)
+    cum, prt = out["nogrette"], out["nogrette-printed"]
+    assert len(cum) == len(prt) == 2
+    assert np.allclose(cum[0], prt[0])
+    f2 = cum[1] / cum[0]
+    assert np.allclose(prt[1], a_base * f2, rtol=1e-12)
+    assert not np.allclose(prt[1], cum[1])
+
+
+@pytest.mark.parametrize("seed", (1, 2, 3))
+def test_printed_variant_measured_on_the_acceptance_task_does_not_settle_like_the_cumulative_one(setup256, grid10, seed):
+    """Measured (3 seeds, 20 iterations, G = 0.7): cumulative 0.8 to 2.2 percent, memoryless 15 to 19 percent. A regression pin of that
+    finding, which the M12 docstring states; if the printed rule starts to converge this test says the statement is stale."""
+    t = Target.from_traps(grid10)
+    final = {}
+    for v in ("nogrette", "nogrette-printed"):
+        cam = EmulatedCamera(seed=seed, gain_rms=0.19, noise_rms=0.0, blur_bins=0.0, rolloff=False)
+        final[v] = m.run(setup256, t, budget=Budget(20), rng=Rng(seed), camera=cam, gain=0.7, variant=v).history[-1]["rel_std"]
+    assert final["nogrette"] <= 2.5, final
+    assert 10.0 <= final["nogrette-printed"] <= 25.0, final

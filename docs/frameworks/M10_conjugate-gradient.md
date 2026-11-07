@@ -6,7 +6,7 @@
 | Lane | both (small sizes live, full size baked) |
 | Targets, dimensions | traps and shaped fields, 2D and 3D |
 | Module and entrypoint | `data-pipeline/pipeline/model/holo/methods/optim/m10_cg.py`, `SPEC` line 38, `run` line 93; shared `_common.py` |
-| Anchor | Harte, Bruce, Belmonte and Arnold, Opt. Express 22, 26548 (2014) |
+| Anchor | Harte, Bruce, Keeling and Cassettari, Opt. Express 22, 26548 (2014) |
 
 ## Purpose
 
@@ -56,5 +56,5 @@ target and on traps for $t = 2$ and 4 and through the crosstalk operator.
 
 ## References
 
-- Harte, Bruce, Belmonte and Arnold 2014, Opt. Express 22, 26548, https://doi.org/10.1364/OE.22.026548
+- Harte, Bruce, Keeling and Cassettari 2014, Opt. Express 22, 26548, https://doi.org/10.1364/OE.22.026548
 - Nocedal and Wright, Numerical Optimization (line search algorithms 3.5 and 3.6)

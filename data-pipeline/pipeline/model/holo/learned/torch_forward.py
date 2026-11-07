@@ -126,8 +126,9 @@ def focal_intensity(phi: torch.Tensor, amp_in: torch.Tensor) -> torch.Tensor:
 
 def accuracy(target_amp: torch.Tensor, inten: torch.Tensor) -> torch.Tensor:
     """``AC = 2 sum(T I) / (sum T^2 + sum I^2)`` with ``T = a^2`` (unit-sum target intensity) and ``I`` the unit-sum
-    reconstruction; 1 iff equal, in [0, 1]. DeepCGH's exact accuracy formula was not read (UNVERIFIED); this definition is
-    applied identically to the network, GS and the loss."""
+    reconstruction; 1 iff equal, in [0, 1]. This is DinHot's per-plane Dice-type form, applied identically to the network, GS and the
+    loss. DeepCGH (Eybposh et al. 2020, Opt. Express 28, 26636, Eq. 3) defines the accuracy as the cosine similarity of the intensity
+    volumes over all voxels; the evaluation reports it next to this one (``methods/learned/_planes.py``, ``cosine_volume_accuracy``)."""
     t = target_amp**2
     t = t / t.sum(dim=(-2, -1), keepdim=True)
     num = 2.0 * (t * inten).sum(dim=(-2, -1))

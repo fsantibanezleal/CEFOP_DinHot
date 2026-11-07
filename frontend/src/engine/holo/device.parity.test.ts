@@ -116,10 +116,10 @@ describe('trap physics', () => {
     const doc = load('trapphys.formulas');
     const c = doc.cases[0], i = c.inputs, o = c.outputs;
     const a = tp.rayleighPolarizabilityFm2(i.radius_m, i.n_particle, i.n_medium);
-    const [kxx, kyy] = tp.stiffnessMap(dec(i.map), 21, 21, i.spacing_m, i.scale, a);
+    const [kxx, kyy] = tp.stiffnessMap(dec(i.map), 21, 21, i.spacing_m, i.scale, a, i.n_medium);
     const depth = tp.dipoleTrapDepthJ(i.power_w, i.waist_m, i.omega0, i.gamma, i.delta);
     const t = { abs: 0, rel: 1e-12 };
-    close([a, tp.gaussianPeakIntensityWPerM2(i.power_w, i.waist_m), tp.gaussianStiffnessNPerM(a, 1e10, i.waist_m), tp.gradientStiffnessNPerM(a, 1e12),
+    close([a, tp.gaussianPeakIntensityWPerM2(i.power_w, i.waist_m), tp.gaussianStiffnessNPerM(a, 1e10, i.waist_m, i.n_medium), tp.gradientStiffnessNPerM(a, 1e12, i.n_medium),
       tp.rayleighRangeM(i.waist_m, i.wavelength_m), tp.dipolePotentialJ(1e10, i.omega0, i.gamma, i.delta), tp.scatteringRatePerS(1e10, i.omega0, i.gamma, i.delta), depth],
     [o.alpha, o.i0, o.kappa_gauss, o.kappa, o.z_rayleigh, o.u_dip, o.gamma_sc, o.depth], t, 'formulas');
     close(kxx, dec(o.k_map_xx), t, 'k_xx');

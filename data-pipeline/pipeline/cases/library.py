@@ -41,6 +41,10 @@ CAT_DEVICE = {"en": "Device and optics", "es": "Dispositivo y óptica"}
 CAT_DYNAMICS = {"en": "Dynamics and controls", "es": "Dinámica y controles"}
 
 ATOM = dict(wavelength_nm=850, focal_mm=6, na=0.5, n_imm=1.0, n_pix=256, pitch_um=20, pad=2)
+# The ATOM optics with water as the immersion medium: the case of a bead in water at the ATOM wavelength and NA. The
+# immersion index enters only the defocus kernel, the NA check and the bead's medium factors, so a z = 0 hologram on it is
+# the ATOM one.
+WATER = dict(ATOM, n_imm=1.33)
 BEAD = dict(wavelength_nm=1064, focal_mm=2.4, na=1.2, n_imm=1.33, n_pix=256, pitch_um=10, pad=2)
 GAUSS = {"kind": "gaussian", "waist_frac": 1.0}
 DEVICE_C08 = {"bit_depth": 4, "crosstalk": {"sigma_per_px": 1.24, "q": 1.8}, "upsample": 3, "fill_factor": 0.85,
@@ -190,7 +194,7 @@ def _build() -> list[Case]:
     lo, hi = 0.0, 1.0
     # --- Arrays -------------------------------------------------------------------------------------------------
     add("C01_square_grid", {"en": "Small square grid, 3 x 3", "es": "Matriz cuadrada pequeña, 3 x 3"}, CAT_ARRAYS,
-        _record("C01_square_grid", ATOM, {"kind": "traps", "traps": _bin_grid(3, 3, 8, ATOM)},
+        _record("C01_square_grid", WATER, {"kind": "traps", "traps": _bin_grid(3, 3, 8, WATER)},
                 POINT_2D + ["M12"], "M06",
                 {"efficiency": [0.6, hi], "uniformity": [0.85, hi], "rel_std_pct": [lo, 8.0],
                  "feedback_final_rel_std_pct": [lo, 5.0], "fc_ratio": [0.8, 1.2], "boltzmann_tv": [lo, 0.15]},
@@ -199,11 +203,11 @@ def _build() -> list[Case]:
                           "n_particle": 1.59, "viscosity_pa_s": 0.00089, "temperature_k": 295.0,
                           "n_steps": 131072, "dt_s": 5e-5}),
         {"en": "Nine equal traps. A weighted hologram reaches a relative standard deviation of a few percent and an "
-               "efficiency above 0.6; one camera step brings the spread under 5 percent. A 0.5 um bead in the central "
+               "efficiency above 0.6; one camera step brings the spread under 5 percent. A 0.5 um bead in water in the central "
                "trap fits a Lorentzian whose corner frequency is the trap stiffness over 2 pi gamma.",
          "es": "Nueve trampas iguales. Un holograma ponderado alcanza una desviación estándar relativa de pocos por "
                "ciento y una eficiencia sobre 0,6; un paso de cámara baja la dispersión de 5 por ciento. Una esfera de "
-               "0,5 um en la trampa central ajusta una lorentziana cuya frecuencia de corte es la rigidez de la "
+               "0,5 um en agua en la trampa central ajusta una lorentziana cuya frecuencia de corte es la rigidez de la "
                "trampa sobre 2 pi gamma."},
         "synthetic",
         {"source": {"en": "Nogrette et al. 2014, Phys. Rev. X 4, 021034 (3 x 3 array, occupancy about 0.5 per trap)",

@@ -1,0 +1,44 @@
+\section{Introduction}\label{sec:intro}
+
+\textbf{The problem.} A phase-only spatial light modulator (SLM) in the pupil plane of a lens turns a computed phase pattern into an array of optical traps in the focal plane. The arrays now
+reach thousands of sites: the 256-atom quantum simulator of Ebadi et al.~\cite{ebadi} used arrays of roughly one thousand tweezers computed with phase-fixed weighted Gerchberg--Saxton (WGS), and
+the 6100-atom array of Manetsch et al.~\cite{manetsch} spans about twelve thousand sites with a trap-depth spread of 11.4 percent after WGS. The spread matters because the trap depth is proportional to the
+intensity, so every percent of intensity spread is a percent of depth spread across the atoms~\cite{grimm}. The method that delivers percent-level uniformity at this scale is phase-fixed WGS of
+Kim et al.~\cite{kim2019}, which freezes the focal-plane phase after a few iterations so that the weights of the update remain effective. Its cost is iterations: each one is a
+pair of Fourier-type transforms of the full SLM field, and the number of iterations before the intensities are uniform decides how fast a new geometry can be displayed, how
+many holograms a rearrangement sequence can afford and how much computation a browser or an embedded controller must carry.
+
+\textbf{The idea.} Learning-based methods have been applied to hologram generation as replacements of the iteration: DeepCGH~\cite{eybposh}, tensor holography~\cite{shi},
+and a generative network for tweezer arrays~\cite{ren} produce a phase directly. Direct generation trades accuracy for speed: the network of Ren et al.~\cite{ren} reports about
+10 percent variation of the trap depth on about 20 sites, which is far from the 1.4 to 1.6 percent that WGS with camera feedback reaches~\cite{kim2019,nogrette}. A different use of the same
+network is to give the iteration a better beginning, a warm start, as has been proposed for fixed-point solvers in optimization~\cite{sambharya}. The iterative method then keeps
+its guarantees and its final accuracy, and the network can only save iterations. The warm start we study predicts one initial phase per trap from the list of trap coordinates and weights with a
+permutation-equivariant set network; the superposition hologram built with those phases replaces the random-phase start of phase-fixed WGS.
+
+\textbf{The gap.} A search of the literature for this combination (Section~\ref{sec:related}) found learned networks that generate a hologram and learned warm starts for generic fixed-point
+solvers, and found no work that initializes WGS with a network or compares such a start with a random start on the same task. The question was therefore open, with an explicit risk: the
+random-phase start of WGS is already reliable, so the gain may be small.
+
+\textbf{What we did.} We implemented the warm start, trained it without labels through a differentiable copy of the phase-fixed WGS iteration, and fixed the acceptance test before training: on geometries held out from
+training, the median number of iterations to a relative standard deviation of 1 percent must be at least two times lower than from a random start, the final efficiency and uniformity must agree within 1 percent,
+and the network must fit in 1 MB. We then measured it. The network start misses the first two clauses (a factor of \ratioRoverN{} on the median iterations, final efficiency \effdNThree{} percent apart). The quantity that
+explains the gain turned out to be a setting of the iteration itself: the index at which phase-fixed WGS freezes the focal phase, $\nfix$. A random start with the same early freeze ($\nfix=3$ instead of
+the engine default of 12) needs \itRThree{} iterations against \itNThree{} for the network, so the network contributes nothing measurable beyond the freeze.
+
+\textbf{Contributions.} We state them as findings, not as a method that works.
+\begin{enumerate}
+\item A learned warm start for phase-fixed WGS: the architecture, the unsupervised training through an unrolled differentiable copy of the iteration, and a transparent acceptance test fixed in advance (Sections~\ref{sec:proposed-method} and~\ref{sec:design}).
+\item A measured negative result with its uncertainty on $\nGeo$ held-out geometries, run with the engine of the product on the same data as the baselines (Section~\ref{sec:results}).
+\item A four-arm ablation that separates the network start, the early phase freeze and their combination, with paired sign tests and bootstrap intervals (Section~\ref{sec:ablation}); it attributes the gain to the freeze.
+\item An analysis of why a start cannot help much: four propositions (the invariances of the iteration and of the network, the dependence of the run on the start through the freeze index, and an accounting bound on the weights) and a conjecture on the iteration count; a sweep of the freeze index and an oracle start from converged phases
+(Sections~\ref{sec:theory} and~\ref{sec:ablation}).
+\item The price of the shorter freeze, which the median hides: the share of runs that never reach 1 percent within the budget rises from \neverRTwelve{} to \neverRThree{} percent.
+\end{enumerate}
+
+\textbf{Main result.} On held-out geometries a network start with an early freeze reaches 1 percent of relative standard deviation at a median of \itNThree{} iterations (95\% interval \itNThreeLo{} to \itNThreeHi),
+against \itRTwelve{} from a random start with the default freeze (factor \ratioRoverN{}, interval \ratioRoverNLo{} to \ratioRoverNHi, below the factor of two required); a random start with the same early freeze reaches it at \itRThree{}
+(\itRThreeLo{} to \itRThreeHi). The claim that a learned start accelerates phase-fixed WGS is not supported for this trained network on this model (one network, one training seed), and the network is not released. The oracle start of Section~\ref{sec:abl-oracle} shows a headroom at an early freeze that this network does not reach.
+
+\textbf{Structure.} Section~\ref{sec:related} places the work among the published methods, Section~\ref{sec:problem} states the problem, Section~\ref{sec:proposed-method} derives the method,
+Section~\ref{sec:theory} analyses it, Section~\ref{sec:design} states the hypotheses and the protocol, Sections~\ref{sec:results} and~\ref{sec:ablation} report the measurements, and Sections~\ref{sec:discussion}
+and~\ref{sec:limits} discuss them and their limits. Sections~\ref{sec:repro} and~\ref{sec:conclusions} give the commands that rebuild every number and the conclusions.

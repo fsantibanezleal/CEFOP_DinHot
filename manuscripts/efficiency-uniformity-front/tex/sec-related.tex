@@ -1,0 +1,69 @@
+\section{Related work}\label{sec:related}
+
+\subsection{Iterative and search solvers for point traps}
+
+The point-trap model of Di Leonardo et al.\ computes the field at each trap as a sum over SLM pixels and compares the solvers on a ten by ten lattice on a 768 by 768 pixel SLM. In simulation,
+the random superposition reaches an efficiency of 0.69 and a uniformity of 0.01, plain GS 0.94 and 0.60, the adaptive additive variant with its exponent at 0.5 reaches 0.93 and 0.79, and the weighted form reaches 0.93 and 0.99 in about 30 steps,
+with efficiency and uniformity above 0.9 already after 10 steps~\cite{dileonardo}. Direct search changes one pixel at a time against a cost that combines the mean intensity and the spread with a scalar weight: Polin et al.\ reached less than 5 percent deviation
+on 119 quasi-periodic traps where GS and the adaptive additive variant stayed above 50 percent~\cite{polin}, and Di Leonardo et al.\ report it at two values of the weight, with 0.68 and 1.00 for the value 0.5, at a cost of $7.5\times10^{5}$ trial phases~\cite{dileonardo}.
+The weight of direct search is the one place where the older literature trades the two quantities explicitly, and it does so at fixed values, one run per value.
+
+For large arrays, Kim et al.\ observed that the weights of the weighted iteration lose their effect once the SLM-plane amplitude is replaced by the laser amplitude, and froze the focal-plane phases after an initial number of iterations; on 1500 foci they
+report a modulation efficiency of 91.2 percent and a non-uniformity below 0.5 percent in simulation~\cite{kim2019}. The same family of algorithms computes the holograms of arrays of hundreds of atoms~\cite{ebadi} and of the array of about 12,000 sites that holds 6100 atoms~\cite{manetsch}.
+A zero-padded GS with weighted feedback serves the rearrangement of atoms~\cite{kimoe2019}, and the three-dimensional extension of GS has been demonstrated experimentally~\cite{whyte}. Camera feedback closes the remaining gap between the model and the device:
+Nogrette et al.\ lowered the root-mean-square non-uniformity of ten by ten traps from 19 percent to 1.4 percent in 20 iterations~\cite{nogrette}, and a calibrated small array reaches a relative standard deviation of 0.3 percent~\cite{chew}. All of these solvers
+return one hologram per run. Their reported numbers are points of the plane of efficiency and uniformity, and the iteration count, the weight or the camera gain are the only knobs that move a point along a curve that no source plots for the task at hand.
+
+\subsection{Cost-function holography and the device model}
+
+A second family minimizes a cost over the field and not a fixed-point iteration. The mixed-region amplitude freedom method of Pasienski and DeMarco lowers the error on shaped targets by leaving the amplitude of a noise region free, at the price of the light that is sent to that region~\cite{pasienski}, and it has a mixing parameter that fixes the point where it sits between error and efficiency.
+Conjugate-gradient minimization of a power of the intensity error, with the gradient in closed form and a line search, produces holograms for ultracold-atom traps~\cite{harte}, and a later variant controls phase and amplitude together~\cite{bowman}. Gradient methods with Wirtinger derivatives optimize any differentiable propagation model~\cite{chakravarthula}.
+The device enters through the crosstalk model of Schroff et al., who convolve the phase with a fitted kernel and minimize a normalized intensity error with conjugate gradients~\cite{schroff}, and through a weighted GS modified for pixel crosstalk~\cite{persson}. Each of these methods has one loss and one scalar that sets its operating point.
+The conjugate-gradient method of Harte et al.\ is the optimizer that the present method reuses at every weight, with the Fletcher--Reeves recursion and a strong-Wolfe line search as they are defined in the textbook treatment of nonlinear optimization~\cite{nocedal}.
+
+\subsection{Learned generators of holograms}
+
+Learned generators trade the quality of one hologram for speed and for a single forward pass. Neural holography calibrates a propagation model with a camera in the loop~\cite{peng}, DeepCGH produces multi-plane holograms with an unsupervised network~\cite{eybposh}, and tensor holography reaches video rate
+with a network of small size~\cite{shi}. A network predicts one hologram for a given target; the front is a family of holograms for the same target indexed by a trade-off weight, so a learned generator that took the weight as an input would need a front like the one computed here as its training signal. None of the three sources reports the pair of efficiency and uniformity for an array of point traps as a curve.
+The studio of which this method is a part also holds learned models, and the front is the kind of artifact that could train one: a table of holograms, each labelled with its position on the trade-off, for one array. The comparison of the present paper does not include a learned model, because the aim is the front itself.
+
+\subsection{Pareto fronts in multiobjective optimization}
+
+The weighted-sum scalarization is the oldest way to generate Pareto points: minimize a convex combination of the objectives and vary the weights~\cite{miettinen}. Its drawbacks for the generation of a Pareto set are documented~\cite{das1997}; one of them is that evenly spaced weights do not give evenly distributed points,
+a property that the normal-boundary intersection method of Das and Dennis was proposed to provide for a general nonlinear multicriteria problem, with the computational efficiency of continuation-type algorithms~\cite{das1998}. Another is structural: a weighted sum with positive weights can never return a point that lies above the segment between two attainable points,
+a statement that Remark~
+ef{rem:convex} proves for the present problem. Evolutionary algorithms such as the strength Pareto
+approach and the elitist non-dominated sorting genetic algorithm approximate a front with a population of candidates and use no gradient~\cite{zitzler1999,deb}. Numerical continuation methods follow a solution curve of a parametrized problem~\cite{allgower}, and a homotopy approach extends the idea to the manifold of Pareto-critical points of a smooth multiobjective problem~\cite{hillermeier}.
+Steepest-descent methods for multicriteria problems and the multiple-gradient descent algorithm look, at a point, for a direction along which every objective decreases~\cite{fliege,desideri}.
+Fronts are compared with quality indicators, and the hypervolume, the measure of the region of the objective space that a front dominates up to a reference point, is among those that the performance-assessment literature analyses~\cite{zitzler2003}; the cost of computing it as the number of objectives grows is the subject of~\cite{beume}, and in two dimensions
+a sweep over the points sorted by one objective suffices (Algorithm~
+ef{alg:hv}).
+The same ideas have recently moved to machine learning, where the trade-off between tasks is posed as multiobjective optimization~\cite{sener}, solved with Pareto methods~\cite{lin}, and learned as a whole front by hypernetworks~\cite{navon}. The method of this paper takes the first of these ideas, the weighted sum with a warm start, applies it to an optics problem in which the weight has a physical reading
+(Proposition~\ref{prop:shift}), and states with a proof and a measurement what the weighted sum guarantees there.
+
+\subsection{Position of the proposed method}
+
+Table~\ref{tab:related} lists the works that matter for the gap with what each assumes and where it falls short for the task of the paper, which is to report a front of efficiency against uniformity for an array of point traps and to compare it with the published points of the same array.
+The method joins the starting point of Kim et al.\ and the loss and optimizer of the conjugate-gradient holography of Harte et al.\ to the continuation idea of multiobjective optimization. None of these pieces is new, and the paper does not claim a new optimizer. What it adds is the normalization that makes one weight
+meaningful across arrays, the identity of Proposition~\ref{prop:shift} that gives the weight a physical reading and a schedule, and a measurement of what the front is worth against the points and the one-parameter fronts of the published methods run on the same task.
+
+\begin{table}[t]
+\centering\small
+\caption{Published works that bound the gap, with what each assumes and where it falls short for reporting a front of efficiency against uniformity on one array of point traps. The last row is the proposed method.}
+\label{tab:related}
+\begin{tabular}{@{}p{4.2cm} p{4.3cm} p{5.6cm}@{}}
+\toprule
+Work & Assumes & Falls short for the gap\\
+\midrule
+Weighted GS~\cite{dileonardo} & ideal model, one run & one point $(e,u)$; no weight between the two quantities\\
+Direct search~\cite{polin} & scalar weight $f$ in the cost & one value of $f$ per run, $7.5\times10^{5}$ trial phases at the value reported; no front\\
+Phase-fixed WGS~\cite{kim2019} & ideal model; camera afterwards & the point sits at the uniform end; the cost in light is not shown\\
+Mixed-region amplitude freedom~\cite{pasienski} & shaped field; free noise region & one mixing parameter; sparse point traps not treated\\
+Conjugate gradient~\cite{harte,bowman} & one loss; closed-form gradient & one operating point; the front is not traced\\
+Crosstalk in the loop~\cite{schroff,persson} & fitted device kernel & one loss; no trade-off weight\\
+Learned generators~\cite{peng,eybposh,shi} & training set; one target & one hologram per target; no weight input\\
+Weighted sums and continuation~\cite{miettinen,das1998,allgower} & smooth objectives & never applied to the hologram of a trap array\\
+Continuation of the normalized loss (this paper) & ideal device, trap targets & scope measured in Sections~\ref{sec:results} and~\ref{sec:limits}\\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -17,7 +17,7 @@ known amplitudes in each, keep the phase that comes back. It is a baseline for t
 weighted variants (M05 to M07) modify, it is the reference of the learned and optimization methods (M11 is compared with it at equal
 iterations), and with a zero noise region it is the baseline that M08 (MRAF) improves for shaped targets. Source: Di Leonardo,
 Ianni and Ruocco 2007, Table 1 (https://doi.org/10.1364/OE.15.001913); Gerchberg and Saxton 1972 is the original and its text was
-not opened (UNVERIFIED).
+read for this page (Optik 35, 237, pp. 238-239: the amplitude is replaced in each plane and the phase kept, starting from uniform random phases).
 
 ## Problem it answers
 
@@ -62,7 +62,7 @@ $G = \{T|_{SR} + 0\cdot|E|\,|_{NR}\}\,e^{i\arg E}$, then $\phi = \arg\mathcal F^
 | Parameter | Default | Where | Source of the value |
 |---|---|---|---|
 | `form` | `None`: `fft` for a shaped target, `auto` for traps | `m04_gs.py` lines 24 and 25; `AUTO` in `_gs.py` line 29 | engineering choice; the forms agree on bins (test) |
-| `start_waves` | `20.0` (`_gs.START_WAVES`, `_gs.py` line 166) | `m04_gs.py` line 23 | DinHot's choice for the shaped start: a Fresnel-lens phase of 20 waves at the aperture edge, because a random start leaves speckle (see M08); the original text states no start (UNVERIFIED) |
+| `start_waves` | `20.0` (`_gs.START_WAVES`, `_gs.py` line 166) | `m04_gs.py` line 23 | DinHot's choice for the shaped start: a Fresnel-lens phase of 20 waves at the aperture edge, because a random start leaves speckle (see M08); the original starts from uniform random phases (Optik 35, pp. 238-239) |
 | `ON_BIN_TOL` | 2e-3 bins | `_gs.py` line 30 | case coordinates are rounded to 1e-4 um (code comment) |
 | start for traps | SR hologram (M02) | `_common.py` line 48 | Di Leonardo et al. 2007 |
 
@@ -137,5 +137,5 @@ own optics, listed in `data/derived/manifests/`; the C04 row is the shaped disc 
 ## References
 
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913
-- Gerchberg and Saxton 1972 (original text not opened, UNVERIFIED)
+- Gerchberg, R. W. and Saxton, W. O. 1972, Optik 35(2), 237-246 (read on a scan of the original, https://web.archive.org/web/2020/http://www.u.arizona.edu/~ppoon/GerchbergandSaxton1972.pdf)
 - Pasienski and DeMarco 2008, Opt. Express 16, 2176, https://doi.org/10.1364/OE.16.002176 (the field form)

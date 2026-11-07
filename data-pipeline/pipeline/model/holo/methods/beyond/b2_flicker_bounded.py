@@ -22,7 +22,8 @@ Frame 0 is a cold phase-fixed WGS of ``budget.iterations`` iterations; later fra
 The optimization drops the penalty form of the dossier's loss (``lambda sum (arg V - theta)^2``) for the hard lock,
 which is its ``lambda -> infinity`` limit.
 
-Transient intensity (UNVERIFIED model: the dossier gives the LPI paper's measurement, not its transient equation).
+Transient intensity (DinHot's model: the LPI paper reports a measurement, not a transient equation, so the model ranks
+methods under one display model and is not calibrated against a measured display).
 Between frames ``s`` and ``s+1`` the displayed SLM field is modelled as the blend ``f_a = A\,[(1-a) e^{i\phi_s} + a
 e^{i\phi_{s+1}}]``, ``a`` in [0, 1] (the liquid crystal relaxing between the two holograms), and the trap ``m`` is
 read at its trajectory point ``x_m(s + a)``: ``I_m(s, a) = |V_m(f_a; x_m(s+a))|^2``. ``transient_min_ratio`` returns for
@@ -62,7 +63,7 @@ phases are given, on most seeds and not on all: on the acceptance lattice with t
 ``frames_for_move`` frames) the median lowest moving trap is 0.933 and 0.936 and 6 of 8 seeds reach 0.9; the other seeds stay
 below with twice the frames as well (0.023 and 0.768 at 12 bins, 0.584 and 0.847 at 20), so their limit is the phase path the
 end phases prescribe and not the frame count. LPI does not reach 0.9 in any row. Measured 2026-10-29 after the GS family was
-made the ladder methods' own rules (``optim/_gs_family.py``); the transient model is unverified in absolute terms.
+made the ladder methods' own rules (``optim/_gs_family.py``); the transient model is not calibrated in absolute terms.
 
 ``run(setup, target, ..., destination=None, frames=13)``: ``target`` holds the initial traps, ``destination`` the final
 positions with the same ids (``None``: the traps hold still, a static sequence). 13 holograms are the dossier's

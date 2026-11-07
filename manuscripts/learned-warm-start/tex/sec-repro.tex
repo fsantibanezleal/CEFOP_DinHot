@@ -1,0 +1,13 @@
+\section{Reproducibility}\label{sec:repro}
+\sloppy
+
+The code, the committed records and the scripts that regenerate every number, table and figure of this paper are in the repository \url{https://github.com/fsantibanezleal/CEFOP_DinHot} (Apache-2.0), under \texttt{manuscripts/learned-warm-start/}. The studio that hosts the method runs at \url{https://dinhot.fasl-work.com}. The record of the rejected candidate is \texttt{data/derived/models/warmstart-model-rejected.json}; the method is the module \texttt{b3\_warm\_start.py}, and the held-out set, the training and the evaluation are in the package \texttt{learned/} of the engine.
+
+\textbf{Commands.} From the repository root, with the GPU environment of the product (it holds PyTorch; only the CPU is used by the measurement):
+\begin{itemize}
+\item \texttt{python manuscripts/learned-warm-start/data/measure.py --workers 12} runs every arm, the sweep, the oracle start and the weight accounting, and writes \texttt{warm.json}, \texttt{warm\_numbers.tex} and the table files; it took \runtimeMin{} minutes with \nWorkers{} worker processes on the workstation of Section~\ref{sec:hardware}. With \texttt{--emit-only} it rewrites the macro and table files from \texttt{warm.json} without rerunning.
+\item \texttt{python manuscripts/learned-warm-start/figures/make\_figs.py} regenerates the nine vector figures from \texttt{warm.json}.
+\item Three passes of \texttt{pdflatex} in \texttt{manuscripts/learned-warm-start/tex/} build the paper.
+\end{itemize}
+
+\textbf{Data and artifacts.} The held-out file and the checkpoint of the candidate are in the learned directory of the data root, named by the environment variable \texttt{DINHOT\_LEARNED\_DIR}; they are not in the repository. The held-out file is regenerated bit for bit by the function \texttt{build\_warm} of \texttt{learned/heldout.py} from its recorded seeds, and its sha256 digest, which the measurement script checks against the committed record before it runs, is the identity check. The checkpoint comes from the training function of Algorithm~\ref{alg:train} with the data seed 20261101 and the initialization seed 7; the exported graph is not committed because the model is not released. Every random choice goes through the portable seeded generator of the engine, so a rerun reproduces the numbers up to the floating point of the machine's fast Fourier transform. The numbers of the text are macros written by the measurement script, so none of them is typed.

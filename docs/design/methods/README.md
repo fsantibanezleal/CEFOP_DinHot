@@ -21,7 +21,7 @@ the test measures it), the evaluation that confirms or refutes it, the measured 
 - Metrics follow `core/metrics.py`: efficiency $e = \sum_m I_m$, uniformity $u = 1 - (\max I - \min I)/(\max I + \min I)$ and relative standard deviation $\sigma = 100\,\mathrm{std}(I)/\mathrm{mean}(I)$ in percent, with
   $I_m = |V_m|^2$ divided by the target weight where the weights differ.
 - The numbering is the ladder's: `M<n>` and `BS-<n>`; the engine id of a beyond method is `B<n>` (BS-6, the emulated camera, was withdrawn as a beyond claim and is part of M12's record).
-- Unverified items are written UNVERIFIED with what was tried; a field the sources cannot fill is written as not established.
+- A source that could not be read is stated in plain words with what was tried; a field the sources cannot fill is written as not established.
 
 ## Classical
 

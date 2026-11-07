@@ -54,7 +54,7 @@ band"; the test defines it that way: `tests/methods/baseline/test_m19_multiplane
 
 ## Limits
 
-- UNVERIFIED: the source reports a weak experimental match (a secondary statement, not read); the paper has no per-plane weighting,
+- The source reports a weak experimental match (a secondary statement that was not read); the paper has no per-plane weighting,
   so none is applied.
 - No plane-by-plane variant exists in this build. The test setup's plane separation (40 mm) is set by the depth of field of the
   250 mm lens; the cases use the optics of their own setups (see C05).

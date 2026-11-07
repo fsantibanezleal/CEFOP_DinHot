@@ -6,7 +6,7 @@
 | Lane | live |
 | Targets, dimensions | traps, 2D only |
 | Module and entrypoint | `data-pipeline/pipeline/model/holo/methods/baseline/m07_phase_fixed_wgs.py`, `SPEC` line 21, `run` line 24; engine `_gs.py` |
-| Anchor | Kim, Kim, Lee and Ahn, Opt. Lett. 44, 3178 (2019) |
+| Anchor | Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund, Opt. Lett. 44, 3178 (2019) |
 
 ## Purpose
 
@@ -24,8 +24,8 @@ $$g_i(\mathbf{u}_m) = \frac{\langle B_i\rangle_N}{B_i(\mathbf{u}_m)}\,g_{i-1}(\m
 so the focal phase $\psi$ follows the field ($\psi_i = \arg V_m$) for the first $N$ iterations and is then frozen at $\psi_N$;
 $T_m = a_m = \sqrt{w_m}$. Source: Kim et al. 2019, https://doi.org/10.1364/OL.44.003178 , https://arxiv.org/abs/1903.09286 .
 Published: 91.2 percent modulation efficiency on 1500 foci with $N = 12$ weighted-GS iterations before fixing, and camera
-correction to 1.59 percent in three steps against 6.47 percent for conventional WGS. UNVERIFIED: the source does not define
-$B_i$ (taken as the field amplitude, as in M06), nor whether the $N$-th iteration already uses the frozen phase (here it computes it).
+correction to 1.59 percent in three steps against 6.47 percent for conventional WGS. The source does not define
+$B_i$ (taken as the field amplitude, as in M06), nor say whether the $N$-th iteration already uses the frozen phase; both are DinHot's choices (here it computes it).
 
 ## Implementation
 
@@ -58,4 +58,4 @@ criterion; the criterion is measured with 60.
 
 ## References
 
-- Kim, Kim, Lee and Ahn 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286
+- Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 ; https://arxiv.org/abs/1903.09286

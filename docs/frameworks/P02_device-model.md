@@ -49,7 +49,7 @@ when the kernel is a delta.
 **Quantization efficiency.** For a stepped grating with $N$ levels over $2\pi$ the first-order efficiency is
 $\eta_1 = \operatorname{sinc}^2(1/N)$: 40.5 percent for $N = 2$, 68.4 percent for $N = 3$, above 91 percent for $N = 6$
 (a published result, Moreno et al., postprint, https://tecnopto.umh.es/files/2014/05/Stepped-gratings-with-high-modulation-depth-LCoS-POSTPRINT.pdf ;
-journal reference UNVERIFIED). The values for $N = 4, 8, 16$ (0.811, 0.950, 0.987) are computed from that formula, not printed in
+journal version: Optics and Lasers in Engineering, https://doi.org/10.1016/j.optlaseng.2019.105910 , listed under the key moreno in the reference check of 2026-11-04). The values for $N = 4, 8, 16$ (0.811, 0.950, 0.987) are computed from that formula, not printed in
 the source. For a general hologram the effect also appears as noise in the replica orders, which the engine tests against a
 brute-force quantized DFT.
 
@@ -82,10 +82,10 @@ grating's first order is $4/\pi^2$ within 10 percent (`test_quantization_costs_e
 
 ## Limits
 
-- UNVERIFIED: the unit of $k$ in the kernel. The source gives $\sigma = 1.24\ \mathrm{px}^{-1}$ without saying cycles or radians
+- The unit of $k$ in the kernel is DinHot's reading. The source gives $\sigma = 1.24\ \mathrm{px}^{-1}$ without saying cycles or radians
   per SLM pixel. The implementation takes cycles per SLM pixel (`_transfer`, line 94). If the source means radians, the
   transfer function changes by one factor $2\pi$.
-- UNVERIFIED: no primary source with measured effects of quantization, LUT gamma and flicker on a modern nematic SLM was read.
+- No primary source with measured effects of quantization, LUT gamma and flicker on a modern nematic SLM was read (searched on 2026-11-05: a search for measured gamma, LUT and flicker effects on trap uniformity returned only work on steering accuracy and LUT calibration, none of it read in full).
   Flicker is a computed parameter (the one measured device read is a 2008 twisted-nematic LCoS with about 120 degrees of
   fluctuation at one gray level: Lizana et al., https://opg.optica.org/oe/fulltext.cfm?uri=oe-16-21-16711 ); the C08 value of
   0.05 rad is a stated parameter, not a calibrated one.

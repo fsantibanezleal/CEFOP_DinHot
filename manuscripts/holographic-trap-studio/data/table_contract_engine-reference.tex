@@ -1,0 +1,9 @@
+\begin{table}[t]\centering\footnotesize
+\caption{Top-level fields of the contract \texttt{engine-reference}, read from its schema file: type, requirement, unit (a dash marks an identifier, a count or a dimensionless quantity) and the range or constant the schema states.}\label{tab:contract-engine-reference}
+\begin{tabular}{@{}l l c l >{\raggedright\arraybackslash}p{0.3\textwidth}@{}}\toprule Field & Type & Req. & Unit & Range\\\midrule
+\texttt{\scriptsize schema} & const & yes & - & = dinhot.engine-ref/v1\\
+\texttt{\scriptsize engine\_version} & string & yes & - & pattern\\
+\texttt{\scriptsize function} & string & yes & - & length >= 1\\
+\texttt{\scriptsize tolerance} & object & yes & - & -\\
+\texttt{\scriptsize cases} & array of object & yes & - & 1 to items\\
+\bottomrule\end{tabular}\end{table}

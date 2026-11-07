@@ -4,7 +4,8 @@
 
 cgh-net: per held-out volume (three focal planes), the accuracy AC (unit-sum intensities, ``torch_forward.accuracy`` in numpy) of
 the hybrid (the network's phase refined by M19) against the volumetric GS (M19) alone at the same wall-clock; see
-``evaluate_cgh``. ``accuracy_vs_gs`` is the per-volume ratio.
+``evaluate_cgh``. ``accuracy_vs_gs`` is the per-volume ratio. Every row also carries the accuracy in the definition of DeepCGH
+(Eybposh et al. 2020, Eq. 3: cosine similarity of the intensity volumes), fields ``ac_cosine_*``; ``metrics.json`` is unchanged.
 
 warmstart-model: per held-out geometry and per seed, M07 from the random start (its own, ``init=None``) and from the learned
 start, the same ``Rng`` seed and the same iteration budget; iterations to 1 percent of relative standard deviation (the budget
@@ -22,6 +23,7 @@ from ..core.rng import Rng
 from ..core.traps import Trap, TrapSet
 from ..core.types import Budget, Target
 from ..methods.baseline import m19_multiplane
+from ..methods.learned._planes import cosine_volume_accuracy as _cosine_accuracy
 from ..methods.learned._planes import plane_accuracy as _plane_accuracy
 from ..methods.baseline import m07_phase_fixed_wgs as m07
 from ..methods.learned import b3_warm_start, m17_cgh_net
@@ -43,6 +45,17 @@ def stat(x) -> dict:
 def plane_accuracy(amps, phi, setup: Setup = SETUP128, z_planes=(-8.0, 0.0, 8.0)) -> float:
     """Volume accuracy of the mask (``methods/learned/_planes.py``), on the 128 x 128 pad-1 setup by default."""
     return _plane_accuracy(amps, phi, setup, z_planes)
+
+
+def cosine_accuracy(amps, phi, setup: Setup = SETUP128, z_planes=(-8.0, 0.0, 8.0)) -> float:
+    """The accuracy in the definition of DeepCGH (Eybposh et al. 2020, Eq. 3): the cosine similarity of the target and reconstructed
+    intensity volumes over all voxels (``methods/learned/_planes.py``); reported next to ``plane_accuracy``, never in its place."""
+    return _cosine_accuracy(amps, phi, setup, z_planes)
+
+
+def accuracy_pair(amps, phi, setup: Setup = SETUP128, z_planes=(-8.0, 0.0, 8.0)) -> dict:
+    """``{"ac": per-plane Dice-type accuracy (DinHot's, the training form), "ac_cosine": DeepCGH's cosine accuracy}`` of one mask."""
+    return {"ac": plane_accuracy(amps, phi, setup, z_planes), "ac_cosine": cosine_accuracy(amps, phi, setup, z_planes)}
 
 
 def _timed(fn):
@@ -82,6 +95,8 @@ def evaluate_cgh(models_dir: Path, heldout_path: Path) -> tuple[dict, dict]:
         rows.append({"volume": f"{i:03d}/{kinds[i]}", "ac_hybrid": plane_accuracy(a, hyb.phi), "time_hybrid_ms": 1000 * t_hyb,
                      "hybrid_refine_iterations": hyb.meta["refine_iterations"], "network_ms": 1000 * hyb.meta["network_s"],
                      "ac_net_alone": plane_accuracy(a, net.phi), "ac_m19_matched": plane_accuracy(a, base.phi),
+                     "ac_cosine_hybrid": cosine_accuracy(a, hyb.phi), "ac_cosine_net_alone": cosine_accuracy(a, net.phi),
+                     "ac_cosine_m19_matched": cosine_accuracy(a, base.phi),
                      "time_m19_matched_ms": 1000 * t_base, "m19_matched_iterations": base.meta["iterations"]})
     curve = {}
     for frac in CURVE_FRACTIONS:
@@ -99,7 +114,11 @@ def evaluate_cgh(models_dir: Path, heldout_path: Path) -> tuple[dict, dict]:
         "slot": "cgh-net", "variant": "three planes at Z = -8, 0, +8 Rayleigh ranges", "baseline_is": "M19",
         "wall_clock_budget_ms": 1000 * budget_s, "budget_definition": "median wall time of M19 at 30 iterations on the held-out volumes, this machine",
         "accuracy": "mean over planes of AC = 2 sum(TI) / (sum T^2 + sum I^2), unit-sum plane intensities",
+        "accuracy_cosine": "DeepCGH's definition (Eybposh et al. 2020, Opt. Express 28, 26636, Eq. 3): cosine similarity of the target and "
+                           "reconstructed intensity volumes over all voxels (unit-sum plane intensities); rows: ac_cosine_*",
         "ac_median": {k: float(np.median(col(k))) for k in ("ac_hybrid", "ac_net_alone", "ac_m19_matched")},
+        "ac_cosine_median": {k: float(np.median(col(k))) for k in ("ac_cosine_hybrid", "ac_cosine_net_alone", "ac_cosine_m19_matched")},
+        "ratio_cosine_hybrid_over_m19_matched": stat(col("ac_cosine_hybrid") / col("ac_cosine_m19_matched")),
         "ratio_by_kind": {k: float(np.median(ratio[kinds_arr == k])) for k in sorted(set(kinds_arr))},
         "ratio_net_alone_over_m19_matched": stat(col("ac_net_alone") / col("ac_m19_matched")),
         "share_hybrid_above_m19": float(np.mean(ratio > 1.0)),

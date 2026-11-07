@@ -80,6 +80,10 @@ export const RECORDED: Record<string, RecordedClaim> = {
       ensemble: 200,
       /** The factor against pointing errors: measured, reported, not claimed. */
       pointingFactor: 1.04,
+      /** A displacement prior alone, 100 steps (five times the budget), at 0.10 focal bins: the factor and the efficiency ratio (manuscript of the method). */
+      pointingLongFactor: 1.48,
+      pointingLongEfficiency: 0.912,
+      pointingLongBins: 0.1,
     },
   },
 };

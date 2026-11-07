@@ -118,4 +118,4 @@ The App has up to six groups (Hologram, Focal plane, Traps, Convergence, Dynamic
 
 ## Notes
 
-The bands are provisional. No vectorial lane exists in the engine in this build: the high-NA case carries a validity flag, and a vectorial lane is built only from equations read at the source. The Richards-Wolf forms and the Debye form of Leutenegger et al. 2006 were read in the research record, but no numeric threshold of scalar failure was found in the sources read (UNVERIFIED). This case stays a scalar case, labelled as such.
+The bands are provisional. No vectorial lane exists in the engine in this build: the high-NA case carries a validity flag, and a vectorial lane is built only from equations read at the source. The Richards-Wolf forms and the Debye form of Leutenegger et al. 2006 are known from the research record, whose source text (https://doi.org/10.1364/OE.14.011277) was not available in full here, and no numeric threshold of scalar failure was found in the sources read. This case stays a scalar case, labelled as such.

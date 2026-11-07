@@ -21,8 +21,8 @@ GAA maximises $(1-\alpha)\sum_m |V_m| + \alpha\sum_m \log|V_m|$; the stationarit
 $$\phi_j = \arg \sum_m e^{+i\Delta_j^m}\,\frac{V_m}{|V_m|}\Big[(1-\alpha) + \frac{\alpha}{|V_m|}\Big]$$
 
 (with target weights, $V_m/|V_m|$ is scaled by $a_m = \sqrt{w_m}$ and $|V_m|$ becomes $|V_m|/a_m$). $\alpha = 0$ is GS. Source:
-Di Leonardo et al. 2007, https://doi.org/10.1364/OE.15.001913 . UNVERIFIED: the bracket was reconstructed against Eq. (15)
-because the Greek glyphs of Eq. (16) were lost in the text extraction, and the original adaptive-additive text of Soifer,
+Di Leonardo et al. 2007, https://doi.org/10.1364/OE.15.001913 . The bracket is the printed Eq. (16) (checked against Eq. (15) on the open-access full text; the paper's xi is the alpha used here)
+and the paper states no rescaling of $|V_m|$, so the division by the mean is DinHot's choice; the original adaptive-additive text of Soifer,
 Kotlyar and Doskolovich was not opened. Published at 30 iterations on the 10 by 10 task: efficiency 0.93, uniformity 0.79.
 
 ## Implementation
@@ -52,7 +52,7 @@ Published: 0.93 and 0.79; the efficiency level differs because the test beam is 
 
 ## Limits
 
-The scale convention is DinHot's reading of an unverified reconstruction. GAA remains below the weighted methods M06 and M07 in
+The scale convention is DinHot's own choice. GAA remains below the weighted methods M06 and M07 in
 uniformity.
 
 ## References

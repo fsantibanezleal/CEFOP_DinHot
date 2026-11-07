@@ -12,8 +12,10 @@ convention where ``V`` carries ``e^{+i delta}``; the physical condition is the a
 
 - ``gs`` (Gerchberg and Saxton 1972; Di Leonardo et al. 2007): ``c_m = a_m V_m / |V_m|``.
 - ``gaa`` (generalized adaptive additive, Di Leonardo et al. 2007 eq (16), R2 D3.4):
-  ``c_m = a_m (V_m / |V_m|) [(1 - alpha) + alpha <r> / r_m]`` with ``alpha = 0.5``. UNVERIFIED: the dossier prints the
-  bracket as ``(1 - alpha) + alpha / |V_m|``; the ratio ``<r> / r_m`` is the dimensionless reading used here.
+  ``c_m = a_m (V_m / |V_m|) [(1 - alpha) + alpha <r> / r_m]`` with ``alpha = 0.5``. The paper prints the bracket as
+  ``(1 - alpha) + alpha / |V_m|`` (its Eq. 16, with xi for alpha) and states no rescaling of ``|V_m|``; the ratio
+  ``<r> / r_m`` (``|V_m|`` in units of its mean over the traps) is DinHot's modelling choice, which makes the update
+  independent of the input power.
 - ``gsw`` (weighted GS, Di Leonardo et al. 2007 eq (18), D1.2): ``w_m <- w_m <r> / r_m`` from the second iteration on,
   then ``c_m = w_m a_m V_m / |V_m|``.
 - ``pfwgs`` (phase-fixed WGS, Kim et al. 2019, D1.3): as ``gsw`` (``g_0 = 1``), and at iteration ``n_fix`` (Kim used 12) the

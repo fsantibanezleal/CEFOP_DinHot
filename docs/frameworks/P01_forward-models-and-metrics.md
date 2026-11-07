@@ -130,5 +130,5 @@ Gaussian beam at one Rayleigh range to 5e-3 (`::test_angular_spectrum_matches_ga
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913
 - Bianchi and Di Leonardo 2010, https://arxiv.org/abs/0907.4027 (metric definitions)
 - Schroff, La Rooij, Haller and Kuhr 2023, Sci. Rep. 13, 3252, https://doi.org/10.1038/s41598-023-30296-6
-- Polin, Hovhannisyan and Sorensen 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
+- Polin, Ladavac, Lee, Roichman and Grier 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
 - Matsushima and Shimobaba 2009, Opt. Express 17, 19662, https://doi.org/10.1364/OE.17.019662 (not implemented)

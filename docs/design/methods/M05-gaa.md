@@ -16,7 +16,7 @@ The established adaptive variant of Gerchberg-Saxton: a feedback that raises the
 by a power of its own amplitude before it is sent back. It is a baseline because it is the first published remedy of GS's poor
 uniformity (it trades a little efficiency for uniformity) and the rung between GS (M04) and the weighted GS (M06). Source: Di
 Leonardo, Ianni and Ruocco 2007, Eqs. (15) and (16) (https://doi.org/10.1364/OE.15.001913). The original adaptive-additive
-algorithm of Soifer, Kotlyar and Doskolovich was not opened (UNVERIFIED).
+algorithm of Soifer, Kotlyar and Doskolovich was not opened.
 
 ## Problem it answers
 
@@ -42,8 +42,8 @@ $\tilde r_m = r_m/\langle r\rangle$ for `scale='mean'` and $\tilde r_m = r_m$ fo
 Deviation from the printed formula, stated in the module docstring: the bracket as printed depends on the absolute scale of
 $|V_m|$ (fractions of the input power, about 0.1 on the 10x10 task), so $\alpha/|V_m|$ dominates and the iteration oscillates
 (uniformity 0.04 to 0.4, below GS, measured). Expressing $|V_m|$ in units of its mean over the traps (`scale='mean'`) reproduces the
-published trend. UNVERIFIED: the bracket was reconstructed in the gap study against Eq. (15) because the Greek glyphs of Eq. (16) were
-lost in the text extraction.
+published trend. The bracket is the printed Eq. (16) of Di Leonardo et al. (checked against Eq. (15) on the open-access full text; the paper's xi is the alpha used here),
+and the paper states no rescaling of $|V_m|$: the division by the mean is DinHot's modelling choice, and the bracket as printed is the option `scale='absolute'`.
 
 ## Defaults
 
@@ -100,7 +100,7 @@ own optics, listed in `data/derived/manifests/`):
 
 ## Limits and failure modes
 
-The scale convention is DinHot's reading of an unverified reconstruction. GAA stays below the weighted methods M06 and M07 in
+The scale convention is DinHot's own choice. GAA stays below the weighted methods M06 and M07 in
 uniformity (in the bake, uniformity 0.64 to 0.93 against 0.95 to 1.0 for M06 on C01, C02 and C12). It has no integral memory of earlier
 corrections, unlike the weights of M06.
 

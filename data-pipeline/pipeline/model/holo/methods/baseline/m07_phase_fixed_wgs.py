@@ -1,6 +1,6 @@
 r"""M07: phase-fixed weighted GS (Kim et al. 2019), the practical state of the art for large point arrays.
 
-Update rule (dossier D1.3, Kim, Kim, Lee and Ahn, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178,
+Update rule (dossier D1.3, Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178,
 https://arxiv.org/abs/1903.09286). At iteration $i$ with focal-plane amplitudes $B_i(\mathbf u_m) = |V_m|/a_m$:
 $$g_i(\mathbf u_m) = \frac{\langle B_i\rangle_N}{B_i(\mathbf u_m)}\, g_{i-1}(\mathbf u_m),\quad g_0 = 1,\qquad
 \mathcal F[A_{i+1} e^{i\phi_{i+1}}] = g_i T\, e^{i\psi_i},\quad \psi_i = \psi_N\ \ (i \ge N)$$

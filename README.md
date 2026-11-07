@@ -26,7 +26,7 @@ Every method runs on the product's cases with the same seeds and metrics, and is
   slmsuite 0.5.0 or against each other.
 - **Proposed methods** (5): device-aware weighted GS, flicker-bounded phase-continuous sequences, a learned warm start, an
   aberration-robust hologram and an efficiency-uniformity front, each tested and reported as it came out, including two measured
-  negatives (the learned warm start is refuted; the robustness of the aberration-robust hologram to pointing errors does not follow)
+  negatives (the learned warm start is refuted; the aberration-robust hologram gives no robustness to pointing errors at its acceptance budget, and reaches 1.48 times only with a displacement prior optimized alone at five times that budget)
   and one measured scope (the flicker-bounded sequence holds for short steps per frame; on long moves linear phase interpolation leads
   at equal frames). Each has a level 4 notebook.
 

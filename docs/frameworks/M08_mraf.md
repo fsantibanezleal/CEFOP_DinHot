@@ -37,7 +37,7 @@ Design decisions, stated in the module docstring and not in the source:
 - The measure region is the shape eroded by one resolution cell (`pad` bins): pixels closer to the edge cannot reach their target.
   Without it the error floor is 0.10 to 0.13 and the ratio to GS is 1.4 to 3.8.
 - The default start is a Fresnel-lens phase of 20 waves at the aperture edge, because a random start leaves speckle that MRAF
-  removes slowly (error 0.3 after 100 iterations). The source states no start (UNVERIFIED). `start_waves = None` draws a random
+  removes slowly (error 0.3 after 100 iterations). The start is DinHot's choice. `start_waves = None` draws a random
   phase through `rng`; `init` overrides both.
 - History: `efficiency` is the power fraction in the signal region; `error` is the paper's RMS fractional error $\eta$ (Eq. (2),
   intensity rescaled to the target) over the measure region.

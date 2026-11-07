@@ -29,9 +29,10 @@ Measured (10x10 task, 256 pixels, 200-sample ensemble, seed 999; ``ensemble_stat
 nominal phase-fixed WGS 6.27 percent, robust 4.05 percent (1.55x, 40 CG iterations, target level 0.9 of the starting
 efficiency), mean efficiency 0.717 to 0.703 (-1.9 percent). A level of 0.937 gave 4.89 percent (1.28x), 0.95 with 80
 iterations 5.10 percent (1.23x): the level trades a little efficiency for robustness. With a 0.15 bin pointing error added
-the p95 falls only from 7.46 to 7.31 percent (1.02x): a displaced trap loses intensity in proportion to the curvature
-of its spot, which the spot width fixes, and halving the loss needs a spot 1.4x wider, i.e. about half the peak
-efficiency. That is why pointing robustness is not claimed.
+the p95 falls only from 7.46 to 7.31 percent (1.02x) at the acceptance budget. The spread under displacement has a first-order
+slope term, which the design lowers, over a curvature floor that the spot width fixes: with a displacement prior alone and
+100 steps the ratio is 1.48 at 0.10 bins at 0.91 of the efficiency (the method's manuscript). Pointing robustness is an
+option, measured and not claimed.
 Perturbation priors are device dependent (dossier risk); ``s_a = 0.02`` waves per mode is this unit's choice, stated,
 not sourced.
 """

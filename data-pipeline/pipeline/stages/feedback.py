@@ -3,8 +3,9 @@
 Closed-loop weighted GS on the emulated camera (``core/camera.py``, an emulation whose errors are the record's
 ``feedback.camera`` parameters): measure the trap intensities, then multiply each trap's target weight by
 ``1 / (1 - G (1 - I_m / mean(I)))`` (Nogrette et al. 2014, https://arxiv.org/abs/1402.5329, the rescaling
-``I' = mean(I) / (1 - G (1 - I / mean(I)))`` read as a factor on the current target; this reading is UNVERIFIED against the
-paper's text beyond the formula), and run the case's weight-aware method again from the previous phase. The curve reported
+``I' = mean(I) / (1 - G (1 - I / mean(I)))``, their Eq. 3, applied here as a factor on the current target: that cumulative
+reading is DinHot's, since the printed rule recomputes the target from the latest measurement alone and was measured not to
+close the loop on the emulation, variant ``nogrette-printed`` of M12), and run the case's weight-aware method again from the previous phase. The curve reported
 per step is the *measured* spread (relative standard deviation of the camera readings divided by the target weights, in
 percent), the quantity Nogrette plot, and the true efficiency of the hologram.
 """

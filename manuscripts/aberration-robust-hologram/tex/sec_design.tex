@@ -1,0 +1,54 @@
+\section{Experimental design}\label{sec:design}
+
+\subsection{Hypotheses}
+
+The experiments test the following hypotheses, each stated with the quantity that confirms or refutes it. Where the statement carries a threshold, the threshold is the acceptance criterion of the product's method record for this method, set before the repeated measurements of this paper.
+\begin{description}
+\item[H1, aberration spread.] Over the ensemble of \parNens{} aberration draws, the 95th percentile of the spread of the robust hologram is at least $1.25$ times lower than that of phase-fixed WGS ($\rho\ge1.25$), on every seed of the holograms. Refuted by one seed below the threshold.
+\item[H2, efficiency.] The mean efficiency over the ensemble is at least $0.9$ of that of phase-fixed WGS ($\eta\ge0.9$).
+\item[H3, the expected cost is the cause.] The gain does not come from the extra conjugate-gradient iterations or from a gradient method on the nominal cost: conjugate gradient on the nominal cost (the same solver and budget with a single design point at the origin) and the published gradient methods of the product give $\rho$ below $1.25$ against phase-fixed WGS.
+\item[H4, deterministic samples.] For the same number of design samples, the sigma points give a larger $\rho$ than random draws, because the cost has no sampling noise.
+\item[H5, first-order theory.] The first-order model of Proposition 3 reproduces the spread of each draw (Pearson correlation of at least $0.9$ between the predicted and the measured spread), and the measured mean squared spread lies below the bound of Eq.~\eqref{eq:spreadbound}.
+\item[H6, pointing errors.] The same expected cost with a displacement prior of $0.15$ focal bins reaches $\rho\ge1.25$ on the joint ensemble of aberrations and displacements. The theory of Proposition 4 predicts that it does not.
+\item[H7, mismatch.] The gain persists when the evaluation ensemble differs from the design prior: other amplitudes, and modes outside Noll 4 to 11. The theory gives no prediction beyond (C1) and (C2), so this is an exploration, and either outcome is reported.
+\end{description}
+
+\subsection{Data and task provenance}
+
+The experiments use no external data. The task is the one of the acceptance test of the method in the repository of the product: a $10\times10$ square lattice of $M=100$ equal traps, eight focal bins apart, on an SLM of $256\times256$ pixels padded by a factor of two, with a wavelength of 850 nm, a focal length of 250 mm, a pixel pitch of
+12.5 micrometres and a Gaussian input beam whose $1/e^2$ intensity waist equals half the SLM side. The ensemble is \parNens{} draws of the eight Noll 4 to 11 coefficients from the portable pseudo-random generator of the product (xoshiro128** seeded by SplitMix32, Box--Muller normals), seed \parEnsSeed, with the standard deviation of $\parAb$ waves per mode; the design of the method draws no random numbers
+(the sigma points are deterministic) and the start of phase-fixed WGS draws its random phases from the seed of the hologram, so the evaluation ensemble and the design are independent. Ensembles of five other seeds (1001 to 1005) test the holograms on new draws of the same prior. The committed bake of the product, which holds the relative standard deviation of every method on the
+cases of the studio over three seeds, supplies the cross-check on cases other than the task (Section~\ref{sec:results}). The task is small by the standards of the arrays of Section~\ref{sec:intro}; it is chosen because phase-fixed WGS reaches a near-zero nominal spread on it, so that the spread under aberration is the quantity under study and not a residual of the nominal design.
+
+\subsection{Published methods run on the same task}
+
+The comparison runs the published methods through the engine of the product, on the same task, seeds and ensemble, and does not rely on reported numbers. The baseline is phase-fixed WGS~\cite{kim2019} (30 iterations, 12 weighted iterations before the phase is frozen), which is also the start of the proposed method, so that the comparison isolates the expected-cost steps.
+The other methods are Gerchberg--Saxton, the generalized adaptive additive variant and weighted GS with their weights~\cite{dileonardo2007} (30 iterations each), conjugate gradient on the nominal cost with 40 iterations~\cite{harte2014}, and Wirtinger gradients with Adam, 40 iterations~\cite{chakravarthula2019}. One more control, central to H3, is the sigma-point loop of the proposed method with a single design point
+at the origin: the same solver, budget, level and start, and the nominal cost only. Learned generators~\cite{eybposh2020,shi2021} and models of the SLM device~\cite{schroff2023,persson2012} are not compared, because they address other quantities (volumes, crosstalk) and the task of this paper has an ideal device. A global Zernike correction~\cite{nogrette2014} is not a competitor but a
+precondition: the ensemble models what remains after it.
+
+\subsection{Metrics}
+
+The metrics are those of Eqs.~\eqref{eq:metrics} and~\eqref{eq:ratios}: the 95th percentile $Q_{95}$ of the spread over the ensemble, the mean spread, the maximum, the mean efficiency, and the ratios $\rho$ and $\eta$. For one hologram, the fraction of draws on which the robust hologram has the lower spread, $W/n$ with $W=\sum_{r=1}^n\mathbf 1[\sigma_r^{\mathrm{rob}}<\sigma_r^{\mathrm{nom}}]$, is tested against the null of equal chances by the exact two-sided binomial sign test,
+\begin{equation}
+p=\min\Big\{1,\ 2^{1-n}\sum_{i=0}^{\min(W,n-W)}\binom ni\Big\},\label{eq:sign}
+\end{equation}
+where the draws are paired because both holograms are scored on the same draw. The first-order model of Proposition 3 is scored by the Pearson correlation between the predicted and the measured spread per draw, the ratio of the predicted to the measured 95th percentile, and the comparison of $\sigma_0^2+s^2\operatorname{tr}\Gamma$ with the measured mean squared spread. The pointing curvature of
+Proposition 4 is the finite-difference quantity $\kappa=-\big[I(\delta)+I(-\delta)-2I(0)\big]/(\delta^2I(0))$ with $\delta=\parCurvDelta{}$ bin, averaged over the traps, and $\kappa_{\mathrm{ap}}$ is computed from the beam by Eq.~\eqref{eq:curv}. The slope of the trap intensity under displacement, $(I(\delta)-I(-\delta))/(2\delta I(0))$ per bin, is computed the same way and enters the pointing model of Section~\ref{sec:results}.
+
+\subsection{Protocol}
+
+For each seed of the holograms ($1,\dots,\nSeedsAll$) the protocol is the following. The baseline hologram is computed by 30 iterations of phase-fixed WGS from the random start of the seed; the robust hologram is computed by $\parIters$ conjugate-gradient iterations of Algorithm~\ref{alg:robust} from that same hologram; both are scored on the ensemble of seed \parEnsSeed. The ten seeds are the unit of replication for the main comparison; the first three
+seeds, which are the seeds of the acceptance test of the method, feed all the other parts (the held-out ensembles, the published methods, the ablation, the theory check, the mismatch and the pointing experiments), because each of those costs a full run of the optimizer per configuration. All methods take their seed through the portable generator, the runs are deterministic and a rerun gives the same numbers up to the floating point of the machine's FFT.
+The main measurement ran \workersUsed{} processes in parallel and took \totalMinutes{} minutes; the pointing-only part, run afterwards on the stored holograms with \pointonlyWorkers{} processes, took \pointonlyMinutes{} minutes. The script that runs it is the only source of the numbers, tables and figures of this paper.
+
+\subsection{Planned ablations}
+
+The ablation varies one element of the method at a time on the first three seeds and scores each variant on the same ensemble against the same baseline hologram. The elements are: the kind and number of design samples (the sigma points; $4$, $8$, $16$ and $32$ fixed random draws with the same solver; resampled random draws with Adam; the single point at the origin that serves as control for H3); the modes in the design (Noll 4 only; 4 to 6; 4 to 8; 9 to 11; the full 4 to 11);
+the design amplitude ($0.005$ to $0.04$ waves per mode, evaluated on the fixed ensemble of $\parAb$ waves); the target level $\ell$ ($0.80$ to $1.00$); and the number of conjugate-gradient iterations ($5$ to $80$). Each variant is the replica of the sigma-point loop with one argument changed; the replica is verified against the module on the default configuration. The results are in Section~\ref{sec:ablation}. The pointing experiments add two variables of their own: the displacement prior, with and without the aberration prior in the design and in the ensemble, and the budget of the sampled design (20 and 100 Adam steps).
+
+\subsection{Statistics}
+
+Each ratio has an interval. For one seed, the paired bootstrap resamples the ensemble draws with replacement 2000 times and recomputes both 95th percentiles in each resample; the interval is the 2.5th to 97.5th percentile of the resampled ratios, and it measures the uncertainty that comes from the finite ensemble. Across seeds, the median is the summary of the ratio, with its range over three seeds and, over ten seeds, a bootstrap interval of the median from $10^4$ resamples of the seeds.
+The seeds of the holograms and the draws of the ensemble are the two sources of variation, and they are reported separately: the first by the range over seeds, the second by the bootstrap per seed. There is no correction for multiple comparisons because the hypotheses are few, fixed in advance, and each is judged on its own threshold, not on a significance level. The ablation reports the median and the range of three seeds, which is a statement about the seed-to-seed
+variation of the design and not a test of a difference between variants.

@@ -1,0 +1,268 @@
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{params-record}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-params-record}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{case\_id} & string & yes & - & pattern\\
+\texttt{setup} & object & yes & - & -\\
+\texttt{setup.wavelength\_nm} & number & yes & nm & 300 to 2000\\
+\texttt{setup.focal\_mm} & number & yes & mm & 0.5 to 1000\\
+\texttt{setup.na} & number & yes & - & 0.05 to 1.5\\
+\texttt{setup.n\_imm} & number & yes & - & 1.0 to 1.6\\
+\texttt{setup.n\_pix} & enum & yes & - & \{64, 128, 256, 512, 1024\}\\
+\texttt{setup.pitch\_um} & number & yes & $\mu$m & 1 to 50\\
+\texttt{setup.pad} & integer & yes & - & 1 to 4\\
+\texttt{setup.beam} & object & yes & - & -\\
+\texttt{device} & object or null & yes & - & -\\
+\texttt{target} & object & yes & - & -\\
+\texttt{aberration} & object or null & yes & - & -\\
+\texttt{methods} & array of string & yes & - & 1 to 24 items\\
+\texttt{reference\_method} & string & yes & - & pattern\\
+\texttt{budget} & object & yes & - & -\\
+\texttt{budget.iterations} & integer & yes & - & 1 to 5000\\
+\texttt{budget.time\_s} & number or null & yes & s & 0.01 to 3600\\
+\texttt{seed} & integer & yes & - & 0 to 2147483647\\
+\texttt{feedback} & object or null & yes & - & -\\
+\texttt{dynamics} & object or null & yes & - & -\\
+\texttt{rearrangement} & object or null & yes & - & -\\
+\texttt{expect} & object & yes & - & -\\
+\bottomrule\end{longtable}
+\endgroup
+
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{case-manifest}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-case-manifest}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = dinhot.manifest/v1\\
+\texttt{case\_id} & string & yes & - & length >= 1\\
+\texttt{title} & object & yes & - & -\\
+\texttt{title.en} & string & yes & - & length >= 1\\
+\texttt{title.es} & string & yes & - & length >= 1\\
+\texttt{category} & object & yes & - & -\\
+\texttt{category.en} & string & yes & - & length >= 1\\
+\texttt{category.es} & string & yes & - & length >= 1\\
+\texttt{real\_or\_synthetic} & enum & yes & - & \{real, synthetic\}\\
+\texttt{expected\_band} & object & yes & - & -\\
+\texttt{expected\_band.en} & string & yes & - & length >= 1\\
+\texttt{expected\_band.es} & string & yes & - & length >= 1\\
+\texttt{engine} & object & yes & - & -\\
+\texttt{engine.package} & const & yes & - & = dinhot-holo\\
+\texttt{engine.version} & string & yes & - & pattern\\
+\texttt{engine.model} & const & yes & - & = scalar-fourier\\
+\texttt{params} & object & yes & - & -\\
+\texttt{params.setup} & object & yes & - & -\\
+\texttt{params.setup.wavelength\_nm} & number & yes & nm & 300 to 2000\\
+\texttt{params.setup.focal\_mm} & number & yes & mm & 0.5 to 1000\\
+\texttt{params.setup.na} & number & yes & - & 0.05 to 1.5\\
+\texttt{params.setup.n\_imm} & number & yes & - & 1.0 to 1.6\\
+\texttt{params.setup.n\_pix} & enum & yes & - & \{64, 128, 256, 512, 1024\}\\
+\texttt{params.setup.pitch\_um} & number & yes & $\mu$m & 1 to 50\\
+\texttt{params.setup.pad} & integer & yes & - & 1 to 4\\
+\texttt{params.setup.beam} & object & yes & - & -\\
+\texttt{params.device} & object or null & yes & - & -\\
+\texttt{params.target} & object & yes & - & -\\
+\texttt{params.aberration} & object or null & yes & - & -\\
+\texttt{params.methods} & array of string & yes & - & 1 to 24 items\\
+\texttt{params.reference\_method} & string & yes & - & pattern\\
+\texttt{params.budget} & object & yes & - & -\\
+\texttt{params.budget.iterations} & integer & yes & - & 1 to 5000\\
+\texttt{params.budget.time\_s} & number or null & yes & s & 0.01 to 3600\\
+\texttt{params.seed} & integer & yes & - & 0 to 2147483647\\
+\texttt{params.feedback} & object or null & yes & - & -\\
+\texttt{params.dynamics} & object or null & yes & - & -\\
+\texttt{params.rearrangement} & object or null & yes & - & -\\
+\texttt{params.expect} & object & yes & - & -\\
+\texttt{seed} & integer & yes & - & -\\
+\texttt{artifact} & object & yes & - & -\\
+\texttt{artifact.path} & string & yes & - & pattern\\
+\texttt{artifact.format} & const & yes & - & = json\\
+\texttt{artifact.trace\_schema} & const & yes & - & = dinhot.trace/v1\\
+\texttt{artifact.bytes} & integer & yes & - & 1 to\\
+\texttt{lane} & enum & yes & - & \{live, precompute\}\\
+\texttt{gate} & object & yes & - & -\\
+\texttt{gate.lane} & enum & yes & - & \{live, precompute\}\\
+\texttt{gate.pure\_python} & boolean & yes & - & -\\
+\texttt{gate.wheels} & array of string & yes & - & -\\
+\texttt{gate.trace\_bytes} & integer & yes & bytes & 1 to\\
+\texttt{gate.run\_ms\_budget} & number & yes & - & >0 to\\
+\texttt{gate.trace\_bytes\_budget} & integer & yes & - & 1 to\\
+\texttt{gate.reasons} & array of string & yes & - & -\\
+\texttt{flags} & array of object & yes & - & -\\
+\texttt{methods} & object & yes & - & -\\
+\texttt{methods\{id\}.lane} & enum & yes & - & \{live, baked\}\\
+\texttt{methods\{id\}.efficiency} & number & yes & fraction & -\\
+\texttt{methods\{id\}.uniformity} & number & yes & fraction & -\\
+\texttt{methods\{id\}.rel\_std\_pct} & number & yes & percent & -\\
+\texttt{methods\{id\}.zero\_order} & number & yes & fraction & -\\
+\texttt{methods\{id\}.ghost} & number & yes & fraction & -\\
+\texttt{methods\{id\}.iterations} & integer & yes & - & -\\
+\texttt{methods\{id\}.converged} & boolean & yes & - & -\\
+\texttt{models} & object & yes & - & -\\
+\texttt{expect} & object & yes & - & -\\
+\texttt{anchor} & object & yes & - & -\\
+\texttt{anchor.source} & object & yes & - & -\\
+\texttt{anchor.source.en} & string & yes & - & length >= 1\\
+\texttt{anchor.source.es} & string & yes & - & length >= 1\\
+\texttt{anchor.url} & string or null & yes & - & pattern\\
+\bottomrule\end{longtable}
+\endgroup
+
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{trace}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-trace}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = dinhot.trace/v1\\
+\texttt{case\_id} & string & yes & - & length >= 1\\
+\texttt{grid} & object & yes & - & -\\
+\texttt{grid.n\_pix} & integer & yes & - & -\\
+\texttt{grid.pad} & integer & yes & - & -\\
+\texttt{grid.bin\_um} & number & yes & $\mu$m & -\\
+\texttt{grid.half\_field\_um} & number & yes & $\mu$m & -\\
+\texttt{traps} & array of object & yes & - & 0 to 4096 items\\
+\texttt{traps[].id} & integer & yes & - & 0 to 4095\\
+\texttt{traps[].x\_um} & number & yes & $\mu$m & -100000.0 to 100000.0\\
+\texttt{traps[].y\_um} & number & yes & $\mu$m & -100000.0 to 100000.0\\
+\texttt{traps[].z\_um} & number & yes & $\mu$m & -100000.0 to 100000.0\\
+\texttt{traps[].weight} & number & yes & fraction & 0.01 to 100\\
+\texttt{traps[].charge} & integer & yes & - & -20 to 20\\
+\texttt{shape} & object or null & yes & - & -\\
+\texttt{methods} & object & yes & - & -\\
+\texttt{methods\{id\}.history} & array of object & yes & - & 0 to 200 items\\
+\texttt{methods\{id\}.history[].iteration} & integer & yes & - & -\\
+\texttt{methods\{id\}.history[].efficiency} & number & yes & fraction & -\\
+\texttt{methods\{id\}.history[].uniformity} & number & yes & fraction & -\\
+\texttt{methods\{id\}.history[].rel\_std\_pct} & number & yes & percent & -\\
+\texttt{methods\{id\}.final} & object & yes & - & -\\
+\texttt{methods\{id\}.final.efficiency} & number & yes & fraction & -\\
+\texttt{methods\{id\}.final.uniformity} & number & yes & fraction & -\\
+\texttt{methods\{id\}.final.rel\_std\_pct} & number & yes & percent & -\\
+\texttt{methods\{id\}.final.zero\_order} & number & yes & fraction & -\\
+\texttt{methods\{id\}.final.ghost} & number & yes & fraction & -\\
+\texttt{methods\{id\}.trap\_intensity} & array of number & yes & - & -\\
+\texttt{reference} & object & yes & - & -\\
+\texttt{reference.method} & string & yes & - & pattern\\
+\texttt{reference.phase\_u8} & string & yes & - & pattern\\
+\texttt{reference.focal} & object & yes & - & -\\
+\texttt{reference.focal.size} & integer & yes & - & 1 to 192\\
+\texttt{reference.focal.bin\_um} & number & yes & $\mu$m & -\\
+\texttt{reference.focal.db\_floor} & number & yes & - & -\\
+\texttt{reference.focal.intensity\_db\_u8} & string & yes & - & pattern\\
+\texttt{reference.axial} & object or null & yes & - & -\\
+\texttt{feedback} & object or null & yes & - & -\\
+\texttt{dynamics} & object or null & yes & - & -\\
+\texttt{rearrangement} & object or null & yes & - & -\\
+\texttt{summary} & object & yes & - & -\\
+\texttt{summary.best\_method} & string & yes & - & pattern\\
+\texttt{summary.notes} & object & yes & - & -\\
+\texttt{summary.notes.en} & string & yes & - & length >= 1\\
+\texttt{summary.notes.es} & string & yes & - & length >= 1\\
+\bottomrule\end{longtable}
+\endgroup
+
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{benchmark-results}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-benchmark-results}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = dinhot.benchmark/v1\\
+\texttt{engine\_version} & string & yes & - & pattern\\
+\texttt{protocol} & object & yes & - & -\\
+\texttt{protocol.grids} & array of integer & yes & - & -\\
+\texttt{protocol.seeds} & integer & yes & - & -\\
+\texttt{protocol.budgets} & object & yes & - & -\\
+\texttt{protocol.budgets.iterations} & array of integer & yes & - & -\\
+\texttt{protocol.budgets.time\_s} & array of number & yes & s & -\\
+\texttt{protocol.device} & object & yes & - & -\\
+\texttt{protocol.device.en} & string & yes & - & length >= 1\\
+\texttt{protocol.device.es} & string & yes & - & length >= 1\\
+\texttt{geometries} & array of object & yes & - & -\\
+\texttt{geometries[].id} & string & yes & - & pattern\\
+\texttt{geometries[].name} & object & yes & - & -\\
+\texttt{geometries[].name.en} & string & yes & - & length >= 1\\
+\texttt{geometries[].name.es} & string & yes & - & length >= 1\\
+\texttt{geometries[].n\_traps} & integer & yes & - & -\\
+\texttt{geometries[].dims} & enum & yes & - & \{2, 3\}\\
+\texttt{rows} & array of object & yes & - & -\\
+\texttt{rows[].method} & string & yes & - & pattern\\
+\texttt{rows[].geometry} & string & yes & - & pattern\\
+\texttt{rows[].device} & enum & yes & - & \{ideal, device\}\\
+\texttt{rows[].budget\_kind} & enum & yes & - & \{iterations, time, converged\}\\
+\texttt{rows[].budget} & number & yes & - & -\\
+\texttt{rows[].params} & enum & yes & - & \{default, tuned\}\\
+\texttt{rows[].n\_seeds} & integer & yes & - & -\\
+\texttt{rows[].efficiency} & object & yes & fraction & -\\
+\texttt{rows[].efficiency.median} & number & yes & - & -\\
+\texttt{rows[].efficiency.q1} & number & yes & - & -\\
+\texttt{rows[].efficiency.q3} & number & yes & - & -\\
+\texttt{rows[].uniformity} & object & yes & fraction & -\\
+\texttt{rows[].uniformity.median} & number & yes & - & -\\
+\texttt{rows[].uniformity.q1} & number & yes & - & -\\
+\texttt{rows[].uniformity.q3} & number & yes & - & -\\
+\texttt{rows[].rel\_std\_pct} & object & yes & percent & -\\
+\texttt{rows[].rel\_std\_pct.median} & number & yes & - & -\\
+\texttt{rows[].rel\_std\_pct.q1} & number & yes & - & -\\
+\texttt{rows[].rel\_std\_pct.q3} & number & yes & - & -\\
+\texttt{rows[].time\_s} & object & yes & s & -\\
+\texttt{rows[].time\_s.median} & number & yes & - & -\\
+\texttt{rows[].time\_s.q1} & number & yes & - & -\\
+\texttt{rows[].time\_s.q3} & number & yes & - & -\\
+\texttt{rows[].iterations} & object & yes & - & -\\
+\texttt{rows[].iterations.median} & number & yes & - & -\\
+\texttt{rows[].iterations.q1} & number & yes & - & -\\
+\texttt{rows[].iterations.q3} & number & yes & - & -\\
+\texttt{pareto} & array of object & yes & - & -\\
+\texttt{pareto[].geometry} & string & yes & - & pattern\\
+\texttt{pareto[].method} & const & yes & - & = B5\\
+\texttt{pareto[].points} & array of object & yes & - & -\\
+\texttt{pareto[].points[].lambda} & number & yes & - & -\\
+\texttt{pareto[].points[].efficiency} & number & yes & fraction & -\\
+\texttt{pareto[].points[].uniformity} & number & yes & fraction & -\\
+\texttt{skipped} & array of object & no & - & -\\
+\texttt{skipped[].method} & string & yes & - & pattern\\
+\texttt{skipped[].geometry} & string & yes & - & pattern\\
+\texttt{skipped[].reason} & object & yes & - & -\\
+\texttt{skipped[].reason.en} & string & yes & - & length >= 1\\
+\texttt{skipped[].reason.es} & string & yes & - & length >= 1\\
+\bottomrule\end{longtable}
+\endgroup
+
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{model-metrics}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-model-metrics}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = dinhot.model-metrics/v1\\
+\texttt{engine\_version} & string & yes & - & pattern\\
+\texttt{slots} & object & yes & - & -\\
+\texttt{slots.cgh-net} & object & no & - & -\\
+\texttt{slots.cgh-net.held\_out\_n} & integer & yes & - & -\\
+\texttt{slots.cgh-net.accuracy\_vs\_gs} & object & yes & - & -\\
+\texttt{slots.cgh-net.time\_ms} & object & yes & ms & -\\
+\texttt{slots.cgh-net.baseline} & const & yes & - & = M19\\
+\texttt{slots.warmstart-model} & object & no & - & -\\
+\texttt{slots.warmstart-model.held\_out\_n} & integer & yes & - & -\\
+\texttt{slots.warmstart-model.iterations\_to\_1pct} & object & yes & - & -\\
+\texttt{slots.warmstart-model.final\_rel\_std\_pct} & object & yes & percent & -\\
+\bottomrule\end{longtable}
+\endgroup
+
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{readiness}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-readiness}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = example.readiness/v1\\
+\texttt{product\_version} & string & yes & - & pattern\\
+\texttt{catalog\_sha256} & string & yes & - & pattern\\
+\texttt{contracts} & array of object & yes & - & 1 to items\\
+\texttt{contracts[].id} & string & yes & - & pattern\\
+\texttt{contracts[].version} & string & yes & - & pattern\\
+\texttt{contracts[].status} & enum & yes & - & \{real, active\}\\
+\texttt{contracts[].provenance} & enum & yes & - & \{real, stub, simulator, fixture, baseline, ...\}\\
+\texttt{contracts[].state} & enum & yes & - & \{available, partial, stale, provider, training, ...\}\\
+\texttt{contracts[].reason} & object or null & yes & - & -\\
+\texttt{contracts[].missing} & array of string & yes & - & -\\
+\bottomrule\end{longtable}
+\endgroup

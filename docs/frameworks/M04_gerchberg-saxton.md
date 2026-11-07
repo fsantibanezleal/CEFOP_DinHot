@@ -20,7 +20,7 @@ With $V_m = \frac1N\sum_j A_j e^{i(\phi_j - \Delta_j^m)}$ and target amplitudes 
 $$\phi_j^{k} = \arg \sum_m a_m\,\frac{V_m^{k-1}}{|V_m^{k-1}|}\;e^{+i\Delta_j^m}$$
 
 started from the SR hologram of [M02](M02_random-superposition.md) (`init` overrides). Source: Di Leonardo et al. 2007, Table 1,
-https://doi.org/10.1364/OE.15.001913 ; the original text of Gerchberg and Saxton 1972 was not opened (UNVERIFIED). Published:
+https://doi.org/10.1364/OE.15.001913 ; Gerchberg and Saxton 1972, Optik 35, 237 (pp. 238-239: the amplitude is replaced in each plane and the phase kept, starting from uniform random phases) is the original, read on a scan. Published:
 efficiency 0.94, uniformity 0.60, relative standard deviation 17 percent after 30 iterations on the 10 by 10 task.
 
 ## Implementation
@@ -58,5 +58,5 @@ The forms agree to 6e-13 rad (8 iterations, 10 by 10). The published values (0.9
 
 ## References
 
-- Gerchberg and Saxton 1972 (original text not opened, UNVERIFIED)
+- Gerchberg, R. W. and Saxton, W. O. 1972, Optik 35(2), 237-246 (read on a scan of the original)
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913

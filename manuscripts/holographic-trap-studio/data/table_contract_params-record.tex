@@ -1,0 +1,17 @@
+\begin{table}[t]\centering\footnotesize
+\caption{Top-level fields of the contract \texttt{params-record}, read from its schema file: type, requirement, unit (a dash marks an identifier, a count or a dimensionless quantity) and the range or constant the schema states.}\label{tab:contract-params-record}
+\begin{tabular}{@{}l l c l >{\raggedright\arraybackslash}p{0.3\textwidth}@{}}\toprule Field & Type & Req. & Unit & Range\\\midrule
+\texttt{\scriptsize case\_id} & string & yes & - & pattern\\
+\texttt{\scriptsize setup} & object & yes & - & -\\
+\texttt{\scriptsize device} & object or null & yes & - & -\\
+\texttt{\scriptsize target} & object & yes & - & -\\
+\texttt{\scriptsize aberration} & object or null & yes & - & -\\
+\texttt{\scriptsize methods} & array of string & yes & - & 1 to 24 items\\
+\texttt{\scriptsize reference\_method} & string & yes & - & pattern\\
+\texttt{\scriptsize budget} & object & yes & - & -\\
+\texttt{\scriptsize seed} & integer & yes & - & 0 to 2147483647\\
+\texttt{\scriptsize feedback} & object or null & yes & - & -\\
+\texttt{\scriptsize dynamics} & object or null & yes & - & -\\
+\texttt{\scriptsize rearrangement} & object or null & yes & - & -\\
+\texttt{\scriptsize expect} & object & yes & - & -\\
+\bottomrule\end{tabular}\end{table}

@@ -1,0 +1,74 @@
+\section{Problem formulation}\label{sec:problem}
+
+\subsection{Forward model of the traps}
+
+The SLM has $n_{\mathrm{pix}}\times n_{\mathrm{pix}}$ pixels of pitch $p$ and a Gaussian input beam of amplitude $A_j$ normalized so that $\sum_jA_j^2=n_{\mathrm{pix}}^2$. A hologram is a phase $\phi_j\in[0,2\pi)$ per pixel $j$ at
+position $(x_j,y_j)$. For a trap $m$ at $(x_m,y_m)$ in the focal plane of a lens of focal length $f_{\mathrm L}$ at wavelength $\lambda_{\mathrm L}$, with the trap in the focal plane and no vortex, the field and the intensity are
+\begin{equation}
+V_m=\frac1{n_{\mathrm{pix}}^2}\sum_jA_je^{\,i(\phi_j-\Delta_j^m)},\qquad \Delta_j^m=\frac{2\pi}{\lambda_{\mathrm L} f_{\mathrm L}}(x_jx_m+y_jy_m),\qquad I_m=|V_m|^2,\label{eq:forward}
+\end{equation}
+following Di Leonardo et al.~\cite{dileonardo}. The traps lie on the bins of the zero-padded fast Fourier transform of the SLM field, so that the same field can also be read from a transform; the lattice of the task is spaced a whole number of bins apart and the
+focal bin is $\lambda_{\mathrm L} f_{\mathrm L}/(\mathrm{pad}\,n_{\mathrm{pix}}\,p)$ with a padding factor $\mathrm{pad}$. Each trap has a design weight $w_m$ (equal for all traps in the task of the paper). The intensities that enter the uniformity are divided by the weights, $I_m/w_m$.
+Equation~\ref{eq:forward} is the model on which every hologram of the paper is computed and scored. The engine evaluates it as a matrix product of the field with the factors of the separable phase, so that one evaluation costs $O(n_{\mathrm{pix}}^2M)$ operations for $M$ traps, and its adjoint costs the same.
+The equation is linear in the unit phasors $e^{i\phi_j}$, which is what makes the gradient of any smooth function of the intensities available in closed form through the adjoint, as used in Section~\ref{sec:method}. The model is scalar and monochromatic, and the device that displays the hologram is ideal: the pixels are not blurred, the phase is not quantized and the fill factor is one.
+
+\subsection{Figures of merit}
+
+The efficiency is the light in the traps, and the uniformity compares the brightest and the dimmest trap, both after division by the design weights:
+\begin{equation}
+e=\sum_mI_m,\qquad u=1-\frac{\max_m(I_m/w_m)-\min_m(I_m/w_m)}{\max_m(I_m/w_m)+\min_m(I_m/w_m)}.\label{eq:eu}
+\end{equation}
+A uniformity of one means equal traps, and it falls to zero when the dimmest trap is dark. The same definition is used for the points of the published methods, so every number of the paper that has the label uniformity is computed by it. The relative standard deviation of the weighted intensities, in percent,
+\begin{equation}
+\sigma=100\,\frac{\operatorname{std}_m(I_m/w_m)}{\operatorname{mean}_m(I_m/w_m)}\label{eq:sigma}
+\end{equation}
+is the quantity that the experiments of the sources report as non-uniformity, and it is carried by the front as a third column; it is not used as the second objective because it depends on all the traps, whereas $u$ depends on two. The choice of $u$ as the objective follows the foundational comparison of
+the solvers~\cite{dileonardo}, which reports the pair $(e,u)$, so the points of the published methods are in the same plane as the front. The two quantities are in conflict on the task: along every front of Section~\ref{sec:results} the efficiency rises while the uniformity falls, and Section~\ref{sec:theory} states the conflict through the loss.
+
+\subsection{The bi-objective problem, dominance and the hypervolume}
+
+The problem is the vector maximization of $\big(e(\phi),u(\phi)\big)$ over the phases $\phi\in[0,2\pi)^{n_{\mathrm{pix}}\times n_{\mathrm{pix}}}$. A hologram $\phi$ dominates a hologram $\phi'$ when $e(\phi)\ge e(\phi')$ and $u(\phi)\ge u(\phi')$ with at least one strict inequality,
+and the Pareto front is the set of the vectors $(e,u)$ of the holograms that no hologram dominates. A finite set of points $P=\{(e_k,u_k)\}$ is summarized by its hypervolume with respect to a reference point $\mathbf r=(r_e,r_u)$, the area of the union of the rectangles that each point spans with the reference,
+\begin{equation}
+\mathrm{HV}(P;\mathbf r)=\Big|\bigcup_{k}\,[r_e,e_k]\times[r_u,u_k]\Big|.\label{eq:hv}
+\end{equation}
+The reference of the paper is $\mathbf r=(0,0)$, so that $\mathrm{HV}$ is bounded by one and a single point $(e,u)$ has $\mathrm{HV}=eu$. Two properties of the hypervolume are used. Adding a point never lowers it, and adding a dominated point leaves it unchanged, because its rectangle lies inside the rectangle of the dominating point; and if every
+point of a set $A$ is dominated by or equal to some point of a set $B$, then $\mathrm{HV}(A)\le\mathrm{HV}(B)$. The hypervolume of a front is therefore a single number that is at least as large as that of any set of points the front dominates, which is what the acceptance criterion of the method needs. The converse does not hold: a front can have a hypervolume
+larger than that of a set of points without dominating any single one of them, because the regions that the points add and the front adds are different. Section~\ref{sec:results} reports both the hypervolume and the point-by-point dominance for this reason.
+The sensitivity of the hypervolume to the reference point is measured in Section~\ref{sec:results} with two further references.
+
+\subsection{Task, assumptions and notation}
+
+The task is the acceptance task of the engine: a ten by ten square lattice of $M=\nTraps$ equal traps on FFT bins 8 bins apart, a $\nPix\times\nPix$ pixel SLM of pitch 12.5~\textmu m padded by a factor 2, a Gaussian input beam, a wavelength of 850~nm and a lens of 250~mm. The lattice is the one used in the foundational
+comparison of the solvers~\cite{dileonardo}, so the points of the published methods are comparable with the literature. The assumptions are the following. The traps lie in the focal plane and carry no vortex, so Eq.~\ref{eq:forward} holds exactly on the bins. The device is ideal. All weights $w_m$ are equal for the
+statements of Section~\ref{sec:theory} that name equal weights, and the loss itself is defined for any weights. The published methods and the proposed one start from the same seeded random superposition of prisms and lenses~\cite{dileonardo}, drawn by the engine's portable generator, so a seed fixes the start of every method.
+The three conditions are revisited in Section~\ref{sec:limits}. Table~\ref{tab:notation} collects the symbols of the paper.
+
+\begin{table}[t]
+\centering\small
+\caption{Notation: every symbol of the paper with its meaning and unit. Dimensionless quantities are marked as such; intensities are fractions of the power that enters the SLM.}
+\label{tab:notation}
+\begin{tabular}{@{}l p{8.6cm} l@{}}
+\toprule
+Symbol & Meaning & Unit\\
+\midrule
+$n_{\mathrm{pix}}$, $p$ & SLM pixels per side, pixel pitch & 1, m\\
+$\lambda_{\mathrm L}$, $f_{\mathrm L}$ & wavelength and focal length of the lens & m\\
+$A_j$, $\phi_j$ & input amplitude and displayed phase of pixel $j$ & 1, rad\\
+$V_m$, $I_m$ & field and intensity of trap $m$ & 1\\
+$M$, $w_m$ & number of traps, design weight of trap $m$ & 1\\
+$e$, $u$, $\sigma$ & efficiency, uniformity, relative standard deviation of the weighted intensities & 1, 1, percent\\
+$\mathrm{HV}$, $\mathbf r$ & hypervolume, reference point of the hypervolume & 1\\
+$e_0$ & efficiency of the start hologram & 1\\
+$T_m$ & target intensity of trap $m$, $e_0w_m/\sum_kw_k$ & 1\\
+$E$, $S$ & normalized squared error and normalized light, Eqs.~\ref{eq:E} and~\ref{eq:S} & 1\\
+$\lambda$, $L_\lambda$ & weight of the front, loss at the weight $\lambda$ & 1\\
+$\delta_\lambda$ & uniform raise of the target at the weight $\lambda$, Eq.~\ref{eq:delta} & 1\\
+$\lambda^\ast$ & weight beyond which the shifted target exceeds the light that is attainable, Eq.~\ref{eq:lamstar} & 1\\
+$n_\lambda$, $K$ & number of weights, conjugate-gradient iterations per weight & 1\\
+$\tau$ & equal-weight target, $e_0/M$ & 1\\
+$F_k$ & point $(e_k,u_k,\sigma_k)$ of the front at the weight $\lambda_k$ & 1\\
+$\bar x$, $s$, $t_{n-1}$ & mean, sample standard deviation and Student quantile of the statistics over the seeds & as the variable\\
+\bottomrule
+\end{tabular}
+\end{table}
