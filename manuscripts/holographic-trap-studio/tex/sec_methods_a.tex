@@ -11,7 +11,7 @@ with $w_m$ the target weight of trap $m$ (all equal to one in the source table o
 
 \textbf{Assumptions and parameters.} The method accepts point targets only, in two or three dimensions, and refuses a shaped field with an error that names the supported kind. It has no tunable parameter, uses no random number, ignores the device and the starting phase, and does not consume its iteration budget, so its output is identical for every seed. The module evaluates the sum with the point-trap back-projection of Eq.~\eqref{eq:field} and then recomputes the trap fields; the result carries a one-entry history, so that the common interface of Section~\ref{sec:methods} holds.
 
-\textbf{Complexity.} The cost is $N_{\mathrm{pix}}\times M$ complex terms and no iteration, the entry of the first row of Table 1 of Di Leonardo et al.~\cite{dileonardo}. The method runs in the browser worker, and its TypeScript port agrees with the Python fixtures to the tolerance of the parity tests of Section~\ref{sec:validation}. The benchmark protocol runs it as a one-pass method.
+\textbf{Complexity.} The cost is $N_{\mathrm{pix}}\times M$ complex terms and no iteration, the entry of the row ``S'' of Table 1 of Di Leonardo et al.~\cite{dileonardo}. The method runs in the browser worker, and its TypeScript port agrees with the Python fixtures to the tolerance of the parity tests of Section~\ref{sec:validation}. The benchmark protocol runs it as a one-pass method.
 
 \textbf{Acceptance criterion and gate.} The criterion fixes the zero point: on the $10\times10$ task with a flat beam the efficiency is within a stated band of the published value and the uniformity stays below a stated bound (Table~\ref{tab:ladder}). The gate runs the method on the $10\times10$ task of Section~\ref{sec:protocol} and asserts the two bounds; companion tests check that the output is deterministic and independent of the seed, that a single-trap hologram is a grating with unit field, and that a shaped target is refused. The measurement taken by the script of this report is: \acc{M01}. The published row is an efficiency of 0.29 and a uniformity of 0.01 on a larger grid~\cite{dileonardo}, so the engine reproduces the published low efficiency and the near-absence of uniformity that fix the zero point; the uniformity of the engine is below the published 0.01, a difference at the second decimal place, because the grid has fewer pixels.
 
@@ -85,7 +85,7 @@ Gerchberg--Saxton (GS) alternates between the SLM plane and the trap plane, impo
 \phi_j^{k}=\arg\sum_{m=1}^{M}a_m\,\frac{V_m^{k-1}}{|V_m^{k-1}|}\,e^{+i\Delta_j^m},
 \label{eq:m04}
 \end{equation}
-where the phasor $V/|V|$ is set to one where the field vanishes~\cite{dileonardo}. The start is the random superposition of random superposition unless an initial phase is given.
+where the phasor $V/|V|$ is set to one where the field vanishes, a convention of this engine that Di Leonardo et al.~\cite{dileonardo} do not state. The start is the random superposition of random superposition unless an initial phase is given.
 
 \textbf{Two forms of one map.} The point form is the direct sum of Eq.~\eqref{eq:field}. The Fourier form places the constraint on the bins of the zero-padded transform,
 \begin{equation}
@@ -176,7 +176,7 @@ so that the log-weight of a trap is the running sum of the log-errors of that tr
 
 \textbf{Parameters.} Only the form (default \texttt{\defv{M06}{form}}) and the initial weights, set by the target weights; the benchmark tunes nothing for weighted GS.
 
-\textbf{Complexity.} $K\times M\times N_{\mathrm{pix}}$ for the point form and $O(P\log P)$ per iteration for the Fourier form. The source reports a graphics-processor cost per trap and iteration at a larger grid~\cite{bianchi2010}; the studio relies on its own measurement in the browser (Section~\ref{sec:live}).
+\textbf{Complexity.} $K\times M\times N_{\mathrm{pix}}$ for the point form and $O(P\log P)$ per iteration for the Fourier form. The source reports a graphics-processor cost per trap and iteration (0.44 ms on a GeForce GTX 260, its Fig.~5)~\cite{bianchi2010}; the studio relies on its own measurement in the browser (Section~\ref{sec:live}).
 
 \textbf{Acceptance criterion and gate.} The ladder row requires an efficiency and a uniformity both at least 0.9 within a median of 15 iterations on the $10\times10$ task with a flat beam (the source reports about 10), and the $3\times3\times3$ lattice above 0.9 and 0.98 (Table~\ref{tab:ladder}). The gate asserts for every seed that the first iteration with both quantities at 0.9 is at most 15, that the median uniformity at iteration 10 is at least 0.85, that the Gaussian beam reaches 0.9 of its ceiling and 0.9 in uniformity within 20 iterations, that the lattice reaches its two thresholds within 100 iterations, and that a requested 2:1 weight gives an intensity ratio of 2 within a tenth. The measurement of this report is: \acc{M06}. Convergence is slightly slower on the live grid than in the source because the grid has fewer pixels, and the bound is set accordingly; the lattice does not converge monotonically.
 
