@@ -911,11 +911,16 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--workers", type=int, default=12)
     ap.add_argument("--seeds", type=int, default=10, help="seeds of the main comparison (seeds 1 to 3 feed the other parts)")
-    ap.add_argument("--cache", default="D:/_Temp/cb-m4-2026-11-03/cache", help="folder of the intermediate holograms (temp root)")
+    ap.add_argument("--cache", default=None,
+                    help="folder of the intermediate holograms (default: <CAOS_TEMP_ROOT>/dinhot-robust-cache)")
     ap.add_argument("--out", default=str(HERE))
     ap.add_argument("--extra", choices=["pointonly"], help="run one part again on the cached holograms and merge it into robust.json")
     ap.add_argument("--emit-only", action="store_true", help="rewrite the macros and tables from an existing robust.json")
     a = ap.parse_args()
+    if a.cache is None and not a.emit_only:
+        if not os.environ.get("CAOS_TEMP_ROOT"):
+            ap.error("set CAOS_TEMP_ROOT (the device's temp root) or pass --cache")
+        a.cache = str(Path(os.environ["CAOS_TEMP_ROOT"]) / "dinhot-robust-cache")
     out = Path(a.out)
     if a.extra:
         data = json.loads((out / "robust.json").read_text(encoding="utf-8"))

@@ -16,7 +16,7 @@ run) and the accounting of the weights of the update (Proposition 3 of the manus
 
 Run from the repository root (needs torch: the GPU environment, only the CPU is used):
 
-    E:/_venvs/CEFOP_DinHot-gpu/Scripts/python.exe manuscripts/learned-warm-start/data/measure.py [--workers 8] [--emit-only]
+    <python of the GPU environment> manuscripts/learned-warm-start/data/measure.py [--workers 8] [--emit-only]
 
 Deterministic given the checkpoint: every method takes its seed through the portable generator.
 """
@@ -43,7 +43,7 @@ SWEEP_NFIX = (1, 2, 4, 6, 8)
 ORACLE_N = 10
 BOOT = 10000
 BOOT_SEED = 20261104
-DEFAULT_LEARNED = "E:/_Datos/dinhot/learned"
+DEFAULT_LEARNED = str(Path(os.environ.get("CAOS_DATA_ROOT", ".")) / "dinhot" / "learned")  # the data root's learned folder
 RECORD = ROOT / "data" / "derived" / "models" / "warmstart-model-rejected.json"
 
 _W: dict = {}
@@ -309,7 +309,7 @@ def compute(learned: str, workers: int, out: Path) -> dict:
                      "control": rec["control_without_the_network"], "config": rec["candidate"]["config"]}
     res["runtime_s"] = time.time() - t0
     res["workers"] = workers
-    res["command"] = "E:/_venvs/CEFOP_DinHot-gpu/Scripts/python.exe manuscripts/learned-warm-start/data/measure.py --workers %d" % workers
+    res["command"] = "python manuscripts/learned-warm-start/data/measure.py --workers %d" % workers
     out.write_text(json.dumps(res), encoding="utf-8")
     return res
 
