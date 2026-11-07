@@ -32,6 +32,10 @@ const num = (v: number, lang: Lang, d: number) => formatNumber(v, lang, { decima
 export const wordCount = (text: string): number => text.trim().split(/\s+/).filter(Boolean).length;
 /** A name of a method in the page language: the catalog name, never the engine id alone. */
 const nameOf = (id: string, lang: Lang): string => methodName(id)[lang];
+/** A method's name where room is short (a point label, a headline): the device-aware WGS drops its "model of the device" tail. */
+const short = (id: string, l: Lang): string => (id === 'B1' ? (l === 'en' ? 'Device-aware WGS' : 'WGS con dispositivo') : nameOf(id, l));
+/** The artifact path a fact cites, with the method named instead of its engine id. */
+const traceSource = (id: string, path: string): Tx => both((l) => `trace, ${nameOf(id, l)}: ${path}`);
 type Tx = { en: string; es: string };
 const both = (make: (lang: Lang) => string): Tx => ({ en: make('en'), es: make('es') });
 
@@ -76,7 +80,7 @@ export interface Finding {
   headline: Tx;
   summary: Tx;
   /** Lines of the panel: label, value, source field. */
-  facts: { label: Tx; value: Tx; source: string }[];
+  facts: { label: Tx; value: Tx; source: Tx }[];
 }
 export type Missing = { missing: Tx };
 const absent = (what: string, es: string): Missing => ({ missing: bi(`${what} is not in the artifact, so this number is not shown.`, `${es} no está en el artefacto, así que esta cifra no se muestra.`) });
@@ -92,11 +96,11 @@ export function setupFinding(data: CaseData): (Finding & { n: number; eff: numbe
     eff,
     method: ref,
     headline: both((l) => (l === 'en' ? `One beam becomes ${n} traps at ${num(eff * 100, l, 1)}% efficiency` : `Un haz se convierte en ${n} trampas con ${num(eff * 100, l, 1)}% de eficiencia`)),
-    summary: both((l) => (l === 'en' ? `${nameOf(ref, l)} (${ref}) shapes the beam on the SLM; the rest of the light is the zero order and ghosts.` : `${nameOf(ref, l)} (${ref}) da forma al haz en el SLM; el resto de la luz es el orden cero y los fantasmas.`)),
+    summary: both((l) => (l === 'en' ? `${nameOf(ref, l)} shapes the beam on the SLM; the rest of the light is the zero order and ghosts.` : `${nameOf(ref, l)} da forma al haz en el SLM; el resto de la luz es el orden cero y los fantasmas.`)),
     facts: [
-      { label: bi('Traps', 'Trampas'), value: bi(String(n), String(n)), source: 'trace.traps' },
-      { label: bi('Efficiency', 'Eficiencia'), value: both((l) => `${num(eff * 100, l, 1)} %`), source: `trace.methods.${ref}.final.efficiency` },
-      { label: bi('Uniformity', 'Uniformidad'), value: both((l) => num(final.uniformity, l, 3)), source: `trace.methods.${ref}.final.uniformity` },
+      { label: bi('Traps', 'Trampas'), value: bi(String(n), String(n)), source: bi('trace.traps', 'trace.traps') },
+      { label: bi('Efficiency', 'Eficiencia'), value: both((l) => `${num(eff * 100, l, 1)} %`), source: traceSource(ref, 'final.efficiency') },
+      { label: bi('Uniformity', 'Uniformidad'), value: both((l) => num(final.uniformity, l, 3)), source: traceSource(ref, 'final.uniformity') },
     ],
   };
 }
@@ -118,14 +122,14 @@ export function deviceFinding(data: CaseData): (Finding & { ideal: { spread: num
     headline: both((l) => (l === 'en' ? `On the device, ${inSentence(nameOf(id, l))} spread rises from ${spreadText(ideal.spread, l)}% to ${spreadText(device.spread, l)}%` : `Dispersión del ${nameOf(id, l)}: de ${spreadText(ideal.spread, l)}% a ${spreadText(device.spread, l)}%`)),
     summary: both((l) =>
       l === 'en'
-        ? `${bits === null ? 'Unquantized' : `${bits}-bit`} phase, crosstalk and a fill factor of ${num(dev.fill_factor, l, 2)} cost ${num((ideal.eff - device.eff) * 100, l, 1)} points of efficiency${refFinal ? `; ${nameOf(ref, l)} (${ref}), which models the device, holds ${spreadText(refFinal.rel_std_pct, l)}%` : ''}.`
-        : `${bits === null ? 'La fase sin cuantizar' : `La fase de ${bits} bits`}, la diafonía y un factor de llenado de ${num(dev.fill_factor, l, 2)} cuestan ${num((ideal.eff - device.eff) * 100, l, 1)} puntos de eficiencia${refFinal ? `; ${nameOf(ref, l)} (${ref}), que modela el dispositivo, mantiene ${spreadText(refFinal.rel_std_pct, l)}%` : ''}.`,
+        ? `${bits === null ? 'Unquantized' : `${bits}-bit`} phase, crosstalk and a fill factor of ${num(dev.fill_factor, l, 2)} cost ${num((ideal.eff - device.eff) * 100, l, 1)} points of efficiency${refFinal ? `; ${nameOf(ref, l)}, which models the device, holds ${spreadText(refFinal.rel_std_pct, l)}%` : ''}.`
+        : `${bits === null ? 'La fase sin cuantizar' : `La fase de ${bits} bits`}, la diafonía y un factor de llenado de ${num(dev.fill_factor, l, 2)} cuestan ${num((ideal.eff - device.eff) * 100, l, 1)} puntos de eficiencia${refFinal ? `; ${nameOf(ref, l)}, que modela el dispositivo, mantiene ${spreadText(refFinal.rel_std_pct, l)}%` : ''}.`,
     ),
     facts: [
-      { label: both((l) => `${nameOf(id, l)}: spread, ideal model`), value: both((l) => `${spreadText(ideal.spread, l)} %`), source: `trace.methods.${id}.history[last].rel_std_pct` },
-      { label: both((l) => `${nameOf(id, l)}: spread, case device`), value: both((l) => `${spreadText(device.spread, l)} %`), source: `trace.methods.${id}.final.rel_std_pct` },
-      { label: bi('Efficiency cost', 'Costo en eficiencia'), value: both((l) => `${num((ideal.eff - device.eff) * 100, l, 1)} ${l === 'en' ? 'points' : 'puntos'}`), source: `trace.methods.${id}.history[last].efficiency, final.efficiency` },
-      { label: bi('Phase levels', 'Niveles de fase'), value: bits === null ? bi('not quantized', 'sin cuantizar') : bi(`${2 ** bits}`, `${2 ** bits}`), source: 'params.device.bit_depth' },
+      { label: both((l) => `${nameOf(id, l)}: spread, ideal model`), value: both((l) => `${spreadText(ideal.spread, l)} %`), source: traceSource(id, 'history[last].rel_std_pct') },
+      { label: both((l) => `${nameOf(id, l)}: spread, case device`), value: both((l) => `${spreadText(device.spread, l)} %`), source: traceSource(id, 'final.rel_std_pct') },
+      { label: bi('Efficiency cost', 'Costo en eficiencia'), value: both((l) => `${num((ideal.eff - device.eff) * 100, l, 1)} ${l === 'en' ? 'points' : 'puntos'}`), source: traceSource(id, 'history[last].efficiency, final.efficiency') },
+      { label: bi('Phase levels', 'Niveles de fase'), value: bits === null ? bi('not quantized', 'sin cuantizar') : bi(`${2 ** bits}`, `${2 ** bits}`), source: bi('params.device.bit_depth', 'params.device.bit_depth') },
     ],
   };
 }
@@ -147,13 +151,13 @@ export function methodFinding(data: CaseData): (Finding & { first: number; last:
     headline: both((l) => (l === 'en' ? `The spread falls from ${spreadText(first, l)}% to ${spreadText(last, l)}% in ${iterations} iterations` : `La dispersión cae de ${spreadText(first, l)}% a ${spreadText(last, l)}% en ${iterations} iteraciones`)),
     summary: both((l) =>
       l === 'en'
-        ? `${nameOf(ref, l)} (${ref}) on ${data.trace.traps.length} traps${freeze === null ? '' : `, with the phase frozen at iteration ${freeze}`}; scrub the iteration to redraw the focal plane.`
-        : `${nameOf(ref, l)} (${ref}) en ${data.trace.traps.length} trampas${freeze === null ? '' : `, con la fase fijada en la iteración ${freeze}`}; recorra la iteración para redibujar el plano focal.`,
+        ? `${nameOf(ref, l)} on ${data.trace.traps.length} traps${freeze === null ? '' : `, with the phase frozen at iteration ${freeze}`}; scrub the iteration to redraw the focal plane.`
+        : `${nameOf(ref, l)} en ${data.trace.traps.length} trampas${freeze === null ? '' : `, con la fase fijada en la iteración ${freeze}`}; recorra la iteración para redibujar el plano focal.`,
     ),
     facts: [
-      { label: bi('Spread, first iteration', 'Dispersión, primera iteración'), value: both((l) => `${spreadText(first, l)} %`), source: `trace.methods.${ref}.history[0].rel_std_pct` },
-      { label: bi('Spread, last iteration', 'Dispersión, última iteración'), value: both((l) => `${spreadText(last, l)} %`), source: `trace.methods.${ref}.history[last].rel_std_pct` },
-      { label: bi('Iterations', 'Iteraciones'), value: bi(String(iterations), String(iterations)), source: `trace.methods.${ref}.history[last].iteration` },
+      { label: bi('Spread, first iteration', 'Dispersión, primera iteración'), value: both((l) => `${spreadText(first, l)} %`), source: traceSource(ref, 'history[0].rel_std_pct') },
+      { label: bi('Spread, last iteration', 'Dispersión, última iteración'), value: both((l) => `${spreadText(last, l)} %`), source: traceSource(ref, 'history[last].rel_std_pct') },
+      { label: bi('Iterations', 'Iteraciones'), value: bi(String(iterations), String(iterations)), source: traceSource(ref, 'history[last].iteration') },
     ],
   };
 }
@@ -188,9 +192,8 @@ export function compareFinding(bench: BenchmarkResults, at: CompareCell = COMPAR
   const best = pts[0];
   const geo = bench.geometries.find((g) => g.id === cell.geometry);
   if (!best || !gs || !fixed || !geo) return absent(`The cell ${cell.geometry} on ${cellDevice(cell.device, 'en')} at ${cell.budget} iterations, or the weighted GS or phase-fixed weighted GS row on it,`, `La celda ${cell.geometry} en ${cellDevice(cell.device, 'es')} a ${cell.budget} iteraciones, o la fila del GS ponderado o del GS ponderado de fase fija en ella,`);
-  const short = (id: string, l: Lang) => (id === 'B1' ? (l === 'en' ? 'Device-aware WGS' : 'WGS con dispositivo') : nameOf(id, l));
   const where = `${cell.geometry}, ${cell.device}, ${cell.budget}`;
-  const src = (p: ComparePoint) => `benchmark rows[${p.method}, ${where}].rel_std_pct.median`;
+  const src = (p: ComparePoint): Tx => both((l) => `benchmark, ${nameOf(p.method, l)}: ${where}, rel_std_pct.median`);
   return {
     best,
     gs,
@@ -206,7 +209,7 @@ export function compareFinding(bench: BenchmarkResults, at: CompareCell = COMPAR
       { label: both((l) => `${nameOf(best.method, l)}, median spread`), value: both((l) => `${spreadText(best.spread.median, l)} %`), source: src(best) },
       { label: both((l) => `${nameOf(gs.method, l)}, median spread`), value: both((l) => `${spreadText(gs.spread.median, l)} %`), source: src(gs) },
       { label: both((l) => `${nameOf(fixed.method, l)}, median spread`), value: both((l) => `${spreadText(fixed.spread.median, l)} %`), source: src(fixed) },
-      { label: bi('Seeds', 'Semillas'), value: bi(`${best.seeds}, ${gs.seeds} and ${fixed.seeds}`, `${best.seeds}, ${gs.seeds} y ${fixed.seeds}`), source: `benchmark rows[${where}].n_seeds` },
+      { label: bi('Seeds', 'Semillas'), value: bi(`${best.seeds}, ${gs.seeds} and ${fixed.seeds}`, `${best.seeds}, ${gs.seeds} y ${fixed.seeds}`), source: bi(`benchmark rows[${where}].n_seeds`, `benchmark rows[${where}].n_seeds`) },
     ],
   };
 }
@@ -224,13 +227,13 @@ export function holdFinding(data: CaseData): (Finding & { kappa: number; fc: num
     headline: both((l) => (l === 'en' ? `The bead feels ${num(kappa, l, 2)} pN/um at a ${num(fc, l, 1)} Hz corner frequency` : `La microesfera siente ${num(kappa, l, 2)} pN/um con frecuencia de corte de ${num(fc, l, 1)} Hz`)),
     summary: both((l) =>
       l === 'en'
-        ? `A simulated bead in a trap of the ${nameOf(ref, l)} (${ref}) hologram; the stiffness is read from the power spectrum of its position.`
-        : `Una microesfera simulada en una trampa del holograma de ${nameOf(ref, l)} (${ref}); la rigidez se lee del espectro de potencia de su posición.`,
+        ? `A simulated bead in a trap of the ${nameOf(ref, l)} hologram; the stiffness is read from the power spectrum of its position.`
+        : `Una microesfera simulada en una trampa del holograma de ${nameOf(ref, l)}; la rigidez se lee del espectro de potencia de su posición.`,
     ),
     facts: [
-      { label: bi('Trap stiffness', 'Rigidez de la trampa'), value: both((l) => `${num(kappa, l, 2)} pN/um`), source: 'trace.dynamics.kappa_pn_per_um' },
-      { label: bi('Corner frequency', 'Frecuencia de corte'), value: both((l) => `${num(fc, l, 1)} Hz`), source: 'trace.dynamics.fc_hz' },
-      { label: bi('Trap depth', 'Profundidad de la trampa'), value: both((l) => `${num(dyn.depth.value, l, 0)} ${dyn.depth.unit}`), source: 'trace.dynamics.depth' },
+      { label: bi('Trap stiffness', 'Rigidez de la trampa'), value: both((l) => `${num(kappa, l, 2)} pN/um`), source: bi('trace.dynamics.kappa_pn_per_um', 'trace.dynamics.kappa_pn_per_um') },
+      { label: bi('Corner frequency', 'Frecuencia de corte'), value: both((l) => `${num(fc, l, 1)} Hz`), source: bi('trace.dynamics.fc_hz', 'trace.dynamics.fc_hz') },
+      { label: bi('Trap depth', 'Profundidad de la trampa'), value: both((l) => `${num(dyn.depth.value, l, 0)} ${dyn.depth.unit}`), source: bi('trace.dynamics.depth', 'trace.dynamics.depth') },
     ],
   };
 }
@@ -339,8 +342,8 @@ export function compareCallouts(f: { best: ComparePoint; gs: ComparePoint; cell:
   const at = (p: ComparePoint) => ({ x: Math.min(0.95, Math.max(0.05, L.x(p.eff.median) / width)), y: Math.min(0.95, Math.max(0.2, L.y(p.spread.median) / height)) });
   const cellText = `${f.cell.geometry}, ${f.cell.device}, ${f.cell.budget}`;
   return [
-    { id: 'best', eyebrow: { en: 'LOWEST SPREAD', es: 'MENOR DISPERSIÓN' }, value: spreadText(f.best.spread.median, lang), unit: '%', state: 'normal', anchor: at(f.best), source: { en: `${nameOf(f.best.method, 'en')}: benchmark rows[${f.best.method}, ${cellText}].rel_std_pct.median`, es: `${nameOf(f.best.method, 'es')}: benchmark rows[${f.best.method}, ${cellText}].rel_std_pct.median` } },
-    { id: 'gs', eyebrow: { en: 'WEIGHTED GS', es: 'GS PONDERADO' }, value: spreadText(f.gs.spread.median, lang), unit: '%', state: 'warning', anchor: at(f.gs), source: { en: `${nameOf(f.gs.method, 'en')}: benchmark rows[${f.gs.method}, ${cellText}].rel_std_pct.median`, es: `${nameOf(f.gs.method, 'es')}: benchmark rows[${f.gs.method}, ${cellText}].rel_std_pct.median` } },
+    { id: 'best', eyebrow: { en: 'LOWEST SPREAD', es: 'MENOR DISPERSIÓN' }, value: spreadText(f.best.spread.median, lang), unit: '%', state: 'normal', anchor: at(f.best), source: { en: `${nameOf(f.best.method, 'en')}: benchmark, ${cellText}, rel_std_pct.median`, es: `${nameOf(f.best.method, 'es')}: benchmark, ${cellText}, rel_std_pct.median` } },
+    { id: 'gs', eyebrow: { en: 'WEIGHTED GS', es: 'GS PONDERADO' }, value: spreadText(f.gs.spread.median, lang), unit: '%', state: 'warning', anchor: at(f.gs), source: { en: `${nameOf(f.gs.method, 'en')}: benchmark, ${cellText}, rel_std_pct.median`, es: `${nameOf(f.gs.method, 'es')}: benchmark, ${cellText}, rel_std_pct.median` } },
     { id: 'seeds', eyebrow: { en: 'SEEDS', es: 'SEMILLAS' }, value: `${f.best.seeds}/${f.gs.seeds}`, unit: { en: 'seeds per cell', es: 'semillas por celda' }, state: 'selected', anchor: { x: 0.5, y: 0.6 }, source: { en: 'benchmark rows[].n_seeds, the two cells compared', es: 'benchmark rows[].n_seeds, las dos celdas comparadas' } },
   ];
 }
@@ -357,6 +360,7 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
     <PlotCard fill title={{ en: 'Spread against efficiency, by method', es: 'Dispersión contra eficiencia, por método' }} lane="replay" provenance="synthetic" note={{ en: `${geo?.name.en ?? cell.geometry}, ${cell.budget} iterations, ${cellDevice(cell.device, 'en')}, default parameters. Each point is a method's median over its seeds with the quartile range drawn; the line joins the methods no other beats on both axes. A median of zero sits on the floor of the axis.`, es: `${geo?.name.es ?? cell.geometry}, ${cell.budget} iteraciones, ${cellDevice(cell.device, 'es')}, parámetros por defecto. Cada punto es la mediana de un método sobre sus semillas con el rango intercuartil dibujado; la línea une los métodos que ningún otro supera en ambos ejes. Una mediana de cero queda en el piso del eje.` }}>
       <ReadinessNote ids={['benchmark-results']} />
       <div className="dh-cmp" data-caos-flow="" data-compare-cell={`${cell.geometry}|${cell.device}|${cell.budget}`}>
+        <div className="dh-cmp-stage">
         <Stage label={{ en: 'Median spread against median efficiency of each method, with the quartile ranges and the Pareto front', es: 'Dispersión mediana contra eficiencia mediana de cada método, con los rangos intercuartiles y el frente de Pareto' }}>
           {({ width, height }) => {
             if (width < 120 || height < 120) return null;
@@ -392,7 +396,7 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
                         <g aria-hidden="true" pointerEvents="none">
                           <line x1={L.x(p.eff.q1)} x2={L.x(p.eff.q3)} y1={cy} y2={cy} stroke={tone} strokeWidth={1.5} />
                           <line x1={cx} x2={cx} y1={L.y(p.spread.q1)} y2={L.y(p.spread.q3)} stroke={tone} strokeWidth={1.5} />
-                          {label && <text x={cx + 9} y={cy - 7} fontSize={11} fill="var(--color-fg)">{p.method}</text>}
+                          {label && <text x={cx + 9} y={cy - 7} fontSize={11} fill="var(--color-fg)">{short(p.method, lang)}</text>}
                         </g>
                         <g data-method={p.method} data-linked-id={p.method} data-linked-view="scene" data-linked-selected={on ? 'true' : 'false'} role="button" tabIndex={0} aria-pressed={on} aria-label={t(`${nameOf(p.method, 'en')}: median spread ${spreadText(p.spread.median, 'en')} %, efficiency ${num(p.eff.median, 'en', 3)}, ${p.seeds} seeds`, `${nameOf(p.method, 'es')}: dispersión mediana ${spreadText(p.spread.median, 'es')} %, eficiencia ${num(p.eff.median, 'es', 3)}, ${p.seeds} semillas`)} onClick={() => select(on ? null : p.method, 'scene')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), select(on ? null : p.method, 'scene'))} style={{ cursor: 'pointer' }}>
                           <circle cx={cx} cy={cy} r={on ? 8 : 5.5} fill={tone} stroke={on ? 'var(--color-fg)' : 'var(--color-surface)'} strokeWidth={on ? 2 : 1} />
@@ -406,10 +410,11 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
             );
           }}
         </Stage>
+        </div>
         <ul className="dh-cmp-list" aria-label={t('The methods of the cell, by median spread', 'Los métodos de la celda, por dispersión mediana')}>
           {pts.slice(0, 8).map((p) => (
             <li key={p.method}>
-              {nameOf(p.method, lang)} ({p.method}): {spreadText(p.spread.median, lang)} %, {num(p.eff.median * 100, lang, 1)} %, {p.seeds} {t('seeds', 'semillas')}
+              {nameOf(p.method, lang)}: {spreadText(p.spread.median, lang)} %, {num(p.eff.median * 100, lang, 1)} %, {p.seeds} {t('seeds', 'semillas')}
             </li>
           ))}
         </ul>
@@ -537,10 +542,10 @@ function Facts({ finding, lang }: { finding: Finding; lang: Lang }) {
   return (
     <dl className="dh-story-facts">
       {finding.facts.map((x) => (
-        <div key={x.source}>
+        <div key={pick(x.source, 'en')}>
           <dt>{pick(x.label, lang)}</dt>
           <dd>
-            <strong>{pick(x.value, lang)}</strong> <small>{x.source}</small>
+            <strong>{pick(x.value, lang)}</strong> <small>{pick(x.source, lang)}</small>
           </dd>
         </div>
       ))}

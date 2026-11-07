@@ -260,7 +260,7 @@ describe('what the pointer can reach (gate G5)', () => {
   it('traps of one lateral position on different planes are drawn apart (C05 has three planes)', () => {
     const { props } = draw({}, 'C05_multiplane_vortices');
     const dots = el(props).filter((n) => n.props['data-linked-id'] !== undefined);
-    const at = dots.map((d) => `${Number(d.props.cx).toFixed(2)},${Number(d.props.cy).toFixed(2)}`);
+    const at = dots.map((d) => `${formatNumber(Number(d.props.cx), 'en', { decimals: 2 })},${formatNumber(Number(d.props.cy), 'en', { decimals: 2 })}`);
     expect(new Set(at).size).toBe(dots.length);
   });
 

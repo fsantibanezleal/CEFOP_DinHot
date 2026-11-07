@@ -10,7 +10,7 @@ import { INTENSITY_LUT } from './colormaps';
 import { getEngine, type ParticleResult } from './engine';
 import { Heatmap } from './HeatmapStage';
 import { cardOf } from './HologramGroup';
-import { histogram, useSelection, type Selection } from './model';
+import { histogram, methodName, useSelection, type Selection } from './model';
 import { umToPixel } from './traps';
 import { Fill, LOADING, Pending, Unavailable, useFmt, useStateKey, useT } from './ui';
 
@@ -191,7 +191,7 @@ export function ParticleView({ sel }: { sel: Selection }) {
   }
   const bakedPower = params.power_mw;
   const what = { en: params.particle === 'bead' ? 'A bead' : 'An atom', es: params.particle === 'bead' ? 'Una microesfera' : 'Un átomo' };
-  const holo = sel.maps?.lane === 'live' ? { en: `the live ${sel.maps.method} hologram`, es: `el holograma ${sel.maps.method} en vivo` } : { en: `the baked ${sel.maps?.method} hologram`, es: `el holograma ${sel.maps?.method} de la generación` };
+  const holo = sel.maps?.lane === 'live' ? { en: `the live ${methodName(sel.maps.method).en} hologram`, es: `el holograma ${methodName(sel.maps.method).es} en vivo` } : { en: `the baked ${methodName(sel.maps?.method).en} hologram`, es: `el holograma ${methodName(sel.maps?.method).es} de la generación` };
   const where =
     tr?.lane === 'live'
       ? { en: `simulated now in your browser in the local map of ${holo.en}, seed ${sel.seed % 1000}, ${fmt(sel.powerMw, { decimals: 2 })} mW`, es: `simulado ahora en su navegador en el mapa local de ${holo.es}, semilla ${sel.seed % 1000}, ${fmt(sel.powerMw, { decimals: 2 })} mW` }

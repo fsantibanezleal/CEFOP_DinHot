@@ -10,7 +10,7 @@ import { cutRequest, type Plane } from './cuts';
 import { getEngine } from './engine';
 import { Heatmap, type HeatMark, type HeatRect } from './HeatmapStage';
 import { cardOf } from './HologramGroup';
-import { is3D, isShaped, useSelection, type Axial, type Selection } from './model';
+import { is3D, isShaped, methodName, useSelection, type Axial, type Selection } from './model';
 import { pixelToUm, umToPixel } from './traps';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 
@@ -230,10 +230,10 @@ export function AxialView({ sel }: { sel: Selection }) {
     : [];
   const source = live
     ? maps.lane === 'live'
-      ? { en: `Computed now in your browser from the live ${maps.method} hologram.`, es: `Calculado ahora en su navegador desde el holograma ${maps.method} en vivo.` }
-      : { en: `Computed now in your browser from the baked ${maps.method} hologram (its 8-bit phase).`, es: `Calculado ahora en su navegador desde el holograma ${maps.method} de la generación (su fase de 8 bits).` }
+      ? { en: `Computed now in your browser from the live ${methodName(maps.method).en} hologram.`, es: `Calculado ahora en su navegador desde el holograma ${methodName(maps.method).es} en vivo.` }
+      : { en: `Computed now in your browser from the baked ${methodName(maps.method).en} hologram (its 8-bit phase).`, es: `Calculado ahora en su navegador desde el holograma ${methodName(maps.method).es} de la generación (su fase de 8 bits).` }
     : axial
-      ? { en: `Replayed from the bake: the xz cut of the reference method ${maps.method} through trap ${axial.trapId}.`, es: `Reproducido de la generación: el corte xz del método de referencia ${maps.method} por la trampa ${axial.trapId}.` }
+      ? { en: `Replayed from the bake: the xz cut of the reference method ${methodName(maps.method).en} through trap ${axial.trapId}.`, es: `Reproducido de la generación: el corte xz del método de referencia ${methodName(maps.method).es} por la trampa ${axial.trapId}.` }
       : { en: '', es: '' };
   return (
     <PlotCard

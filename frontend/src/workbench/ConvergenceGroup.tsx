@@ -7,7 +7,7 @@ import { loadBenchmark, useArtifact } from '../api/artifacts';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { cardOf } from './HologramGroup';
 import { MethodAtWorkView } from './MethodAtWork';
-import { historyAt, methodLabel, useSelection, type Selection } from './model';
+import { historyAt, methodLabel, methodName, useSelection, type Selection } from './model';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 
 export function ConvergenceGroup() {
@@ -38,7 +38,7 @@ export function MetricsView({ sel }: { sel: Selection }) {
     return (
       <PlotCard fill title={{ en: 'Metrics by iteration', es: 'Métricas por iteración' }} {...c} dataKey={stateKey}>
         <Fill>
-          <Unavailable reason={{ en: `The bake holds no iteration history for ${sel.methodId} on this case, and the live engine is not on this build.`, es: `La generación no guarda historial de iteraciones de ${sel.methodId} en este caso y el motor en vivo no está en esta versión.` }} />
+          <Unavailable reason={{ en: `The bake holds no iteration history for ${methodName(sel.methodId).en} on this case, and the live engine is not on this build.`, es: `La generación no guarda historial de iteraciones de ${methodName(sel.methodId).es} en este caso y el motor en vivo no está en esta versión.` }} />
         </Fill>
       </PlotCard>
     );
@@ -97,7 +97,7 @@ export function ParetoView({ sel }: { sel: Selection }) {
       xs,
       series: [
         ...fronts.map((f) => ({
-          label: { en: `${f.method} front, ${pick(bench.data.geometries.find((g) => g.id === f.geometry)?.name ?? { en: f.geometry, es: f.geometry })}`, es: `Frente ${f.method}, ${pick(bench.data.geometries.find((g) => g.id === f.geometry)?.name ?? { en: f.geometry, es: f.geometry })}` },
+          label: { en: `${methodName(f.method).en} front, ${pick(bench.data.geometries.find((g) => g.id === f.geometry)?.name ?? { en: f.geometry, es: f.geometry })}`, es: `Frente ${methodName(f.method).es}, ${pick(bench.data.geometries.find((g) => g.id === f.geometry)?.name ?? { en: f.geometry, es: f.geometry })}` },
           values: col(f.points.map((p) => ({ x: p.uniformity, y: p.efficiency }))),
         })),
         { label: { en: 'Methods of this case', es: 'Métodos de este caso' }, values: col(own.map((o) => ({ x: o.x, y: o.y }))) },

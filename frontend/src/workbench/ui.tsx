@@ -4,7 +4,7 @@ import { formatNumber, pick, useShellLang, useWorkbenchState, type BiText, type 
 import { createContext, useContext, type ReactNode } from 'react';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import type { Text } from '../lib/contract.types';
-import { methodLabel, UnavailableContext, useSelection, type DeviceChoice, type Selection } from './model';
+import { methodLabel, methodName, UnavailableContext, useSelection, type DeviceChoice, type Selection } from './model';
 
 /** The rows every replay view of the case consumes; the model slots add theirs where a view shows them. */
 export const CASE_ROWS = ['case-index', 'case-manifest', 'trace'];
@@ -129,13 +129,13 @@ export function Provenance({ sel, mapsOnly }: { sel: Selection; mapsOnly: boolea
   if (sel.maps) {
     parts.push(
       lane === 'live'
-        ? t(`Live: ${sel.maps.method} computed in your browser${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`, `En vivo: ${sel.maps.method} calculado en su navegador${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`)
+        ? t(`Live: ${methodName(sel.maps.method).en} computed in your browser${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`, `En vivo: ${methodName(sel.maps.method).es} calculado en su navegador${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`)
         : sel.methodId !== sel.maps.method
           ? t(
-              `Replayed from the bake: ${sel.methodId} is not run live, so its metrics and per-trap intensities are its own but the maps drawn are those of the reference method ${sel.maps.method}.`,
-              `Reproducido de la generación: ${sel.methodId} no corre en vivo, así que sus métricas e intensidades por trampa son las suyas pero los mapas dibujados son los del método de referencia ${sel.maps.method}.`,
+              `Replayed from the bake: ${methodName(sel.methodId).en} is not run live, so its metrics and per-trap intensities are its own but the maps drawn are those of the reference method ${methodName(sel.maps.method).en}.`,
+              `Reproducido de la generación: ${methodName(sel.methodId).es} no corre en vivo, así que sus métricas e intensidades por trampa son las suyas pero los mapas dibujados son los del método de referencia ${methodName(sel.maps.method).es}.`,
             )
-          : t(`Replayed from the bake: the maps are those of the reference method ${sel.maps.method}.`, `Reproducido de la generación: los mapas son los del método de referencia ${sel.maps.method}.`),
+          : t(`Replayed from the bake: the maps are those of the reference method ${methodName(sel.maps.method).en}.`, `Reproducido de la generación: los mapas son los del método de referencia ${methodName(sel.maps.method).es}.`),
     );
     // The WebGPU fallback reason is stated once, in the rail's backend line, so a card keeps its height for the drawing.
   }
@@ -145,7 +145,7 @@ export function Provenance({ sel, mapsOnly }: { sel: Selection; mapsOnly: boolea
   if (sel.edited && !sel.engineAvailable) {
     parts.push(t('Your trap edits are held: the live engine is not on this build, so the result is the baked case.', 'Sus ediciones de trampas quedan guardadas: el motor en vivo no está en esta versión, así que el resultado es el caso precalculado.'));
   } else if (sel.edited && !sel.liveMethods.includes(sel.methodId)) {
-    parts.push(t(`Your trap edits are held: ${sel.methodId} is replayed from the bake, not run live.`, `Sus ediciones de trampas quedan guardadas: ${sel.methodId} se reproduce de la generación y no corre en vivo.`));
+    parts.push(t(`Your trap edits are held: ${methodName(sel.methodId).en} is replayed from the bake, not run live.`, `Sus ediciones de trampas quedan guardadas: ${methodName(sel.methodId).es} se reproduce de la generación y no corre en vivo.`));
   }
   if (sel.running) {
     parts.push(

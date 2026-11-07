@@ -42,7 +42,7 @@ export interface SlotAnswer {
 }
 
 const BASELINE_NAME: Record<SlotId, Text> = {
-  'cgh-net': { en: 'the baseline (multi-plane Gerchberg-Saxton M19, 30 iterations)', es: 'la línea base (Gerchberg-Saxton multiplano M19, 30 iteraciones)' },
+  'cgh-net': { en: 'the baseline (multi-plane Gerchberg-Saxton, 30 iterations)', es: 'la línea base (Gerchberg-Saxton multiplano, 30 iteraciones)' },
   'warmstart-model': { en: 'the baseline (random trap phases)', es: 'la línea base (fases aleatorias de las trampas)' },
 };
 

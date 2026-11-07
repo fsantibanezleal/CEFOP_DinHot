@@ -8,7 +8,7 @@ import { PlotCard, SceneCallouts, Stage, formatNumber, prefersReducedMotion, use
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Text } from '../lib/contract.types';
 import { ReadinessNote } from '../readiness/ReadinessNote';
-import { is3D, isShaped, type Selection } from './model';
+import { is3D, isShaped, methodName, type Selection } from './model';
 import { useNav, type ViewTarget } from './nav';
 import { CASE_ROWS, cardOf, StageBox, useStateKey } from './ui';
 
@@ -179,7 +179,7 @@ export function trainCallouts(sel: Selection, lang: Lang, width: number, height:
       // the thresholds of the rail readout of the same quantity (Workbench: good 0.8, bad 0.4)
       state: eff === null ? 'inactive' : eff >= 0.8 ? 'normal' : eff >= 0.4 ? 'warning' : 'alarm',
       anchor: at('focal'),
-      source: { en: `light in the traps: trace methods.${m}.final.efficiency`, es: `luz en las trampas: trace methods.${m}.final.efficiency` },
+      source: { en: `light in the traps: trace, ${methodName(m).en}: final.efficiency`, es: `luz en las trampas: trace, ${methodName(m).es}: final.efficiency` },
     },
   ];
 }
@@ -457,8 +457,8 @@ export function OpticalTrainView({ sel }: { sel: Selection }) {
   const n = sel.traps.length;
   const note = useMemo(
     () => ({
-      en: `The beam fills the SLM aperture, the hologram splits it, and ${eff === null ? 'the share that reaches' : formatNumber(eff, 'en', { percent: true, decimals: 1 })} of the light reaches ${isShaped(sel.data.manifest) ? 'the shaped potential' : `the ${n} ${n === 1 ? 'trap' : 'traps'}`} (method ${sel.result?.method ?? sel.methodId}). The bright core after the SLM is that share; the light moves from the laser to the focal plane.`,
-      es: `El haz llena la apertura del SLM, el holograma lo reparte y ${eff === null ? 'la fracción que llega' : formatNumber(eff, 'es', { percent: true, decimals: 1 })} de la luz llega ${isShaped(sel.data.manifest) ? 'al potencial con forma' : `a ${n === 1 ? 'la trampa' : `las ${n} trampas`}`} (método ${sel.result?.method ?? sel.methodId}). El núcleo brillante tras el SLM es esa fracción; la luz va del láser al plano focal.`,
+      en: `The beam fills the SLM aperture, the hologram splits it, and ${eff === null ? 'the share that reaches' : formatNumber(eff, 'en', { percent: true, decimals: 1 })} of the light reaches ${isShaped(sel.data.manifest) ? 'the shaped potential' : `the ${n} ${n === 1 ? 'trap' : 'traps'}`} (${methodName(sel.result?.method ?? sel.methodId).en}). The bright core after the SLM is that share; the light moves from the laser to the focal plane.`,
+      es: `El haz llena la apertura del SLM, el holograma lo reparte y ${eff === null ? 'la fracción que llega' : formatNumber(eff, 'es', { percent: true, decimals: 1 })} de la luz llega ${isShaped(sel.data.manifest) ? 'al potencial con forma' : `a ${n === 1 ? 'la trampa' : `las ${n} trampas`}`} (${methodName(sel.result?.method ?? sel.methodId).es}). El núcleo brillante tras el SLM es esa fracción; la luz va del láser al plano focal.`,
     }),
     [eff, n, sel],
   );

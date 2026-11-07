@@ -171,7 +171,7 @@ describe('the headlines are computed from the artifacts', () => {
     }
     expect(f.summary.en).toContain('modelled SLM');
     expect(f.summary.es).toContain('SLM modelado');
-    for (const x of f.facts) expect(x.source).toContain('device');
+    for (const x of f.facts) expect(x.source.en).toContain('device');
     expect(f.facts.map((x) => x.label.en).join('|')).toContain(methodName('M07').en);
   });
 
@@ -221,21 +221,12 @@ describe('the headlines are computed from the artifacts', () => {
     }
   });
 
-  it('a method is named by its catalog name wherever the text mentions its id', () => {
+  it('a method is named by its catalog name and its id never reaches a reader (CAOS_MANAGE method-tiers rule, section 0)', () => {
     const all = [setupFinding(c02), deviceFinding(c08), methodFinding(c02), compareFinding(bench()), holdFinding(c01)].map(must);
-    const ids = /\b([MB]\d{1,2})\b/g;
+    const ids = /\b([MB]\d{1,2})\b/;
     for (const f of all) {
       const texts = [f.headline, f.summary, ...f.facts.map((x) => x.label), ...f.facts.map((x) => x.value)];
-      for (const lang of ['en', 'es'] as const) {
-        for (const t of texts) {
-          const s = t[lang];
-          for (const m of s.matchAll(ids)) {
-            // the id sits in parentheses right after its name: "Weighted GS (M06)"
-            const before = s.slice(0, m.index);
-            expect(before.endsWith(`${methodName(m[1])[lang]} (`), `${lang}: ${s}`).toBe(true);
-          }
-        }
-      }
+      for (const lang of ['en', 'es'] as const) for (const t of texts) expect(t[lang], `${lang}: ${t[lang]}`).not.toMatch(ids);
     }
   });
 });

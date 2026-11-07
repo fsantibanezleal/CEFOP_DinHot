@@ -1,7 +1,7 @@
 // V5, the method at work (ADR-0082, SDD catalog row V5): the spread and the efficiency per iteration with the phase-freeze iteration
 // marked, coupled to the focal plane and the per-trap intensities at the scrubbed iteration. The focal plane at iteration k is the engine's
 // run with the method's budget set to k; here the engine runs in Node behind the same client and loopback the worker tests use.
-import { LinkedViewProvider } from '@fasl-work/caos-app-shell';
+import { formatNumber, LinkedViewProvider } from '@fasl-work/caos-app-shell';
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -104,7 +104,8 @@ describe('the focal plane at a scrubbed iteration', () => {
     const mean = trapI.reduce((x, y) => x + y, 0) / trapI.length;
     const rms = Math.sqrt(trapI.reduce((x, y) => x + (y - mean) ** 2, 0) / trapI.length);
     expect((100 * rms) / mean).toBeCloseTo(end.result.metrics!.relStdPct, 3);
-    console.log(`V5 timing (Node, CPU): k=1 ${early.ms.toFixed(0)} ms, k=12 ${mid.ms.toFixed(0)} ms, k=30 ${end.ms.toFixed(0)} ms; three runs ${seconds.toFixed(2)} s`);
+    const fmt = (v: number, decimals: number) => formatNumber(v, 'en', { decimals });
+    console.log(`V5 timing (Node, CPU): k=1 ${fmt(early.ms, 0)} ms, k=12 ${fmt(mid.ms, 0)} ms, k=30 ${fmt(end.ms, 0)} ms; three runs ${fmt(seconds, 2)} s`);
     client.dispose();
   }, 120000);
 
@@ -136,7 +137,7 @@ describe('the callouts and the number format', () => {
     expect(items.map((i) => i.id)).toEqual(['spread', 'efficiency', 'freeze']);
     for (const i of items) {
       expect(i.unit).toBeTruthy();
-      expect(JSON.stringify(i.source)).toMatch(/trace methods\.M07|n_fix/);
+      expect(JSON.stringify(i.source)).toMatch(/Phase-fixed weighted GS|n_fix/);
     }
     expect(JSON.stringify(items[0].source)).toContain('GS ponderado con fase fija');
   });

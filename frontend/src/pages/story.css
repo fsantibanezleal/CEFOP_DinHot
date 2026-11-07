@@ -26,7 +26,7 @@
 
 /* V6, the comparison: one row per method on the cell the story names, the seed spread drawn on each bar */
 .dh-cmp { display: flex; flex-direction: column; gap: .4rem; min-width: 0; min-height: 0; height: 100%; }
-.dh-cmp > .caos-stage { flex: 1 1 0; min-height: 0; }
+.dh-cmp-stage { flex: 1 1 0; min-width: 0; min-height: 0; }
 .dh-cmp-svg { display: block; max-width: 100%; }
 .dh-cmp-list { flex: none; }
 .dh-cmp-list { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .78rem; color: var(--color-fg-subtle); }
@@ -43,7 +43,7 @@
   .dh-story-drawing { padding-top: 130px; }
   .dh-story-card { overflow: hidden; }
   .dh-cmp { height: auto; }
-  .dh-cmp > .caos-stage { flex: none; height: 560px; }
+  .dh-cmp-stage { flex: none; height: 560px; }
   .dh-mw { padding-top: 175px; }
   .dh-mw-box { flex: none; height: 1140px; }
   .dh-mw-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; align-content: start; }

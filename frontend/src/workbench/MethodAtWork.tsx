@@ -162,7 +162,7 @@ export function methodCallouts(sel: Selection, k: number, lang: Lang): SceneCall
       unit: '%',
       state: spreadState,
       anchor: { x: 0.3, y: 0.38 },
-      source: { en: `${name.en}, iteration ${p?.iteration ?? '-'}: trace methods.${m}.history[].rel_std_pct`, es: `${name.es}, iteración ${p?.iteration ?? '-'}: trace methods.${m}.history[].rel_std_pct` },
+      source: { en: `${name.en}, iteration ${p?.iteration ?? '-'}: trace history[].rel_std_pct`, es: `${name.es}, iteración ${p?.iteration ?? '-'}: trace history[].rel_std_pct` },
     },
     {
       id: 'efficiency',
@@ -171,7 +171,7 @@ export function methodCallouts(sel: Selection, k: number, lang: Lang): SceneCall
       unit: '%',
       state: !p ? 'inactive' : p.efficiency >= 0.8 ? 'normal' : p.efficiency >= 0.4 ? 'warning' : 'alarm',
       anchor: { x: 0.3, y: 0.7 },
-      source: { en: `${name.en}, iteration ${p?.iteration ?? '-'}: trace methods.${m}.history[].efficiency`, es: `${name.es}, iteración ${p?.iteration ?? '-'}: trace methods.${m}.history[].efficiency` },
+      source: { en: `${name.en}, iteration ${p?.iteration ?? '-'}: trace history[].efficiency`, es: `${name.es}, iteración ${p?.iteration ?? '-'}: trace history[].efficiency` },
     },
     freeze === null
       ? {
@@ -309,7 +309,7 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
                     </div>
                   </div>
                   <div className="dh-mw-maps">
-                    <div className="dh-mw-cell dh-mw-focal" data-lane={view.lane}>
+                    <div className="dh-mw-cell" data-lane={view.lane}>
                       {focalMap ? (
                         <Heatmap
                           label={{ en: `Focal plane after ${view.k ?? 'the final'} iterations, intensity in dB`, es: `Plano focal tras ${view.k ?? 'las'} iteraciones, intensidad en dB` }}

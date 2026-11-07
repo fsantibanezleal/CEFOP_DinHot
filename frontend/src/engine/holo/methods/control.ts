@@ -295,7 +295,7 @@ function* m15(ctx: RunContext): MethodRun {
     if (!Number.isInteger(charge) || charge === 0) throw new Error(`charge must be a non-zero integer, got ${charge}`);
     traps = traps.map(() => ({ charge }));
   }
-  if (!traps.charge.some((c) => c !== 0)) throw new Error('M15 needs at least one trap with a non-zero charge (Trap.charge or the charge keyword)');
+  if (!traps.charge.some((c) => c !== 0)) throw new Error('Laguerre-Gaussian vortices need at least one trap with a non-zero charge (Trap.charge or the charge keyword)');
   const res = yield* gs.runTraps('M15', setup, traps, budget, rng, init, 'point', gs.ruleGsw, {});
   res.meta.traps = traps;
   res.fields = pointTrapFields(res.phi, setup, traps);
@@ -383,7 +383,7 @@ function* m16(ctx: RunContext): MethodRun {
   requireKinds(ctx.target, ['traps'], 'M16');
   const { setup, budget, rng, options: o } = ctx;
   const atoms: TrapSet | undefined = o.atoms;
-  if (!atoms) throw new Error('M16 needs atoms: the TrapSet of the loaded atom positions');
+  if (!atoms) throw new Error('Hungarian rearrangement needs atoms: the TrapSet of the loaded atom positions');
   const tgt = trapsOf(ctx.target);
   const alpha: number = o.alpha ?? 1.5;
   const nFix: number = o.nFix ?? 12;

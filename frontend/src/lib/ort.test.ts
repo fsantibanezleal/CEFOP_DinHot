@@ -89,7 +89,7 @@ describe('the slots agree with the catalog', () => {
     expect(catalog).toContain('models/warmstart.json, models/warmstart.onnx');
     expect(SLOTS['cgh-net']).toEqual({ card: 'models/cgh-net.json', input: ['target'], output: 'phase' });
     expect(SLOTS['warmstart-model'].input).toEqual(['traps', 'mask']);
-    expect(baselineName('cgh-net').en).toMatch(/Gerchberg-Saxton M19, 30 iterations/);
+    expect(baselineName('cgh-net').en).toMatch(/multi-plane Gerchberg-Saxton, 30 iterations/);
   });
 });
 

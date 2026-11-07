@@ -30,7 +30,7 @@ import { laneOf } from './engine';
 import { GROUP_IDS, initialGroup, makeNav, NavContext, type GroupId } from './nav';
 import { FocalGroup } from './FocalGroup';
 import { HologramGroup } from './HologramGroup';
-import { isShaped, methodLabel, replayMaps, replayResult, trapsOf, UnavailableContext, ViewContext, type DeviceChoice, type Region, type Selection } from './model';
+import { isShaped, methodLabel, methodName, replayMaps, replayResult, trapsOf, UnavailableContext, ViewContext, type DeviceChoice, type Region, type Selection } from './model';
 import { paramsFor, useEngine, useGpuProbe, useLiveRun, useSlots, type GpuProbe } from './run';
 import { addTrap, deleteTrap, moveTrap } from './traps';
 import { TrapsGroup } from './TrapsGroup';
@@ -524,13 +524,13 @@ export function Workbench() {
           : { en: `No released cgh-net: ${baselineName('cgh-net').en} answers.`, es: `No hay cgh-net publicado: responde ${baselineName('cgh-net').es}.` }
         : id === 'B3'
           ? slots.warm?.answered === 'model'
-            ? { en: 'The released warm start feeds M07 its trap phases.', es: 'El arranque aprendido publicado entrega a M07 las fases de las trampas.' }
+            ? { en: `The released warm start feeds ${PHASE_FIXED.en} its trap phases.`, es: `El arranque aprendido publicado entrega a ${PHASE_FIXED.es} las fases de las trampas.` }
             : { en: `No released warm start: ${baselineName('warmstart-model').en}.`, es: `No hay arranque aprendido publicado: ${baselineName('warmstart-model').es}.` }
           : null;
     return {
       id,
-      // The chip carries the id so twelve methods fit in a few rows (ADR-0071 rule 6); the note under the group names the active one in full.
-      label: { en: id, es: id },
+      // The chip carries the method's name; the shell's variant bar keeps the chips on one scrollable row (ADR-0071 rule 4), so a long name does not widen the rail.
+      label: methodName(id),
       lane: lane1,
       note: {
         en: slotNote ? `${methodLabel(id).en}. ${slotNote.en}` : methodLabel(id).en,
@@ -541,7 +541,7 @@ export function Workbench() {
 
   const hud = sel
     ? [
-        { label: { en: 'Method', es: 'Método' }, value: sel.methodId },
+        { label: { en: 'Method', es: 'Método' }, value: methodName(sel.methodId)[lang] },
         { label: { en: 'Efficiency', es: 'Eficiencia' }, value: metrics ? formatNumber(metrics.efficiency, lang, { percent: true, decimals: 1 }) : '-' },
         { label: { en: 'Uniformity', es: 'Uniformidad' }, value: metrics ? formatNumber(metrics.uniformity, lang, { decimals: 3 }) : '-' },
         { label: { en: 'Lane', es: 'Vía' }, value: lane === 'live' ? (lang === 'es' ? 'en vivo' : 'live') : lang === 'es' ? 'reproducción' : 'replay' },
@@ -620,6 +620,8 @@ export function Workbench() {
     </UnavailableContext.Provider>
   );
 }
+
+const PHASE_FIXED = methodName('M07');
 
 function ContextView({ sel }: { sel: Selection | null }) {
   const lang = useShellLang();

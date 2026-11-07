@@ -39,8 +39,10 @@ export const METHOD_NAMES: Record<string, Text> = {
   B5: { en: 'Efficiency-uniformity front', es: 'Frente eficiencia-uniformidad' },
 };
 
-export const methodName = (id: string): Text => METHOD_NAMES[id] ?? { en: id, es: id };
-export const methodLabel = (id: string): Text => ({ en: `${id} ${methodName(id).en}`, es: `${id} ${methodName(id).es}` });
+/** A method by its name, never by its id (CAOS_MANAGE method-tiers rule, section 0); an id the ladder does not hold is shown as given. */
+export const methodName = (id: string | null | undefined): Text => (id ? METHOD_NAMES[id] ?? { en: id, es: id } : { en: '-', es: '-' });
+/** The label of a method on a chip, a chart, a legend or a caption: its name. */
+export const methodLabel = (id: string): Text => methodName(id);
 
 export interface Metrics {
   efficiency: number;

@@ -240,7 +240,7 @@ export function SlmSectionDrawing({ row, col, lang, width, height, onCol }: Draw
   const kmax = row.kernel ? Math.max(...row.kernel) : 1;
 
   return (
-    <svg className="dh-slm" viewBox={`0 0 ${width} ${height}`} width={width} height={height} role="group" aria-label={t('The SLM in section along one pixel row, with the commanded and the displayed phase', 'El SLM en sección a lo largo de una fila de píxeles, con la fase pedida y la mostrada')} data-device={on ? 'case' : 'ideal'}>
+    <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} role="group" aria-label={t('The SLM in section along one pixel row, with the commanded and the displayed phase', 'El SLM en sección a lo largo de una fila de píxeles, con la fase pedida y la mostrada')} data-device={on ? 'case' : 'ideal'}>
       <title>{t('SLM in section', 'SLM en sección')}</title>
       {/* the phase over the section: requested (dashed) and displayed */}
       <g aria-hidden="true">

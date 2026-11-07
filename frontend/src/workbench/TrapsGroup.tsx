@@ -8,7 +8,7 @@ import { useMemo, useState } from 'react';
 import { INTENSITY_LUT } from './colormaps';
 import { cardOf } from './HologramGroup';
 import { Heatmap } from './HeatmapStage';
-import { histogram, isShaped, trapDeviation, useSelection, type Selection } from './model';
+import { histogram, isShaped, methodName, trapDeviation, useSelection, type Selection } from './model';
 import { umToPixel } from './traps';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 
@@ -67,7 +67,7 @@ function ShapedPotential({ sel, title, note }: { sel: Selection; title: { en: st
             summary={t(`Focal intensity over the mean inside the shape, ${focal.size} by ${focal.size} bins, colour scale 0 to 2.`, `Intensidad focal sobre la media dentro de la forma, ${focal.size} por ${focal.size} bins, escala de color de 0 a 2.`)}
           />
         ) : (
-          <Unavailable reason={{ en: `No focal map for ${sel.methodId} on this case.`, es: `No hay mapa focal de ${sel.methodId} en este caso.` }} />
+          <Unavailable reason={{ en: `No focal map for ${methodName(sel.methodId).en} on this case.`, es: `No hay mapa focal de ${methodName(sel.methodId).es} en este caso.` }} />
         )}
       </Fill>
     </PlotCard>
@@ -101,7 +101,7 @@ export function IntensityView({ sel }: { sel: Selection }) {
     return (
       <PlotCard fill title={{ en: 'Per-trap intensity', es: 'Intensidad por trampa' }} {...c} dataKey={stateKey}>
         <Fill>
-          <Unavailable reason={{ en: `The bake holds no per-trap intensities for ${sel.methodId} on this case (it records them for the methods it ran), and the live engine is not on this build.`, es: `La generación no guarda intensidades por trampa de ${sel.methodId} en este caso (las guarda para los métodos que corrió) y el motor en vivo no está en esta versión.` }} />
+          <Unavailable reason={{ en: `The bake holds no per-trap intensities for ${methodName(sel.methodId).en} on this case (it records them for the methods it ran), and the live engine is not on this build.`, es: `La generación no guarda intensidades por trampa de ${methodName(sel.methodId).es} en este caso (las guarda para los métodos que corrió) y el motor en vivo no está en esta versión.` }} />
         </Fill>
       </PlotCard>
     );
@@ -209,7 +209,7 @@ export function DepthView({ sel }: { sel: Selection }) {
     return (
       <PlotCard fill title={{ en: 'Trap depth', es: 'Profundidad de las trampas' }} {...c} dataKey={stateKey}>
         <Fill>
-          <Unavailable reason={{ en: `No per-trap intensities for ${sel.methodId} on this case, so no depth can be derived.`, es: `No hay intensidades por trampa de ${sel.methodId} en este caso, así que no se puede derivar la profundidad.` }} />
+          <Unavailable reason={{ en: `No per-trap intensities for ${methodName(sel.methodId).en} on this case, so no depth can be derived.`, es: `No hay intensidades por trampa de ${methodName(sel.methodId).es} en este caso, así que no se puede derivar la profundidad.` }} />
         </Fill>
       </PlotCard>
     );
@@ -265,7 +265,7 @@ export function BudgetView({ sel }: { sel: Selection }) {
     return (
       <PlotCard fill title={{ en: 'Where the optical power goes', es: 'A dónde va la potencia óptica' }} {...c} dataKey={stateKey}>
         <Fill>
-          <Unavailable reason={{ en: `No metrics for ${sel.methodId} on this case.`, es: `No hay métricas de ${sel.methodId} en este caso.` }} />
+          <Unavailable reason={{ en: `No metrics for ${methodName(sel.methodId).en} on this case.`, es: `No hay métricas de ${methodName(sel.methodId).es} en este caso.` }} />
         </Fill>
       </PlotCard>
     );
