@@ -4,7 +4,7 @@
 // the same value. The focal plane at iteration k is the engine's own run in the browser with the method's budget set to k, started 200 ms
 // after the last scrub (LiveScheduler) and kept by its key: the bake records the spread and the efficiency per iteration but not the map.
 // A method the engine does not port, or a build without the engine, shows the recorded history and says the map is the final one.
-import { PlotCard, SceneCallouts, Stage, formatNumber, useLinkedView, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
+import { PlotCard, SceneCallouts, Stage, formatNumber, useLinkedCursor, useLinkedView, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../pages/story.css';
@@ -212,6 +212,7 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
   const scrub = useLinkedView((s) => s.scrub);
   const selectedId = useLinkedView((s) => s.selectedId);
   const select = useLinkedView((s) => s.select);
+  const marker = useLinkedCursor().markerProps;
   const history = sel.result?.history ?? [];
   const point = pointAt(history, cursor);
   const k = point?.iteration ?? null;
@@ -274,7 +275,7 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
   return (
     <PlotCard fill title={{ en: `${methodLabel(sel.methodId).en} at work`, es: `${methodLabel(sel.methodId).es} trabajando` }} {...c} lane={view.lane} dataKey={stateKey} note={note}>
       <ReadinessNote ids={CASE_ROWS} />
-      <div className="dh-mw-box" data-caos-flow="" data-focal-state={focal.state} data-iteration={k ?? ''}>
+      <div className="dh-mw-box" data-caos-flow="" data-focal-state={focal.state} data-iteration={k ?? ''} {...marker}>
         <Stage label={{ en: 'Spread and efficiency by iteration, with the focal plane and the trap intensities at the chosen iteration', es: 'Dispersión y eficiencia por iteración, con el plano focal y las intensidades de las trampas en la iteración elegida' }}>
           {({ width, height }) =>
             width < 120 || height < 120 ? null : (
@@ -335,7 +336,17 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
                           summary={t(`Focal plane ${size} by ${size} after ${view.k ?? 'the final'} iterations of ${methodName(sel.methodId).en}, ${sel.traps.length} traps marked.`, `Plano focal ${size} por ${size} tras ${view.k ?? 'las'} iteraciones de ${methodName(sel.methodId).es}, ${sel.traps.length} trampas marcadas.`)}
                         />
                       ) : (
-                        <Pending label={{ en: 'Computing the focal plane', es: 'Calculando el plano focal' }} />
+                        focal.state === 'loading' ? (
+                          <Pending label={{ en: 'Computing the focal plane', es: 'Calculando el plano focal' }} />
+                        ) : (
+                          <Unavailable
+                            reason={
+                              focal.state === 'unavailable'
+                                ? { en: `There is no focal plane to draw for this method on this case: ${focal.reason.en}, and the bake holds none for it.`, es: `No hay plano focal que dibujar para este método en este caso: ${focal.reason.es}, y la generación no guarda ninguno.` }
+                                : { en: 'The engine failed and the bake holds no focal plane for this method.', es: 'Falló el motor y la generación no guarda un plano focal para este método.' }
+                            }
+                          />
+                        )
                       )}
                     </div>
                     <div className="dh-mw-cell">

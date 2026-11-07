@@ -13,7 +13,7 @@
 .dh-story-evidence h2 { margin: 0; font-size: 1.05rem; }
 .dh-story-evidence p { margin: 0; color: var(--color-fg-subtle); overflow-wrap: anywhere; }
 .dh-story-evidence small { color: var(--color-fg-faint); overflow-wrap: anywhere; }
-.dh-story-focal { position: relative; width: 100%; aspect-ratio: 1; max-height: 15rem; min-height: 9rem; }
+.dh-story-focal { position: relative; width: 100%; aspect-ratio: 1; max-height: 11rem; min-height: 8rem; }
 .dh-story-missing { margin: 0; padding: .4rem .65rem; border-left: 3px solid var(--color-warn); background: var(--color-surface-2); color: var(--color-fg); overflow-wrap: anywhere; }
 .dh-story-facts { display: grid; gap: .35rem; margin: 0; }
 .dh-story-facts > div { display: grid; gap: .1rem; min-width: 0; }
@@ -51,3 +51,7 @@
   .dh-mw-charts .dh-mw-cell { height: 210px; }
   .dh-mw-maps .dh-mw-cell { height: 250px; }
 }
+
+/* The story stage is narrower than the App's (the evidence panel takes the rest): the captions of the optical train's elements step down one
+   point so that neighbouring captions do not touch (gate G10). The drawing itself is unit VA's and is not edited here. */
+.dh-story .dh-scene svg text[font-size="11"] { font-size: 10px; }

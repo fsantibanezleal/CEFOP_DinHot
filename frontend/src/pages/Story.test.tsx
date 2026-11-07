@@ -29,6 +29,7 @@ import {
   holdFinding,
   methodFinding,
   methodOfStep,
+  nudgeDots,
   setupFinding,
   stepDef,
   storySelection,
@@ -332,6 +333,30 @@ describe('the comparison (V6)', () => {
     expect(L.y(0)).toBe(L.y(0.001));
     expect(L.x(0.9)).toBeGreaterThan(L.x(0.1));
     expect(L.plot.x + L.plot.w).toBeLessThanOrEqual(900);
+  });
+});
+
+describe('linked views in the story', () => {
+  it('no two dots of the comparison touch, even where two methods share a median', () => {
+    const pts = comparePoints(bench(), { ...COMPARE_CELL });
+    const L = compareLayout(868, 420);
+    const xs = nudgeDots(pts, L);
+    for (let i = 0; i < pts.length; i++)
+      for (let j = 0; j < i; j++) expect(Math.hypot(xs[i] - xs[j], L.y(pts[i].spread.median) - L.y(pts[j].spread.median)), `${pts[i].method} ${pts[j].method}`).toBeGreaterThanOrEqual(12);
+  });
+
+  it('the setup panel carries the shared scrub, the linked trap list and the map', () => {
+    const html = render('setup');
+    expect(html).toContain('data-linked-cursor');
+    expect(html).toContain('data-linked-view="panel"');
+    expect(html).toContain('data-linked-id="0"');
+    expect(html).toContain('data-story-focal');
+  });
+
+  it('the compare headline and summary fit one line each', () => {
+    const f = must(compareFinding(bench()));
+    expect(f.summary.en.length).toBeLessThan(125);
+    expect(f.summary.es.length).toBeLessThan(150);
   });
 });
 

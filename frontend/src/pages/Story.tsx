@@ -2,7 +2,7 @@
 // computed here from the loaded artifact (case-manifest, trace, benchmark-results), never typed; a number the artifact does not hold is
 // stated as missing on the step. The views are the App's (V1, V2, V4, V5) composed in the shell's story frame; the exit lands on /app with
 // the step's case, the group and the method. Routes: /story/setup, /story/device, /story/method, /story/compare, /story/hold.
-import { ChipGroup, PlotCard, SceneCallouts, Stage, StoryFrame, formatNumber, pick, useLinkedView, useShellLang, type BiText, type SceneCalloutDef, type StoryStep } from '@fasl-work/caos-app-shell';
+import { ChipGroup, PlotCard, SceneCallouts, Stage, StoryFrame, formatNumber, pick, useLinkedCursor, useLinkedItem, useLinkedView, useShellLang, type BiText, type SceneCalloutDef, type StoryStep } from '@fasl-work/caos-app-shell';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { loadBenchmark, loadCase, loadIndex, useArtifact, type CaseData, type Loaded } from '../api/artifacts';
@@ -13,7 +13,7 @@ import { useReadiness } from '../readiness/useReadiness';
 import { INTENSITY_LUT } from '../workbench/colormaps';
 import { ParticleView } from '../workbench/DynamicsGroup';
 import { Heatmap, type HeatMark } from '../workbench/HeatmapStage';
-import { MethodAtWorkView, freezeIteration, pointAt, spreadText } from '../workbench/MethodAtWork';
+import { MethodAtWorkView, freezeIteration, pointAt, spreadText, useFocalAtIteration } from '../workbench/MethodAtWork';
 import { methodName, replayMaps, replayResult, trapsOf, type DeviceChoice, type Selection } from '../workbench/model';
 import { OpticalTrainView } from '../workbench/OpticalTrain';
 import { paramsFor } from '../workbench/run';
@@ -184,8 +184,8 @@ export function compareFinding(bench: BenchmarkResults): (Finding & { best: Comp
     headline: both((l) => (l === 'en' ? `${short(best.method, l)}: ${spreadText(best.spread.median, l)}% spread against ${spreadText(gs.spread.median, l)}% for ${nameOf(gs.method, l)}` : `${short(best.method, l)}: dispersión ${spreadText(best.spread.median, l)}% frente a ${spreadText(gs.spread.median, l)}% del ${nameOf(gs.method, l)}`)),
     summary: both((l) =>
       l === 'en'
-        ? `Median relative spread on ${geo.name.en}, ${cell.budget} iterations, ideal SLM, default parameters; ${best.seeds} seeds for ${nameOf(best.method, l)} (${best.method}) and ${gs.seeds} for ${nameOf(gs.method, l)} (${gs.method}).`
-        : `Dispersión relativa mediana en ${geo.name.es}, ${cell.budget} iteraciones, SLM ideal, parámetros por defecto; ${best.seeds} semillas para ${nameOf(best.method, l)} (${best.method}) y ${gs.seeds} para ${nameOf(gs.method, l)} (${gs.method}).`,
+        ? `Median spread on ${geo.name.en} at ${cell.budget} iterations, ideal SLM: ${best.seeds} seeds for ${short(best.method, l)}, ${gs.seeds} for ${nameOf(gs.method, l)}.`
+        : `Dispersión mediana en ${geo.name.es} a ${cell.budget} iteraciones, SLM ideal: ${best.seeds} semillas de ${short(best.method, l)}, ${gs.seeds} de ${nameOf(gs.method, l)}.`,
     ),
     facts: [
       { label: both((l) => `${nameOf(best.method, l)}, median spread`), value: both((l) => `${spreadText(best.spread.median, l)} %`), source: `benchmark rows[${best.method}, ${cell.geometry}, ${cell.budget}].rel_std_pct.median` },
@@ -293,8 +293,20 @@ export function compareLayout(width: number, height: number): CompareLayout {
     x: (eff) => plot.x + Math.max(0, Math.min(1, eff)) * plot.w,
     y: (spread) => plot.y + plot.h * (1 - (Math.log10(Math.max(spread, SPREAD_FLOOR)) - lo) / (hi - lo)),
     yTicks: [0.001, 0.01, 0.1, 1, 10, 100],
-    xTicks: [0, 0.25, 0.5, 0.75, 1],
+    xTicks: [0.25, 0.5, 0.75, 1],
   };
+}
+
+/** The x of each dot, moved right in steps of one dot until it touches no earlier dot (two methods may share a median; each stays reachable). */
+export function nudgeDots(pts: readonly ComparePoint[], L: CompareLayout, r = 12): number[] {
+  const placed: { x: number; y: number }[] = [];
+  return pts.map((p) => {
+    let x = L.x(p.eff.median);
+    const y = L.y(p.spread.median);
+    while (placed.some((q) => Math.hypot(q.x - x, q.y - y) < r)) x += r;
+    placed.push({ x, y });
+    return x;
+  });
 }
 
 export function compareCallouts(f: { best: ComparePoint; gs: ComparePoint; cell: CompareCell }, lang: Lang, L: CompareLayout, width: number, height: number): SceneCalloutDef[] {
@@ -323,6 +335,7 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
           {({ width, height }) => {
             if (width < 120 || height < 120) return null;
             const L = compareLayout(width, height);
+            const nudged = nudgeDots(pts, L);
             return (
               <div className="dh-scene">
                 <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} role="group" aria-label={t('Methods on the spread and efficiency axes', 'Métodos en los ejes de dispersión y eficiencia')} className="dh-cmp-svg">
@@ -340,18 +353,24 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
                   ))}
                   <text x={L.plot.x + L.plot.w / 2} y={height - 6} textAnchor="middle" fontSize={12} fill="var(--color-fg)">{t('Efficiency (fraction of the light in the traps)', 'Eficiencia (fracción de la luz en las trampas)')}</text>
                   <text transform={`translate(14 ${L.plot.y + L.plot.h / 2}) rotate(-90)`} textAnchor="middle" fontSize={12} fill="var(--color-fg)">{t('Relative spread (%, log)', 'Dispersión relativa (%, log)')}</text>
-                  {front.length > 1 && <polyline points={front.map((p) => `${L.x(p.eff.median)},${L.y(p.spread.median)}`).join(' ')} fill="none" stroke="var(--color-good)" strokeWidth={2} strokeDasharray="5 4" />}
-                  {pts.map((p) => {
+                  {front.length > 1 && <polyline pointerEvents="none" points={front.map((p) => `${L.x(p.eff.median)},${L.y(p.spread.median)}`).join(' ')} fill="none" stroke="var(--color-good)" strokeWidth={2} strokeDasharray="5 4" />}
+                  {pts.map((p, i) => {
                     const on = selected === p.method;
-                    const cx = L.x(p.eff.median);
+                    const cx = nudged[i];
                     const cy = L.y(p.spread.median);
                     const tone = p.method === WEIGHTED_GS ? 'var(--color-warn)' : p.onFront ? 'var(--color-good)' : 'var(--color-accent)';
+                    const label = on || p.method === WEIGHTED_GS || p === pts[0];
                     return (
-                      <g key={p.method} data-method={p.method} data-linked-id={p.method} data-linked-view="scene" data-linked-selected={on ? 'true' : 'false'} role="button" tabIndex={0} aria-pressed={on} aria-label={t(`${nameOf(p.method, 'en')}: median spread ${spreadText(p.spread.median, 'en')} %, efficiency ${num(p.eff.median, 'en', 3)}, ${p.seeds} seeds`, `${nameOf(p.method, 'es')}: dispersión mediana ${spreadText(p.spread.median, 'es')} %, eficiencia ${num(p.eff.median, 'es', 3)}, ${p.seeds} semillas`)} onClick={() => select(on ? null : p.method, 'scene')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), select(on ? null : p.method, 'scene'))} style={{ cursor: 'pointer' }}>
-                        <line x1={L.x(p.eff.q1)} x2={L.x(p.eff.q3)} y1={cy} y2={cy} stroke={tone} strokeWidth={1.5} />
-                        <line x1={cx} x2={cx} y1={L.y(p.spread.q1)} y2={L.y(p.spread.q3)} stroke={tone} strokeWidth={1.5} />
-                        <circle cx={cx} cy={cy} r={on ? 8 : 5.5} fill={tone} stroke={on ? 'var(--color-fg)' : 'var(--color-surface)'} strokeWidth={on ? 2 : 1} />
-                        {(on || p.onFront || p.method === WEIGHTED_GS) && <text x={cx + 9} y={cy - 7} fontSize={11} fill="var(--color-fg)">{p.method}</text>}
+                      <g key={p.method}>
+                        {/* the whiskers and the label are outside the button, so its box (and the pointer's hit) is the dot */}
+                        <g aria-hidden="true" pointerEvents="none">
+                          <line x1={L.x(p.eff.q1)} x2={L.x(p.eff.q3)} y1={cy} y2={cy} stroke={tone} strokeWidth={1.5} />
+                          <line x1={cx} x2={cx} y1={L.y(p.spread.q1)} y2={L.y(p.spread.q3)} stroke={tone} strokeWidth={1.5} />
+                          {label && <text x={cx + 9} y={cy - 7} fontSize={11} fill="var(--color-fg)">{p.method}</text>}
+                        </g>
+                        <g data-method={p.method} data-linked-id={p.method} data-linked-view="scene" data-linked-selected={on ? 'true' : 'false'} role="button" tabIndex={0} aria-pressed={on} aria-label={t(`${nameOf(p.method, 'en')}: median spread ${spreadText(p.spread.median, 'en')} %, efficiency ${num(p.eff.median, 'en', 3)}, ${p.seeds} seeds`, `${nameOf(p.method, 'es')}: dispersión mediana ${spreadText(p.spread.median, 'es')} %, eficiencia ${num(p.eff.median, 'es', 3)}, ${p.seeds} semillas`)} onClick={() => select(on ? null : p.method, 'scene')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), select(on ? null : p.method, 'scene'))} style={{ cursor: 'pointer' }}>
+                          <circle cx={cx} cy={cy} r={on ? 8 : 5.5} fill={tone} stroke={on ? 'var(--color-fg)' : 'var(--color-surface)'} strokeWidth={on ? 2 : 1} />
+                        </g>
                       </g>
                     );
                   })}
@@ -388,45 +407,94 @@ function useStoryCase(caseId: string): Loaded<CaseData> {
 
 const reasonOf = (l: Loaded<unknown>): Tx | null => (l.state === 'unavailable' ? l.reason : l.state === 'error' ? { en: l.error, es: l.error } : null);
 
-/** The compact focal plane of the setup step's panel (V3): the trap sites over the focal-plane intensity, one linked selection. */
+/** One trap of the panel's list: the same linked selection as the sites of the optical train (scene) and the dots of the map. */
+function PanelTrap({ id }: { id: number }) {
+  const item = useLinkedItem(String(id), 'panel');
+  return (
+    <button type="button" {...item}>
+      {id}
+    </button>
+  );
+}
+
+/** The panel of the setup step (V3): the focal plane at the iteration the shared scrub names, the scrub itself and the trap list. */
 function StoryFocal({ sel }: { sel: Selection }) {
   const lang = useShellLang() as Lang;
+  const t = (en: string, es: string) => (lang === 'es' ? es : en);
   const selectedId = useLinkedView((s) => s.selectedId);
   const select = useLinkedView((s) => s.select);
-  const focal = sel.maps?.focal;
-  if (!focal) return <p className="dh-story-missing">{lang === 'es' ? 'El mapa focal no está en el artefacto.' : 'The focal map is not in the artifact.'}</p>;
-  const marks: HeatMark[] = sel.traps.filter((tr) => sel.traps.length <= 36 || trapToLinked(tr.id) === selectedId).map((tr) => {
-    const [col, row] = umToPixel(tr.x_um, tr.y_um, focal.size, focal.binUm);
-    const on = trapToLinked(tr.id) === selectedId;
-    return { id: tr.id, col, row, kind: 'ring', tone: on ? 'accent' : 'good', selected: on, label: on ? String(tr.id) : undefined };
-  });
+  const cursor = useLinkedView((s) => s.cursor);
+  const scrub = useLinkedView((s) => s.scrub);
+  const marker = useLinkedCursor().markerProps;
+  const history = sel.result?.history ?? [];
+  const point = history.length ? pointAt(history, cursor) : null;
+  const focal = useFocalAtIteration(sel, cursor === null || !point ? null : point.iteration);
+  const at = cursor !== null && (focal.state === 'ready' || (focal.state === 'loading' && focal.at)) ? focal.at : null;
+  const map = at?.maps.focal ?? sel.maps?.focal ?? null;
+  if (!map) return <p className="dh-story-missing">{t('The focal map is not in the artifact.', 'El mapa focal no está en el artefacto.')}</p>;
+  const marks: HeatMark[] = sel.traps
+    .filter((tr) => sel.traps.length <= 36 || trapToLinked(tr.id) === selectedId)
+    .map((tr) => {
+      const [col, row] = umToPixel(tr.x_um, tr.y_um, map.size, map.binUm);
+      const on = trapToLinked(tr.id) === selectedId;
+      return { id: tr.id, col, row, kind: 'ring', tone: on ? 'accent' : 'good', selected: on, label: on ? String(tr.id) : undefined };
+    });
+  const first = history[0]?.iteration ?? 1;
+  const last = history[history.length - 1]?.iteration ?? 1;
+  const trapI = at?.result.trapI ?? sel.result?.trapI ?? null;
+  const chosen = selectedId === null ? -1 : sel.traps.findIndex((tr) => trapToLinked(tr.id) === selectedId);
   return (
-    <div className="dh-story-focal" data-story-focal="">
-      <Heatmap
-        label={{ en: 'Focal-plane intensity in dB with the trap sites', es: 'Intensidad del plano focal en dB con los sitios de trampas' }}
-        data={focal.db}
-        cols={focal.size}
-        rows={focal.size}
-        lut={INTENSITY_LUT}
-        range={[sel.dbFloor, 0]}
-        marks={marks}
-        onPick={(col, row) => {
-          let best: number | null = null;
-          let bd = 4;
-          for (const tr of sel.traps) {
-            const [tc, tr2] = umToPixel(tr.x_um, tr.y_um, focal.size, focal.binUm);
-            const d = Math.hypot(tc - col, tr2 - row);
-            if (d <= bd) {
-              bd = d;
-              best = tr.id;
+    <>
+      <div className="dh-story-focal" data-story-focal="" data-iteration={at ? at.k : ''} {...marker}>
+        <Heatmap
+          label={{ en: `Focal-plane intensity in dB after ${at ? at.k : 'the final'} iterations, with the trap sites`, es: `Intensidad del plano focal en dB tras ${at ? at.k : 'las'} iteraciones, con los sitios de trampas` }}
+          data={map.db}
+          cols={map.size}
+          rows={map.size}
+          lut={INTENSITY_LUT}
+          range={[sel.dbFloor, 0]}
+          marks={marks}
+          onPick={(col, row) => {
+            let best: number | null = null;
+            let bd = 4;
+            for (const tr of sel.traps) {
+              const [tc, tr2] = umToPixel(tr.x_um, tr.y_um, map.size, map.binUm);
+              const d = Math.hypot(tc - col, tr2 - row);
+              if (d <= bd) {
+                bd = d;
+                best = tr.id;
+              }
             }
-          }
-          select(trapToLinked(best), 'panel');
-        }}
-        describe={(col, row, v) => `bin (${col}, ${row}): ${num(v, lang, 1)} dB`}
-        summary={lang === 'es' ? `Plano focal de ${focal.size} por ${focal.size} con ${sel.traps.length} trampas marcadas.` : `Focal plane ${focal.size} by ${focal.size} with ${sel.traps.length} traps marked.`}
-      />
-    </div>
+            select(trapToLinked(best), 'panel');
+          }}
+          describe={(col, row, v) => `bin (${col}, ${row}): ${num(v, lang, 1)} dB`}
+          summary={t(`Focal plane ${map.size} by ${map.size} with ${sel.traps.length} traps marked.`, `Plano focal de ${map.size} por ${map.size} con ${sel.traps.length} trampas marcadas.`)}
+        />
+      </div>
+      {history.length > 0 && (
+        <label className="dh-mw-scrub">
+          {t('Iteration', 'Iteración')} <strong>{point?.iteration ?? last}</strong>
+          <input type="range" min={first} max={last} step={1} value={point?.iteration ?? last} data-linked-cursor="" aria-label={t('Scrub the iteration of the method: the focal plane is redrawn', 'Recorrer la iteración del método: se redibuja el plano focal')} onChange={(e) => scrub(Number(e.target.value))} />
+        </label>
+      )}
+      {point && (
+        <p>
+          {t('After', 'Tras')} <strong>{point.iteration}</strong> {t('iterations', 'iteraciones')}: {t('spread', 'dispersión')} <strong>{spreadText(point.relStdPct, lang)} %</strong>, {t('efficiency', 'eficiencia')} <strong>{num(point.efficiency * 100, lang, 1)} %</strong>
+          {cursor !== null && focal.state === 'loading' ? ` (${t('computing the map', 'calculando el mapa')})` : ''}.
+        </p>
+      )}
+      <div className="dh-story-picks" role="group" aria-label={t('Traps', 'Trampas')}>
+        {sel.traps.slice(0, 8).map((tr) => (
+          <PanelTrap key={tr.id} id={tr.id} />
+        ))}
+        {sel.traps.length > 8 && <span>{t(`of ${sel.traps.length}; pick the others on the drawing or the map`, `de ${sel.traps.length}; elija las otras en el dibujo o en el mapa`)}</span>}
+      </div>
+      {chosen >= 0 && trapI && (
+        <p>
+          {t('Trap', 'Trampa')} <strong>{sel.traps[chosen].id}</strong>: {num(trapI[chosen], lang, 3)} {t('of the mean intensity', 'de la intensidad media')}.
+        </p>
+      )}
+    </>
   );
 }
 
