@@ -179,10 +179,45 @@ describe('the gate runner by the App kind (WB-014, WB-015)', () => {
   });
 
   it('requires all documented and story routes when a custom route list is supplied', () => {
-    const complete = '/app,/introduction,/methodology,/implementation,/experiments,/benchmark,/story/context,/story/phase,/story/decision,/story/method';
+    const declared = (realProduct.showcase as { story_routes: string[] }).story_routes;
+    const complete = `/app,/introduction,/methodology,/implementation,/experiments,/benchmark,${declared.join(',')}`;
     expect(run({ extra: ['--routes', complete] }).args).toContain('--require-showcase');
     expect(run({ extra: ['--routes', '/,/app'] }).args).toBeNull();
     expect(run({ product: { app: 'surface' }, extra: ['--app-route', '/console', '--routes', '/,/console'] }).args).toBeNull();
+  });
+
+  it('adversarial: the story routes come from product.json showcase.story_routes, and the gate walks exactly those (BD-8, WB-020)', () => {
+    const docs = '/app,/introduction,/methodology,/implementation,/experiments,/benchmark';
+    const own = ['/story/measure', '/story/look-inside', '/story/solve', '/story/compare', '/story/operate'];
+    const routes = (args: string[] | null) => (args ? args[args.lastIndexOf('--routes') + 1] : null);
+    const declared = run({ product: { showcase: { story_routes: own } } });
+    expect(declared.status).toBe(0);
+    expect(routes(declared.args)).toBe(`${docs},${own.join(',')}`);
+    expect(declared.args).toContain('--require-showcase');
+    expect(run({ product: { showcase: { story_routes: own } }, extra: ['--routes', `${docs},${own.join(',')}`] }).status).toBe(0);
+    const example = run();
+    expect(routes(example.args)).toBe(`${docs},${(realProduct.showcase as { story_routes: string[] }).story_routes.join(',')}`);
+    const none = run({ product: { showcase: undefined } });
+    expect(routes(none.args)).toBe(docs);
+    expect(none.args).toContain('--require-showcase');
+    expect(none.stdout).toContain('no story is declared');
+  });
+
+  it('adversarial: a --routes entry that product.json does not declare is refused, and the shell gate never runs (BD-8, WB-020)', () => {
+    const docs = '/app,/introduction,/methodology,/implementation,/experiments,/benchmark';
+    const own = ['/story/measure', '/story/solve', '/story/operate'];
+    for (const undeclared of ['/story/context', '/story/extra', '/extra']) {
+      const r = run({ product: { showcase: { story_routes: own } }, extra: ['--routes', `${docs},${own.join(',')},${undeclared}`] });
+      expect(r.status, undeclared).not.toBe(0);
+      expect(r.args, undeclared).toBeNull();
+      expect(r.stderr).toContain(undeclared);
+      expect(r.stderr).toContain('showcase.story_routes');
+    }
+    for (const bad of [['/story/a', '/story/a', '/story/b'], ['/story/a', '/app', '/story/b'], '/story/a']) {
+      const r = run({ product: { showcase: { story_routes: bad } } });
+      expect(r.args, JSON.stringify(bad)).toBeNull();
+      expect(r.stderr).toContain('showcase.story_routes');
+    }
   });
 
   it('a Focus waiver still cannot remove mandatory showcase routes', () => {

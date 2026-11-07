@@ -12,6 +12,13 @@
 // turns the requirement off. The one exception is a surface App with no simulation, which sets "focus": false with a "focus_reason" in
 // product.json and the same reason on the SDD's ADR-0070 row ("not applicable: <reason>"); the runner reads both and refuses to run when
 // they do not agree. scripts/check_sdd.py holds the same rules in CI.
+//
+// The routes it walks (ADR-0082, 0.15.001): the App (/app), the five documentation routes and the guided-story routes the product
+// declares in product.json, key "showcase": { "story_routes": ["/story/<step>", ...] }, in the order of the story. No story route is
+// written here: a product with its own steps declares them, and the gate walks exactly those. A product that declares none is
+// measured on the App and the documentation routes and is told so; the shell's G21 (--require-showcase, never dropped) and
+// scripts/check_sdd.py fail the missing story. A `--routes` list may name only declared routes and must name all of them.
+// `--plan` prints the routes and the arguments and exits without running the shell gate.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -23,7 +30,8 @@ const root = join(here, '..', '..');
 const product = JSON.parse(readFileSync(join(root, 'product.json'), 'utf8'));
 
 const KINDS = ['workbench', 'surface'];
-const SHOWCASE_ROUTES = '/app,/introduction,/methodology,/implementation,/experiments,/benchmark,/story/context,/story/phase,/story/decision,/story/method';
+const BASE_ROUTES = ['/app', '/introduction', '/methodology', '/implementation', '/experiments', '/benchmark'];
+const STORY_ROUTE = /^\/story\/[A-Za-z0-9][A-Za-z0-9._~-]*$/;
 const MIN_REASON_WORDS = 8;
 const PLACEHOLDER = /^(?:tbd|tba|tbc|todo|fixme|xxx|lorem|ipsum|placeholder|n\/a|na|none|unknown)$/i;
 const NOT_APPLICABLE = /^not applicable:\s*(.+)$/i;
@@ -65,12 +73,28 @@ function appKindProblems(doc, sddText) {
   return out;
 }
 
+/** The story routes product.json declares (`showcase.story_routes`) and the findings on the declaration. Empty routes: no story. */
+function storyRoutes(doc) {
+  const showcase = doc.showcase;
+  if (showcase === undefined) return { routes: [], problems: [] };
+  if (showcase === null || typeof showcase !== 'object' || Array.isArray(showcase)) return { routes: [], problems: ['product.json "showcase" must be an object with "story_routes"'] };
+  const declared = showcase.story_routes;
+  if (declared === undefined) return { routes: [], problems: [] };
+  if (!Array.isArray(declared)) return { routes: [], problems: ['product.json showcase.story_routes must be a list of route paths "/story/<step>"'] };
+  const problems = [];
+  declared.forEach((route, i) => {
+    if (typeof route !== 'string' || !STORY_ROUTE.test(route)) problems.push(`product.json showcase.story_routes[${i}] is ${JSON.stringify(route)}: each entry is one story step, "/story/<step>"`);
+    else if (declared.indexOf(route) !== i) problems.push(`product.json showcase.story_routes lists ${route} twice`);
+  });
+  return { routes: problems.length ? [] : declared, problems };
+}
+
 /**
  * While Focus is required, the pass-through arguments may not redirect what G18 measures: `--require-focus` stays on the command
  * line, but a run that moves the workbench routes (`--workbench`), the surface's App route (`--app-route`, a surface only) or leaves the
  * App route out of `--routes` makes the Focus check measure nothing and pass. Empty: the arguments are fine.
  */
-function redirectProblems(doc, extra) {
+function redirectProblems(doc, extra, showcaseRoutes) {
   const out = [];
   const value = (flag) => { const at = extra.indexOf(flag); return at < 0 ? null : (extra[at + 1] ?? ''); };
   const surface = doc.app === 'surface';
@@ -82,14 +106,17 @@ function redirectProblems(doc, extra) {
     const trim = (r) => r.trim().replace(/(.)\/+$/, '$1');
     const listed = routes.split(',').map(trim);
     if (!listed.includes(trim(appRoute))) out.push(`--routes ${routes} leaves out the App route ${appRoute}, so the Focus check would measure nothing`);
-    const missingStory = SHOWCASE_ROUTES.split(',').filter((route) => !listed.includes(trim(route)));
+    const missingStory = showcaseRoutes.filter((route) => !listed.includes(trim(route)));
     if (missingStory.length) out.push(`--routes ${routes} leaves out showcase routes ${missingStory.join(', ')}; ADR-0082 requires all declared story steps and product views`);
+    const known = new Set([...showcaseRoutes, trim(appRoute)]);
+    const undeclared = listed.filter((route) => !known.has(route));
+    if (undeclared.length) out.push(`--routes ${routes} names ${undeclared.join(', ')}, which product.json does not declare: a story step is declared in showcase.story_routes, and the gate walks only the App, the documentation routes and the declared steps`);
   }
   return out.map((p) => `${p} (--require-focus, ADR-0070)`);
 }
 
 /** The arguments of the shell gate for this product: the App's kind, Focus, the served build and the pass-through arguments. */
-function gateArguments({ doc, deploy, extra, dist, base, out }) {
+function gateArguments({ doc, deploy, extra, dist, base, out, SHOWCASE_ROUTES }) {
   const surface = doc.app === 'surface';
   const waived = doc.focus === false;
   const serving = !extra.includes('--url');
@@ -107,7 +134,17 @@ if (problems.length) {
   for (const p of problems) console.error(`  - ${p}`);
   process.exit(1);
 }
-const redirects = redirectProblems(product, process.argv.slice(2));
+const story = storyRoutes(product);
+if (story.problems.length) {
+  console.error('gate: the story routes are not declared correctly, so no gate runs:');
+  for (const p of story.problems) console.error(`  - ${p}`);
+  process.exit(1);
+}
+const showcaseRoutes = [...BASE_ROUTES, ...story.routes];
+const SHOWCASE_ROUTES = showcaseRoutes.join(',');
+const planOnly = process.argv.includes('--plan');
+const extra = process.argv.slice(2).filter((a) => a !== '--plan');
+const redirects = redirectProblems(product, extra, showcaseRoutes);
 if (redirects.length) {
   console.error('gate: an argument redirects what the Focus check measures, so no gate runs:');
   for (const p of redirects) console.error(`  - ${p}`);
@@ -115,10 +152,17 @@ if (redirects.length) {
 }
 const targetPath = join(root, 'deploy', 'TARGET');
 const deploy = existsSync(targetPath) ? readFileSync(targetPath, 'utf8').trim() : '';
+const args = gateArguments({
+  doc: product, deploy, extra, dist: join(here, '..', 'dist'), base: process.env.VITE_BASE, out: join(here, '..', 'gate-output'), SHOWCASE_ROUTES,
+});
+const at = args.lastIndexOf('--routes');
+console.log(`gate: routes ${args[at + 1]}`);
+if (!story.routes.length) console.log('gate: no story is declared in product.json (showcase.story_routes): the App and the documentation routes are measured, and G21 reports the missing story (ADR-0082)');
+if (planOnly) {
+  console.log(`gate: arguments ${JSON.stringify(args)}`);
+  process.exit(0);
+}
 const require = createRequire(import.meta.url);
 const bin = join(dirname(require.resolve('@fasl-work/caos-app-shell/package.json')), 'bin', 'caos-shell-gate.mjs');
-const args = gateArguments({
-  doc: product, deploy, extra: process.argv.slice(2), dist: join(here, '..', 'dist'), base: process.env.VITE_BASE, out: join(here, '..', 'gate-output'),
-});
 const run = spawnSync(process.execPath, [bin, ...args], { stdio: 'inherit' });
 process.exit(run.status ?? 1);

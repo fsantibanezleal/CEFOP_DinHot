@@ -1,5 +1,9 @@
-"""Generic admission loads only the explicitly declared product validator."""
+"""Generic admission loads only the explicitly declared product validator.
+
+Since 0.15.001 the provider is read from the checkout that holds the checker (the product root), never from the judged root
+(issue #102): each case is a product whose own copy of check_readiness.py judges the product itself."""
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -14,7 +18,9 @@ def invoke(root, config, code):
     folder.mkdir(parents=True)
     (folder / "workflow.json").write_text(json.dumps(config), encoding="utf-8")
     (folder / "provider.py").write_text(code, encoding="utf-8")
-    return subprocess.run([sys.executable, str(SCRIPT), str(root)], capture_output=True, text=True, check=False)
+    shutil.copy2(SCRIPT, root / "scripts/check_readiness.py")
+    return subprocess.run([sys.executable, str(root / "scripts/check_readiness.py"), str(root)], capture_output=True,
+                          text=True, check=False)
 
 
 def test_product_provider_does_not_need_the_template_engine(tmp_path):
@@ -23,7 +29,8 @@ def test_product_provider_does_not_need_the_template_engine(tmp_path):
     result = invoke(tmp_path, {"readiness_provider": "scripts/local/provider.py"}, code)
     assert result.returncode == 0 and "declared product provider" in result.stdout
     (tmp_path / "complete.json").unlink()
-    bad = subprocess.run([sys.executable, str(SCRIPT), str(tmp_path)], capture_output=True, text=True, check=False)
+    bad = subprocess.run([sys.executable, str(tmp_path / "scripts/check_readiness.py"), str(tmp_path)], capture_output=True,
+                         text=True, check=False)
     assert bad.returncode == 1 and "missing complete payload" in bad.stdout
 
 

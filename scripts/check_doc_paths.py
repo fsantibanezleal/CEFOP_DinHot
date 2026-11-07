@@ -6,7 +6,9 @@ Checks, in every tracked Markdown file:
   - inline code spans that name a repository path (start with a top-level folder or file of this repository).
 External links, anchors, globs and placeholders (<...>, {...}, *) are skipped. The gates named by a feature's
 requirements.md opened `Status: planned` are skipped too: they are the tests the unit will write, and
-scripts/check_sdd.py holds them to naming a file (the two guards agree). Exit 1 on any missing path.
+scripts/check_sdd.py holds them to naming a file (the two guards agree). The code spans of a blueprint under `templates/`
+are skipped as well: a blueprint names the destinations a product creates from it (`manuscripts/shared/base.tex`), which
+exist only after the copy; its relative links are still checked (0.15.001, issue #102). Exit 1 on any missing path.
 
 A path exists when the repository holds it as git sees it (its tracked and untracked-not-ignored files, and every
 folder above them), never because this machine's disk has it: a gate's screenshots or a build output passed the
@@ -26,6 +28,8 @@ LINK = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 CODE = re.compile(r"`([^`\s]+)`")
 SKIP = re.compile(r"^(?:[a-z]+:|#|mailto:)|[<>{}*$]|\.\.\.")
 PLANNED = re.compile(r"^Status:\s*planned", re.M | re.I)
+# the blueprints a product copies from: their code spans name destinations to create, not paths that exist
+BLUEPRINTS = "templates/"
 
 
 def planned_requirements(rel: str, text: str) -> bool:
@@ -73,7 +77,7 @@ def main() -> int:
             continue
         md = ROOT / rel
         text = md.read_text(encoding="utf-8", errors="ignore")
-        spans_checked = not planned_requirements(rel, text)
+        spans_checked = not planned_requirements(rel, text) and not rel.startswith(BLUEPRINTS)
         in_fence = False
         for n, line in enumerate(text.splitlines(), 1):
             if line.lstrip().startswith("```"):

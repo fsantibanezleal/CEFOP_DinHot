@@ -296,6 +296,12 @@ def main() -> int:
         # the dotted names (module.function or module.Class) that run this product's method: the notebooks' floors count nothing else
         "method_entrypoints": [],
     }
+    # the guided story's routes (ADR-0082, 0.15.001): the example's story stays until the product writes its own, so its
+    # declaration stays with it; the product replaces both (the gate runner and the story check walk exactly this list)
+    source = ROOT / "product.json"
+    showcase = json.loads(source.read_text(encoding="utf-8")).get("showcase") if source.is_file() else None
+    if showcase is not None:
+        product["showcase"] = showcase
     write("product.json", json.dumps(product, indent=2, ensure_ascii=False) + "\n")
     workflow = json.loads((ROOT / "scripts/local/workflow.json").read_text(encoding="utf-8"))
     workflow.update(external_environments_required=True, environment_namespace=a.slug)

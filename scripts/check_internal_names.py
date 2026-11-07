@@ -16,6 +16,11 @@ sections"). A reader sees each method by its name. The check fails, naming the f
 - the app: the string values of ``content/**/*.json`` and ``frontend/src/**/*.json``, and the strings and JSX text of
   ``frontend/src/**/*.ts(x)`` (tests and generated files excepted).
 
+The ids of the SDD's ``## Method ladder`` table (``M-1``, ``B-lin``: its first column, read by the content-bar check's own
+inventory parse in ``check_notebook_depth.py``) are internal names too (0.15.001, issue #101): each is a finding as a word (in the
+case written, never part of a longer word) on every surface above; the notebook's ``caos`` metadata, whose ``methods`` lists
+them, is not text a reader sees.
+
 In a title or a heading (a markdown heading, ``caos.title``, a LaTeX ``\\title``, ``\\section``, ``\\caption``, a manuscript
 title, a JSON value under a ``title``, ``heading``, ``label``, ``name``, ``tab`` or ``caption`` key) the bare words "classical",
 "clásico" and "tier" are tier names too. What stays: the SDD and ``docs/`` (internal design records), code identifiers, a string
@@ -27,6 +32,7 @@ Static, standard library only. Usage: ``python scripts/check_internal_names.py [
 """
 from __future__ import annotations
 
+import importlib.util
 import io
 import json
 import re
@@ -64,17 +70,44 @@ SVG_TEXT = re.compile(r">([^<>]+)<")
 MANUSCRIPT_SUFFIXES = {".tex", ".md", ".txt", ".svg", ".py"}
 
 
+# the ids of the product's Method ladder, set by findings_of for the root it reads (None: the SDD has no ladder ids)
+LADDER: re.Pattern[str] | None = None
+
+
+def ladder_ids(root: Path) -> set[str]:
+    """The ids of the SDD's ``## Method ladder``, by the content-bar check's inventory parse (the same reader, the same rows)."""
+    sdd = root / "docs" / "design" / "SDD.md"
+    if not sdd.is_file():
+        return set()
+    spec = importlib.util.spec_from_file_location("_internal_names_depth", Path(__file__).resolve().parent / "check_notebook_depth.py")
+    depth = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = depth
+    spec.loader.exec_module(depth)
+    # a malformed or absent ladder is check_sdd.py's finding; here the ids it does hold are what a reader must not see
+    return {i for i in depth.inventory_table(sdd, "method ladder", "tier", [], root) if i.strip()}
+
+
+def ladder_pattern(ids: set[str]) -> re.Pattern[str] | None:
+    if not ids:
+        return None
+    return re.compile(r"(?<![\w-])(?:" + "|".join(re.escape(i) for i in sorted(ids, key=len, reverse=True)) + r")(?![\w-])")
+
+
 def words(text: str, heading: bool = False) -> list[str]:
-    """The tier names in ``text``; in a heading the bare words too."""
+    """The tier names and the Method ladder ids in ``text``; in a heading the bare words too."""
     found = [m.group(0) for m in PHRASES.finditer(text)]
+    if LADDER is not None:
+        found += [m.group(0) for m in LADDER.finditer(text)]
     if heading:
         found += [m.group(0) for m in HEADING_WORDS.finditer(text)]
     return found
 
 
 def finding(rel: str, where: str, found: list[str]) -> str:
-    names = ", ".join(sorted({f.lower() for f in found}))
-    return f"{rel}: {where}: the tier name {names!r} (internal; name the method instead, {RULE})"
+    ids = {f for f in found if LADDER is not None and LADDER.fullmatch(f)}
+    names = ", ".join(sorted(ids | {f.lower() for f in found if f not in ids}))
+    kind = "the tier name" if not ids else "the Method ladder id" if ids == set(found) else "the internal names"
+    return f"{rel}: {where}: {kind} {names!r} (internal; name the method instead, {RULE})"
 
 
 def path_findings(root: Path, path: Path, base: Path) -> list[str]:
@@ -265,8 +298,9 @@ def source_findings(rel: str, text: str) -> list[str]:
                 hits.setdefault(n, []).extend(words(s))
     joined = "\n".join(lines)
     for m in JSX_TEXT.finditer(joined):
-        for w in PHRASES.finditer(m.group(1)):
-            hits.setdefault(joined.count("\n", 0, m.start(1) + w.start()) + 1, []).append(w.group(0))
+        for pattern in (PHRASES, LADDER) if LADDER is not None else (PHRASES,):
+            for w in pattern.finditer(m.group(1)):
+                hits.setdefault(joined.count("\n", 0, m.start(1) + w.start()) + 1, []).append(w.group(0))
     return [finding(rel, f"line {n}", found) for n, found in sorted(hits.items())
             if found and not (n <= len(raw) and MARK in raw[n - 1])]
 
@@ -288,6 +322,8 @@ def app_findings(root: Path) -> list[str]:
 
 
 def findings_of(root: Path) -> list[str]:
+    global LADDER
+    LADDER = ladder_pattern(ladder_ids(root))
     out: list[str] = []
     nb = root / "notebooks"
     if nb.is_dir():
@@ -322,7 +358,7 @@ def main(argv: list[str] | None = None) -> int:
     if found:
         print(f"check_internal_names: {len(found)} finding(s): the tier names are internal ({RULE})")
         return 1
-    print("check_internal_names: OK, no tier name in the notebooks, the manuscripts, the README or the app")
+    print("check_internal_names: OK, no tier name and no Method ladder id in the notebooks, the manuscripts, the README or the app")
     return 0
 
 

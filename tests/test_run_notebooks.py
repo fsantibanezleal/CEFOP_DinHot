@@ -1,7 +1,12 @@
 """The runner's temp root and method-package guard (scripts/run_notebooks.py, template 0.11.000, NB-041 to NB-046).
 
 These tests run the runner in process with a stand-in for the execution, so they need no notebook environment: what they hold
-is where the ``--check`` copies are written, and what the runner refuses before it executes anything."""
+is where the ``--check`` copies are written, and what the runner refuses before it executes anything.
+
+Since 0.14.006 the runner first requires its declared notebook environment and re-runs itself there when started from another
+interpreter. The fixture of 0.13.001 pointed it at a missing environment, so eight of these tests stopped at "initialize the
+declared notebook runtime" on every device (0.15.001): the fixture now declares the running interpreter's own environment, so the
+runner stays in process, and the refusal without an environment has its own plant."""
 from __future__ import annotations
 
 import importlib.util
@@ -47,7 +52,9 @@ def product(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     (base / "scripts" / "check_notebooks.py").write_bytes((ROOT / "scripts" / "check_notebooks.py").read_bytes())
     monkeypatch.setattr(RUNNER, "ROOT", base)
     monkeypatch.setattr(RUNNER, "NOTEBOOKS", base / "notebooks")
-    monkeypatch.setattr(RUNNER, "VENV", tmp_path / "no-venv")
+    # the product declares no external runtime, so the runner takes VENV: the interpreter running these tests, which keeps it
+    # in process (no re-run in another interpreter) with the stand-in execution below
+    monkeypatch.setattr(RUNNER, "VENV", Path(sys.prefix))
     monkeypatch.setattr(RUNNER, "__file__", str(base / "scripts" / "run_notebooks.py"))
     monkeypatch.setattr(RUNNER, "warm_matplotlib", lambda: None)
     for name in ("nbclient", "nbformat"):
@@ -193,3 +200,14 @@ def test_adversarial_check_without_a_models_folder_runs_as_before(product: Path,
     tmp.mkdir()
     assert not (product / "models").exists()
     assert run(monkeypatch, "--check", "--tmp", str(tmp)) == 0 and paths
+
+
+def test_adversarial_without_a_notebook_environment_the_runner_stops_before_any_notebook(product: Path, tmp_path: Path,
+                                                                                         monkeypatch: pytest.MonkeyPatch,
+                                                                                         capsys: pytest.CaptureFixture) -> None:
+    """The guard the fixture no longer trips: with no declared environment the runner refuses with exit 2 and runs nothing."""
+    paths = stand_in(monkeypatch, product)
+    monkeypatch.setattr(RUNNER, "VENV", tmp_path / "no-venv")
+    assert run(monkeypatch, "--check", "--tmp", str(tmp_path / "t")) == 2
+    assert "initialize the declared notebook runtime" in capsys.readouterr().out
+    assert paths == [] and not (tmp_path / "t").exists()

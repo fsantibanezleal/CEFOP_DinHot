@@ -2,7 +2,12 @@
 the repository: recompute it and compare. Exit 0 and ``readiness: current`` when it matches; exit 1 naming each
 differing entry and the command that regenerates it. Stdlib only (CI runs it with nothing installed; ADR-0074).
 
-Usage: python scripts/check_readiness.py [repo_root]"""
+Usage: python scripts/check_readiness.py [judged_root]
+
+The judged root (default: this checkout) holds only what is judged: the catalog, VERSION, the authored inputs and the baked
+documents. The readiness provider (``readiness_provider`` of scripts/local/workflow.json) and the engine
+(data-pipeline/pipeline) always come from the checkout that holds this script, the product root, so a generation stage, which
+holds neither, is admitted by the product's own rules, and code planted in a judged root is never loaded (0.15.001, #102, #91)."""
 from __future__ import annotations
 
 import json
@@ -68,13 +73,14 @@ def differences(fresh: dict, committed: dict) -> list[str]:
 def main() -> int:
     root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else HERE
     try:
-        provider = custom_provider(root)
+        # the product root decides how a root is judged; the judged root is only data
+        provider = custom_provider(HERE)
         if provider is not None:
             if provider(root) is False:
                 raise ValueError("Custom product admission returned false")
             print("readiness: current (declared product provider)")
             return 0
-        sys.path.insert(0, str(root / "data-pipeline"))
+        sys.path.insert(0, str(HERE / "data-pipeline"))
         from pipeline.core import readiness
     except Exception as exc:  # Provider errors are refusals, never an absent-template import crash.
         print(f"readiness: invalid admission provider\n  {exc}")

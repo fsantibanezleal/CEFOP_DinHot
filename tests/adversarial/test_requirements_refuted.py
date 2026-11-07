@@ -79,6 +79,33 @@ def test_a_build_without_the_routes_or_the_theme_script_fails(repo: Path) -> Non
 
 
 @needs_web
+def test_the_story_pages_are_the_routes_the_product_declares(repo: Path) -> None:
+    """#102 (ChancaDEM, 2026-11-07): the postbuild wrote the example's four story pages whatever the product declared, so a
+    product's own steps fell back to the Introduction on a direct load (G4). A product declaring two other steps gets exactly
+    those pages; a malformed declaration stops the build."""
+    link_node_modules(repo / "frontend")
+    try:
+        dist = repo / "frontend" / "dist"
+        dist.mkdir()
+        (dist / "build.json").write_text("{}", encoding="utf-8")
+        (dist / "index.html").write_text('<html data-theme="light"><body>app</body></html>', encoding="utf-8")
+        script = repo / "frontend" / "scripts" / "materialize-routes.mjs"
+        product = json.loads((repo / "product.json").read_text(encoding="utf-8"))
+        product["showcase"] = {"story_routes": ["/story/measure", "/story/solve"]}
+        (repo / "product.json").write_text(json.dumps(product, indent=2), encoding="utf-8")
+        r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=repo / "frontend")
+        assert r.returncode == 0, r.stderr
+        story = sorted(p.parent.name for p in (dist / "story").glob("*/index.html"))
+        assert story == ["measure", "solve"], story
+        product["showcase"] = {"story_routes": "/story/measure"}
+        (repo / "product.json").write_text(json.dumps(product, indent=2), encoding="utf-8")
+        r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=repo / "frontend")
+        assert r.returncode == 1 and "showcase.story_routes" in r.stderr, r.stderr
+    finally:
+        unlink_node_modules(repo / "frontend")
+
+
+@needs_web
 def test_a_schema_change_without_regenerated_types_fails_the_build_check(repo: Path) -> None:
     copy_node_modules(repo / "frontend")
     generated = repo / "frontend/src/lib/contract.gen.ts"

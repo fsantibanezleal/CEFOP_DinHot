@@ -985,8 +985,16 @@ class _VisibleHTML(HTMLParser):
         self.handle_data(f"&#{name};")
 
 
+# CommonMark raw HTML (spec 0.31.2, section 6.6): an open tag with its attributes, a closing tag, a comment, a processing instruction,
+# a declaration or CDATA. Any other `<` is text (`sum_{k<n}`, `i<j`, `x <y`) and never reaches the HTML parser, whose handling of
+# an unterminated "tag" changed in Python 3.12.11 and 3.13.4 (it hid the rest of the document: ChancaDEM's SDD, 0.15.000, #102).
+_HTML_ATTRIBUTE = r"""\s+[A-Za-z_:][A-Za-z0-9_.:-]*(?:\s*=\s*(?:[^\s"'=<>`]+|'[^']*'|"[^"]*"))?"""
+RAW_HTML = re.compile(rf"<(?:[A-Za-z][A-Za-z0-9-]*(?:{_HTML_ATTRIBUTE})*\s*/?>|/[A-Za-z][A-Za-z0-9-]*\s*>|!--|\?|![A-Za-z]|!\[CDATA\[)")
+
+
 def visible_markdown(text: str) -> str:
-    """Remove hidden DOM and complete or unterminated HTML comments; preserve visible Markdown."""
+    """Remove hidden DOM and complete or unterminated HTML comments; preserve visible Markdown. Only real markup (``RAW_HTML``) is
+    parsed: a `<` that starts no tag is prose, on every Python release."""
     protected: dict[str, str] = {}
 
     def protect(match):
@@ -1000,6 +1008,7 @@ def visible_markdown(text: str) -> str:
     text = re.sub(r"(`+)[^`\n]*\1|\$\$.*?\$\$|\$[^$\n]*\$|\\\[.*?\\\]|"
                   r"\\begin\{(?P<environment>(?:equation|align)\*?)\}.*?\\end\{(?P=environment)\}",
                   protect, text, flags=re.S)
+    text = re.sub(r"<", lambda m: m[0] if RAW_HTML.match(m.string, m.start()) else protect(m), text)
     parser = _VisibleHTML()
     parser.feed(re.sub(r"<!--.*?(?:-->|$)", "", text, flags=re.S))
     parser.close()

@@ -108,6 +108,15 @@
     "pipeline.model.holo.methods.optim.m13_crosstalk_cg.run",
     "pipeline.model.holo.methods.optim.m18_ot_mraf.run"
   ],
+  "showcase": {
+    "story_routes": [
+      "/story/setup",
+      "/story/device",
+      "/story/method",
+      "/story/compare",
+      "/story/hold"
+    ]
+  },
   "method_packages": [],
   "manuscripts": [
     {
