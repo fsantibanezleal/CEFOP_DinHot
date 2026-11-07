@@ -3,7 +3,7 @@
 
   fig-pipeline.pdf  the computation chain of a case (schematic, no data).
   fig-cases.pdf     relative standard deviation of the trap intensities, every method on every point-trap case (baked).
-  fig-maps.pdf      phase mask and focal intensity of the phase-fixed WGS on C02, and of B1 on the device-limited C08.
+  fig-maps.pdf      phase mask and focal intensity of the phase-fixed WGS on C02, and of the device-aware weighted GS on the device-limited C08.
   fig-feedback.pdf  emulated camera feedback: relative standard deviation against step, four cases.
   fig-learned.pdf   the learned models: cgh-net ratio by target kind, and the warm-start control.
   fig-bench.pdf     the benchmark: relative standard deviation at 100 iterations, every method on every geometry, ideal and C08.
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import base64
 import json
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -30,6 +31,9 @@ HERE = Path(__file__).resolve().parent
 DATA = HERE.parent / "data"
 ROOT = HERE.parents[2]
 DER = ROOT / "data" / "derived"
+
+sys.path.insert(0, str(DATA))
+from method_names import NAME, RUN  # noqa: E402
 
 INK = "#1a1a2e"
 GRID = "#d8d8e0"
@@ -78,7 +82,7 @@ def fig_cases() -> None:
     fig, ax = plt.subplots(figsize=(7.2, 5.6))
     im = ax.imshow(np.ma.masked_invalid(grid), aspect="auto", cmap="viridis_r", norm=LogNorm(vmin=1e-3, vmax=1e3))
     ax.set_xticks(range(len(cases)), [c["short"] for c in cases])
-    ax.set_yticks(range(len(methods)), methods)
+    ax.set_yticks(range(len(methods)), [NAME[m] for m in methods])
     ax.xaxis.tick_top()
     for i in range(len(methods)):
         for j in range(len(cases)):
@@ -107,10 +111,10 @@ def fig_maps() -> None:
     m8 = _u8(f8["intensity_db_u8"], f8["size"]).astype(float)
     fig, axs = plt.subplots(1, 3, figsize=(7.2, 2.6))
     a = axs[0].imshow(ph, cmap="twilight", vmin=0, vmax=2 * np.pi)
-    axs[0].set_title(f"(a) phase mask, {t2['reference']['method']}, C02", fontsize=8)
+    axs[0].set_title(f"(a) phase mask,\n{RUN[t2['reference']['method']]}, C02", fontsize=8)
     fig.colorbar(a, ax=axs[0], fraction=0.046, pad=0.02, ticks=[0, np.pi, 2 * np.pi]).ax.set_yticklabels(["0", "$\\pi$", "$2\\pi$"])
-    for ax, m, f, name, lab in ((axs[1], m2, f2, "C02", f"(b) focal intensity, {t2['reference']['method']}, C02"),
-                                (axs[2], m8, f8, "C08", f"(c) focal intensity, {t8['reference']['method']}, C08")):
+    for ax, m, f, name, lab in ((axs[1], m2, f2, "C02", f"(b) focal intensity,\n{RUN[t2['reference']['method']]}, C02"),
+                                (axs[2], m8, f8, "C08", f"(c) focal intensity,\n{RUN[t8['reference']['method']]}, C08")):
         ext = f["size"] * f["bin_um"] / 2
         im = ax.imshow(m / 255.0 * (-f["db_floor"]) + f["db_floor"], cmap="magma", vmin=f["db_floor"], vmax=0,
                        extent=(-ext, ext, ext, -ext))
@@ -182,7 +186,7 @@ def fig_bench() -> None:
     grid = b["grid_100"]
     geos = [g["id"] for g in b["geometries"]]
     methods = sorted({k.split("/")[0] for k in grid}, key=lambda m: (m.startswith("B"), m))
-    label = {m: m for m in methods}
+    label = dict(NAME)
     fig, axs = plt.subplots(1, 2, figsize=(7.2, 5.4), sharey=True)
     for ax, device, title in ((axs[0], "ideal", "(a) ideal device"), (axs[1], "device", "(b) C08 device")):
         z = np.full((len(methods), len(geos)), np.nan)

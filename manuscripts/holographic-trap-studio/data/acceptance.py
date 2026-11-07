@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure the acceptance quantity of every method of DinHot (M01 to M19, B4 and B5) and write ``acceptance.json``.
+"""Measure the acceptance quantity of every published method of DinHot, the aberration-robust hologram and the efficiency-uniformity Pareto front, and write ``acceptance.json``.
 
 Each ``measure_<id>`` below computes the quantity of its method's gate test, on the same setup, task, seeds and budget as that
 test, with the method modules and ``pipeline.model.holo.core`` of the current engine, and returns the numbers and the text of
@@ -7,13 +7,13 @@ its row of the acceptance table of the technical report (``extract.py`` reads th
 test each function mirrors is named in its docstring and in the ``source`` field of the row. The script measures, it does not
 assert a pass (ADR-0069): a number that misses its bar is written as measured.
 
-B1 and B2 are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` and are not part of this table.
-M17 needs the released network, onnxruntime and the held-out file, which the pipeline environment does not have: its row takes
+The device-aware weighted GS and the flicker-bounded sequence are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` and are not part of this table.
+The multi-plane CNN hologram needs the released network, onnxruntime and the held-out file, which the pipeline environment does not have: its row takes
 the values from ``data/derived/models/metrics.json``, the committed artifact its gate test reads, and says so.
 
 Run from the repository root with the pipeline environment:
 
-    .venv-pipeline/Scripts/python.exe manuscripts/holographic-trap-studio/data/acceptance.py [--workers 6] [--only M01 M06]
+    .venv-pipeline/Scripts/python.exe manuscripts/holographic-trap-studio/data/acceptance.py [--workers 6] [--only <engine id> ...]
 
 Deterministic: every method takes its seed through the portable generator, so a rerun gives the same numbers up to the floating
 point of the machine's FFT.
@@ -36,12 +36,14 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
+sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "tests" / "methods" / "optim"))      # e3_helpers: plain functions shared by the gate tests
 
 from e3_helpers import (  # noqa: E402
     bin_grid, check_finite_difference, disc_target, lattice_target, line_target, make_setup, quasi_periodic_119,
     ring_target, signal_error, task_10x10, trap_stats,
 )
+from method_names import ID, RUN, named  # noqa: E402
 from pipeline.model.holo.core.camera import EmulatedCamera  # noqa: E402
 from pipeline.model.holo.core.device import Device, device_focal_field  # noqa: E402
 from pipeline.model.holo.core.forward import fft_focal_field, point_trap_fields, trap_fields_from_fft  # noqa: E402
@@ -65,10 +67,16 @@ from pipeline.model.holo.methods.optim import m11_wirtinger_adam as M11  # noqa:
 from pipeline.model.holo.methods.optim import m13_crosstalk_cg as M13  # noqa: E402
 from pipeline.model.holo.methods.optim import m18_ot_mraf as M18  # noqa: E402
 
-IDS = ["M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10", "M11", "M12", "M13", "M14", "M15", "M16", "M17",
-       "M18", "M19", "B4", "B5"]
+IDS = [ID[x] for x in ("prisms", "randsup", "randmask", "gs", "gaa", "wgs", "pfwgs", "mraf", "directsearch", "cgmin", "wirtadam",
+                      "closedloop", "crosstalkcg", "zernike", "vortex", "rearrange", "cgnet", "otmraf", "volumetric", "robust",
+                      "paretofront")]
 
 T_BASE, T_OPT, T_CTRL, T_BEYOND = "tests/methods/baseline/", "tests/methods/optim/", "tests/methods/control/", "tests/methods/beyond/"
+
+
+def nm(key: str) -> str:
+    """The running name of a method from its macro key (``nm("wgs")``): what a measured text says instead of an engine label."""
+    return RUN[ID[key]]
 
 
 # ---------------------------------------------------------------- shared fixtures of the gate tests (tests/methods/conftest.py)
@@ -135,14 +143,14 @@ def or_never(x, budget: int) -> str:
     return f"not within {budget}" if x is None else str(x)
 
 
-# ---------------------------------------------------------------- M01 to M08
+# ---------------------------------------------------------------- the analytic methods and the Gerchberg-Saxton family
 
 def measure_M01() -> dict:
     """test_m01_superposition.py: 10x10 task, 1 iteration, analytic (no seed spread)."""
     s = setup256()
     g = grid10(s)
     e, u, _ = evaluate(m01_superposition.run(s, Target.from_traps(g), budget=Budget(1), rng=Rng(1)).phi, g, s)
-    return row("M01", f"efficiency {e:.3f}, uniformity {u:.4f} (deterministic)", "1", T_BASE + "test_m01_superposition.py",
+    return row(ID["prisms"], f"efficiency {e:.3f}, uniformity {u:.4f} (deterministic)", "1", T_BASE + "test_m01_superposition.py",
                {"efficiency": e, "uniformity": u})
 
 
@@ -152,7 +160,7 @@ def measure_M02() -> dict:
     g = grid10(s)
     v = np.array([evaluate(m02_random_superposition.run(s, Target.from_traps(g), budget=Budget(1), rng=Rng(k)).phi, g, s)
                   for k in range(6)])
-    return row("M02", f"efficiency {spread(v[:, 0])}, uniformity {spread(v[:, 1])}", "6",
+    return row(ID["randsup"], f"efficiency {spread(v[:, 0])}, uniformity {spread(v[:, 1])}", "6",
                T_BASE + "test_m02_random_superposition.py", {"efficiency": v[:, 0].tolist(), "uniformity": v[:, 1].tolist()})
 
 
@@ -168,7 +176,7 @@ def measure_M03() -> dict:
     e8, u8 = [x["efficiency"] for x in h], [x["uniformity"] for x in h]
     text = (f"256 squared: efficiency {statistics.median(v[:, 0]):.3f}, uniformity {spread(v[:, 1])}; "
             f"768 squared: efficiency {statistics.median(e8):.3f}, uniformity {spread(u8)}")
-    return row("M03", text, "5 and 2", T_BASE + "test_m03_random_mask.py",
+    return row(ID["randmask"], text, "5 and 2", T_BASE + "test_m03_random_mask.py",
                {"e256": v[:, 0].tolist(), "u256": v[:, 1].tolist(), "e768": e8, "u768": u8})
 
 
@@ -183,7 +191,7 @@ def measure_M04() -> dict:
     c = ceiling(gauss)
     text = (f"flat beam: efficiency {spread(vf[:, 0])}, uniformity {spread(vf[:, 1])}; Gaussian beam: efficiency "
             f"{statistics.median(vg[:, 0]):.3f} against its ceiling {c:.3f}")
-    return row("M04", text, "3", T_BASE + "test_m04_gs.py",
+    return row(ID["gs"], text, "3", T_BASE + "test_m04_gs.py",
                {"flat_efficiency": vf[:, 0].tolist(), "flat_uniformity": vf[:, 1].tolist(),
                 "gauss_efficiency": vg[:, 0].tolist(), "gauss_uniformity": vg[:, 1].tolist(), "ceiling": c})
 
@@ -197,7 +205,7 @@ def measure_M05() -> dict:
     ga = np.array([evaluate(m05_gaa.run(s, t, budget=Budget(30), rng=Rng(k)).phi, g, s) for k in range(1, 6)])
     text = (f"uniformity {spread(ga[:, 1])} against {spread(gs[:, 1])} for GS at equal iterations; efficiency "
             f"{statistics.median(ga[:, 0]):.3f} against {statistics.median(gs[:, 0]):.3f}")
-    return row("M05", text, "5", T_BASE + "test_m05_gaa.py",
+    return row(ID["gaa"], text, "5", T_BASE + "test_m05_gaa.py",
                {"gaa_uniformity": ga[:, 1].tolist(), "gs_uniformity": gs[:, 1].tolist(),
                 "gaa_efficiency": ga[:, 0].tolist(), "gs_efficiency": gs[:, 0].tolist()})
 
@@ -222,12 +230,12 @@ def measure_M06() -> dict:
     text = (f"flat beam: efficiency and uniformity both at 0.9 after {join_and([x for x in f_flat if x], 0)} iterations "
             f"(median uniformity {statistics.median(u10):.3f} at 10); Gaussian beam: {join_and([x for x in f_gauss if x], 0)}; "
             f"3 x 3 x 3 lattice (0.9 and 0.98): {join_and([x for x in f_lat if x], 0)}; budgets 15, 20 and 100")
-    return row("M06", text, "3", T_BASE + "test_m06_gsw.py (and test_m06_against_slmsuite.py, notebook venv)",
+    return row(ID["wgs"], text, "3", T_BASE + "test_m06_gsw.py (and test_m06_against_slmsuite.py, notebook venv)",
                {"first_both_flat": f_flat, "uniformity_at_10_flat": u10, "first_both_gaussian": f_gauss, "first_both_lattice": f_lat})
 
 
 def measure_M07() -> dict:
-    """test_m07_phase_fixed_wgs.py: 50 x 30 array, budget 150, FFT form, seeds 1 and 2, phase fixed after 60, against M06;
+    """test_m07_phase_fixed_wgs.py: 50 x 30 array, budget 150, FFT form, seeds 1 and 2, phase fixed after 60, against weighted GS;
     and the literal Kim setting (fixed after 12, budget 40, seed 1)."""
     s = setup256()
     tr = square_grid(50, 30, 8 * focal_bin_m(s) * 1e6)
@@ -247,9 +255,9 @@ def measure_M07() -> dict:
         r = m07_phase_fixed_wgs.run(s, t, budget=Budget(150), rng=Rng(1), n_fix=nf)
         sweep[str(nf)] = min(h["rel_std"] for h in r.history)
     text = (f"50 x 30 array to 0.5 percent in {join_and([x for x in ia if x], 0)} iterations against "
-            f"{join_and([or_never(x, 150) for x in ib], 0)} for M06 (phase fixed after 60; efficiency {join_and(eff, 2)}); "
+            f"{join_and([or_never(x, 150) for x in ib], 0)} for {nm('wgs')} (phase fixed after 60; efficiency {join_and(eff, 2)}); "
             f"with the source value of 12 it stalls at {stall:.2f} percent")
-    return row("M07", text, "2", T_BASE + "test_m07_phase_fixed_wgs.py (and test_m07_against_slmsuite.py, notebook venv)",
+    return row(ID["pfwgs"], text, "2", T_BASE + "test_m07_phase_fixed_wgs.py (and test_m07_against_slmsuite.py, notebook venv)",
                {"iterations_m07": ia, "iterations_m06": ib, "efficiency_m07": eff, "kim_stall_percent": stall,
                 "n_fix_sweep_min_rel_std_150": sweep})
 
@@ -286,12 +294,12 @@ def measure_M08() -> dict:
     e_all_m = [v for k in em for v in em[k]]
     text = (f"signal-region error {low[0]:.1f} (disc), {low[1]:.1f} (ring) and {low[2]:.1f} (bar) times below GS at the worse of "
             f"two starts; efficiency {min(e_all_m):.3f} to {max(e_all_m):.3f} against {min(e_all_g):.3f} to {max(e_all_g):.3f}")
-    return row("M08", text, "2 starts", T_BASE + "test_m08_mraf.py",
+    return row(ID["mraf"], text, "2 starts", T_BASE + "test_m08_mraf.py",
                {"ratio_disc": ratios["disc"], "ratio_ring": ratios["ring"], "ratio_line": ratios["line"],
                 "efficiency_mraf": e_all_m, "efficiency_gs": e_all_g})
 
 
-# ---------------------------------------------------------------- M09 to M11, M13, M18
+# ---------------------------------------------------------------- the optimizers
 
 def measure_M09() -> dict:
     """test_m09_direct_search.py: 10x10 task, default sweeps, seeds 1 and 2; 119-trap quasi-periodic set, seed 1."""
@@ -302,7 +310,7 @@ def measure_M09() -> dict:
     sq = trap_stats(M09.run(s, Target.from_traps(q), budget=Budget(M09.DEFAULT_SWEEPS), rng=Rng(1)).phi, s, q)
     text = (f"uniformity {join_and([a[1] for a in st], 4)} (efficiency {join_and([a[0] for a in st], 2)}); "
             f"{len(q)} quasi-periodic traps at {sq[2]:.3f} percent rms")
-    return row("M09", text, "2 and 1", T_OPT + "test_m09_direct_search.py",
+    return row(ID["directsearch"], text, "2 and 1", T_OPT + "test_m09_direct_search.py",
                {"uniformity": [a[1] for a in st], "efficiency": [a[0] for a in st], "quasi_rel_std_percent": sq[2],
                 "quasi_traps": len(q)})
 
@@ -329,7 +337,7 @@ def measure_M10() -> dict:
         res = M10.run(s64, Target.from_field(a2, m2), budget=Budget(M10.DEFAULT_LATTICE_ITERATIONS), rng=Rng(k), t=2)
         lat.append(100 * signal_error(fft_focal_field(res.phi, s64), a2, m2)[0])
     text = (f"analytic gradient within {max(errs):.1e} of finite differences; square lattice error {join_and(lat, 2)} percent")
-    return row("M10", text, "2", T_OPT + "test_m10_cg.py",
+    return row(ID["cgmin"], text, "2", T_OPT + "test_m10_cg.py",
                {"gradient_worst_rel_error": max(errs), "gradient_errors": errs, "lattice_error_percent": lat})
 
 
@@ -344,11 +352,11 @@ def measure_M11() -> dict:
         phi, _ = G.weighted_gs(s, g, 30, Rng(k), variant="gs")
         gs.append(trap_stats(phi, s, g)[2])
     text = f"relative standard deviation {join_and(adam, 2)} percent against {join_and(gs, 2)} for GS at 30 iterations"
-    return row("M11", text, "3", T_OPT + "test_m11_wirtinger_adam.py", {"adam_rel_std": adam, "gs_rel_std": gs})
+    return row(ID["wirtadam"], text, "3", T_OPT + "test_m11_wirtinger_adam.py", {"adam_rel_std": adam, "gs_rel_std": gs})
 
 
 def measure_M13() -> dict:
-    """test_m13_crosstalk_cg.py: disc of 24 bins radius on the 64 pixel grid, crosstalk device, 100 iterations, seed 1, M13 against M10."""
+    """test_m13_crosstalk_cg.py: disc of 24 bins radius on the 64 pixel grid, crosstalk device, 100 iterations, seed 1, the device-aware conjugate gradient against conjugate-gradient minimization."""
     dev = Device(crosstalk=(1.24, 1.80), upsample=3)
     s = make_setup(64)
     amp, mask = disc_target(s, 24.0, 3.0)
@@ -357,8 +365,8 @@ def measure_M13() -> dict:
         res = mod.run(s, Target.from_field(amp, mask), device=d, budget=Budget(100), rng=Rng(1), t=2)
         out[name] = signal_error(device_focal_field(res.phi, s, dev, None), amp, mask)
     text = (f"error {out['m13'][0]:.3f} (efficiency {out['m13'][1]:.3f}) against {out['m10'][0]:.3f} ({out['m10'][1]:.3f}) for "
-            f"M10 without the device model, large disc on the crosstalk device")
-    return row("M13", text, "1", T_OPT + "test_m13_crosstalk_cg.py",
+            f"{nm('cgmin')} without the device model, large disc on the crosstalk device")
+    return row(ID["crosstalkcg"], text, "1", T_OPT + "test_m13_crosstalk_cg.py",
                {"m13_error": out["m13"][0], "m13_efficiency": out["m13"][1], "m10_error": out["m10"][0],
                 "m10_efficiency": out["m10"][1]})
 
@@ -390,10 +398,10 @@ def measure_M18() -> dict:
             f"{baked['ring'][0][0]:.4f} (ring) against {baked['disc'][1][0]:.3f} and {baked['ring'][1][0]:.3f}")
     nums = {f"live_{k}_ot": v[0][0] for k, v in live.items()} | {f"live_{k}_random": v[1] for k, v in live.items()}
     nums |= {f"baked_{k}_ot": v[0][0] for k, v in baked.items()} | {f"baked_{k}_random": v[1] for k, v in baked.items()}
-    return row("M18", text, "2 and 1", T_OPT + "test_m18_ot_mraf.py", nums)
+    return row(ID["otmraf"], text, "2 and 1", T_OPT + "test_m18_ot_mraf.py", nums)
 
 
-# ---------------------------------------------------------------- M12, M14 to M16
+# ---------------------------------------------------------------- the control methods
 
 def measure_M12() -> dict:
     """test_m12_closed_loop.py: Nogrette setting (gain error 19 percent rms, gain 0.7, 20 iterations) and Kim setting (22 percent
@@ -413,7 +421,7 @@ def measure_M12() -> dict:
         k1.append(r.history[-1]["rel_std"])
     text = (f"emulated camera loop: open-loop {join_and(n0, 1)} percent to {join_and(n1, 2)} percent in 20 iterations; "
             f"{join_and(k0, 1)} percent to {join_and(k1, 2)} percent in three phase-fixed steps")
-    return row("M12", text, "2", T_CTRL + "test_m12_closed_loop.py",
+    return row(ID["closedloop"], text, "2", T_CTRL + "test_m12_closed_loop.py",
                {"nogrette_open_loop": n0, "nogrette_closed": n1, "kim_open_loop": k0, "kim_closed": k1})
 
 
@@ -436,7 +444,7 @@ def measure_M14() -> dict:
         r = m14_zernike.run(s, t, budget=Budget(6), rng=Rng(k), mode="recover", injected=inj)
         est = r.meta["coefficients"]
         worst.append(float(np.max(np.abs(est[3:11] - inj[3:11]) / np.abs(inj[3:11]))))
-    return row("M14", f"worst per-mode relative error {spread(worst)} over Noll modes 4 to 11", "3",
+    return row(ID["zernike"], f"worst per-mode relative error {spread(worst)} over Noll modes 4 to 11", "3",
                T_CTRL + "test_m14_zernike.py", {"worst_relative_error": worst})
 
 
@@ -455,7 +463,7 @@ def measure_M15() -> dict:
     exact = "winding error below the 1e-9 rad of the arithmetic" if max(wind) < 1e-9 else f"winding error at most {max(wind):.1e} rad"
     text = (f"ring phase winds by 2 pi l ({exact}) with a maximum error of {spread(mx)} rad "
             f"(isolated vortices of charge 1, 2, 3 and -2)")
-    return row("M15", text, "2 per charge", T_CTRL + "test_m15_vortex.py", {"max_error": mx, "winding_error": wind})
+    return row(ID["vortex"], text, "2 per charge", T_CTRL + "test_m15_vortex.py", {"max_error": mx, "winding_error": wind})
 
 
 def measure_M16() -> dict:
@@ -484,22 +492,22 @@ def measure_M16() -> dict:
         worst.append(float(r.meta["min_ratio"][r.meta["moved"]].min()))
     text = (f"{crossings} path crossings in 60 loadings; moving traps keep {spread(worst)} of their mean intensity "
             f"(worst moving trap of each of 5 loadings)")
-    return row("M16", text, "60 loadings", T_CTRL + "test_m16_rearrangement.py",
+    return row(ID["rearrange"], text, "60 loadings", T_CTRL + "test_m16_rearrangement.py",
                {"crossings": crossings, "worst_ratio": worst})
 
 
-# ---------------------------------------------------------------- M17, M19
+# ---------------------------------------------------------------- the volume methods
 
 def measure_M17() -> dict:
-    """test_m17_cgh_net.py: the multi-plane network refined by M19 against M19 at the same wall-clock. Its gate needs the released
+    """test_m17_cgh_net.py: the multi-plane network refined by the volumetric GS against the volumetric GS at the same wall-clock. Its gate needs the released
     graph, onnxruntime and the held-out file, which the pipeline environment lacks: the values are those of the committed artifact
     ``data/derived/models/metrics.json`` that the gate test reads (it checks ``held_out_n`` of that file)."""
     doc = json.loads((ROOT / "data" / "derived" / "models" / "metrics.json").read_text(encoding="utf-8"))
     e = doc["slots"]["cgh-net"]
     a, n = e["accuracy_vs_gs"], e["held_out_n"]
-    text = (f"three-plane network refined by M19: median accuracy ratio {a['median']:.3f} (quartiles {a['q1']:.3f} and "
+    text = (f"three-plane network refined by {nm('volumetric')}: median accuracy ratio {a['median']:.3f} (quartiles {a['q1']:.3f} and "
             f"{a['q3']:.3f}) on {n} held-out volumes; taken from the committed metrics.json, not remeasured here")
-    return row("M17", text, f"{n} volumes", "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json",
+    return row(ID["cgnet"], text, f"{n} volumes", "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json",
                {"median": a["median"], "q1": a["q1"], "q3": a["q3"], "held_out_n": n})
 
 
@@ -523,15 +531,15 @@ def measure_M19() -> dict:
         mean_all = inten.mean()
         ratios.append([float(inten[z == zz].mean() / mean_all) for zz in np.unique(z)])
     text = "plane means over overall mean " + " and ".join(join_and(v, 3) for v in ratios) + " on three planes"
-    return row("M19", text, "2", T_BASE + "test_m19_multiplane.py", {"plane_ratios": ratios})
+    return row(ID["volumetric"], text, "2", T_BASE + "test_m19_multiplane.py", {"plane_ratios": ratios})
 
 
 # ---------------------------------------------------------------- BS-4, BS-5
 
 def measure_B4() -> dict:
-    """test_b4_robust.py: 10x10 task, 200-sample aberration ensemble (seed 999), B4 at 40 iterations against the phase-fixed WGS
+    """test_b4_robust.py: 10x10 task, 200-sample aberration ensemble (seed 999), the aberration-robust hologram at 40 iterations against the phase-fixed WGS
     of the GS family at 30 (p95 of the relative standard deviation and mean efficiency), on seeds 1 to 3 (the SDD row's median);
-    pointing ensemble of 20 samples at 0.15 bin with B4 at 3 iterations and q = 2 on seed 1 (a finite-ratio check in the test, a
+    pointing ensemble of 20 samples at 0.15 bin with the aberration-robust hologram at 3 iterations and q = 2 on seed 1 (a finite-ratio check in the test, a
     measured negative here)."""
     s = make_setup(256)
     g = task_10x10(s)
@@ -553,34 +561,34 @@ def measure_B4() -> dict:
     rob_p = B4.ensemble_stats(s, res_p.phi, g, n=20, pointing_bins=0.15)
     ratio_p = nom_p["sigma_p95"] / rob_p["sigma_p95"]
     med = statistics.median(ratios)
-    text = (f"95th percentile of the relative standard deviation a median {med:.3f} times below M07 ({min(ratios):.2f} to "
+    text = (f"95th percentile of the relative standard deviation a median {med:.3f} times below {nm('pfwgs')} ({min(ratios):.2f} to "
             f"{max(ratios):.2f}) over a 200-sample aberration ensemble, at a median {statistics.median(effs):.3f} of its efficiency; "
             f"pointing errors {ratio_p:.2f} times (seed 1)")
-    return row("B4", text, "3 (pointing 1)", T_BEYOND + "test_b4_robust.py",
+    return row(ID["robust"], text, "3 (pointing 1)", T_BEYOND + "test_b4_robust.py",
                {"ratio": ratios, "eff_ratio": effs, "sigma_p95_b4": sb4, "sigma_p95_m07": sm7, "pointing_ratio": ratio_p,
                 "pointing_sigma_p95_b4": rob_p["sigma_p95"], "pointing_sigma_p95_m07": nom_p["sigma_p95"]})
 
 
 def measure_B5() -> dict:
     """test_b5_pareto.py: 10x10 task, seed 1; hypervolume of the continuation front (15 iterations, 20 lambdas) against the points of
-    GS, GAA, GSW (GS family, 30 iterations) and one sweep of M09; fronts that dominate M04 and M05."""
+    GS, GAA, GSW (GS family, 30 iterations) and one sweep of direct search; fronts that dominate GS and the adaptive form."""
     s = make_setup(256)
     g = task_10x10(s)
     base = {}
-    for name, variant in (("M04", "gs"), ("M05", "gaa"), ("M06", "gsw")):
+    for name, variant in ((ID["gs"], "gs"), (ID["gaa"], "gaa"), (ID["wgs"], "gsw")):
         phi, _ = G.weighted_gs(s, g, 30, Rng(1), variant=variant)
         base[name] = trap_stats(phi, s, g)[:2]
     ds = M09.run(s, Target.from_traps(g), budget=Budget(1), rng=Rng(1))
-    base["M09"] = trap_stats(ds.phi, s, g)[:2]
+    base[ID["directsearch"]] = trap_stats(ds.phi, s, g)[:2]
     t0 = time.perf_counter()
     res = B5.run(s, Target.from_traps(g), budget=Budget(15), rng=Rng(1))
     elapsed = time.perf_counter() - t0
     front = res.meta["front"][:, :2]
     hv_base = B5.hypervolume(np.array(list(base.values())))
-    dom = {n: int(np.sum((front[:, 0] >= base[n][0]) & (front[:, 1] > base[n][1]))) for n in ("M04", "M05")}
-    text = (f"hypervolume {res.meta['hypervolume']:.4f} against {hv_base:.4f} for the union of the M04, M05, M06 and M09 points; "
-            f"{dom['M04']} front points dominate M04 and {dom['M05']} dominate M05")
-    return row("B5", text, "1", T_BEYOND + "test_b5_pareto.py",
+    dom = {n: int(np.sum((front[:, 0] >= base[n][0]) & (front[:, 1] > base[n][1]))) for n in (ID["gs"], ID["gaa"])}
+    text = (f"hypervolume {res.meta['hypervolume']:.4f} against {hv_base:.4f} for the union of the {nm('gs')}, {nm('gaa')}, {nm('wgs')} and {nm('directsearch')} points; "
+            f"{dom[ID['gs']]} front points dominate {nm('gs')} and {dom[ID['gaa']]} dominate {nm('gaa')}")
+    return row(ID["paretofront"], text, "1", T_BEYOND + "test_b5_pareto.py",
                {"hypervolume": float(res.meta["hypervolume"]), "hypervolume_base": float(hv_base), "dominating_m04": dom["M04"],
                 "dominating_m05": dom["M05"], "front_seconds": elapsed})
 
@@ -609,7 +617,16 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=6, help="processes (each id is independent; results do not depend on it)")
     ap.add_argument("--only", nargs="*", choices=IDS, help="measure these ids only (the output then holds only them)")
     ap.add_argument("--out", type=Path, default=HERE / "acceptance.json")
+    ap.add_argument("--relabel", action="store_true",
+                    help="measure nothing: rewrite the text of every row of --out with the method names (numbers untouched)")
     args = ap.parse_args()
+    if args.relabel:
+        doc = json.loads(args.out.read_text(encoding="utf-8"))
+        for r in doc["rows"]:
+            r["text"] = named(r["text"])
+        args.out.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"relabelled {len(doc['rows'])} rows of {args.out}")
+        return 0
     ids = args.only or IDS
     t0 = time.perf_counter()
     with ProcessPoolExecutor(max_workers=max(1, args.workers)) as pool:

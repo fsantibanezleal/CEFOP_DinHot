@@ -27,10 +27,10 @@ $\Delta x,\ X_{1/2}$ & width of one focal bin and half of the unaliased field & 
 $K,\ \sigma_K,\ q$ & crosstalk kernel of the device and its fitted width and exponent & 1\\
 $Z_j,\ c_j$ & Zernike mode $j$ (Noll order) and its coefficient & waves\\
 $N$ (or $n_{\mathrm{fix}}$) & iteration after which the focal phase is frozen & 1\\
-$\alpha$ & exponent of the assignment cost (M16) or weight of the adaptive form (M05) & 1\\
+$\alpha$ & exponent of the assignment cost of the Hungarian rearrangement or weight of the generalized adaptive additive GS & 1\\
 $m$ (mixing) & mixing parameter of the mixed-region rule & 1\\
 $G,\ \rho_m$ & feedback gain and measured intensity relative to its target & 1\\
-$\lambda_{\mathrm{B5}}$ & trade-off parameter of the front & 1\\
+$\lambda_{\mathrm{EU}}$ & trade-off parameter of the efficiency-uniformity Pareto front & 1\\
 $\mathrm{AC}$ & accuracy of a volume hologram, mean over planes of the overlap of unit-sum intensities & 1\\
 $z_{R,\mathrm{SLM}}$ & SLM-limited Rayleigh range of the volume network (Eq.~\eqref{eq:m17-zr}), the depth unit of its planes & mm\\
 $\kappa,\ \gamma,\ f_c$ & trap stiffness, drag coefficient and corner frequency of a bead & pN/$\mu$m, kg/s, Hz\\
@@ -46,5 +46,5 @@ $H,\ \boldsymbol\xi,\ \lambda_m$ & angular-spectrum transfer function, spatial f
 $T_m,\ t$ & target intensity of trap $m$ in the cost of the optimizers, and the power of that cost (Eq.~\eqref{eq:m10}) & 1\\
 $L,\ \epsilon$ & loss of an optimizer (a quadratic intensity loss unless stated) and a small positive constant that keeps a logarithm or a quotient finite & 1\\
 $g_i,\ B_i,\ \psi$ & weights, focal amplitude relative to its target and focal phase of the phase-fixed iteration $i$ (Eq.~\eqref{eq:m07}) & 1, 1, rad\\
-$\theta_m,\ h(\tau)$ & phase given to trap $m$ (random in M02, learned in B3, locked in B2) and the minimal-jerk profile of $\tau=s/S$ (Eq.~\eqref{eq:b2-traj}) & rad, 1\\
+$\theta_m,\ h(\tau)$ & phase given to trap $m$ (random in the random superposition, learned in the learned warm start, locked in the flicker-bounded sequence) and the minimal-jerk profile of $\tau=s/S$ (Eq.~\eqref{eq:b2-traj}) & rad, 1\\
 \bottomrule\end{tabular}\end{table}

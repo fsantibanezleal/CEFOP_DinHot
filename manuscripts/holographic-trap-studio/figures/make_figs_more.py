@@ -6,7 +6,7 @@
   fig-device.pdf       the device model: crosstalk kernel, quantization efficiency and pixel-aperture envelope, from the formulas.
   fig-geometry.pdf     the spread by geometry: every method at 100 iterations, ideal and C08 device (benchmark medians).
   fig-pareto.pdf       the stored efficiency-uniformity fronts of the benchmark against the single points of published methods.
-  fig-nfix.pdf         phase-fixed weighted GS: minimum spread against the freeze index, and iterations to 0.5 percent against M06.
+  fig-nfix.pdf         phase-fixed weighted GS: minimum spread against the freeze index, and iterations to 0.5 percent against weighted GS.
 
 Run from the repository root:  python manuscripts/holographic-trap-studio/figures/make_figs.py   (it calls this module)
 Deps: matplotlib, numpy.
@@ -14,6 +14,7 @@ Deps: matplotlib, numpy.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -22,6 +23,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import FancyBboxPatch
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "data"))
+from method_names import ID, RUN  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 DATA = HERE.parent / "data"
@@ -86,10 +90,13 @@ def fig_dataflow() -> None:
 
 def fig_convergence() -> None:
     fig, axs = plt.subplots(1, 2, figsize=(7.4, 2.9))
-    spec = [("C02_grid_feedback", ["M04", "M05", "M06", "M07", "M11"], "C02: ideal device, 100 traps"),
-            ("C08_device_limited", ["M04", "M06", "M07", "M10", "M13", "B1"], "C08: crosstalk device, 4-bit phase")]
-    cols = {"M04": GREEN, "M05": "#8a8a8a", "M06": ORANGE, "M07": BLUE, "M11": PURPLE, "M10": "#555555", "M13": RED, "B1": "#000000"}
-    marks = {"M04": "o", "M05": "s", "M06": "^", "M07": "v", "M11": "D", "M10": "x", "M13": "P", "B1": "*"}
+    pick = lambda *keys: [ID[k] for k in keys]  # noqa: E731
+    spec = [("C02_grid_feedback", pick("gs", "gaa", "wgs", "pfwgs", "wirtadam"), "C02: ideal device, 100 traps"),
+            ("C08_device_limited", pick("gs", "wgs", "pfwgs", "cgmin", "crosstalkcg", "devicewgs"), "C08: crosstalk device, 4-bit phase")]
+    cols = {ID["gs"]: GREEN, ID["gaa"]: "#8a8a8a", ID["wgs"]: ORANGE, ID["pfwgs"]: BLUE, ID["wirtadam"]: PURPLE,
+            ID["cgmin"]: "#555555", ID["crosstalkcg"]: RED, ID["devicewgs"]: "#000000"}
+    marks = {ID["gs"]: "o", ID["gaa"]: "s", ID["wgs"]: "^", ID["pfwgs"]: "v", ID["wirtadam"]: "D", ID["cgmin"]: "x",
+             ID["crosstalkcg"]: "P", ID["devicewgs"]: "*"}
     for ax, (case, methods, title) in zip(axs, spec):
         t = _load(DER / case / "trace.json")
         for m in methods:
@@ -98,12 +105,12 @@ def fig_convergence() -> None:
             h = t["methods"][m]["history"]
             x = [r["iteration"] for r in h]
             y = [max(r["rel_std_pct"], 1e-4) for r in h]
-            ax.plot(x, y, color=cols[m], marker=marks[m], markevery=max(1, len(x) // 6), ms=3.5, lw=1.0, label=m)
+            ax.plot(x, y, color=cols[m], marker=marks[m], markevery=max(1, len(x) // 6), ms=3.5, lw=1.0, label=RUN[m])
         ax.set_yscale("log")
         ax.set_xlabel("iteration")
         ax.set_title(title, fontsize=8)
         ax.grid(True, color=GRID, lw=0.5)
-        ax.legend(fontsize=6, ncol=2, frameon=False)
+        ax.legend(fontsize=5.5, ncol=1, frameon=False)
     axs[0].set_ylabel("relative standard deviation (%)")
     fig.tight_layout()
     fig.savefig(HERE / "fig-convergence.pdf", bbox_inches="tight")
@@ -181,7 +188,7 @@ def fig_geometry() -> None:
 def fig_pareto() -> None:
     b = _load(DER / "benchmark" / "results.json")
     fig, axs = plt.subplots(2, 3, figsize=(7.4, 4.2))
-    marks = {"M04": ("o", GREEN), "M05": ("s", "#8a8a8a"), "M06": ("^", ORANGE), "M09": ("D", PURPLE)}
+    marks = {ID["gs"]: ("o", GREEN), ID["gaa"]: ("s", "#8a8a8a"), ID["wgs"]: ("^", ORANGE), ID["directsearch"]: ("D", PURPLE)}
     for ax, fr in zip(axs.flat, b["pareto"]):
         pts = sorted(fr["points"], key=lambda p: p["lambda"])
         ax.plot([p["efficiency"] for p in pts], [p["uniformity"] for p in pts], color=BLUE, marker=".", ms=4, lw=1.0, label="front")
@@ -189,7 +196,7 @@ def fig_pareto() -> None:
             cell = [x for x in b["rows"] if x["method"] == m and x["geometry"] == fr["geometry"] and x["device"] == "ideal"
                     and x["budget_kind"] == "iterations" and x["budget"] == 100 and x["params"] == "default"]
             if cell:
-                ax.scatter(cell[0]["efficiency"]["median"], cell[0]["uniformity"]["median"], marker=mk, color=col, s=16, label=m, zorder=3)
+                ax.scatter(cell[0]["efficiency"]["median"], cell[0]["uniformity"]["median"], marker=mk, color=col, s=16, label=RUN[m], zorder=3)
         ax.set_title(fr["geometry"], fontsize=8)
         ax.grid(True, color=GRID, lw=0.5)
         ax.tick_params(labelsize=6.5)
@@ -205,7 +212,7 @@ def fig_pareto() -> None:
 
 def fig_nfix() -> None:
     acc = {r["id"]: r["numbers"] for r in _load(DATA / "acceptance.json")["rows"]}
-    sweep = acc["M07"]["n_fix_sweep_min_rel_std_150"]
+    sweep = acc[ID["pfwgs"]]["n_fix_sweep_min_rel_std_150"]
     fig, axs = plt.subplots(1, 2, figsize=(7.4, 2.5))
     ns = [int(k) for k in sweep]
     axs[0].plot(ns, [max(v, 1e-3) for v in sweep.values()], color=BLUE, marker="o", ms=4, lw=1.1)
@@ -215,11 +222,11 @@ def fig_nfix() -> None:
     axs[0].set_xlabel("freeze index $N$")
     axs[0].set_ylabel("minimum $\\sigma$ in 150 iterations (%)")
     axs[0].set_title("(a) the source value stalls on this grid", fontsize=8)
-    i7, i6 = acc["M07"]["iterations_m07"], acc["M07"]["iterations_m06"]
+    i7, i6 = acc[ID["pfwgs"]]["iterations_m07"], acc[ID["pfwgs"]]["iterations_m06"]
     w = 0.35
     xs = np.arange(len(i7))
-    axs[1].bar(xs - w / 2, i6, w, color=ORANGE, label="M06")
-    axs[1].bar(xs + w / 2, i7, w, color=BLUE, label="M07, N = 60")
+    axs[1].bar(xs - w / 2, i6, w, color=ORANGE, label="weighted GS")
+    axs[1].bar(xs + w / 2, i7, w, color=BLUE, label="phase-fixed weighted GS, $N = 60$")
     axs[1].set_xticks(xs, [f"seed {k + 1}" for k in xs])
     axs[1].set_ylabel("iterations to 0.5 percent")
     axs[1].set_title("(b) $50\\times30$ array", fontsize=8)

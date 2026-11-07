@@ -1,17 +1,18 @@
-\begin{table}[t]\centering\footnotesize
-\caption{Baked results per case at the case budget, the mean over the three seeds of the canonical bake with the range over the seeds in brackets: the method with the lowest mean relative standard deviation among those with at least half the best mean efficiency, and the phase-fixed WGS (M07) and plain GS (M04) rows where they ran. $e$ efficiency, $\sigma$ relative standard deviation of the trap intensities (\%).}\label{tab:results}
-\begin{tabular}{@{}l l r r r r r@{}}\toprule Case & Best & $e$ & $\sigma$ & M07 $\sigma$ & M07 $e$ & M04 $\sigma$\\\midrule
-C01 & M09 & 0.650 & $<$0.01 [$<$0.01, $<$0.01] & $<$0.01 [$<$0.01, 0.01] & 0.788 & 17.20 [7.34, 23.68]\\
-C02 & M09 & 0.649 & 0.01 [0.01, 0.01] & 0.38 [0.01, 0.85] & 0.792 & 17.28 [15.99, 19.48]\\
-C03 & M07 & 0.794 & 0.42 [0.20, 0.66] & 0.42 [0.20, 0.66] & 0.794 & 17.81 [17.08, 18.68]\\
+\begin{table}[t]\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\caption{Baked results per case at the case budget, the mean over the three seeds of the canonical bake with the range over the seeds in brackets: the method with the lowest mean relative standard deviation among those with at least half the best mean efficiency, and the phase-fixed weighted GS and plain GS rows where they ran. $e$ efficiency, $\sigma$ relative standard deviation of the trap intensities (\%).}\label{tab:results}
+\begin{tabular}{@{}l >{\raggedright\arraybackslash}p{0.14\textwidth} r r r r r@{}}\toprule & & & & \multicolumn{2}{c}{Phase-fixed weighted GS} & \\
+\cmidrule(lr){5-6} Case & Best & $e$ & $\sigma$ & $\sigma$ & $e$ & GS $\sigma$\\\midrule
+C01 & direct search & 0.650 & $<$0.01 [$<$0.01, $<$0.01] & $<$0.01 [$<$0.01, 0.01] & 0.788 & 17.20 [7.34, 23.68]\\
+C02 & direct search & 0.649 & 0.01 [0.01, 0.01] & 0.38 [0.01, 0.85] & 0.792 & 17.28 [15.99, 19.48]\\
+C03 & phase-fixed weighted GS & 0.794 & 0.42 [0.20, 0.66] & 0.42 [0.20, 0.66] & 0.794 & 17.81 [17.08, 18.68]\\
 C04 & shaped potential & n/a & n/a & n/a & n/a & n/a\\
-C05 & M09 & 0.679 & 0.01 [0.01, 0.01] & n/a & n/a & 19.35 [16.75, 22.37]\\
-C06 & M07 & 0.701 & $<$0.01 [$<$0.01, $<$0.01] & $<$0.01 [$<$0.01, $<$0.01] & 0.701 & 8.23 [7.33, 9.29]\\
-C07 & M09 & 0.638 & $<$0.01 [$<$0.01, $<$0.01] & $<$0.01 [$<$0.01, 0.01] & 0.785 & 18.19 [13.36, 22.48]\\
-C08 & B1 & 0.655 & 6.50 [5.91, 7.04] & 13.21 [13.05, 13.42] & 0.678 & 24.27 [21.62, 28.01]\\
-C09 & M14 & 0.799 & 0.33 [0.08, 0.68] & 6.16 [4.66, 7.09] & 0.447 & 15.35 [14.98, 15.71]\\
-C10 & B2 & 0.793 & 0.02 [$<$0.01, 0.06] & 0.02 [0.01, 0.04] & 0.792 & n/a\\
-C12 & M07 & 0.792 & 0.51 [0.01, 1.48] & 0.51 [0.01, 1.48] & 0.792 & 18.49 [16.37, 19.97]\\
-C13 & M07 & 0.725 & 0.26 [0.18, 0.30] & 0.26 [0.18, 0.30] & 0.725 & 10.97 [10.62, 11.17]\\
-C14 & M06 & 0.785 & 0.49 [0.32, 0.59] & n/a & n/a & 16.91 [15.26, 18.41]\\
+C05 & direct search & 0.679 & 0.01 [0.01, 0.01] & n/a & n/a & 19.35 [16.75, 22.37]\\
+C06 & phase-fixed weighted GS & 0.701 & $<$0.01 [$<$0.01, $<$0.01] & $<$0.01 [$<$0.01, $<$0.01] & 0.701 & 8.23 [7.33, 9.29]\\
+C07 & direct search & 0.638 & $<$0.01 [$<$0.01, $<$0.01] & $<$0.01 [$<$0.01, 0.01] & 0.785 & 18.19 [13.36, 22.48]\\
+C08 & device-aware weighted GS & 0.655 & 6.50 [5.91, 7.04] & 13.21 [13.05, 13.42] & 0.678 & 24.27 [21.62, 28.01]\\
+C09 & Zernike correction & 0.799 & 0.33 [0.08, 0.68] & 6.16 [4.66, 7.09] & 0.447 & 15.35 [14.98, 15.71]\\
+C10 & flicker-bounded phase-continuous sequence & 0.793 & 0.02 [$<$0.01, 0.06] & 0.02 [0.01, 0.04] & 0.792 & n/a\\
+C12 & phase-fixed weighted GS & 0.792 & 0.51 [0.01, 1.48] & 0.51 [0.01, 1.48] & 0.792 & 18.49 [16.37, 19.97]\\
+C13 & phase-fixed weighted GS & 0.725 & 0.26 [0.18, 0.30] & 0.26 [0.18, 0.30] & 0.725 & 10.97 [10.62, 11.17]\\
+C14 & weighted GS & 0.785 & 0.49 [0.32, 0.59] & n/a & n/a & 16.91 [15.26, 18.41]\\
 \bottomrule\end{tabular}\end{table}

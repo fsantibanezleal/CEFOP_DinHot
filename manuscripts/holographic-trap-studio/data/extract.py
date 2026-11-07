@@ -7,8 +7,9 @@ Run from the repository root (standard library only):
     python manuscripts/holographic-trap-studio/data/extract.py
 
 Sources, all committed with the product:
-  * ``docs/design/SDD.md``: the method ladder (id, group, method, acceptance criterion); the report shows two groups, the
-    published methods M01 to M19 and the methods proposed here, B1 to B5 (the SDD's ids of the latter are internal).
+  * ``docs/design/SDD.md``: the method ladder (group, method, acceptance criterion); the report shows two groups, the
+    published methods and the methods proposed here, each by its name (``method_names.py``; the ids of the engine and the
+    SDD's claim ids are internal).
   * ``data/derived/manifests/*.json`` and ``data/derived/C*/trace.json``: the baked cases (setup, device, per-method scores,
     feedback steps, bead and atom dynamics).
   * ``data/derived/benchmark/results.json``: the benchmark protocol, its cells and the skipped cells with their reasons; the
@@ -19,8 +20,8 @@ Sources, all committed with the product:
   * ``data/derived/readiness.json``: what is real in the build.
 
 ``UNIT_ACCEPTANCE`` below is read from ``acceptance.json``, written by ``acceptance.py`` (run it first, same folder), which measures
-the acceptance quantity of each method M01 to M19, B4 and B5 as its gate test computes it, on the current engine. The rows of
-B1 and B2 come from ``beyond.json``, measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` (``beyond_rows.py``).
+the acceptance quantity of each published method and of the aberration-robust hologram and the efficiency-uniformity Pareto front as
+its gate test computes it, on the current engine. The rows of the device-aware weighted GS and the flicker-bounded sequence come from ``beyond.json``, measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` (``beyond_rows.py``).
 ``QUOTED_LIVE`` holds the browser measurements, which a standard-library script cannot repeat; each names the section of
 ``docs/design/measured-resources.md`` or of the SDD that records it. The count of engine fixtures and their loosest tolerance are
 read from ``tests/fixtures/engine``.
@@ -37,6 +38,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import beyond_rows  # noqa: E402
+from method_names import ID, NAME, RUN, label_name, named, slug  # noqa: E402,F401
 
 ROOT = HERE.parents[2]
 DERIVED = ROOT / "data" / "derived"
@@ -46,7 +48,7 @@ DERIVED = ROOT / "data" / "derived"
 PUBLISHED_ANCHORS = {"M01": (0.29, 0.01), "M02": (0.69, 0.01), "M03": (0.01, 0.58), "M04": (0.94, 0.60),
                      "M05": (0.93, 0.79), "M06": (0.93, 0.99)}
 
-# Measured acceptance of every ladder method (M01 to M19, BS-4, BS-5), read from acceptance.json, which acceptance.py writes by
+# Measured acceptance of every ladder method, read from acceptance.json, which acceptance.py writes by
 # computing each method's gate quantity on the current engine; nothing of the table is typed here.
 # (id, measured acceptance text, seeds, source: the gate test the row mirrors)
 def load_acceptance() -> list[tuple[str, str, str, str]]:
@@ -54,8 +56,8 @@ def load_acceptance() -> list[tuple[str, str, str, str]]:
     if not path.is_file():
         raise SystemExit(f"{path} is missing: run manuscripts/holographic-trap-studio/data/acceptance.py first")
     rows = json.loads(path.read_text(encoding="utf-8"))["rows"]
-    rows = rows[:-2] + beyond_rows.rows() + rows[-2:]      # M01 to M19, then B1 and B2 (companion measurements), then B4 and B5
-    return [(r["id"], r["text"], r["seeds"], r["source"]) for r in rows]
+    rows = rows[:-2] + beyond_rows.rows() + rows[-2:]      # the published methods, the two companion measurements, then two more
+    return [(r["id"], named(r["text"]), r["seeds"], r["source"]) for r in rows]
 
 
 UNIT_ACCEPTANCE = load_acceptance()
@@ -294,27 +296,27 @@ def f(x: float, d: int = 3) -> str:
 # ---------------------------------------------------------------------------------------------------- tables
 
 def table_ladder(ladder: list[dict]) -> str:
-    out = ["\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.07\\textwidth} >{\\raggedright\\arraybackslash}p{0.38\\textwidth} >{\\raggedright\\arraybackslash}p{0.47\\textwidth}@{}}\n",
-           "\\caption{The methods of the studio and the acceptance criterion the design document fixes for each: the published methods M01 to M19 and the methods proposed here, B1 to B5.}\\label{tab:ladder}\\\\\n",
-           "\\toprule Id & Method & Acceptance criterion\\\\\\midrule\\endfirsthead\n",
-           "\\toprule Id & Method & Acceptance criterion\\\\\\midrule\\endhead\n"]
+    out = ["\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.34\\textwidth} >{\\raggedright\\arraybackslash}p{0.58\\textwidth}@{}}\n",
+           "\\caption{The methods of the studio and the acceptance criterion the design document fixes for each: the published methods and the methods proposed here.}\\label{tab:ladder}\\\\\n",
+           "\\toprule Method & Acceptance criterion\\\\\\midrule\\endfirsthead\n",
+           "\\toprule Method & Acceptance criterion\\\\\\midrule\\endhead\n"]
     for gr in GROUPS:
-        out.append(f"\\multicolumn{{3}}{{@{{}}l}}{{\\textit{{{GROUP_LABEL[gr]}}}}}\\\\\n")
+        out.append(f"\\multicolumn{{2}}{{@{{}}l}}{{\\textit{{{GROUP_LABEL[gr]}}}}}\\\\\n")
         for r in (r for r in ladder if group_of(r["tier"]) == gr):
-            crit = tex_escape(re.sub(r"\s+", " ", r["criterion"]))
+            crit = tex_escape(named(re.sub(r"\s+", " ", r["criterion"])))
             crit = crit.replace("1e-9", "$10^{-9}$")
-            out.append(f"{tex_escape(r['id'])} & {tex_escape(r['method'])} & \\footnotesize {crit}\\\\\n")
+            out.append(f"{tex_escape(r['method'])} & \\footnotesize {crit}\\\\\n")
     out.append("\\bottomrule\\end{longtable}\n")
     return "".join(out)
 
 
 def table_acceptance() -> str:
-    out = ["\\begin{longtable}{@{}p{0.07\\textwidth} p{0.74\\textwidth} p{0.13\\textwidth}@{}}\n",
+    out = ["\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.2\\textwidth} p{0.58\\textwidth} p{0.14\\textwidth}@{}}\n",
            "\\caption{Measured acceptance of the methods on DinHot's own grids (unit tests; seeds as stated). Intervals are [min, max].}\\label{tab:acceptance}\\\\\n",
-           "\\toprule Id & Measured & Seeds\\\\\\midrule\\endfirsthead\n",
-           "\\toprule Id & Measured & Seeds\\\\\\midrule\\endhead\n"]
+           "\\toprule Method & Measured & Seeds\\\\\\midrule\\endfirsthead\n",
+           "\\toprule Method & Measured & Seeds\\\\\\midrule\\endhead\n"]
     for mid, text, seeds, _src in UNIT_ACCEPTANCE:
-        out.append(f"{mid} & \\footnotesize {tex_escape(text)} & \\footnotesize {seeds}\\\\\n")
+        out.append(f"\\footnotesize {tex_escape(label_name(mid))} & \\footnotesize {tex_escape(text)} & \\footnotesize {seeds}\\\\\n")
     out.append("\\bottomrule\\end{longtable}\n")
     return "".join(out)
 
@@ -322,7 +324,7 @@ def table_acceptance() -> str:
 def table_cases(cases: list[dict]) -> str:
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
            f"\\caption{{The {NUMBER_WORDS.get(len(cases), len(cases))} cases: category, optical setup, target and the methods that ran in the bake. C11 is refused by the input contract and never computed.}}\\label{{tab:cases}}\n",
-           "\\begin{tabular}{@{}l l l l r l@{}}\\toprule Case & Category & Setup & Target & Methods & Reference\\\\\\midrule\n"]
+           "\\begin{tabular}{@{}l l l l r >{\\raggedright\\arraybackslash}p{0.14\\textwidth}@{}}\\toprule Case & Category & Setup & Target & Methods & Reference\\\\\\midrule\n"]
     for c in cases:
         if c["status"] != "baked":
             out.append(f"{c['short']} & {tex_escape(c['category'])} & & one trap at 200 $\\mu$m, outside the field & 0 & refused\\\\\n")
@@ -338,7 +340,7 @@ def table_cases(cases: list[dict]) -> str:
             extra = f", {dev['bit_depth']}-bit" + (f", fill {dev['fill_factor']:g}" if dev["fill_factor"] != 1 else "")
         if c["aberration"]:
             extra += ", aberrated"
-        out.append(f"{c['short']} & {tex_escape(c['category'])} & {setup} & {tgt}{extra} & {len(c['methods'])} & {c['reference_method']}\\\\\n")
+        out.append(f"{c['short']} & {tex_escape(c['category'])} & {setup} & {tgt}{extra} & {len(c['methods'])} & {tex_escape(RUN.get(c['reference_method'], c['reference_method']))}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
@@ -359,28 +361,28 @@ def table_calibration(cases: list[dict]) -> str:
            "\\caption{Calibration case C12 (10 $\\times$ 10 traps at eight Fourier units): efficiency $e$ and uniformity $u$ of the analytic "
            "and Gerchberg--Saxton baselines, the mean over the three seeds of the canonical bake (the range over the seeds in "
            "brackets for $u$ and $\\sigma$), against the values published by Di~Leonardo et al.\\ for the same task.}\\label{tab:calibration}\n",
-           "\\begin{tabular}{@{}l r r r r r@{}}\\toprule Method & $e$ (baked) & $u$ (baked) & $\\sigma$ (\\%) & $e$ (published) & "
+           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.22\\textwidth} r r r r r@{}}\\toprule Method & $e$ (baked) & $u$ (baked) & $\\sigma$ (\\%) & $e$ (published) & "
            "$u$ (published)\\\\\\midrule\n"]
-    for mid in ("M01", "M02", "M03", "M04", "M05", "M06", "M07"):
+    for mid in (ID[x] for x in ("prisms", "randsup", "randmask", "gs", "gaa", "wgs", "pfwgs")):
         if f"{mid}.efficiency" not in MEASURED[cid]:
             continue
         pe, pu = PUBLISHED_ANCHORS.get(mid, (None, None))
         pub = ("& " + f(pe, 2) + " & " + f(pu, 2)) if pe is not None else "& n/a & n/a"
         eff = statistics.fmean(seeds_of(cid, mid, "efficiency"))
-        out.append(f"{mid} & {f(eff, 3)} & {mean_range(seeds_of(cid, mid, 'uniformity'), 3)} & "
+        out.append(f"{label_name(mid)} & {f(eff, 3)} & {mean_range(seeds_of(cid, mid, 'uniformity'), 3)} & "
                    f"{mean_range(seeds_of(cid, mid, 'rel_std_pct'), 2)} {pub}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
 
 def table_results(cases: list[dict]) -> str:
-    out = ["\\begin{table}[t]\\centering\\footnotesize\n",
+    out = ["\\begin{table}[t]\\centering\\scriptsize\\setlength{\\tabcolsep}{3pt}\n",
            "\\caption{Baked results per case at the case budget, the mean over the three seeds of the canonical bake with the range over "
            "the seeds in brackets: the method with the lowest mean relative standard deviation among those with at least half the best "
-           "mean efficiency, and the phase-fixed WGS (M07) and plain GS (M04) rows where they ran. $e$ efficiency, $\\sigma$ relative "
+           "mean efficiency, and the phase-fixed weighted GS and plain GS rows where they ran. $e$ efficiency, $\\sigma$ relative "
            "standard deviation of the trap intensities (\\%).}\\label{tab:results}\n",
-           "\\begin{tabular}{@{}l l r r r r r@{}}\\toprule Case & Best & $e$ & $\\sigma$ & M07 $\\sigma$ & M07 $e$ & "
-           "M04 $\\sigma$\\\\\\midrule\n"]
+           "\\begin{tabular}{@{}l >{\\raggedright\\arraybackslash}p{0.14\\textwidth} r r r r r@{}}\\toprule & & & & \\multicolumn{2}{c}{Phase-fixed weighted GS} & \\\\\n"
+           "\\cmidrule(lr){5-6} Case & Best & $e$ & $\\sigma$ & $\\sigma$ & $e$ & GS $\\sigma$\\\\\\midrule\n"]
     for c in cases:
         if c["status"] != "baked":
             continue
@@ -397,9 +399,10 @@ def table_results(cases: list[dict]) -> str:
             v = m[f"{x}.rel_std_pct"]
             return f"{sig2(statistics.fmean(v))} [{sig2(min(v))}, {sig2(max(v))}]"
 
-        m7 = f"{rng('M07')} & {f(statistics.fmean(m['M07.efficiency']), 3)}" if "M07.rel_std_pct" in m else "n/a & n/a"
-        m4 = rng("M04") if "M04.rel_std_pct" in m else "n/a"
-        out.append(f"{c['short']} & {best} & {f(statistics.fmean(m[f'{best}.efficiency']), 3)} & {rng(best)} & {m7} & {m4}\\\\\n")
+        pf, gs = ID["pfwgs"], ID["gs"]
+        m7 = f"{rng(pf)} & {f(statistics.fmean(m[f'{pf}.efficiency']), 3)}" if f"{pf}.rel_std_pct" in m else "n/a & n/a"
+        m4 = rng(gs) if f"{gs}.rel_std_pct" in m else "n/a"
+        out.append(f"{c['short']} & {RUN[best]} & {f(statistics.fmean(m[f'{best}.efficiency']), 3)} & {rng(best)} & {m7} & {m4}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
@@ -415,7 +418,7 @@ def sig2(x: float) -> str:
 
 
 def _cell(b: dict | None) -> str:
-    return "n/a" if not b else f"{tex_escape(ladder_id(b['method']))} {sig(b['sigma'])}"
+    return "n/a" if not b else f"{tex_escape(RUN[b['method']])} {sig(b['sigma'])}"
 
 
 def table_benchmark(bench: dict) -> str:
@@ -424,7 +427,7 @@ def table_benchmark(bench: dict) -> str:
            "\\caption{Benchmark, per geometry and device: the published method and the proposed method with the lowest median relative standard deviation "
            "$\\sigma$ (\\%) at 100 iterations among those that reach at least half of the best median efficiency of the cell, and the best "
            "method of all at a time budget of 1~s. Default parameters, medians over the seeds of each cell.}\\label{tab:benchmark}\n",
-           "\\begin{tabular}{@{}l l l l l@{}}\\toprule Geometry & Device & Published & Proposed & Best at 1 s\\\\\\midrule\n"]
+           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.2\\textwidth} l >{\\raggedright\\arraybackslash}p{0.17\\textwidth} >{\\raggedright\\arraybackslash}p{0.2\\textwidth} >{\\raggedright\\arraybackslash}p{0.2\\textwidth}@{}}\\toprule Geometry & Device & Published & Proposed & Best at 1 s\\\\\\midrule\n"]
     for key, c in bench["by_geometry"].items():
         g, device = key.split("/")
         dev = "ideal" if device == "ideal" else "C08"
@@ -441,7 +444,7 @@ def table_bench_methods(bench: dict) -> str:
            "the default parameters, on the ideal device and on the C08 device. $\\sigma$ relative standard deviation (\\%): the median over the "
            "geometries of the cell medians and, in brackets, the median over the geometries of the first and third quartiles over the seeds "
            "of each cell; $e$ efficiency; time wall-clock seconds under shared load.}\\label{tab:benchmethods}\n",
-           "\\begin{tabular}{@{}l r r r r r r@{}}\\toprule Id & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & "
+           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.3\\textwidth} r r r r r r@{}}\\toprule Method & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & "
            "$e$ C08\\\\\\midrule\n"]
     order = sorted(bench["by_method"], key=lambda m: (m.startswith("B"), m))
     last = None
@@ -455,7 +458,7 @@ def table_bench_methods(bench: dict) -> str:
         ideal = (f"{i['n']} & {sig(i['sigma'])} [{sig(i['q1'])}, {sig(i['q3'])}] & {f(i['eff'], 3)} & {secs}" if i
                  else "0 & n/a & n/a & n/a")
         dev = f"{sig(d['sigma'])} [{sig(d['q1'])}, {sig(d['q3'])}] & {f(d['eff'], 3)}" if d else "n/a & n/a"
-        out.append(f"{tex_escape(ladder_id(m))} & {ideal} & {dev}\\\\\n")
+        out.append(f"{tex_escape(NAME[m])} & {ideal} & {dev}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
@@ -528,7 +531,7 @@ def main() -> int:
     L.append(macro("gFourBOneSigma", sig(g4["proposed"]["sigma"])))
     L.append(macro("gFourBOneSeeds", g4["proposed"]["n_seeds"]))
     L.append(macro("gFourPubSigma", sig(g4["published"]["sigma"])))
-    L.append(macro("gFourPubMethod", tex_escape(g4["published"]["method"])))
+    L.append(macro("gFourPubMethod", tex_escape(RUN[g4["published"]["method"]])))
     # the calibration case C12, three-seed means (measured_ranges.json) and the published anchors of its table
     c12 = MEASURED["C12_calibration"]
     for k, nm in enumerate(("One", "Two", "Three", "Four", "Five", "Six", "Seven"), start=1):
@@ -574,16 +577,17 @@ def main() -> int:
     L.append(macro("benchGeometries", len(bench["geometries"])))
     L.append(macro("benchRows", bench["rows"]))
     L.append(macro("benchSkipped", bench["skipped"]))
-    L.append(macro("benchMethodsMeasured", ", ".join(bench["methods_measured"])))
+    L.append(macro("benchMethodsMeasured", ", ".join(RUN[m] for m in bench["methods_measured"])))
     L.append(macro("benchNMeasured", len(bench["methods_measured"])))
     L.append(macro("benchNProtocol", len(bench["methods_in_protocol"])))
     # BS-1 against M07 on the C08 device, per geometry, at 100 iterations (the grid of medians): both thresholds of the claim
     g100 = load(DERIVED / "benchmark" / "results.json")
+    wgs7, dev1 = ID["pfwgs"], ID["devicewgs"]
     c100 = {(x["method"], x["geometry"]): x for x in g100["rows"] if x["budget_kind"] == "iterations" and x["budget"] == 100
             and x["params"] == "default" and x["device"] == "device"}
-    b1_cells = [(g, c100[("M07", g)]["rel_std_pct"]["median"] / c100[("B1", g)]["rel_std_pct"]["median"],
-                 c100[("B1", g)]["efficiency"]["median"] / c100[("M07", g)]["efficiency"]["median"])
-                for (m, g) in sorted(c100) if m == "B1" and ("M07", g) in c100]
+    b1_cells = [(g, c100[(wgs7, g)]["rel_std_pct"]["median"] / c100[(dev1, g)]["rel_std_pct"]["median"],
+                 c100[(dev1, g)]["efficiency"]["median"] / c100[(wgs7, g)]["efficiency"]["median"])
+                for (m, g) in sorted(c100) if m == dev1 and (wgs7, g) in c100]
     b1_pass = [g for g, fac, eff in b1_cells if fac >= 2 and eff >= 0.9]
     L.append(macro("benchOneN", len(b1_cells)))
     L.append(macro("benchOnePass", len(b1_pass)))
@@ -616,7 +620,7 @@ def main() -> int:
         out5 = []
         for f5 in rb.get("pareto") or []:
             g = f5["geometry"]
-            pts = [(c5[(m, g)]["efficiency"]["median"], c5[(m, g)]["uniformity"]["median"]) for m in ("M04", "M05", "M06", "M09") if (m, g) in c5]
+            pts = [(c5[(m, g)]["efficiency"]["median"], c5[(m, g)]["uniformity"]["median"]) for m in (ID[x] for x in ("gs", "gaa", "wgs", "directsearch")) if (m, g) in c5]
             if pts:
                 out5.append((g, hv([(p["efficiency"], p["uniformity"]) for p in f5["points"]]), hv(pts)))
         return out5
@@ -629,9 +633,9 @@ def main() -> int:
     L.append(macro("benchFiveMargin", f"{max((b - a for _, a, b in five), default=0.0):.3f}"))
     no_rows = [m for m in bench["methods_in_protocol"] if m not in bench["methods_measured"]]
     # main.tex names the reasons of these three methods (a vortex charge, a rearrangement block, the learned model's geometry)
-    if bench["rows"] > 100 and set(no_rows) != {"M15", "M16", "M17"}:
+    if bench["rows"] > 100 and set(no_rows) != {ID[x] for x in ("vortex", "rearrange", "cgnet")}:
         raise SystemExit(f"the methods without a benchmark row are {no_rows}: revise the sentence of main.tex that names their reasons")
-    L.append(macro("benchNoRows", " , ".join(tex_escape(ladder_id(m)) for m in no_rows).replace(" , ", ", ") or "none"))
+    L.append(macro("benchNoRows", " , ".join(tex_escape(RUN[m]) for m in no_rows).replace(" , ", ", ") or "none"))
     L.append(macro("benchNNoRows", len(no_rows)))
     L.append(macro("benchSeedsMin", bench["seeds_min"]))
     L.append(macro("benchSeedsMax", bench["seeds_max"]))
@@ -654,7 +658,7 @@ def main() -> int:
         L.append(macro(f"benchSpread{nm}High", sig(kept[-1]) if kept else "n/a"))
         L.append(macro(f"benchSpread{nm}N", len(kept)))
         lead = bench_leader(bench, device)
-        L.append(macro(f"benchBest{nm}", tex_escape(ladder_id(lead["method"])) if lead else "n/a"))
+        L.append(macro(f"benchBest{nm}", tex_escape(RUN[lead["method"]]) if lead else "n/a"))
         L.append(macro(f"benchBest{nm}Sigma", sig(lead["sigma"]) if lead else "n/a"))
         L.append(macro(f"benchBest{nm}Eff", f(lead["eff"], 3) if lead else "n/a"))
     # feedback
@@ -704,11 +708,12 @@ def main() -> int:
     L.append(macro("wsNfixModel", ws["n_fix_model"]))
     L.append(macro("wsNfixRandom", ws["n_fix_random"]))
     # sigma statistics over cases: M07 against M04 where both ran
-    both = [(c["methods"]["M04"]["rel_std_pct"], c["methods"]["M07"]["rel_std_pct"]) for c in baked if "M04" in c["methods"] and "M07" in c["methods"]]
+    gs4, pf7 = ID["gs"], ID["pfwgs"]
+    both = [(c["methods"][gs4]["rel_std_pct"], c["methods"][pf7]["rel_std_pct"]) for c in baked if gs4 in c["methods"] and pf7 in c["methods"]]
     L.append(macro("nBothFourSeven", len(both)))
     L.append(macro("medSigmaMfour", f(statistics.median(a for a, _ in both), 1)))
     L.append(macro("medSigmaMseven", f(statistics.median(b for _, b in both), 2)))
-    effs = [(c["methods"]["M07"]["efficiency"]) for c in baked if "M07" in c["methods"]]
+    effs = [(c["methods"][pf7]["efficiency"]) for c in baked if pf7 in c["methods"]]
     L.append(macro("minEffMseven", f(min(effs), 3)))
     L.append(macro("maxEffMseven", f(max(effs), 3)))
     # readiness

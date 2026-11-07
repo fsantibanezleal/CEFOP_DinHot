@@ -7,8 +7,8 @@ Run from the repository root after ``acceptance.py``, ``params.py`` and ``extrac
 
 It reads only committed files and writes, next to this script, ``methods_numbers.tex`` (macros) and the table files below.
 
-  * ``params.json`` (``params.py``: the keyword defaults of every ``run`` function): ``\\defv{M05}{alpha}`` and ``table_defaults.tex``.
-  * ``acceptance.json`` (``acceptance.py``): ``\\acc{M04}``, the measured acceptance text of each method, and ``table_nfix.tex``.
+  * ``params.json`` (``params.py``: the keyword defaults of every ``run`` function): ``\\defv{gaa}{alpha}`` and ``table_defaults.tex``.
+  * ``acceptance.json`` (``acceptance.py``): ``\\acc{gs}``, the measured acceptance text of each method, and ``table_nfix.tex``.
   * ``docs/contracts/catalog.md`` and the schema files: ``table_contracts.tex``, ``table_contract_<id>.tex`` (the top-level fields of
     each contract with their type, unit and range), ``appendix_fields.tex`` (the nested fields) and ``\\cver{<id>}``.
   * ``data-pipeline/pipeline/cases/measured_ranges.json`` (three seeds per case, the canonical bake): ``table_bake_sigma.tex``,
@@ -28,6 +28,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import beyond_rows  # noqa: E402
+from method_names import ID, NAME, RUN, named, slug  # noqa: E402
 
 ROOT = HERE.parents[2]
 DERIVED = ROOT / "data" / "derived"
@@ -100,10 +101,10 @@ NOTATION = [
     (r"$K,\ \sigma_K,\ q$", "crosstalk kernel of the device and its fitted width and exponent", "1"),
     (r"$Z_j,\ c_j$", "Zernike mode $j$ (Noll order) and its coefficient", "waves"),
     (r"$N$ (or $n_{\mathrm{fix}}$)", "iteration after which the focal phase is frozen", "1"),
-    (r"$\alpha$", "exponent of the assignment cost (M16) or weight of the adaptive form (M05)", "1"),
+    (r"$\alpha$", "exponent of the assignment cost of the Hungarian rearrangement or weight of the generalized adaptive additive GS", "1"),
     (r"$m$ (mixing)", "mixing parameter of the mixed-region rule", "1"),
     (r"$G,\ \rho_m$", "feedback gain and measured intensity relative to its target", "1"),
-    (r"$\lambda_{\mathrm{B5}}$", "trade-off parameter of the front", "1"),
+    (r"$\lambda_{\mathrm{EU}}$", "trade-off parameter of the efficiency-uniformity Pareto front", "1"),
     (r"$\mathrm{AC}$", "accuracy of a volume hologram, mean over planes of the overlap of unit-sum intensities", "1"),
     (r"$z_{R,\mathrm{SLM}}$", r"SLM-limited Rayleigh range of the volume network (Eq.~\eqref{eq:m17-zr}), the depth unit of its planes", "mm"),
     (r"$\kappa,\ \gamma,\ f_c$", "trap stiffness, drag coefficient and corner frequency of a bead", r"pN/$\mu$m, kg/s, Hz"),
@@ -119,7 +120,7 @@ NOTATION = [
     (r"$T_m,\ t$", r"target intensity of trap $m$ in the cost of the optimizers, and the power of that cost (Eq.~\eqref{eq:m10})", "1"),
     (r"$L,\ \epsilon$", "loss of an optimizer (a quadratic intensity loss unless stated) and a small positive constant that keeps a logarithm or a quotient finite", "1"),
     (r"$g_i,\ B_i,\ \psi$", r"weights, focal amplitude relative to its target and focal phase of the phase-fixed iteration $i$ (Eq.~\eqref{eq:m07})", "1, 1, rad"),
-    (r"$\theta_m,\ h(\tau)$", r"phase given to trap $m$ (random in M02, learned in B3, locked in B2) and the minimal-jerk profile of $\tau=s/S$ (Eq.~\eqref{eq:b2-traj})", "rad, 1"),
+    (r"$\theta_m,\ h(\tau)$", r"phase given to trap $m$ (random in the random superposition, learned in the learned warm start, locked in the flicker-bounded sequence) and the minimal-jerk profile of $\tau=s/S$ (Eq.~\eqref{eq:b2-traj})", "rad, 1"),
 ]
 
 
@@ -143,17 +144,17 @@ def table_defaults(params: dict) -> str:
     rows: list[tuple[str, str, str]] = []
     for mid, m in params.items():
         if not m["params"]:
-            rows.append((mid, "(none)", ""))
+            rows.append((RUN[mid], "(none)", ""))
             continue
         for k, (name, v) in enumerate(m["params"].items()):
-            rows.append((mid if k == 0 else "", f"\\texttt{{{esc(name)}}}", esc(defval(v))))
+            rows.append((esc(RUN[mid]) if k == 0 else "", f"\\texttt{{{esc(name)}}}", esc(defval(v))))
     half = (len(rows) + 1) // 2
     left, right = rows[:half], rows[half:]
     out = ["\\begin{table}[t]\\centering\\scriptsize\\setlength{\\tabcolsep}{4pt}\n",
            "\\caption{Keyword defaults of every method, read from the signature of its \\texttt{run} function by "
            "\\texttt{params.py}, in two blocks; a default of \\texttt{unset} is chosen at run time from the target, as the method "
            "section states, and methods with no keyword take only the interface arguments.}\\label{tab:defaults}\n",
-           "\\begin{tabular}{@{}l l l @{\\hskip 1.2em} l l l@{}}\\toprule Id & Keyword & Default & Id & Keyword & Default\\\\\\midrule\n"]
+           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.17\\textwidth} l l @{\\hskip 1.2em} >{\\raggedright\\arraybackslash}p{0.17\\textwidth} l l@{}}\\toprule Method & Keyword & Default & Method & Keyword & Default\\\\\\midrule\n"]
     for i in range(half):
         l = left[i]
         r = right[i] if i < len(right) else ("", "", "")
@@ -163,7 +164,7 @@ def table_defaults(params: dict) -> str:
 
 
 def table_nfix(acc: dict) -> str:
-    sweep = acc["M07"]["numbers"]["n_fix_sweep_min_rel_std_150"]
+    sweep = acc[ID["pfwgs"]]["numbers"]["n_fix_sweep_min_rel_std_150"]
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
            "\\caption{Phase-fixed weighted GS on the crowded $50\\times30$ array: the minimum relative standard deviation reached "
            "in 150 iterations against the freeze index $N$ (one seed, Fourier form), measured by \\texttt{acceptance.py}. "
@@ -324,7 +325,7 @@ def contract_tables(catalog: list[dict]) -> tuple[dict[str, str], str, str, dict
              f"dimensionless quantity) and the range or constant the schema states.}}\\label{{tab:contract-{cid}}}\n",
              "\\begin{tabular}{@{}l l c l >{\\raggedright\\arraybackslash}p{0.3\\textwidth}@{}}\\toprule Field & Type & Req. & Unit & Range\\\\\\midrule\n"]
         for path, ty, req, rg in rows[:30]:
-            t.append(f"\\texttt{{\\scriptsize {esc(path)}}} & {esc(ty)} & {'yes' if req else 'no'} & {unit_of(path)} & {esc(rg)}\\\\\n")
+            t.append(f"\\texttt{{\\scriptsize {esc(path)}}} & {esc(ty)} & {'yes' if req else 'no'} & {unit_of(path)} & {esc(named(rg))}\\\\\n")
         if len(rows) > 30:
             t.append(f"\\multicolumn{{5}}{{@{{}}l}}{{\\textit{{{len(rows) - 30} further top-level fields: see Appendix~\\ref{{app:fields}}}}}}\\\\\n")
         t.append("\\bottomrule\\end{tabular}\\end{table}\n")
@@ -336,7 +337,7 @@ def contract_tables(catalog: list[dict]) -> tuple[dict[str, str], str, str, dict
                             f"the schema states.}}\\label{{tab:fields-{cid}}}\\\\\n"
                             "\\toprule Field & Type & Req. & Unit & Range\\\\\\midrule\\endfirsthead\n"
                             "\\toprule Field & Type & Req. & Unit & Range\\\\\\midrule\\endhead\n"
-                            + "".join(f"\\texttt{{{esc(p)}}} & {esc(ty)} & {'yes' if rq else 'no'} & {unit_of(p)} & {esc(rg)}\\\\\n"
+                            + "".join(f"\\texttt{{{esc(p)}}} & {esc(ty)} & {'yes' if rq else 'no'} & {unit_of(p)} & {esc(named(rg))}\\\\\n"
                                       for p, ty, rq, rg in nested)
                             + "\\bottomrule\\end{longtable}\n\\endgroup\n")
     summary.append("\\bottomrule\\end{tabular}\\end{table}\n")
@@ -349,7 +350,7 @@ def bake_tables(measured: dict, cases: dict[str, dict]) -> tuple[str, str, str, 
     trap_cases = [c for c in measured if cases.get(c.split("_")[0], {}).get("target_kind") == "traps"]
     shorts = [c.split("_")[0] for c in trap_cases]
     methods = sorted({k.split(".")[0] for c in trap_cases for k in measured[c] if k.endswith(".rel_std_pct")},
-                     key=lambda m: (m[0] == "B", m))
+                     key=lambda m: (m[0] == "B", m))   # published methods first, then the proposed ones
 
     def mean_of(c: str, m: str, metric: str):
         v = measured[c].get(f"{m}.{metric}")
@@ -357,22 +358,23 @@ def bake_tables(measured: dict, cases: dict[str, dict]) -> tuple[str, str, str, 
 
     def table(metric: str, label: str, caption: str, fmt_fn) -> str:
         """Mean over the three seeds with the range over the seeds in brackets, in blocks of cases that fit the page width."""
-        out = ["\\begin{table}[t]\\centering\\scriptsize\\setlength{\\tabcolsep}{3pt}\n", f"\\caption{{{caption}}}\\label{{{label}}}\n"]
         blocks = [list(range(0, 5)), list(range(5, 9)), list(range(9, len(trap_cases)))]
+        width = max(len(b) for b in blocks)
+        out = ["\\begingroup\\scriptsize\\setlength{\\tabcolsep}{2pt}\n",
+               "\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{0.15\\textwidth} " + "r" * width + "@{}}\n",
+               f"\\caption{{{caption}}}\\label{{{label}}}\\\\\n"]
         for bi, idx in enumerate(blocks):
             if not idx:
                 continue
-            out.append("\\smallskip\n" if bi else "")
-            out.append("\\begin{tabular}{@{}l " + "r" * len(idx) + "@{}}\\toprule Id & " + " & ".join(shorts[i] for i in idx)
-                       + "\\\\\\midrule\n")
+            head = "Method & " + " & ".join(shorts[i] for i in idx) + " &" * (width - len(idx)) + "\\\\\n"
+            out.append(("\\midrule\n" if bi else "\\toprule ") + head + "\\midrule\n")
             for m in methods:
                 cells = []
                 for i in idx:
                     v = measured[trap_cases[i]].get(f"{m}.{metric}")
                     cells.append("" if not v else f"{fmt_fn(statistics.fmean(v))} [{fmt_fn(min(v))}, {fmt_fn(max(v))}]")
-                out.append(f"{m} & " + " & ".join(cells) + "\\\\\n")
-            out.append("\\bottomrule\\end{tabular}\n")
-        out.append("\\end{table}\n")
+                out.append(f"{NAME[m]} & " + " & ".join(cells) + " &" * (width - len(idx)) + "\\\\\n")
+        out.append("\\bottomrule\\end{longtable}\n\\endgroup\n")
         return "".join(out)
 
     t_sigma = table("rel_std_pct", "tab:bake-sigma",
@@ -383,24 +385,24 @@ def bake_tables(measured: dict, cases: dict[str, dict]) -> tuple[str, str, str, 
                   "Efficiency of the same runs as Table~\\ref{tab:bake-sigma}: mean over the three seeds of the canonical bake with the "
                   "range over the seeds in brackets, the fraction of the input power in the traps, scored on the case's own device.",
                   lambda v: fmt(v, 2))
-    sel = ("M04", "M06", "M07", "M11", "B1", "B4", "B5")
+    sel = tuple(ID[x] for x in ("gs", "wgs", "pfwgs", "wirtadam", "devicewgs", "robust", "paretofront"))
     cs = [c for c in ("C02_grid_feedback", "C08_device_limited", "C09_aberrated") if c in measured]
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
            "\\caption{Relative standard deviation (percent) of selected methods on three cases: mean over the three seeds of the bake and "
            "the minimum and maximum over the seeds in brackets, the uncertainty the bake supports; C02 is the ideal-device grid, C08 the "
            "device-limited array, C09 the aberrated array.}\\label{tab:seeds}\n",
-           "\\begin{tabular}{@{}l " + "r" * len(cs) + "@{}}\\toprule Id & " + " & ".join(c.split("_")[0] for c in cs) + "\\\\\\midrule\n"]
+           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.3\\textwidth} " + "r" * len(cs) + "@{}}\\toprule Method & " + " & ".join(c.split("_")[0] for c in cs) + "\\\\\\midrule\n"]
     for m in sel:
         cells = []
         for c in cs:
             v = measured[c].get(f"{m}.rel_std_pct")
             cells.append("" if not v else f"{sig(statistics.fmean(v))} [{sig(min(v))}, {sig(max(v))}]")
-        out.append(f"{m} & " + " & ".join(cells) + "\\\\\n")
+        out.append(f"{NAME[m]} & " + " & ".join(cells) + "\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     # counts behind macros
     wins = ties = n = 0
     for c in trap_cases:
-        a, b = mean_of(c, "M04", "rel_std_pct"), mean_of(c, "M06", "rel_std_pct")
+        a, b = mean_of(c, ID["gs"], "rel_std_pct"), mean_of(c, ID["wgs"], "rel_std_pct")
         if a is not None and b is not None:
             n += 1
             wins += b < a
@@ -429,23 +431,24 @@ QUOTED = {"bakeIdleS": ("515", "MR, The bake: time and memory"), "bakeLoadedS": 
 
 
 def headline(measured: dict) -> dict[str, str]:
-    """The headline statistic of the abstract: over the cases where M04 and M07 both ran, the median of the three-seed means of the
+    """The headline statistic of the abstract: over the cases where plain GS and phase-fixed weighted GS both ran, the median of the three-seed means of the
     spread, with the range of the three per-seed medians (the uncertainty the bake supports), and the cases it covers."""
-    both = [c for c, v in measured.items() if "M04.rel_std_pct" in v and "M07.rel_std_pct" in v]
+    gs4, wgs6, pf7 = ID["gs"], ID["wgs"], ID["pfwgs"]
+    both = [c for c, v in measured.items() if f"{gs4}.rel_std_pct" in v and f"{pf7}.rel_std_pct" in v]
     out = {"hlN": str(len(both)), "hlCases": ", ".join(c.split("_")[0] for c in both)}
-    for m, name in (("M04", "Four"), ("M07", "Seven")):
+    for m, name in ((gs4, "Four"), (pf7, "Seven")):
         means = statistics.median(statistics.fmean(measured[c][f"{m}.rel_std_pct"]) for c in both)
         per_seed = [statistics.median(measured[c][f"{m}.rel_std_pct"][s] for c in both) for s in range(3)]
         out[f"hlSigmaM{name.lower()}"] = f"{means:.2g}" if means < 1 else f"{means:.0f}"
         out[f"hlSigmaM{name.lower()}Lo"] = f"{min(per_seed):.2g}" if min(per_seed) < 1 else f"{min(per_seed):.0f}"
         out[f"hlSigmaM{name.lower()}Hi"] = f"{max(per_seed):.2g}" if max(per_seed) < 1 else f"{max(per_seed):.0f}"
     out["hlSeeds"] = "3"
-    effs = [statistics.fmean(measured[c]["M07.efficiency"]) for c in both]
+    effs = [statistics.fmean(measured[c][f"{pf7}.efficiency"]) for c in both]
     out["hlEffLo"], out["hlEffHi"] = f"{min(effs):.3f}", f"{max(effs):.3f}"
     # the three methods over the cases where all of them ran (one common set, so that the medians are comparable)
-    com = [c for c, v in measured.items() if all(f"{m}.rel_std_pct" in v for m in ("M04", "M06", "M07"))]
+    com = [c for c, v in measured.items() if all(f"{m}.rel_std_pct" in v for m in (gs4, wgs6, pf7))]
     out["cmN"] = str(len(com))
-    for m, name in (("M04", "Four"), ("M06", "Six"), ("M07", "Seven")):
+    for m, name in ((gs4, "Four"), (wgs6, "Six"), (pf7, "Seven")):
         sg = statistics.median(statistics.fmean(measured[c][f"{m}.rel_std_pct"]) for c in com)
         ef = statistics.median(statistics.fmean(measured[c][f"{m}.efficiency"]) for c in com)
         out[f"cmSigma{name}"] = f"{sg:.2g}" if sg < 1 else f"{sg:.0f}" if sg >= 10 else f"{sg:.1f}"
@@ -465,7 +468,7 @@ def table_b1_weights() -> str:
     comp = HERE.parents[1] / "device-aware-flicker-bounded" / "data"
     bj = load(comp / "beyond.json")["ablation"]
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Ablation of the weight update of the device-aware weighted GS (B1), the method run with its weight update and with every "
+           "\\caption{Ablation of the weight update of the device-aware weighted GS, the method run with its weight update and with every "
            "weight kept at one. First block: the $10\\times10$ acceptance task, median [min, max] of the relative standard deviation "
            "$\\sigma$ (\\%) over the seeds. Second block: the four benchmark geometries on the C08 device at 10 outer iterations, median over "
            "three seeds of $\\sigma$ and of the efficiency $e$.}\\label{tab:b1-weights}\n",
@@ -491,18 +494,19 @@ def table_power(cases: dict[str, dict]) -> str:
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
            "\\caption{Power budget of the point-trap cases at the bake seed (one seed per case): the fraction of the input power in the traps "
            "$e$, in the zero order $z_0$ and in the ghost traps $g$ (everything else on the grid, including folded replicas), for plain GS "
-           "(M04) and phase-fixed weighted GS (M07) where they ran. The remainder of the power is zero for the plain Fourier form.}"
+           "and phase-fixed weighted GS where they ran. The remainder of the power is zero for the plain Fourier form.}"
            "\\label{tab:power}\n",
-           "\\begin{tabular}{@{}l r r r r r r@{}}\\toprule Case & M04 $e$ & M04 $z_0$ & M04 $g$ & M07 $e$ & M07 $z_0$ & M07 $g$"
-           "\\\\\\midrule\n"]
+           "\\begin{tabular}{@{}l r r r r r r@{}}\\toprule & \\multicolumn{3}{c}{GS} & \\multicolumn{3}{c}{Phase-fixed weighted GS}\\\\\n"
+           "\\cmidrule(lr){2-4}\\cmidrule(l){5-7} Case & $e$ & $z_0$ & $g$ & $e$ & $z_0$ & $g$\\\\\\midrule\n"]
     for c in idx:
         if c["status"] != "baked":
             continue
         m = load(DERIVED / "manifests" / f"{c['case_id']}.json")
-        if m["params"]["target"]["kind"] != "traps" or "M04" not in m["methods"] or "M07" not in m["methods"]:
+        gs4, pf7 = ID["gs"], ID["pfwgs"]
+        if m["params"]["target"]["kind"] != "traps" or gs4 not in m["methods"] or pf7 not in m["methods"]:
             continue
         cells = []
-        for mid in ("M04", "M07"):
+        for mid in (gs4, pf7):
             v = m["methods"][mid]
             cells += [fmt(v["efficiency"], 3), fmt(v["zero_order"], 3), fmt(v["ghost"], 3)]
         out.append(f"{c['case_id'].split('_')[0]} & " + " & ".join(cells) + "\\\\\n")
@@ -551,11 +555,11 @@ def main() -> int:
     L = ["% Generated by data/extract_methods.py from the committed files. Do not edit.\n"]
     for mid, m in params.items():
         for k, v in m["params"].items():
-            L.append(csname_macro(f"def:{mid}:{k.replace('_', '')}", esc(defval(v))))
+            L.append(csname_macro(f"def:{slug(mid)}:{k.replace('_', '')}", esc(defval(v))))
     for r in beyond_rows.rows():
         acc[r["id"]] = r
     for mid, r in acc.items():
-        L.append(csname_macro(f"acc:{mid}", esc(r["text"])))
+        L.append(csname_macro(f"acc:{slug(mid)}", esc(named(r["text"]))))
     tables, summary, appendix, versions = contract_tables(catalog)
     for cid, ver in versions.items():
         L.append(csname_macro(f"cver:{cid}", ver))
@@ -567,9 +571,9 @@ def main() -> int:
     for k, v in derived_size().items():
         L.append(f"\\newcommand{{\\{k}}}{{{v}}}\n")
     for m, (sg, ef, n) in median_stats(measured, cases).items():
-        L.append(csname_macro(f"medsig:{m}", sg))
-        L.append(csname_macro(f"medeff:{m}", ef))
-        L.append(csname_macro(f"ncases:{m}", str(n)))
+        L.append(csname_macro(f"medsig:{slug(m)}", sg))
+        L.append(csname_macro(f"medeff:{slug(m)}", ef))
+        L.append(csname_macro(f"ncases:{slug(m)}", str(n)))
     for k, v in headline(measured).items():
         L.append(f"\\newcommand{{\\{k}}}{{{v}}}\n")
     tests = count_tests()

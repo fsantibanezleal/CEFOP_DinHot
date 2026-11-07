@@ -167,7 +167,7 @@
   },
   {
    "id": "M07",
-   "text": "50 x 30 array to 0.5 percent in 64 and 64 iterations against 136 and 106 for M06 (phase fixed after 60; efficiency 0.83 and 0.83); with the source value of 12 it stalls at 3.58 percent",
+   "text": "50 x 30 array to 0.5 percent in 64 and 64 iterations against 136 and 106 for weighted GS (phase fixed after 60; efficiency 0.83 and 0.83); with the source value of 12 it stalls at 3.58 percent",
    "seeds": "2",
    "source": "tests/methods/baseline/test_m07_phase_fixed_wgs.py (and test_m07_against_slmsuite.py, notebook venv)",
    "numbers": {
@@ -316,7 +316,7 @@
   },
   {
    "id": "M13",
-   "text": "error 0.241 (efficiency 0.535) against 1.382 (0.507) for M10 without the device model, large disc on the crosstalk device",
+   "text": "error 0.241 (efficiency 0.535) against 1.382 (0.507) for conjugate-gradient minimization without the device model, large disc on the crosstalk device",
    "seeds": "1",
    "source": "tests/methods/optim/test_m13_crosstalk_cg.py",
    "numbers": {
@@ -389,7 +389,7 @@
   },
   {
    "id": "M17",
-   "text": "three-plane network refined by M19: median accuracy ratio 1.140 (quartiles 1.103 and 1.163) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
+   "text": "three-plane network refined by volumetric 3D GS: median accuracy ratio 1.140 (quartiles 1.103 and 1.163) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
    "seeds": "162 volumes",
    "source": "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json",
    "numbers": {
@@ -455,7 +455,7 @@
   },
   {
    "id": "B4",
-   "text": "95th percentile of the relative standard deviation a median 1.435 times below M07 (1.42 to 1.57) over a 200-sample aberration ensemble, at a median 0.982 of its efficiency; pointing errors 1.04 times (seed 1)",
+   "text": "95th percentile of the relative standard deviation a median 1.435 times below phase-fixed weighted GS (1.42 to 1.57) over a 200-sample aberration ensemble, at a median 0.982 of its efficiency; pointing errors 1.04 times (seed 1)",
    "seeds": "3 (pointing 1)",
    "source": "tests/methods/beyond/test_b4_robust.py",
    "numbers": {
@@ -487,7 +487,7 @@
   },
   {
    "id": "B5",
-   "text": "hypervolume 0.8190 against 0.8018 for the union of the M04, M05, M06 and M09 points; 7 front points dominate M04 and 8 dominate M05",
+   "text": "hypervolume 0.8190 against 0.8018 for the union of the GS, generalized adaptive additive GS, weighted GS and direct search points; 7 front points dominate GS and 8 dominate generalized adaptive additive GS",
    "seeds": "1",
    "source": "tests/methods/beyond/test_b5_pareto.py",
    "numbers": {

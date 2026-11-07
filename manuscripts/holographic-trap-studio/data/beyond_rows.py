@@ -1,6 +1,6 @@
 """Acceptance rows of B1 and B2 for the technical report, read from the measurements of the companion manuscript.
 
-``acceptance.py`` measures M01 to M19, B4 and B5 as their gate tests do. B1 and B2 are measured by
+``acceptance.py`` measures the published methods, the aberration-robust hologram and the efficiency-uniformity Pareto front as their gate tests do. The device-aware weighted GS and the flicker-bounded sequence are measured by
 ``manuscripts/device-aware-flicker-bounded/data/measure.py`` into ``beyond.json`` (more seeds than the gate tests use), and this
 module turns that file into the two rows of the acceptance table, so that the report states every method with a measurement and
 no number is typed. Standard library only; imported by ``extract.py`` and ``extract_methods.py``.
@@ -24,7 +24,7 @@ def rows() -> list[dict]:
     x, f = d["bs1_crosstalk"]["summary"], d["bs1_full_device"]["summary"]
     n1, n2 = x["sigma_b1"]["n"], f["sigma_b1"]["n"]
     b1 = (f"crosstalk device, 10 x 10 task: relative standard deviation {_iv(x['sigma_b1'], 2)} percent against "
-          f"{_iv(x['sigma_m07_100'], 2)} for M07 at 100 iterations (a factor {_iv(x['sigma_ratio'], 0)}) at {_iv(x['eff_ratio'], 3)} "
+          f"{_iv(x['sigma_m07_100'], 2)} for phase-fixed weighted GS at 100 iterations (a factor {_iv(x['sigma_ratio'], 0)}) at {_iv(x['eff_ratio'], 3)} "
           f"of its efficiency; 4-bit device with fill 0.85: {_iv(f['sigma_b1'], 2)} against {_iv(f['sigma_m07_100'], 2)} "
           f"(a factor {_iv(f['sigma_ratio'], 1)}) at {_iv(f['eff_ratio'], 3)} of its efficiency; taken from the companion manuscript's "
           f"beyond.json, {n1} and {n2} seeds")
