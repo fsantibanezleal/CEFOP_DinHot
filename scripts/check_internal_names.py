@@ -28,6 +28,14 @@ that is a lowercase key (``"sota"``), the ``caos`` metadata ids (``methods``, ``
 work's title in References or the bibliography, and a line that carries the marker ``internal-name-ok`` (a reviewed use whose
 words mean something else, such as "classical mechanics").
 
+A data key is not a name shown to a reader (0.15.002): a string literal that is exactly a key, at any depth, of a committed JSON
+document under ``data/derived/`` or a property name of a schema under ``docs/contracts/schemas/`` is an identifier of the data
+contract (``st["M0_backbone"]``, ``cmp_["kW"]["M0"]``) and is not a finding, but only in the position of a key access in code (a
+subscript ``x["k"]``, a key of a dict or object literal ``{"k": ...}``, or the key argument of ``.get``, ``.pop``, ``.setdefault`` in a notebook code cell, a manuscript ``.py``
+script or an app ``.ts(x)`` source). The same word as a chart label, a legend entry, a list of labels, notebook prose or output, a
+manuscript text, the README or a JSX text stays a finding, whether or not a document holds it as a key; a string that only
+contains a key among other words is never a data key. A product with no committed document has no data key.
+
 Static, standard library only. Usage: ``python scripts/check_internal_names.py [repo_root]``. Exit 0 clean, 1 on any finding.
 """
 from __future__ import annotations
@@ -72,6 +80,45 @@ MANUSCRIPT_SUFFIXES = {".tex", ".md", ".txt", ".svg", ".py"}
 
 # the ids of the product's Method ladder, set by findings_of for the root it reads (None: the SDD has no ladder ids)
 LADDER: re.Pattern[str] | None = None
+# the keys of the product's committed documents and schemas, set by findings_of (empty: nothing is exempt)
+DATA_KEYS: frozenset[str] = frozenset()
+# the methods whose first argument is a key of the mapping they are called on
+KEY_METHODS = {"get", "pop", "setdefault"}
+
+
+def _keys_of(value, out: set[str]) -> None:
+    if isinstance(value, dict):
+        for k, v in value.items():
+            out.add(str(k))
+            _keys_of(v, out)
+    elif isinstance(value, list):
+        for v in value:
+            _keys_of(v, out)
+
+
+def _property_names(value, out: set[str]) -> None:
+    """The names under every ``properties`` object of a JSON schema, at any depth."""
+    if isinstance(value, dict):
+        for k, v in value.items():
+            if k == "properties" and isinstance(v, dict):
+                out.update(str(n) for n in v)
+            _property_names(v, out)
+    elif isinstance(value, list):
+        for v in value:
+            _property_names(v, out)
+
+
+def data_keys(root: Path) -> frozenset[str]:
+    """The keys of the committed documents under ``data/derived/`` and the property names of ``docs/contracts/schemas/``; a file
+    that does not read as JSON holds none (the catalog and contract checks own that finding)."""
+    out: set[str] = set()
+    for base, collect in ((root / "data" / "derived", _keys_of), (root / "docs" / "contracts" / "schemas", _property_names)):
+        for path in sorted(base.rglob("*.json")) if base.is_dir() else []:
+            try:
+                collect(json.loads(path.read_text(encoding="utf-8")), out)
+            except (OSError, ValueError):
+                continue
+    return frozenset(out)
 
 
 def ladder_ids(root: Path) -> set[str]:
@@ -159,20 +206,34 @@ def is_md_heading(line: str) -> bool:
 
 
 def code_text(source: str) -> list[tuple[int, str]]:
-    """(line, text) of the comments and the strings of a Python cell; a lowercase key string is code, not text."""
+    """(line, text) of the comments and the strings of a Python cell; a lowercase key string is code, not text, and so is a
+    string in the position of a key access to a committed document (``d["M0"]``, ``d.get("M0")``)."""
     clean = "\n".join("" if ln.lstrip().startswith(("%", "!")) else ln for ln in source.splitlines())
     out: list[tuple[int, str]] = []
     try:
-        for tok in tokenize.generate_tokens(io.StringIO(clean + "\n").readline):
+        toks = [t for t in tokenize.generate_tokens(io.StringIO(clean + "\n").readline)
+                if t.type not in (tokenize.NL, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT)]
+        for k, tok in enumerate(toks):
             if tok.type == tokenize.COMMENT:
                 out.append((tok.start[0], tok.string))
             elif tok.type == tokenize.STRING or tok.type == getattr(tokenize, "FSTRING_MIDDLE", -1):
                 body = re.sub(r"^[rbuRBUfF]*('''|\"\"\"|'|\")|('''|\"\"\"|'|\")$", "", tok.string)
-                if not KEY_LIKE.match(body):
+                if not KEY_LIKE.match(body) and not (tok.type == tokenize.STRING and python_key_access(toks, k, body)):
                     out.append((tok.start[0], body))
     except (tokenize.TokenError, IndentationError, SyntaxError):
         out = [(n, ln) for n, ln in enumerate(clean.splitlines(), 1)]
     return out
+
+
+def python_key_access(toks: list, k: int, body: str) -> bool:
+    """Whether the string token ``toks[k]`` is, alone, a key of a committed document: ``x[<it>]``, ``{<it>: ...``, or ``x.get(<it>``, ``.pop(``,
+    ``.setdefault(``."""
+    if body not in DATA_KEYS or tokenize.STRING != toks[k].type or re.match(r"^[bBfF]", toks[k].string):
+        return False
+    prev, nxt = toks[k - 1].string if k else "", toks[k + 1].string if k + 1 < len(toks) else ""
+    if (prev == "[" and nxt == "]") or (prev in {"{", ","} and nxt == ":"):
+        return True
+    return prev == "(" and nxt in {",", ")"} and k >= 3 and toks[k - 2].string in KEY_METHODS and toks[k - 3].string == "."
 
 
 def output_text(cell: dict) -> str:
@@ -285,6 +346,17 @@ def json_findings(root: Path, path: Path) -> list[str]:
     return out
 
 
+def source_key_access(line: str, m: re.Match[str], s: str) -> bool:
+    """Whether a quoted string of a TypeScript line is, alone, a key of a committed document: ``x["k"]``, ``x?.["k"]``, an object-literal key ``{ 'k': ...}`` or the first
+    argument of ``.get(``, ``.pop(``, ``.setdefault(``; a template literal is never a key."""
+    if s not in DATA_KEYS or m.group(3) is not None:
+        return False
+    before, after = line[:m.start()].rstrip(), line[m.end():].lstrip()
+    if (before.endswith("[") and after.startswith("]")) or (before[-1:] in {"{", ","} and after.startswith(":")):
+        return True
+    return after[:1] in {",", ")"} and re.search(r"\.(?:" + "|".join(KEY_METHODS) + r")\(\s*$", before) is not None
+
+
 def source_findings(rel: str, text: str) -> list[str]:
     """The strings of a TypeScript source and its JSX text, which may stand on lines of its own; comments are not text."""
     raw = text.splitlines()
@@ -294,7 +366,7 @@ def source_findings(rel: str, text: str) -> list[str]:
     for n, line in enumerate(lines, 1):
         for m in JS_STRING.finditer(line):
             s = next(g for g in m.groups() if g is not None)
-            if not KEY_LIKE.match(s):
+            if not KEY_LIKE.match(s) and not source_key_access(line, m, s):
                 hits.setdefault(n, []).extend(words(s))
     joined = "\n".join(lines)
     for m in JSX_TEXT.finditer(joined):
@@ -322,8 +394,9 @@ def app_findings(root: Path) -> list[str]:
 
 
 def findings_of(root: Path) -> list[str]:
-    global LADDER
+    global LADDER, DATA_KEYS
     LADDER = ladder_pattern(ladder_ids(root))
+    DATA_KEYS = data_keys(root)
     out: list[str] = []
     nb = root / "notebooks"
     if nb.is_dir():
