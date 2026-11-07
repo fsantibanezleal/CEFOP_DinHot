@@ -128,7 +128,7 @@ C(f)=\sum_i d_{i,f(i)}^{\,\alpha},\qquad d_{i,j}=|t_i-a_j|,\quad\alpha>1,
 \end{equation}
 so that paths do not cross; for a square lattice an exponent above 1.12 keeps the minimum interatomic distance during moves at or above $1/\sqrt2$ of the lattice constant~\cite{lee2017}. The solver is the Kuhn--Munkres algorithm with potentials, $O(n^2m)$ for an $n\times m$ cost with $n\le m$ (a rectangular case, whose unmatched atoms are released); it is tested against brute force on 96 random matrices. A routine counts the pairs of straight paths that intersect or overlap along a segment.
 
-\textbf{Hologram sequence.} The initial and final holograms are phase-fixed weighted GS (phase-fixed weighted GS). From each, the position, amplitude and optical phase $\psi_m=\arg V_m$ of every tweezer are read and linearly interpolated over $S$ steps,
+\textbf{Hologram sequence.} The initial and final holograms are computed by phase-fixed weighted GS. From each, the position, amplitude and optical phase $\psi_m=\arg V_m$ of every tweezer are read and linearly interpolated over $S$ steps,
 \begin{equation}
 x_m(s)=x_m^{i}+\tfrac sS(x_m^{f}-x_m^{i}),\quad a_m(s)=a_m^{i}+\tfrac sS(a_m^{f}-a_m^{i}),\quad
 \psi_m(s)=\psi_m^{i}+\tfrac sS\operatorname{wrap}(\psi_m^{f}-\psi_m^{i}),

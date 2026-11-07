@@ -125,15 +125,19 @@ NOTATION = [
 
 
 def table_notation() -> str:
-    out = ["\\begin{table}[t]\\centering\\footnotesize\n",
+    """A longtable, so that the full-page table can break across pages and never holds back the floats that follow it."""
+    col = ("@{}>{\\raggedright\\arraybackslash}p{0.2\\textwidth} >{\\raggedright\\arraybackslash}p{0.56\\textwidth} "
+           ">{\\raggedright\\arraybackslash}p{0.16\\textwidth}@{}")
+    head = "\\toprule Symbol & Meaning & Unit\\\\\\midrule\n"
+    out = ["\\begingroup\\footnotesize\n", "\\begin{longtable}{" + col + "}\n",
            "\\caption{Notation: the symbols used in more than one section of the report, with their meaning and unit; a symbol that "
            "belongs to one derivation only (the sigma points of one method, the statistics of one test) is defined where it appears. "
-           "A unit of 1 marks a dimensionless quantity or a count, and the intensities are fractions of the input power.}\\label{tab:notation}\n",
-           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.2\\textwidth} >{\\raggedright\\arraybackslash}p{0.56\\textwidth} "
-           ">{\\raggedright\\arraybackslash}p{0.16\\textwidth}@{}}\\toprule Symbol & Meaning & Unit\\\\\\midrule\n"]
+           "A unit of 1 marks a dimensionless quantity or a count, and the intensities are fractions of the input power.}"
+           "\\label{tab:notation}\\\\\n",
+           head, "\\endfirsthead\n", head, "\\endhead\n"]
     for s, m, u in NOTATION:
         out.append(f"{s} & {m} & {u}\\\\\n")
-    out.append("\\bottomrule\\end{tabular}\\end{table}\n")
+    out.append("\\bottomrule" + "\\end{longtable}\n\\endgroup\n")
     return "".join(out)
 
 

@@ -1,6 +1,10 @@
-\begin{table}[t]\centering\footnotesize
-\caption{Notation: the symbols used in more than one section of the report, with their meaning and unit; a symbol that belongs to one derivation only (the sigma points of one method, the statistics of one test) is defined where it appears. A unit of 1 marks a dimensionless quantity or a count, and the intensities are fractions of the input power.}\label{tab:notation}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth} >{\raggedright\arraybackslash}p{0.56\textwidth} >{\raggedright\arraybackslash}p{0.16\textwidth}@{}}\toprule Symbol & Meaning & Unit\\\midrule
+\begingroup\footnotesize
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth} >{\raggedright\arraybackslash}p{0.56\textwidth} >{\raggedright\arraybackslash}p{0.16\textwidth}@{}}
+\caption{Notation: the symbols used in more than one section of the report, with their meaning and unit; a symbol that belongs to one derivation only (the sigma points of one method, the statistics of one test) is defined where it appears. A unit of 1 marks a dimensionless quantity or a count, and the intensities are fractions of the input power.}\label{tab:notation}\\
+\toprule Symbol & Meaning & Unit\\\midrule
+\endfirsthead
+\toprule Symbol & Meaning & Unit\\\midrule
+\endhead
 $\lambda$ & vacuum wavelength of the laser & nm\\
 $f$ & focal length of the lens in the pupil of which the SLM sits & mm\\
 $\mathrm{NA}$ & numerical aperture of the objective & 1\\
@@ -47,4 +51,5 @@ $T_m,\ t$ & target intensity of trap $m$ in the cost of the optimizers, and the 
 $L,\ \epsilon$ & loss of an optimizer (a quadratic intensity loss unless stated) and a small positive constant that keeps a logarithm or a quotient finite & 1\\
 $g_i,\ B_i,\ \psi$ & weights, focal amplitude relative to its target and focal phase of the phase-fixed iteration $i$ (Eq.~\eqref{eq:m07}) & 1, 1, rad\\
 $\theta_m,\ h(\tau)$ & phase given to trap $m$ (random in the random superposition, learned in the learned warm start, locked in the flicker-bounded sequence) and the minimal-jerk profile of $\tau=s/S$ (Eq.~\eqref{eq:b2-traj}) & rad, 1\\
-\bottomrule\end{tabular}\end{table}
+\bottomrule\end{longtable}
+\endgroup
