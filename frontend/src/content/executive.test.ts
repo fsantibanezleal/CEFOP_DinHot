@@ -130,8 +130,8 @@ function citations(): Array<{ source: string; tab: number }> {
 }
 
 describe('the example executive view', () => {
-  it('the shell is pinned exactly at 0.23.1 (the release DinHot adopts; the executive schema stays 2.0.0)', () => {
-    expect(pkg.dependencies['@fasl-work/caos-app-shell']).toBe('0.23.1');
+  it('the shell is pinned exactly at 0.23.2 (the release DinHot adopts; the executive schema stays 2.0.0)', () => {
+    expect(pkg.dependencies['@fasl-work/caos-app-shell']).toBe('0.23.2');
     expect(EXECUTIVE_SCHEMA_VERSION).toBe('2.0.0');
   });
 
