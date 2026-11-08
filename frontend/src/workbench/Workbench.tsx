@@ -27,7 +27,7 @@ import { ConvergenceGroup } from './ConvergenceGroup';
 import type { DeviceStage } from './decode';
 import { DynamicsGroup } from './DynamicsGroup';
 import { laneOf } from './engine';
-import { GROUP_IDS, initialGroup, makeNav, NavContext, type GroupId } from './nav';
+import { GROUP_IDS, initialGroup, initialTab, makeNav, NavContext, opensView, pressSubTab, revealStage, type GroupId } from './nav';
 import { FocalGroup } from './FocalGroup';
 import { HologramGroup } from './HologramGroup';
 import { isShaped, methodLabel, methodName, replayMaps, replayResult, trapsOf, UnavailableContext, ViewContext, type DeviceChoice, type Region, type Selection } from './model';
@@ -90,7 +90,7 @@ function railOf(data: CaseData): Rail {
 }
 
 /** The desktop rail width in CSS pixels (shell 0.21.0, bounded 150 to 360): narrow enough that the instrument takes 60 percent of the viewport. */
-const RAIL_WIDTH = 232;
+const RAIL_WIDTH = 268;
 
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -143,12 +143,31 @@ export function Workbench() {
   // The open group is the workbench's (a controlled value of the shell), so a view can open another: the optical train opens Device effects
   // and the Focal plane group (ADR-0082 rule 6). The URL keeps `?view=` as the shell would have kept it.
   const [group, setGroup] = useState<GroupId>(() => (typeof window === 'undefined' ? GROUP_IDS[0] : initialGroup(window.location.search)));
-  const [subTabs, setSubTabs] = useState<Record<string, string | undefined>>({});
+  // the sub-view a deep link names (`?view=convergence&tab=pareto`): a controlled group takes it from here, the others have their tab pressed once
+  const firstTab = useRef(typeof window === 'undefined' ? null : initialTab(window.location.search));
+  const [subTabs, setSubTabs] = useState<Record<string, string | undefined>>(() => (firstTab.current ? { [firstTab.current.group]: firstTab.current.tab } : {}));
+  useEffect(() => {
+    const want = firstTab.current;
+    firstTab.current = null;
+    if (want) pressSubTab(want.tab);
+  }, []);
+  // a deep link to a view at phone width: the stage, not the rail, is what the reader came for. The rail is as tall as it will be only once the
+  // case has loaded, so the stage is brought into view then, once.
+  const reveal = useRef(typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches && opensView(window.location.search));
+  useEffect(() => {
+    if (!reveal.current || !rail) return;
+    reveal.current = false;
+    revealStage();
+  }, [rail]);
   const changeGroup = useCallback((id: string) => {
     setGroup(id as GroupId);
     replaceQueryParam('view', id);
   }, []);
-  const nav = useMemo(() => makeNav(changeGroup, (g, tab) => setSubTabs((cur) => ({ ...cur, [g]: tab })), subTabs), [changeGroup, subTabs]);
+  const openCase = useCallback((id: string) => {
+    setCaseId(id);
+    setMethodId(null);
+  }, []);
+  const nav = useMemo(() => makeNav(changeGroup, (g, tab) => setSubTabs((cur) => ({ ...cur, [g]: tab })), subTabs, openCase), [changeGroup, subTabs, openCase]);
 
   const data = loaded.state === 'ready' && loaded.data.manifest.case_id === selected ? loaded.data : null;
   useEffect(() => {
@@ -446,7 +465,7 @@ export function Workbench() {
           ) : (
             <ChipGroup
               id="edit-mode"
-              label={{ en: `Trap editor: ${n} traps${edited ? ' (edited)' : ''}, field ±${formatNumber(halfField, 'en', { decimals: 1 })} um`, es: `Editor: ${n} trampas${edited ? ' (editadas)' : ''}, campo ±${formatNumber(halfField, 'es', { decimals: 1 })} um` }}
+              label={{ en: `Trap editor: ${n} traps${edited ? ' (edited)' : ''}, field ±${formatNumber(halfField, 'en', { decimals: 1 })} µm`, es: `Editor: ${n} trampas${edited ? ' (editadas)' : ''}, campo ±${formatNumber(halfField, 'es', { decimals: 1 })} µm` }}
               value={r.mode}
               onChange={(v) => (setEditError(null), patch({ mode: v as EditMode }))}
               options={[

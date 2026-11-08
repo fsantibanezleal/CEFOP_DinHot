@@ -9,8 +9,9 @@ import { useMemo, useState } from 'react';
 import type { Text } from '../lib/contract.types';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { apertureEnvelopeAtEdge, crosstalkWeights, fillFactorEfficiency, levelOf, quantizationEfficiency, stagePhase, TWO_PI } from './decode';
-import { CalloutHeader } from './CalloutHeader';
+import { BAND_GAP, CalloutHeader, useCalloutBand } from './CalloutHeader';
 import type { Selection } from './model';
+import { useNav } from './nav';
 import { calloutBand } from './OpticalTrain';
 import { CASE_ROWS, cardOf, StageBox, useActions, useStateKey } from './ui';
 import { MARECHAL_RMS_WAVES } from './zernike';
@@ -101,6 +102,9 @@ export function slmLosses(sel: Selection, r: SlmRow) {
   };
 }
 
+/** The case of the release that carries a modelled device (the one the story's device step reads). */
+export const DEVICE_CASE = 'C08_device_limited';
+
 /** Whether the case's device can be chosen, and when not, why. */
 export function slmDeviceSwitch(sel: Selection): { disabled: boolean; reason: Text | null } {
   if (sel.data.manifest.params.device) return { disabled: false, reason: null };
@@ -129,10 +133,10 @@ export interface SlmLayout {
 }
 
 /** The geometry at a stage size: pixels of the stage, top to bottom the callout row, the phase graph, the section, the kernel and the caption; it always fits. */
-export function slmLayout(width: number, height: number): SlmLayout {
+export function slmLayout(width: number, height: number, measuredBand?: number): SlmLayout {
   const narrow = width < 520;
   const win = narrow ? 8 : 16;
-  const band = calloutBand(width);
+  const band = measuredBand ?? calloutBand(width);
   const x0 = narrow ? 34 : 58;
   const x1 = width - 10;
   const a = Math.max(150, height - band - 4 - 20);
@@ -165,9 +169,9 @@ export const phaseY = (L: SlmLayout, v: number): number => L.graph.y + 16 + (L.g
 const toneOfFill = (eff: number): 'normal' | 'warning' | 'alarm' => (eff > 0.9 ? 'normal' : eff > 0.7 ? 'warning' : 'alarm');
 
 /** The three callouts: the level commanded to the scrubbed pixel, the phase it displays, the fill factor of the electrodes. */
-export function slmCallouts(_sel: Selection, r: SlmRow, col: number, lang: Lang, width: number, height: number): SceneCalloutDef[] {
+export function slmCallouts(_sel: Selection, r: SlmRow, col: number, lang: Lang, width: number, height: number, band?: number): SceneCalloutDef[] {
   const f = (v: number, d: number) => formatNumber(v, lang, { decimals: d });
-  const L = slmLayout(width, height);
+  const L = slmLayout(width, height, band);
   const c0 = windowStart(col, r.n, L.win);
   const i = Math.max(0, Math.min(L.win - 1, col - c0));
   const px = L.lc.x + (i + 0.5) * L.cw;
@@ -180,7 +184,7 @@ export function slmCallouts(_sel: Selection, r: SlmRow, col: number, lang: Lang,
   // when the device has no quantizer (zernike.ts)
   const tol = p.levels === null ? TWO_PI * MARECHAL_RMS_WAVES : TWO_PI / p.levels / 2;
   const state = !on ? 'inactive' : absErr <= tol ? 'normal' : absErr <= 2 * tol ? 'warning' : 'alarm';
-  const field = on ? { en: 'commanded: params.device.bit_depth', es: 'ordenado: params.device.bit_depth' } : { en: 'requested: reference.phase_u8', es: 'pedida: reference.phase_u8' };
+  const field = on ? { en: 'commanded by the case device: its bit depth', es: 'ordenado por el dispositivo del caso: su profundidad de bits' } : { en: 'requested by the method: the reference phase mask', es: 'pedida por el método: la máscara de fase de referencia' };
   return [
     {
       id: 'level',
@@ -198,16 +202,16 @@ export function slmCallouts(_sel: Selection, r: SlmRow, col: number, lang: Lang,
       unit: 'rad',
       state,
       anchor: norm(px, dy),
-      source: on ? { en: 'engine stages: params.device', es: 'etapas del motor: params.device' } : { en: 'displayed = requested: reference.phase_u8', es: 'mostrada = pedida: reference.phase_u8' },
+      source: on ? { en: "the engine's stages of the case device", es: 'las etapas del motor del dispositivo del caso' } : { en: 'displayed equals requested: the reference phase mask', es: 'mostrada igual a la pedida: la máscara de fase de referencia' },
     },
     {
       id: 'fill',
       eyebrow: { en: 'Fill', es: 'Llenado' },
       value: r.fill === null ? 'ideal' : f(r.fill, 2),
-      unit: r.fill === null ? { en: 'no device', es: 'sin dispositivo' } : { en: 'of area', es: 'del área' },
+      unit: r.fill === null ? 'SLM' : { en: 'area', es: 'área' },
       state: r.fill === null ? 'inactive' : toneOfFill(fillFactorEfficiency(r.fill)),
       anchor: norm(px, L.elec.y + L.elec.h / 2),
-      source: r.fill === null ? { en: 'params.device is absent in the case', es: 'params.device no existe en el caso' } : { en: 'fill factor: params.device.fill_factor', es: 'factor de llenado: params.device.fill_factor' },
+      source: r.fill === null ? { en: 'the case has no device', es: 'el caso no tiene dispositivo' } : { en: 'case device: fill factor of the electrodes', es: 'dispositivo del caso: factor de llenado de los electrodos' },
     },
   ];
 }
@@ -219,14 +223,16 @@ interface DrawingProps {
   lang: Lang;
   width: number;
   height: number;
+  /** The band the callout cards measured; absent until they are measured. */
+  band?: number;
   onCol: (col: number) => void;
 }
 
 /** The section: pure, so its tests read the element tree. Positions are pixels of the stage. */
-export function SlmSectionDrawing({ row, col, lang, width, height, onCol }: DrawingProps) {
+export function SlmSectionDrawing({ row, col, lang, width, height, band, onCol }: DrawingProps) {
   const t = (en: string, es: string) => (lang === 'es' ? es : en);
   const f = (v: number, d: number) => formatNumber(v, lang, { decimals: d });
-  const L = slmLayout(width, height);
+  const L = slmLayout(width, height, band);
   const narrow = width < 520;
   const fs = narrow ? 10 : 11;
   const c0 = windowStart(col, row.n, L.win);
@@ -317,7 +323,7 @@ export function SlmSectionDrawing({ row, col, lang, width, height, onCol }: Draw
         ) : (
           <text x={L.kernel.x + 4} y={L.kernel.y + L.kernel.h / 2} fill="var(--color-fg-subtle)" fontSize={fs}>{on ? t('no crosstalk kernel in this device', 'este dispositivo no tiene núcleo de diafonía') : t('ideal SLM: no crosstalk', 'SLM ideal: sin diafonía')}</text>
         )}
-        <text x={L.kernel.x - 4} y={L.kernel.y + L.kernel.h} textAnchor="end" fill="var(--color-fg-subtle)" fontSize={fs - 1}>%</text>
+        {row.kernel && <text x={L.kernel.x - 4} y={L.kernel.y + L.kernel.h} textAnchor="end" fill="var(--color-fg-subtle)" fontSize={fs - 1}>%</text>}
         {row.kernel && <text x={L.kernel.x + 2} y={L.kernel.y - 3} fill="var(--color-fg)" fontSize={fs - 1} fontWeight="700" letterSpacing="0.4">{narrow ? t('CROSSTALK KERNEL, %', 'NÚCLEO DE DIAFONÍA, %') : t('CROSSTALK KERNEL AT THE PIXEL, % OF ITS PHASE', 'NÚCLEO DE DIAFONÍA EN EL PÍXEL, % DE SU FASE')}</text>}
       </g>
       <text x={L.graph.x} y={L.caption} fill="var(--color-fg)" fontSize={fs + 1} fontFamily="var(--font-mono)">
@@ -341,6 +347,8 @@ export function SlmSectionView({ sel }: { sel: Selection }) {
   const t = (en: string, es: string) => (lang === 'es' ? es : en);
   const f = (v: number, d: number) => formatNumber(v, lang, { decimals: d });
   const n = sel.maps?.nPix ?? 0;
+  const cb = useCalloutBand(0);
+  const nav = useNav();
   const [pos, setPos] = useState<{ col: number; row: number } | null>(null);
   const col = Math.max(0, Math.min(n - 1, pos?.col ?? Math.floor(n / 2)));
   const rowIx = Math.max(0, Math.min(n - 1, pos?.row ?? Math.floor(n / 2)));
@@ -365,20 +373,32 @@ export function SlmSectionView({ sel }: { sel: Selection }) {
       <ReadinessNote ids={CASE_ROWS} />
       <StageBox>
       <Stage label={{ en: 'SLM in section: cover glass, liquid crystal and electrodes of sixteen pixels, with the requested and displayed phase over them', es: 'SLM en sección: vidrio de cubierta, cristal líquido y electrodos de dieciséis píxeles, con la fase pedida y la mostrada encima' }}>
-        {({ width, height }) =>
-          width < 120 || height < 120 || !p ? null : (
+        {({ width, height }) => {
+          if (width < 120 || height < 120 || !p) return null;
+          const band = cb.band > 0 ? cb.band + BAND_GAP : undefined;
+          return (
             <div className="dh-scene">
-              <SlmSectionDrawing sel={sel} row={row} col={col} lang={lang} width={width} height={height} onCol={(cc) => setPos({ col: cc, row: rowIx })} />
-              <CalloutHeader items={slmCallouts(sel, row, col, lang, width, height)} />
+              <SlmSectionDrawing sel={sel} row={row} col={col} lang={lang} width={width} height={height} band={band} onCol={(cc) => setPos({ col: cc, row: rowIx })} />
+              <CalloutHeader items={slmCallouts(sel, row, col, lang, width, height, band)} onLayout={cb.onLayout} />
             </div>
-          )
-        }
+          );
+        }}
       </Stage>
       </StageBox>
       <div className="dh-slm-controls" data-caos-plot-control="">
         {sw.disabled ? (
           // a switch with one choice the reader cannot take is not drawn as a control (the rail does the same): the reason says what is shown
-          <span className="caos-plot-note" data-state="ideal-only">{sw.reason![lang]}</span>
+          <span className="caos-plot-note" data-state="ideal-only">
+            {sw.reason![lang]} {t(`C08 is the case with a device.`, `C08 es el caso con dispositivo.`)}
+            {nav?.openCase && (
+              <>
+                {' '}
+                <button type="button" className="btn" data-open-case={DEVICE_CASE} onClick={() => nav.openCase?.(DEVICE_CASE)}>
+                  {t('Open C08', 'Abrir C08')}
+                </button>
+              </>
+            )}
+          </span>
         ) : (
         <ChipGroup
           id="slm-device"

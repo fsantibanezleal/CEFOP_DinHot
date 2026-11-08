@@ -47,7 +47,7 @@ describe('the optical train prints the values of the selected case', () => {
     expect(items.laser.value).toBe(`${f(s.wavelength_nm, 0)} nm`);
     expect(items.expander.value).toBe(`${f((1.0 * s.n_pix * s.pitch_um) / 1000, 2)} mm`);
     expect(items.slm.value).toBe(`${s.n_pix} x ${s.n_pix} px`);
-    expect(items.slm.detail).toContain(`${f(s.pitch_um, 1)} um`);
+    expect(items.slm.detail).toContain(`${f(s.pitch_um, 1)} µm`);
     expect(items.slm.detail).toContain(`${f((s.n_pix * s.pitch_um) / 1000, 2)} mm`);
     expect(items.objective.value).toBe(`f ${f(s.focal_mm, 1)} mm`);
     expect(items.objective.detail).toContain(`NA ${f(s.na, 2)}`);
@@ -70,7 +70,7 @@ describe('the optical train prints the values of the selected case', () => {
     const items = Object.fromEntries(trainItems(realSelection('C08_device_limited'), 'es').map((i) => [i.id, i]));
     expect(items.expander.value).toBe('2,56 mm');
     expect(items.focal.value).toMatch(/trampas$/);
-    expect(items.slm.detail).toContain('20,0 um');
+    expect(items.slm.detail).toContain('20,0 µm');
   });
 
   it('the drawing contains every item value and no number of another case', () => {
@@ -117,7 +117,7 @@ describe('the three callouts', () => {
       expect(txt(c.unit, 'en').length).toBeGreaterThan(0);
       expect(txt(c.unit, 'es').length).toBeGreaterThan(0);
       expect(['alarm', 'warning', 'normal', 'selected', 'inactive']).toContain(c.state);
-      expect(txt(c.source, 'en')).toMatch(/params\.|trace|methods\./);
+      for (const l of ['en', 'es'] as const) expect(txt(c.source, l)).not.toMatch(/[a-z]+\.[a-z_]+|\[\]|[a-z]+_[a-z_]+/);
       expect(c.anchor.x).toBeGreaterThan(0);
       expect(c.anchor.x).toBeLessThan(1);
       expect(c.anchor.y).toBeGreaterThan(0);

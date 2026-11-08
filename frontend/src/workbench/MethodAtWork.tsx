@@ -6,12 +6,12 @@
 // A method the engine does not port, or a build without the engine, shows the recorded history and says the map is the final one.
 import { PlotCard, Stage, formatNumber, pick, useLinkedCursor, useLinkedView, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import '../pages/story.css';
 import type { EngineClient, RunResult } from '../engine/holo/client';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { INTENSITY_LUT } from './colormaps';
-import { CalloutHeader } from './CalloutHeader';
+import { BAND_GAP, CalloutHeader, useCalloutBand } from './CalloutHeader';
 import { Heatmap, type HeatMark } from './HeatmapStage';
 import { cardOf } from './HologramGroup';
 import { historyAt, liveMaps, methodLabel, methodName, type HistoryPoint, type MapSet, type MethodResult, type Selection } from './model';
@@ -150,8 +150,41 @@ export function spreadText(v: number, lang: Lang): string {
   return formatNumber(v, lang, { decimals: d });
 }
 
-/** The three callouts of the view at iteration k, each with its source field: spread, efficiency, and the phase-freeze iteration. */
-export function methodCallouts(sel: Selection, k: number, lang: Lang): SceneCalloutDef[] {
+/** Where the view puts its cells: the stage size and the band the callout cards take above them. */
+export interface MethodGeometry {
+  width: number;
+  height: number;
+  band: number;
+}
+
+/** The cells of the view at phone width stack in one column (workbench.css): the heights of its charts and its focal map, in px. */
+const STACK = { chart: 210, map: 250, gap: 8 } as const;
+/** The width under which the view stacks its cells. */
+export const STACK_WIDTH = 900;
+
+/** The anchor of each callout, in fractions of the stage: the centre of the cell it names, under the band (the spread chart, the efficiency chart, the focal map). */
+export function methodAnchors(g: MethodGeometry): Record<'spread' | 'efficiency' | 'freeze', { x: number; y: number }> {
+  const at = (x: number, y: number) => ({ x: Math.min(0.97, x / g.width), y: Math.min(0.97, y / g.height) });
+  if (g.width <= STACK_WIDTH) {
+    const top = g.band + BAND_GAP;
+    return {
+      spread: at(g.width * 0.5, top + STACK.chart / 2),
+      efficiency: at(g.width * 0.5, top + STACK.chart + STACK.gap + STACK.chart / 2),
+      freeze: at(g.width * 0.5, top + 2 * STACK.chart + 2 * STACK.gap + STACK.map / 2),
+    };
+  }
+  const inner = Math.max(0, g.height - g.band - BAND_GAP);
+  const top = g.band + BAND_GAP;
+  return {
+    spread: at(g.width * 0.3, top + inner * 0.25),
+    efficiency: at(g.width * 0.3, top + inner * 0.75),
+    freeze: at(g.width * 0.8, top + inner * 0.25),
+  };
+}
+
+/** The three callouts of the view at iteration k, each with its source field: spread, efficiency, and the phase-freeze iteration. `geometry` places the anchors on the cells; without it they stand where the cells are at desktop width. */
+export function methodCallouts(sel: Selection, k: number, lang: Lang, geometry?: MethodGeometry): SceneCalloutDef[] {
+  const anchors = methodAnchors(geometry ?? { width: 1000, height: 600, band: 86 - BAND_GAP });
   const h = sel.result?.history ?? [];
   const p = pointAt(h, k);
   const m = sel.methodId;
@@ -165,8 +198,8 @@ export function methodCallouts(sel: Selection, k: number, lang: Lang): SceneCall
       value: p ? spreadText(p.relStdPct, lang) : '-',
       unit: '%',
       state: spreadState,
-      anchor: { x: 0.3, y: 0.38 },
-      source: { en: `${name.en}, iteration ${p?.iteration ?? '-'}: trace history[].rel_std_pct`, es: `${name.es}, iteración ${p?.iteration ?? '-'}: trace history[].rel_std_pct` },
+      anchor: anchors.spread,
+      source: { en: `${name.en}, iteration ${p?.iteration ?? '-'}: relative spread of the trace`, es: `${name.es}, iteración ${p?.iteration ?? '-'}: dispersión relativa de la traza` },
     },
     {
       id: 'efficiency',
@@ -174,17 +207,17 @@ export function methodCallouts(sel: Selection, k: number, lang: Lang): SceneCall
       value: p ? f(p.efficiency * 100, lang, 1) : '-',
       unit: '%',
       state: !p ? 'inactive' : p.efficiency >= 0.8 ? 'normal' : p.efficiency >= 0.4 ? 'warning' : 'alarm',
-      anchor: { x: 0.3, y: 0.7 },
-      source: { en: `${name.en}, iteration ${p?.iteration ?? '-'}: trace history[].efficiency`, es: `${name.es}, iteración ${p?.iteration ?? '-'}: trace history[].efficiency` },
+      anchor: anchors.efficiency,
+      source: { en: `${name.en}, iteration ${p?.iteration ?? '-'}: efficiency of the trace`, es: `${name.es}, iteración ${p?.iteration ?? '-'}: eficiencia de la traza` },
     },
     freeze === null
       ? {
           id: 'freeze',
           eyebrow: { en: 'ITERATION', es: 'ITERACIÓN' },
           value: String(k),
-          unit: { en: 'iterations, never frozen', es: 'iteraciones, nunca fijada' },
+          unit: { en: 'iterations', es: 'iteraciones' },
           state: 'selected',
-          anchor: { x: 0.8, y: 0.3 },
+          anchor: anchors.freeze,
           source: { en: `${name.en} updates the phase at every iteration`, es: `${name.es} actualiza la fase en cada iteración` },
         }
       : {
@@ -193,8 +226,8 @@ export function methodCallouts(sel: Selection, k: number, lang: Lang): SceneCall
           value: String(freeze),
           unit: { en: 'iteration', es: 'iteración' },
           state: k >= freeze ? 'selected' : 'normal',
-          anchor: { x: 0.8, y: 0.3 },
-          source: { en: `${name.en}: engine default n_fix (methods/baseline.ts)`, es: `${name.es}: n_fix por defecto del motor (methods/baseline.ts)` },
+          anchor: anchors.freeze,
+          source: { en: `${name.en}: the default iteration of the engine to fix the phase`, es: `${name.es}: la iteración por defecto del motor para fijar la fase` },
         },
   ];
 }
@@ -217,6 +250,7 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
   const selectedId = useLinkedView((s) => s.selectedId);
   const select = useLinkedView((s) => s.select);
   const marker = useLinkedCursor().markerProps;
+  const cb = useCalloutBand(0);
   const history = sel.result?.history ?? [];
   const point = pointAt(history, cursor);
   const k = point?.iteration ?? null;
@@ -286,12 +320,12 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
   return (
     <PlotCard fill title={{ en: `${methodLabel(sel.methodId).en} at work`, es: `${methodLabel(sel.methodId).es} trabajando` }} {...c} lane={view.lane} dataKey={stateKey} note={note}>
       <ReadinessNote ids={CASE_ROWS} />
-      <div className="dh-mw-box" data-caos-flow="" data-focal-state={focal.state} data-iteration={k ?? ''} {...marker}>
+      <div className="dh-mw-box" data-caos-flow="" data-focal-state={focal.state} data-iteration={k ?? ''} style={cb.band > 0 ? ({ '--dh-band': `${cb.band + BAND_GAP}px` } as CSSProperties) : undefined} {...marker}>
         <Stage label={{ en: 'Spread and efficiency by iteration, with the focal plane and the trap intensities at the chosen iteration', es: 'Dispersión y eficiencia por iteración, con el plano focal y las intensidades de las trampas en la iteración elegida' }}>
           {({ width, height }) =>
             width < 120 || height < 120 ? null : (
-              <div className="dh-scene dh-mw">
-                <CalloutHeader items={methodCallouts(sel, k!, lang)} />
+              <div className="dh-scene dh-mw" style={cb.band > 0 ? { paddingTop: cb.band + BAND_GAP } : undefined}>
+                <CalloutHeader items={methodCallouts(sel, k!, lang, { width, height, band: cb.band > 0 ? cb.band : 86 - BAND_GAP })} onLayout={cb.onLayout} />
                 <div className="dh-mw-grid">
                   <div className="dh-mw-charts">
                     <div className="dh-mw-cell">

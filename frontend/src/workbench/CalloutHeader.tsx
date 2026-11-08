@@ -3,7 +3,7 @@
 // cards are 20 px wide and stacked on top of each other, whatever the stage is. The page says so with a `data-state="loading"` marker
 // until the cards stand where the layout put them and none touches another; the shell's class and layout are composed, never restyled.
 import { SceneCallouts, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /** A card as the page measures it: its offset box in the layer (transform-free) and the width the layout gave it. */
 export interface CardBox {
@@ -44,13 +44,32 @@ function measure(layer: HTMLElement): CardBox[] {
   }));
 }
 
+/** The band the cards occupy above the drawing, as the shell measures it (`SceneCallouts` `onLayout`), and the callback that feeds it. `fallback` is the
+ * band used until the cards are measured. A change under a pixel is not a change, so a drawing laid out on the band never chases a rounding. */
+export function useCalloutBand(fallback: number): { band: number; onLayout: (info: { bandHeight: number }) => void } {
+  const [band, setBand] = useState(fallback);
+  const onLayout = useCallback(({ bandHeight }: { bandHeight: number }) => setBand((cur) => (Math.abs(cur - bandHeight) < 1 ? cur : Math.ceil(bandHeight))), []);
+  return { band, onLayout };
+}
+
+/** The space between the last card and the drawing under it, in px. */
+export const BAND_GAP = 8;
+
+/** An anchor written as fractions of the drawing (the part of the stage under the band), as fractions of the whole stage: y' = (band + y (H - band)) / H. */
+export function anchorInDrawing(anchor: { x: number; y: number }, band: number, height: number): { x: number; y: number } {
+  if (!(height > band)) return anchor;
+  return { x: anchor.x, y: (band + anchor.y * (height - band)) / height };
+}
+
 export interface CalloutHeaderProps {
   items: SceneCalloutDef[];
   className?: string;
+  /** Receives the band height once the shell has measured its cards. */
+  onLayout?: (info: { bandHeight: number }) => void;
 }
 
 /** The shell's header callouts for a scene; the wrapper has no box of its own (`display: contents`), so the layer sits where it always did. */
-export function CalloutHeader({ items, className }: CalloutHeaderProps) {
+export function CalloutHeader({ items, className, onLayout }: CalloutHeaderProps) {
   const lang = useShellLang();
   const host = useRef<HTMLDivElement | null>(null);
   const [laidOut, setLaidOut] = useState(false);
@@ -80,7 +99,7 @@ export function CalloutHeader({ items, className }: CalloutHeaderProps) {
   }, [ids]);
   return (
     <div ref={host} className="dh-callouts" style={{ display: 'contents' }}>
-      <SceneCallouts items={items} placement="header" className={className} />
+      <SceneCallouts items={items} placement="header" className={className} onLayout={onLayout} />
       {!laidOut && (
         <span className="sr-only" data-state="loading">
           {lang === 'es' ? 'Colocando los valores sobre el dibujo' : 'Placing the values on the drawing'}

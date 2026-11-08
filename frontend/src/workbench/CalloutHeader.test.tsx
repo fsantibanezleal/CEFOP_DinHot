@@ -47,3 +47,16 @@ describe('CalloutHeader', () => {
     expect(html).toContain('sr-only');
   });
 });
+
+describe('the band the cards measure', () => {
+  it('maps an anchor written on the drawing into the stage under the band: y prime = (band + y (H - band)) / H', async () => {
+    const { anchorInDrawing } = await import('./CalloutHeader');
+    const a = anchorInDrawing({ x: 0.5, y: 0.5 }, 200, 800);
+    expect(a.x).toBe(0.5);
+    expect(a.y).toBeCloseTo((200 + 0.5 * 600) / 800, 10);
+    // the top of the drawing sits at the band, never above it
+    expect(anchorInDrawing({ x: 0.1, y: 0 }, 200, 800).y).toBeCloseTo(0.25, 10);
+    // a stage no taller than its band has no drawing to map into: the anchor is left alone
+    expect(anchorInDrawing({ x: 0.3, y: 0.4 }, 900, 800)).toEqual({ x: 0.3, y: 0.4 });
+  });
+});

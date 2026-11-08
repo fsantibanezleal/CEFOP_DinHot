@@ -188,3 +188,19 @@ describe('the view', () => {
     expect(html).toContain('no iteration history');
   });
 });
+
+describe('the callout anchors stand on the cells under the band', () => {
+  it('at desktop and at phone width every anchor is below the band, inside the stage, on the cell it names', async () => {
+    const { methodAnchors } = await import('./MethodAtWork');
+    for (const [width, height, band] of [[1000, 640, 90], [390, 1140, 260], [1280, 700, 120]] as const) {
+      const a = methodAnchors({ width, height, band });
+      for (const id of ['spread', 'efficiency', 'freeze'] as const) {
+        expect(a[id].y * height, `${id} at ${width}`).toBeGreaterThan(band + 8);
+        expect(a[id].y, `${id} at ${width}`).toBeLessThan(1);
+        expect(a[id].x).toBeGreaterThan(0);
+        expect(a[id].x).toBeLessThan(1);
+      }
+      expect(a.efficiency.y).toBeGreaterThan(a.spread.y);
+    }
+  });
+});

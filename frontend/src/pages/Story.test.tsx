@@ -12,6 +12,7 @@ import { trainCallouts } from '../workbench/OpticalTrain';
 import { slmCallouts, slmRow } from '../workbench/SlmSection';
 import { methodCallouts, spreadText } from '../workbench/MethodAtWork';
 import { methodName } from '../workbench/model';
+import { ID } from '../lib/methodIds';
 import { realCase, realSelection } from '../workbench/test-real';
 import {
   COMPARE_CELL,
@@ -71,22 +72,42 @@ describe('the five steps and their deep links', () => {
     expect(device.searchParams.get('case')).toBe('C08_device_limited');
     expect(device.searchParams.get('view')).toBe('hologram');
     expect(device.searchParams.get('method')).toBe('B1');
+    expect(device.searchParams.get('tab')).toBe('device');
     const method = new URL(exitHref(stepDef('method'), 'M07'), 'https://x.test');
     expect(method.searchParams.get('view')).toBe('convergence');
+    expect(method.searchParams.get('tab')).toBe('method');
     expect(new URL(exitHref(stepDef('hold'), null), 'https://x.test').searchParams.has('method')).toBe(false);
     expect(new URL(exitHref(stepDef('hold'), null), 'https://x.test').searchParams.get('view')).toBe('dynamics');
+  });
+
+  it('every step exits on its own sub-view and method: group, tab and method of the five URLs', () => {
+    const cases = { C02_grid_feedback: { state: 'ready', data: realCase('C02_grid_feedback') }, C08_device_limited: { state: 'ready', data: realCase('C08_device_limited') }, C01_square_grid: { state: 'ready', data: realCase('C01_square_grid') } } as const;
+    const url = (id: string, picked: string | null = null) => {
+      const d = stepDef(id);
+      const u = new URL(exitHref(d, methodOfStep(d, cases, picked)), 'https://x.test');
+      return [u.searchParams.get('case'), u.searchParams.get('view'), u.searchParams.get('tab'), u.searchParams.get('method')];
+    };
+    expect(url('setup')).toEqual(['C02_grid_feedback', 'hologram', 'train', 'M07']);
+    expect(url('device')).toEqual(['C08_device_limited', 'hologram', 'device', 'M07']);
+    expect(url('method')).toEqual(['C02_grid_feedback', 'convergence', 'method', 'M07']);
+    expect(url('compare')).toEqual(['C02_grid_feedback', 'convergence', 'pareto', 'M06']);
+    expect(url('compare', 'B1')).toEqual(['C02_grid_feedback', 'convergence', 'pareto', 'B1']);
+    expect(url('hold')).toEqual(['C01_square_grid', 'dynamics', 'particle', 'M06']);
   });
 });
 
 describe('the exit method', () => {
-  it('is the reference method of the case the step reads: B1 on C08, M07 on C02, M06 on C01', () => {
+  it('is the own method of the step, else the reference method of its case: M07 on the device step, M06 on the comparison, M07 on C02, M06 on C01', () => {
     const cases = { C02_grid_feedback: { state: 'ready', data: realCase('C02_grid_feedback') }, C08_device_limited: { state: 'ready', data: realCase('C08_device_limited') }, C01_square_grid: { state: 'ready', data: realCase('C01_square_grid') } } as const;
-    expect(methodOfStep(stepDef('device'), cases)).toBe('B1');
+    expect(methodOfStep(stepDef('device'), cases)).toBe(ID.M07);
     expect(methodOfStep(stepDef('setup'), cases)).toBe('M07');
     expect(methodOfStep(stepDef('hold'), cases)).toBe('M06');
     expect(methodOfStep(stepDef('hold'), { ...cases, C01_square_grid: { state: 'loading' } })).toBeNull();
   });
 });
+
+/** A contract path (`params.setup.x`, `history[].y`, `n_seeds`) or a source file in text a reader sees. */
+const READER_PATH = /[a-z]+\.[a-z_]+|\[\]|[a-z]+_[a-z_]+|\.ts/;
 
 describe('the headlines are computed from the artifacts', () => {
   const c02 = realCase('C02_grid_feedback');
@@ -171,7 +192,7 @@ describe('the headlines are computed from the artifacts', () => {
     }
     expect(f.summary.en).toContain('modelled SLM');
     expect(f.summary.es).toContain('SLM modelado');
-    for (const x of f.facts) expect(x.source.en).toContain('device');
+    for (const x of f.facts) expect(x.source.en).toContain('benchmark');
     expect(f.facts.map((x) => x.label.en).join('|')).toContain(methodName('M07').en);
   });
 
@@ -205,7 +226,7 @@ describe('the headlines are computed from the artifacts', () => {
     const d = c01.trace.dynamics!;
     expect(f.kappa).toBe(d.kappa_pn_per_um);
     expect(f.fc).toBe(d.fc_hz);
-    expect(f.headline.en).toBe(`The bead feels ${formatNumber(d.kappa_pn_per_um!, 'en', { decimals: 2 })} pN/um at a ${formatNumber(d.fc_hz, 'en', { decimals: 1 })} Hz corner frequency`);
+    expect(f.headline.en).toBe(`The bead feels ${formatNumber(d.kappa_pn_per_um!, 'en', { decimals: 2 })} pN/µm at a ${formatNumber(d.fc_hz, 'en', { decimals: 1 })} Hz corner frequency`);
     expect(f.headline.es).toContain(formatNumber(d.kappa_pn_per_um!, 'es', { decimals: 2 }));
   });
 
@@ -292,7 +313,7 @@ describe('the story renders each step over the loaded artifacts', () => {
     // the frame's own language is the shell's store (English here); the panel follows the `lang` the page passes from the same store
     expect(render('setup', {}, 'es')).toContain('Dividir el haz');
     expect(render('setup', {}, 'es')).toContain('79,8 %');
-    expect(render('hold')).toContain(`The bead feels ${formatNumber(realCase('C01_square_grid').trace.dynamics!.kappa_pn_per_um!, 'en', { decimals: 2 })} pN/um`);
+    expect(render('hold')).toContain(`The bead feels ${formatNumber(realCase('C01_square_grid').trace.dynamics!.kappa_pn_per_um!, 'en', { decimals: 2 })} pN/µm`);
     expect(render('compare')).toContain('Square 10 x 10');
   });
 
@@ -300,7 +321,7 @@ describe('the story renders each step over the loaded artifacts', () => {
     const html = render('device', { c08: { state: 'unavailable', reason: { en: 'C08 is not available yet: the pipeline did not write it', es: 'C08 aún no está disponible' } } });
     expect(html).toContain('data-state="unavailable"');
     expect(html).toContain('the pipeline did not write it');
-    expect(html).toContain('href="/app?case=C08_device_limited&amp;view=hologram"');
+    expect(html).toContain('href="/app?case=C08_device_limited&amp;view=hologram&amp;tab=device"');
     const es = render('device', { c08: { state: 'error', error: 'HTTP 500' } }, 'es');
     expect(es).toContain('Volver a la App');
   });
@@ -315,7 +336,7 @@ describe('the story renders each step over the loaded artifacts', () => {
 
   it('the other steps still name their findings while one case is loading', () => {
     const html = render('hold', { c08: { state: 'loading' } });
-    expect(html).toContain(`The bead feels ${formatNumber(realCase('C01_square_grid').trace.dynamics!.kappa_pn_per_um!, 'en', { decimals: 2 })} pN/um`);
+    expect(html).toContain(`The bead feels ${formatNumber(realCase('C01_square_grid').trace.dynamics!.kappa_pn_per_um!, 'en', { decimals: 2 })} pN/µm`);
   });
 });
 
@@ -325,8 +346,11 @@ const hasFields = (items: SceneCalloutDef[]) => {
     expect(c.value, c.id).not.toBe('');
     expect(c.unit, c.id).toBeTruthy();
     expect(['alarm', 'warning', 'normal', 'selected', 'inactive']).toContain(c.state);
-    // the source names the artifact field the value is read from
-    expect(txt(c.source, 'en'), c.id).toMatch(/(trace|params|benchmark|methods|history|rows|n_seeds|n_fix|n_pix|dynamics)/);
+    // the source is reader text: words for the quantity, never a contract path or a file name (review m1)
+    for (const l of ['en', 'es'] as const) {
+      expect(txt(c.source, l), c.id).not.toMatch(READER_PATH);
+      expect(txt(c.source, l).length, c.id).toBeGreaterThan(8);
+    }
     expect(c.anchor.x).toBeGreaterThanOrEqual(0);
     expect(c.anchor.x).toBeLessThanOrEqual(1);
     expect(c.anchor.y).toBeGreaterThanOrEqual(0);
@@ -426,5 +450,34 @@ describe('the selection the story gives the views', () => {
     expect(storySelection(realCase('C08_device_limited'), 'ideal').deviceModel).toBeNull();
     expect(storySelection(realCase('C08_device_limited')).deviceModel).not.toBeNull();
     expect(realSelection('C02_grid_feedback').result?.history.length).toBe(30);
+  });
+});
+
+describe('the comparison callouts and layout under a measured band', () => {
+  it('the plot starts at the band the cards measured, and the seeds card points at the middle of the two compared dots', () => {
+    const b = bench();
+    const f = compareFinding(b);
+    if ('missing' in f) throw new Error('the compare cell must exist');
+    const L = compareLayout(390, 560, 260);
+    expect(L.plot.y).toBe(260);
+    const dots = { [f.best.method]: { x: 100, y: 300 }, [f.gs.method]: { x: 200, y: 400 } };
+    const items = compareCallouts(f, 'es', L, 390, 560, dots);
+    const seeds = items.find((c) => c.id === 'seeds')!;
+    expect(seeds.anchor.x).toBeCloseTo(150 / 390, 10);
+    expect(seeds.anchor.y).toBeCloseTo(350 / 560, 10);
+    expect(items.find((c) => c.id === 'best')!.anchor).toEqual({ x: 100 / 390, y: 300 / 560 });
+    // a dot's callout is never anchored under the band
+    for (const c of items) expect(c.anchor.y * 560).toBeGreaterThan(260);
+  });
+});
+
+describe('the stage floor on a phone follows the band', () => {
+  it('is the step floor until the band needs more, plus 490 px of drawing, and never above 900', async () => {
+    const { storyStageFloor } = await import('./Story');
+    expect(storyStageFloor(640, 0)).toBe(640);
+    expect(storyStageFloor(640, 120)).toBe(640);
+    expect(storyStageFloor(640, 260)).toBe(750);
+    expect(storyStageFloor(860, 260)).toBe(860);
+    expect(storyStageFloor(640, 700)).toBe(900);
   });
 });

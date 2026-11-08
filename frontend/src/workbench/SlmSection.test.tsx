@@ -146,7 +146,7 @@ describe('the callouts and the drawing carry the case values', () => {
     expect(items[2].value).toBe(f(0.85, 2));
     for (const c of items) {
       expect(['alarm', 'warning', 'normal', 'selected', 'inactive']).toContain(c.state);
-      expect(txt(c.source, 'en')).toMatch(/params\.device|reference\.phase_u8/);
+      for (const l of ['en', 'es'] as const) expect(txt(c.source, l)).not.toMatch(/[a-z]+\.[a-z_]+|\[\]|[a-z]+_[a-z_]+/);
       expect(c.anchor.x).toBeGreaterThan(0);
       expect(c.anchor.x).toBeLessThan(1);
       expect(c.anchor.y).toBeGreaterThan(0);

@@ -3,7 +3,7 @@
 // stated as missing on the step. The views are the App's (V1, V2, V4, V5) composed in the shell's story frame; the exit lands on /app with
 // the step's case, the group and the method. Routes: /story/setup, /story/device, /story/method, /story/compare, /story/hold.
 import { ChipGroup, PlotCard, Stage, StoryFrame, formatNumber, pick, useLinkedCursor, useLinkedItem, useLinkedView, useShellLang, type BiText, type SceneCalloutDef, type StoryStep } from '@fasl-work/caos-app-shell';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { loadBenchmark, loadCase, loadIndex, useArtifact, type CaseData, type Loaded } from '../api/artifacts';
 import type { BenchmarkResults } from '../lib/contract.types';
@@ -15,7 +15,7 @@ import { ParticleView } from '../workbench/DynamicsGroup';
 import { Heatmap, type HeatMark } from '../workbench/HeatmapStage';
 import { MethodAtWorkView, freezeIteration, pointAt, spreadText, useFocalAtIteration } from '../workbench/MethodAtWork';
 import { methodName, replayMaps, replayResult, trapsOf, type DeviceChoice, type Selection } from '../workbench/model';
-import { CalloutHeader } from '../workbench/CalloutHeader';
+import { BAND_GAP, CalloutHeader, anchorInDrawing, useCalloutBand } from '../workbench/CalloutHeader';
 import { OpticalTrainView } from '../workbench/OpticalTrain';
 import { paramsFor } from '../workbench/run';
 import { SlmSectionView } from '../workbench/SlmSection';
@@ -36,8 +36,8 @@ export const wordCount = (text: string): number => text.trim().split(/\s+/).filt
 const nameOf = (id: string, lang: Lang): string => methodName(id)[lang];
 /** A method's name where room is short (a point label, a headline): the device-aware WGS drops its "model of the device" tail. */
 const short = (id: string, l: Lang): string => (id === ID.B1 ? (l === 'en' ? 'Device-aware WGS' : 'WGS con dispositivo') : nameOf(id, l));
-/** The artifact path a fact cites, with the method named instead of its engine id. */
-const traceSource = (id: string, path: string): Tx => both((l) => `trace, ${nameOf(id, l)}: ${path}`);
+/** What a fact reads, in words: the quantity of the trace and the method it belongs to, never the artifact path. */
+const traceSource = (id: string, what: Tx): Tx => both((l) => `${what[l]}, ${nameOf(id, l)}`);
 type Tx = { en: string; es: string };
 const both = (make: (lang: Lang) => string): Tx => ({ en: make('en'), es: make('es') });
 
@@ -47,17 +47,21 @@ export interface StepDef {
   /** The case whose artifact the step reads; the compare step reads the benchmark and exits on the default case. */
   caseId: string;
   group: 'hologram' | 'convergence' | 'dynamics';
+  /** The sub-view of the group the exit opens (the id the App's group gives it): the step's own view, never the group's first. */
+  tab: string;
+  /** The method the exit loads when the step names one (the device step is about the phase-fixed weighted GS); null leaves the case's reference method. */
+  method: string | null;
   accent: 1 | 2 | 3 | 4 | 5;
   verb: BiText;
 }
 
 /** The five steps, in order, with the case each one reads (SDD, Visualization catalog). The case ids are the case-manifest ids. */
 export const STEP_DEFS: readonly StepDef[] = [
-  { id: 'setup', caseId: 'C02_grid_feedback', group: 'hologram', accent: 1, verb: bi('Split the beam', 'Dividir el haz') },
-  { id: 'device', caseId: 'C08_device_limited', group: 'hologram', accent: 2, verb: bi('Meet the device', 'Conocer el dispositivo') },
-  { id: 'method', caseId: 'C02_grid_feedback', group: 'convergence', accent: 3, verb: bi('Watch it converge', 'Ver la convergencia') },
-  { id: 'compare', caseId: 'C02_grid_feedback', group: 'convergence', accent: 4, verb: bi('Compare the methods', 'Comparar los métodos') },
-  { id: 'hold', caseId: 'C01_square_grid', group: 'dynamics', accent: 5, verb: bi('Hold a bead', 'Sujetar una microesfera') },
+  { id: 'setup', caseId: 'C02_grid_feedback', group: 'hologram', tab: 'train', method: null, accent: 1, verb: bi('Split the beam', 'Dividir el haz') },
+  { id: 'device', caseId: 'C08_device_limited', group: 'hologram', tab: 'device', method: ID.M07, accent: 2, verb: bi('Meet the device', 'Conocer el dispositivo') },
+  { id: 'method', caseId: 'C02_grid_feedback', group: 'convergence', tab: 'method', method: null, accent: 3, verb: bi('Watch it converge', 'Ver la convergencia') },
+  { id: 'compare', caseId: 'C02_grid_feedback', group: 'convergence', tab: 'pareto', method: ID.M06, accent: 4, verb: bi('Compare the methods', 'Comparar los métodos') },
+  { id: 'hold', caseId: 'C01_square_grid', group: 'dynamics', tab: 'particle', method: null, accent: 5, verb: bi('Hold a bead', 'Sujetar una microesfera') },
 ];
 export const stepDef = (id: string): StepDef => STEP_DEFS.find((s) => s.id === id) ?? STEP_DEFS[0];
 
@@ -84,7 +88,8 @@ export interface Finding {
   /** Lines of the panel: label, value, source field. */
   facts: { label: Tx; value: Tx; source: Tx }[];
 }
-export type Missing = { missing: Tx };
+/** A number the artifact does not hold, or one whose case has not loaded yet (`loading`: the headline says so instead of claiming it is missing). */
+export type Missing = { missing: Tx; loading?: true };
 const absent = (what: string, es: string): Missing => ({ missing: bi(`${what} is not in the artifact, so this number is not shown.`, `${es} no está en el artefacto, así que esta cifra no se muestra.`) });
 
 export function setupFinding(data: CaseData): (Finding & { n: number; eff: number; method: string }) | Missing {
@@ -100,9 +105,9 @@ export function setupFinding(data: CaseData): (Finding & { n: number; eff: numbe
     headline: both((l) => (l === 'en' ? `One beam becomes ${n} traps at ${num(eff * 100, l, 1)}% efficiency` : `Un haz se convierte en ${n} trampas con ${num(eff * 100, l, 1)}% de eficiencia`)),
     summary: both((l) => (l === 'en' ? `${nameOf(ref, l)} shapes the beam on the SLM; the rest of the light is the zero order and ghosts.` : `${nameOf(ref, l)} da forma al haz en el SLM; el resto de la luz es el orden cero y los fantasmas.`)),
     facts: [
-      { label: bi('Traps', 'Trampas'), value: bi(String(n), String(n)), source: bi('trace.traps', 'trace.traps') },
-      { label: bi('Efficiency', 'Eficiencia'), value: both((l) => `${num(eff * 100, l, 1)} %`), source: traceSource(ref, 'final.efficiency') },
-      { label: bi('Uniformity', 'Uniformidad'), value: both((l) => num(final.uniformity, l, 3)), source: traceSource(ref, 'final.uniformity') },
+      { label: bi('Traps', 'Trampas'), value: bi(String(n), String(n)), source: bi('trace: the traps of the case', 'traza: las trampas del caso') },
+      { label: bi('Efficiency', 'Eficiencia'), value: both((l) => `${num(eff * 100, l, 1)} %`), source: traceSource(ref, bi('trace: final efficiency', 'traza: eficiencia final')) },
+      { label: bi('Uniformity', 'Uniformidad'), value: both((l) => num(final.uniformity, l, 3)), source: traceSource(ref, bi('trace: final uniformity', 'traza: uniformidad final')) },
     ],
   };
 }
@@ -128,10 +133,10 @@ export function deviceFinding(data: CaseData): (Finding & { ideal: { spread: num
         : `${bits === null ? 'La fase sin cuantizar' : `La fase de ${bits} bits`}, la diafonía y un factor de llenado de ${num(dev.fill_factor, l, 2)} cuestan ${num((ideal.eff - device.eff) * 100, l, 1)} puntos de eficiencia${refFinal ? `; ${nameOf(ref, l)}, que modela el dispositivo, mantiene ${spreadText(refFinal.rel_std_pct, l)}%` : ''}.`,
     ),
     facts: [
-      { label: both((l) => `${nameOf(id, l)}: spread, ideal model`), value: both((l) => `${spreadText(ideal.spread, l)} %`), source: traceSource(id, 'history[last].rel_std_pct') },
-      { label: both((l) => `${nameOf(id, l)}: spread, case device`), value: both((l) => `${spreadText(device.spread, l)} %`), source: traceSource(id, 'final.rel_std_pct') },
-      { label: bi('Efficiency cost', 'Costo en eficiencia'), value: both((l) => `${num((ideal.eff - device.eff) * 100, l, 1)} ${l === 'en' ? 'points' : 'puntos'}`), source: traceSource(id, 'history[last].efficiency, final.efficiency') },
-      { label: bi('Phase levels', 'Niveles de fase'), value: bits === null ? bi('not quantized', 'sin cuantizar') : bi(`${2 ** bits}`, `${2 ** bits}`), source: bi('params.device.bit_depth', 'params.device.bit_depth') },
+      { label: both((l) => (l === 'en' ? `${nameOf(id, l)}: spread, ideal model` : `${nameOf(id, l)}: dispersión, modelo ideal`)), value: both((l) => `${spreadText(ideal.spread, l)} %`), source: traceSource(id, bi('trace: spread at the last iteration, ideal model', 'traza: dispersión en la última iteración, modelo ideal')) },
+      { label: both((l) => (l === 'en' ? `${nameOf(id, l)}: spread, case device` : `${nameOf(id, l)}: dispersión, dispositivo del caso`)), value: both((l) => `${spreadText(device.spread, l)} %`), source: traceSource(id, bi('trace: final spread on the case device', 'traza: dispersión final con el dispositivo del caso')) },
+      { label: bi('Efficiency cost', 'Costo en eficiencia'), value: both((l) => `${num((ideal.eff - device.eff) * 100, l, 1)} ${l === 'en' ? 'points' : 'puntos'}`), source: traceSource(id, bi('trace: efficiency, ideal model against case device', 'traza: eficiencia, modelo ideal frente al dispositivo del caso')) },
+      { label: bi('Phase levels', 'Niveles de fase'), value: bits === null ? bi('not quantized', 'sin cuantizar') : bi(`${2 ** bits}`, `${2 ** bits}`), source: bi('case device: bit depth', 'dispositivo del caso: profundidad de bits') },
     ],
   };
 }
@@ -157,9 +162,9 @@ export function methodFinding(data: CaseData): (Finding & { first: number; last:
         : `${nameOf(ref, l)} en ${data.trace.traps.length} trampas${freeze === null ? '' : `, con la fase fijada en la iteración ${freeze}`}; recorra la iteración para redibujar el plano focal.`,
     ),
     facts: [
-      { label: bi('Spread, first iteration', 'Dispersión, primera iteración'), value: both((l) => `${spreadText(first, l)} %`), source: traceSource(ref, 'history[0].rel_std_pct') },
-      { label: bi('Spread, last iteration', 'Dispersión, última iteración'), value: both((l) => `${spreadText(last, l)} %`), source: traceSource(ref, 'history[last].rel_std_pct') },
-      { label: bi('Iterations', 'Iteraciones'), value: bi(String(iterations), String(iterations)), source: traceSource(ref, 'history[last].iteration') },
+      { label: bi('Spread, first iteration', 'Dispersión, primera iteración'), value: both((l) => `${spreadText(first, l)} %`), source: traceSource(ref, bi('trace: spread at the first iteration', 'traza: dispersión en la primera iteración')) },
+      { label: bi('Spread, last iteration', 'Dispersión, última iteración'), value: both((l) => `${spreadText(last, l)} %`), source: traceSource(ref, bi('trace: spread at the last iteration', 'traza: dispersión en la última iteración')) },
+      { label: bi('Iterations', 'Iteraciones'), value: bi(String(iterations), String(iterations)), source: traceSource(ref, bi('trace: iterations run', 'traza: iteraciones ejecutadas')) },
     ],
   };
 }
@@ -194,8 +199,7 @@ export function compareFinding(bench: BenchmarkResults, at: CompareCell = COMPAR
   const best = pts[0];
   const geo = bench.geometries.find((g) => g.id === cell.geometry);
   if (!best || !gs || !fixed || !geo) return absent(`The cell ${cell.geometry} on ${cellDevice(cell.device, 'en')} at ${cell.budget} iterations, or the weighted GS or phase-fixed weighted GS row on it,`, `La celda ${cell.geometry} en ${cellDevice(cell.device, 'es')} a ${cell.budget} iteraciones, o la fila del GS ponderado o del GS ponderado de fase fija en ella,`);
-  const where = `${cell.geometry}, ${cell.device}, ${cell.budget}`;
-  const src = (p: ComparePoint): Tx => both((l) => `benchmark, ${nameOf(p.method, l)}: ${where}, rel_std_pct.median`);
+  const src = (p: ComparePoint): Tx => both((l) => (l === 'en' ? `benchmark: median over the seeds of ${nameOf(p.method, l)} on ${cell.geometry}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iterations` : `benchmark: mediana sobre las semillas de ${nameOf(p.method, l)} en ${cell.geometry}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iteraciones`));
   return {
     best,
     gs,
@@ -208,10 +212,10 @@ export function compareFinding(bench: BenchmarkResults, at: CompareCell = COMPAR
         : `${geo.name.es}, ${cell.budget} iteraciones, ${cellDevice(cell.device, l, true)}: ${best.seeds}, ${gs.seeds} y ${fixed.seeds} semillas; ${nameOf(fixed.method, l)} ${spreadText(fixed.spread.median, l)}%.`,
     ),
     facts: [
-      { label: both((l) => `${nameOf(best.method, l)}, median spread`), value: both((l) => `${spreadText(best.spread.median, l)} %`), source: src(best) },
-      { label: both((l) => `${nameOf(gs.method, l)}, median spread`), value: both((l) => `${spreadText(gs.spread.median, l)} %`), source: src(gs) },
-      { label: both((l) => `${nameOf(fixed.method, l)}, median spread`), value: both((l) => `${spreadText(fixed.spread.median, l)} %`), source: src(fixed) },
-      { label: bi('Seeds', 'Semillas'), value: bi(`${best.seeds}, ${gs.seeds} and ${fixed.seeds}`, `${best.seeds}, ${gs.seeds} y ${fixed.seeds}`), source: bi(`benchmark rows[${where}].n_seeds`, `benchmark rows[${where}].n_seeds`) },
+      { label: both((l) => (l === 'en' ? `${nameOf(best.method, l)}, median spread` : `${nameOf(best.method, l)}, dispersión mediana`)), value: both((l) => `${spreadText(best.spread.median, l)} %`), source: src(best) },
+      { label: both((l) => (l === 'en' ? `${nameOf(gs.method, l)}, median spread` : `${nameOf(gs.method, l)}, dispersión mediana`)), value: both((l) => `${spreadText(gs.spread.median, l)} %`), source: src(gs) },
+      { label: both((l) => (l === 'en' ? `${nameOf(fixed.method, l)}, median spread` : `${nameOf(fixed.method, l)}, dispersión mediana`)), value: both((l) => `${spreadText(fixed.spread.median, l)} %`), source: src(fixed) },
+      { label: bi('Seeds', 'Semillas'), value: bi(`${best.seeds}, ${gs.seeds} and ${fixed.seeds}`, `${best.seeds}, ${gs.seeds} y ${fixed.seeds}`), source: both((l) => (l === 'en' ? `benchmark: seeds of each of the three cells (${cell.geometry}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iterations)` : `benchmark: semillas de cada una de las tres celdas (${cell.geometry}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iteraciones)`)) },
     ],
   };
 }
@@ -226,23 +230,47 @@ export function holdFinding(data: CaseData): (Finding & { kappa: number; fc: num
     kappa,
     fc,
     method: ref,
-    headline: both((l) => (l === 'en' ? `The bead feels ${num(kappa, l, 2)} pN/um at a ${num(fc, l, 1)} Hz corner frequency` : `La microesfera siente ${num(kappa, l, 2)} pN/um con frecuencia de corte de ${num(fc, l, 1)} Hz`)),
+    headline: both((l) => (l === 'en' ? `The bead feels ${num(kappa, l, 2)} pN/µm at a ${num(fc, l, 1)} Hz corner frequency` : `La microesfera siente ${num(kappa, l, 2)} pN/µm con frecuencia de corte de ${num(fc, l, 1)} Hz`)),
     summary: both((l) =>
       l === 'en'
         ? `A simulated bead in a trap of the ${nameOf(ref, l)} hologram; the stiffness is read from the power spectrum of its position.`
         : `Una microesfera simulada en una trampa del holograma de ${nameOf(ref, l)}; la rigidez se lee del espectro de potencia de su posición.`,
     ),
     facts: [
-      { label: bi('Trap stiffness', 'Rigidez de la trampa'), value: both((l) => `${num(kappa, l, 2)} pN/um`), source: bi('trace.dynamics.kappa_pn_per_um', 'trace.dynamics.kappa_pn_per_um') },
-      { label: bi('Corner frequency', 'Frecuencia de corte'), value: both((l) => `${num(fc, l, 1)} Hz`), source: bi('trace.dynamics.fc_hz', 'trace.dynamics.fc_hz') },
-      { label: bi('Trap depth', 'Profundidad de la trampa'), value: both((l) => `${num(dyn.depth.value, l, 0)} ${dyn.depth.unit}`), source: bi('trace.dynamics.depth', 'trace.dynamics.depth') },
+      { label: bi('Trap stiffness', 'Rigidez de la trampa'), value: both((l) => `${num(kappa, l, 2)} pN/µm`), source: bi('trace: stiffness of the simulated trap', 'traza: rigidez de la trampa simulada') },
+      { label: bi('Corner frequency', 'Frecuencia de corte'), value: both((l) => `${num(fc, l, 1)} Hz`), source: bi('trace: corner frequency of the position spectrum', 'traza: frecuencia de corte del espectro de la posición') },
+      { label: bi('Trap depth', 'Profundidad de la trampa'), value: both((l) => `${num(dyn.depth.value, l, 0)} ${dyn.depth.unit}`), source: bi('trace: depth of the simulated trap', 'traza: profundidad de la trampa simulada') },
     ],
   };
 }
 
-/** The App link of a step: its case, its group of views and the method (`method` is read by the App when it honours it). */
+/** The stage height a phone gives a step: the step's own floor, or the band the callout cards measured plus the 490 px of drawing that fit before, whichever is taller, never above the shell's 900. */
+export function storyStageFloor(base: number, band: number): number {
+  return Math.min(900, Math.max(base, Math.round(band + 490)));
+}
+
+/** The band the callout cards of the story stage measured (the shell sets `--caos-callout-band` on its layer), followed as the cards re-lay out. 0 until measured. */
+function useStoryBand(stepId: string): number {
+  const [band, setBand] = useState(0);
+  useEffect(() => {
+    const root = document.querySelector('.dh-story');
+    if (!root) return;
+    const read = () => {
+      const layer = root.querySelector<HTMLElement>('[data-caos-callout-layer]');
+      const v = layer ? Number.parseFloat(layer.style.getPropertyValue('--caos-callout-band')) : 0;
+      setBand(Number.isFinite(v) && v > 0 ? Math.round(v) : 0);
+    };
+    read();
+    const watch = new MutationObserver(read);
+    watch.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
+    return () => watch.disconnect();
+  }, [stepId]);
+  return band;
+}
+
+/** The App link of a step: its case, its group and sub-view of the views, and the method (the App reads `case`, `view`, `tab` and `method` on load). */
 export function exitHref(step: StepDef, method: string | null): string {
-  const q = new URLSearchParams({ case: step.caseId, view: step.group });
+  const q = new URLSearchParams({ case: step.caseId, view: step.group, tab: step.tab });
   if (method) q.set('method', method);
   return `/app?${q.toString()}`;
 }
@@ -291,6 +319,8 @@ export function storySelection(data: CaseData, device: DeviceChoice | null = nul
 
 // ---- the comparison view (V6) -----------------------------------------------------------------------------------------------------
 
+/** The half length, in px, of the end caps of a point's quartile range: a range narrower than the caps is still drawn, as caps. */
+const CAP = 4;
 const SPREAD_FLOOR = 0.001;
 const SPREAD_CEIL = 300;
 export interface CompareLayout {
@@ -301,12 +331,13 @@ export interface CompareLayout {
   xTicks: number[];
 }
 /** The geometry of the scatter: efficiency across (0 to 1), the relative spread up on a log scale from SPREAD_FLOOR (a median of zero sits on the floor). */
-export function compareLayout(width: number, height: number): CompareLayout {
+export function compareLayout(width: number, height: number, band?: number): CompareLayout {
   const left = 58;
   const right = 14;
-  const top = width < 640 ? 190 : 96;
   const bottom = 46;
-  const plot = { x: left, y: Math.min(top, height * 0.45), w: Math.max(60, width - left - right), h: Math.max(60, height - Math.min(top, height * 0.45) - bottom) };
+  // the plot starts under the band the callout cards measured; until they are measured, under a nominal one
+  const top = band !== undefined ? band : Math.min(width < 640 ? 190 : 96, height * 0.45);
+  const plot = { x: left, y: top, w: Math.max(60, width - left - right), h: Math.max(60, height - top - bottom) };
   const lo = Math.log10(SPREAD_FLOOR);
   const hi = Math.log10(SPREAD_CEIL);
   return {
@@ -340,13 +371,20 @@ export function nudgeDots(pts: readonly ComparePoint[], L: CompareLayout, r = 12
   });
 }
 
-export function compareCallouts(f: { best: ComparePoint; gs: ComparePoint; cell: CompareCell }, lang: Lang, L: CompareLayout, width: number, height: number): SceneCalloutDef[] {
-  const at = (p: ComparePoint) => ({ x: Math.min(0.95, Math.max(0.05, L.x(p.eff.median) / width)), y: Math.min(0.95, Math.max(0.2, L.y(p.spread.median) / height)) });
-  const cellText = `${f.cell.geometry}, ${f.cell.device}, ${f.cell.budget}`;
+/** Where a method's dot is drawn, in px of the stage (the dots are moved aside when they touch, so the callouts point at the dot, not at its median). */
+export type DotAt = Readonly<Record<string, { x: number; y: number }>>;
+
+export function compareCallouts(f: { best: ComparePoint; gs: ComparePoint; cell: CompareCell }, lang: Lang, L: CompareLayout, width: number, height: number, dots?: DotAt): SceneCalloutDef[] {
+  const px = (p: ComparePoint) => dots?.[p.method] ?? { x: L.x(p.eff.median), y: L.y(p.spread.median) };
+  const norm = (x: number, y: number) => ({ x: Math.min(0.98, Math.max(0.02, x / width)), y: Math.min(0.98, Math.max(0.02, y / height)) });
+  const at = (p: ComparePoint) => norm(px(p).x, px(p).y);
+  const a = px(f.best);
+  const b = px(f.gs);
   return [
-    { id: 'best', eyebrow: { en: 'LOWEST SPREAD', es: 'MENOR DISPERSIÓN' }, value: spreadText(f.best.spread.median, lang), unit: '%', state: 'normal', anchor: at(f.best), source: { en: `${nameOf(f.best.method, 'en')}: benchmark, ${cellText}, rel_std_pct.median`, es: `${nameOf(f.best.method, 'es')}: benchmark, ${cellText}, rel_std_pct.median` } },
-    { id: 'gs', eyebrow: { en: 'WEIGHTED GS', es: 'GS PONDERADO' }, value: spreadText(f.gs.spread.median, lang), unit: '%', state: 'warning', anchor: at(f.gs), source: { en: `${nameOf(f.gs.method, 'en')}: benchmark, ${cellText}, rel_std_pct.median`, es: `${nameOf(f.gs.method, 'es')}: benchmark, ${cellText}, rel_std_pct.median` } },
-    { id: 'seeds', eyebrow: { en: 'SEEDS', es: 'SEMILLAS' }, value: `${f.best.seeds}/${f.gs.seeds}`, unit: { en: 'seeds per cell', es: 'semillas por celda' }, state: 'selected', anchor: { x: 0.5, y: 0.6 }, source: { en: 'benchmark rows[].n_seeds, the two cells compared', es: 'benchmark rows[].n_seeds, las dos celdas comparadas' } },
+    { id: 'best', eyebrow: { en: 'LOWEST SPREAD', es: 'MENOR DISPERSIÓN' }, value: spreadText(f.best.spread.median, lang), unit: '%', state: 'normal', anchor: at(f.best), source: { en: `${nameOf(f.best.method, 'en')}: benchmark median over its seeds`, es: `${nameOf(f.best.method, 'es')}: mediana del benchmark sobre sus semillas` } },
+    { id: 'gs', eyebrow: { en: 'WEIGHTED GS', es: 'GS PONDERADO' }, value: spreadText(f.gs.spread.median, lang), unit: '%', state: 'warning', anchor: at(f.gs), source: { en: `${nameOf(f.gs.method, 'en')}: benchmark median over its seeds`, es: `${nameOf(f.gs.method, 'es')}: mediana del benchmark sobre sus semillas` } },
+    // the seeds card points at the middle of the line the plot draws between the two compared points
+    { id: 'seeds', eyebrow: { en: 'SEEDS', es: 'SEMILLAS' }, value: `${f.best.seeds}/${f.gs.seeds}`, unit: { en: 'seeds', es: 'semillas' }, state: 'selected', anchor: norm((a.x + b.x) / 2, (a.y + b.y) / 2), source: { en: 'benchmark: seeds of the two cells compared', es: 'benchmark: semillas de las dos celdas comparadas' } },
   ];
 }
 
@@ -355,19 +393,25 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
   const selected = useLinkedView((s) => s.selectedId);
   const select = useLinkedView((s) => s.select);
   const pts = useMemo(() => comparePoints(bench, cell), [bench, cell]);
+  const cb = useCalloutBand(0);
   const t = (en: string, es: string) => (lang === 'es' ? es : en);
   const geo = bench.geometries.find((g) => g.id === cell.geometry);
   const front = pts.filter((p) => p.onFront).sort((a, b) => a.eff.median - b.eff.median);
   return (
-    <PlotCard fill title={{ en: 'Spread against efficiency, by method', es: 'Dispersión contra eficiencia, por método' }} lane="replay" provenance="synthetic" note={{ en: `${geo?.name.en ?? cell.geometry}, ${cell.budget} iterations, ${cellDevice(cell.device, 'en')}, default parameters. Each point is a method's median over its seeds with the quartile range drawn; the line joins the methods no other beats on both axes. A median of zero sits on the floor of the axis.`, es: `${geo?.name.es ?? cell.geometry}, ${cell.budget} iteraciones, ${cellDevice(cell.device, 'es')}, parámetros por defecto. Cada punto es la mediana de un método sobre sus semillas con el rango intercuartil dibujado; la línea une los métodos que ningún otro supera en ambos ejes. Una mediana de cero queda en el piso del eje.` }}>
+    <PlotCard fill title={{ en: 'Spread against efficiency, by method', es: 'Dispersión contra eficiencia, por método' }} lane="replay" provenance="synthetic" note={{ en: `${geo?.name.en ?? cell.geometry}, ${cell.budget} iterations, ${cellDevice(cell.device, 'en')}, default parameters. Each point is a method's median over its seeds with the quartile range drawn (a range narrower than a few pixels is drawn with its end caps and its numbers are printed beside the two compared points); the line joins the methods no other beats on both axes. A median of zero sits on the floor of the axis.`, es: `${geo?.name.es ?? cell.geometry}, ${cell.budget} iteraciones, ${cellDevice(cell.device, 'es')}, parámetros por defecto. Cada punto es la mediana de un método sobre sus semillas con el rango intercuartil dibujado (un rango más estrecho que unos pocos píxeles se dibuja con sus remates y sus cifras se imprimen junto a los dos puntos comparados); la línea une los métodos que ningún otro supera en ambos ejes. Una mediana de cero queda en el piso del eje.` }}>
       <ReadinessNote ids={['benchmark-results']} />
       <div className="dh-cmp" data-caos-flow="" data-compare-cell={`${cell.geometry}|${cell.device}|${cell.budget}`}>
         <div className="dh-cmp-stage">
         <Stage label={{ en: 'Median spread against median efficiency of each method, with the quartile ranges and the Pareto front', es: 'Dispersión mediana contra eficiencia mediana de cada método, con los rangos intercuartiles y el frente de Pareto' }}>
           {({ width, height }) => {
             if (width < 120 || height < 120) return null;
-            const L = compareLayout(width, height);
+            const L = compareLayout(width, height, cb.band > 0 ? cb.band + BAND_GAP : undefined);
             const nudged = nudgeDots(pts, L);
+            const dots: Record<string, { x: number; y: number }> = {};
+            pts.forEach((p, i) => (dots[p.method] = { x: nudged[i], y: L.y(p.spread.median) }));
+            const compared = !('missing' in finding) ? [finding.best.method, finding.gs.method] : [];
+            const cmpA = compared.length ? dots[compared[0]] : null;
+            const cmpB = compared.length ? dots[compared[1]] : null;
             return (
               <div className="dh-scene">
                 <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} role="group" aria-label={t('Methods on the spread and efficiency axes', 'Métodos en los ejes de dispersión y eficiencia')} className="dh-cmp-svg">
@@ -385,6 +429,7 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
                   ))}
                   <text x={L.plot.x + L.plot.w / 2} y={height - 6} textAnchor="middle" fontSize={12} fill="var(--color-fg)">{t('Efficiency (fraction of the light in the traps)', 'Eficiencia (fracción de la luz en las trampas)')}</text>
                   <text transform={`translate(14 ${L.plot.y + L.plot.h / 2}) rotate(-90)`} textAnchor="middle" fontSize={12} fill="var(--color-fg)">{t('Relative spread (%, log)', 'Dispersión relativa (%, log)')}</text>
+                  {cmpA && cmpB && <line pointerEvents="none" x1={cmpA.x} y1={cmpA.y} x2={cmpB.x} y2={cmpB.y} stroke="var(--color-accent)" strokeWidth={1.5} strokeDasharray="2 3" data-compared="" />}
                   {front.length > 1 && <polyline pointerEvents="none" points={front.map((p) => `${L.x(p.eff.median)},${L.y(p.spread.median)}`).join(' ')} fill="none" stroke="var(--color-good)" strokeWidth={2} strokeDasharray="5 4" />}
                   {pts.map((p, i) => {
                     const on = selected === p.method;
@@ -395,10 +440,15 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
                     return (
                       <g key={p.method}>
                         {/* the whiskers and the label are outside the button, so its box (and the pointer's hit) is the dot */}
-                        <g aria-hidden="true" pointerEvents="none">
-                          <line x1={L.x(p.eff.q1)} x2={L.x(p.eff.q3)} y1={cy} y2={cy} stroke={tone} strokeWidth={1.5} />
-                          <line x1={cx} x2={cx} y1={L.y(p.spread.q1)} y2={L.y(p.spread.q3)} stroke={tone} strokeWidth={1.5} />
-                          {label && <text x={cx + 9} y={cy - 7} fontSize={11} fill="var(--color-fg)">{short(p.method, lang)}</text>}
+                        <g aria-hidden="true" pointerEvents="none" data-interval={p.method}>
+                          <line x1={Math.min(cx + (L.x(p.eff.q1) - L.x(p.eff.median)), cx - CAP)} x2={Math.max(cx + (L.x(p.eff.q3) - L.x(p.eff.median)), cx + CAP)} y1={cy} y2={cy} stroke={tone} strokeWidth={1.5} />
+                          <line x1={Math.min(cx + (L.x(p.eff.q1) - L.x(p.eff.median)), cx - CAP)} x2={Math.min(cx + (L.x(p.eff.q1) - L.x(p.eff.median)), cx - CAP)} y1={cy - CAP} y2={cy + CAP} stroke={tone} strokeWidth={1.5} />
+                          <line x1={Math.max(cx + (L.x(p.eff.q3) - L.x(p.eff.median)), cx + CAP)} x2={Math.max(cx + (L.x(p.eff.q3) - L.x(p.eff.median)), cx + CAP)} y1={cy - CAP} y2={cy + CAP} stroke={tone} strokeWidth={1.5} />
+                          <line x1={cx} x2={cx} y1={Math.max(L.y(p.spread.q1), cy + CAP)} y2={Math.min(L.y(p.spread.q3), cy - CAP)} stroke={tone} strokeWidth={1.5} />
+                          <line x1={cx - CAP} x2={cx + CAP} y1={Math.max(L.y(p.spread.q1), cy + CAP)} y2={Math.max(L.y(p.spread.q1), cy + CAP)} stroke={tone} strokeWidth={1.5} />
+                          <line x1={cx - CAP} x2={cx + CAP} y1={Math.min(L.y(p.spread.q3), cy - CAP)} y2={Math.min(L.y(p.spread.q3), cy - CAP)} stroke={tone} strokeWidth={1.5} />
+                          {label && <text x={cx + (cx > L.plot.x + L.plot.w * 0.6 ? -9 : 9)} y={cy - 7} textAnchor={cx > L.plot.x + L.plot.w * 0.6 ? 'end' : 'start'} fontSize={11} fill="var(--color-fg)">{short(p.method, lang)}</text>}
+                          {compared.includes(p.method) && <text x={cx + (cx > L.plot.x + L.plot.w * 0.6 ? -9 : 9)} y={cy + 14} textAnchor={cx > L.plot.x + L.plot.w * 0.6 ? 'end' : 'start'} fontSize={10} fill="var(--color-fg-subtle)">{t('quartiles', 'cuartiles')} {spreadText(p.spread.q1, lang)} {t('to', 'a')} {spreadText(p.spread.q3, lang)} %</text>}
                         </g>
                         <g data-method={p.method} data-linked-id={p.method} data-linked-view="scene" data-linked-selected={on ? 'true' : 'false'} role="button" tabIndex={0} aria-pressed={on} aria-label={t(`${nameOf(p.method, 'en')}: median spread ${spreadText(p.spread.median, 'en')} %, efficiency ${num(p.eff.median, 'en', 3)}, ${p.seeds} seeds`, `${nameOf(p.method, 'es')}: dispersión mediana ${spreadText(p.spread.median, 'es')} %, eficiencia ${num(p.eff.median, 'es', 3)}, ${p.seeds} semillas`)} onClick={() => select(on ? null : p.method, 'scene')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), select(on ? null : p.method, 'scene'))} style={{ cursor: 'pointer' }}>
                           <circle cx={cx} cy={cy} r={on ? 8 : 5.5} fill={tone} stroke={on ? 'var(--color-fg)' : 'var(--color-surface)'} strokeWidth={on ? 2 : 1} />
@@ -407,7 +457,7 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
                     );
                   })}
                 </svg>
-                {'missing' in finding ? null : <CalloutHeader items={compareCallouts(finding, lang, L, width, height)} />}
+                {'missing' in finding ? null : <CalloutHeader items={compareCallouts(finding, lang, L, width, height, dots)} onLayout={cb.onLayout} />}
               </div>
             );
           }}
@@ -531,13 +581,40 @@ function StoryFocal({ sel }: { sel: Selection }) {
   );
 }
 
-export function holdCallouts(f: { kappa: number; fc: number }, data: CaseData, lang: Lang): SceneCalloutDef[] {
+export function holdCallouts(f: { kappa: number; fc: number }, data: CaseData, lang: Lang, drawing?: { band: number; height: number }): SceneCalloutDef[] {
   const dyn = data.trace.dynamics!;
+  const place = (a: { x: number; y: number }) => (drawing ? anchorInDrawing(a, drawing.band, drawing.height) : a);
   return [
-    { id: 'kappa', eyebrow: { en: 'STIFFNESS', es: 'RIGIDEZ' }, value: num(f.kappa, lang, 2), unit: 'pN/um', state: 'selected', anchor: { x: 0.5, y: 0.5 }, source: { en: 'trace.dynamics.kappa_pn_per_um', es: 'trace.dynamics.kappa_pn_per_um' } },
-    { id: 'fc', eyebrow: { en: 'CORNER FREQUENCY', es: 'FRECUENCIA DE CORTE' }, value: num(f.fc, lang, 1), unit: 'Hz', state: 'normal', anchor: { x: 0.5, y: 0.56 }, source: { en: 'trace.dynamics.fc_hz', es: 'trace.dynamics.fc_hz' } },
-    { id: 'depth', eyebrow: { en: 'TRAP DEPTH', es: 'PROFUNDIDAD' }, value: num(dyn.depth.value, lang, 0), unit: dyn.depth.unit, state: 'normal', anchor: { x: 0.45, y: 0.5 }, source: { en: 'trace.dynamics.depth', es: 'trace.dynamics.depth' } },
+    { id: 'kappa', eyebrow: { en: 'STIFFNESS', es: 'RIGIDEZ' }, value: num(f.kappa, lang, 2), unit: 'pN/µm', state: 'selected', anchor: place({ x: 0.5, y: 0.5 }), source: { en: 'trace: stiffness of the simulated trap', es: 'traza: rigidez de la trampa simulada' } },
+    { id: 'fc', eyebrow: { en: 'CORNER FREQUENCY', es: 'FRECUENCIA DE CORTE' }, value: num(f.fc, lang, 1), unit: 'Hz', state: 'normal', anchor: place({ x: 0.5, y: 0.56 }), source: { en: 'trace: corner frequency of the position spectrum', es: 'traza: frecuencia de corte del espectro de la posición' } },
+    { id: 'depth', eyebrow: { en: 'TRAP DEPTH', es: 'PROFUNDIDAD' }, value: num(dyn.depth.value, lang, 0), unit: dyn.depth.unit, state: 'normal', anchor: place({ x: 0.45, y: 0.5 }), source: { en: 'trace: depth of the simulated trap', es: 'traza: profundidad de la trampa simulada' } },
   ];
+}
+
+/** The hold step's stage: the callout cards over the drawing, the drawing under the band the cards measure, the anchors written on the drawing (anchorInDrawing). */
+function HoldStage({ sel, finding, lang }: { sel: Selection; finding: { kappa: number; fc: number } | Missing; lang: Lang }) {
+  const cb = useCalloutBand(0);
+  const box = useRef<HTMLDivElement | null>(null);
+  const [height, setHeight] = useState(0);
+  useEffect(() => {
+    const node = box.current;
+    if (!node) return;
+    const watch = new ResizeObserver((entries) => setHeight(entries[0]?.contentRect.height ?? 0));
+    watch.observe(node);
+    return () => watch.disconnect();
+  }, []);
+  const band = cb.band > 0 ? cb.band + BAND_GAP : null;
+  const items = 'missing' in finding ? [] : holdCallouts(finding, sel.data, lang, band !== null && height > 0 ? { band, height } : undefined);
+  return (
+    <div className="dh-story-stage" ref={box}>
+      {items.length > 0 && <CalloutHeader items={items} className="dh-story-callouts" onLayout={cb.onLayout} />}
+      <div className="dh-story-drawing" style={band !== null ? ({ paddingTop: band } as CSSProperties) : undefined}>
+        <div className="dh-story-card">
+          <ParticleView sel={sel} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function Facts({ finding, lang }: { finding: Finding; lang: Lang }) {
@@ -586,7 +663,10 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
   const c08 = caseData(loaded.c08);
   const c01 = caseData(loaded.c01);
   const bench = loaded.bench.state === 'ready' ? loaded.bench.data : null;
-  const notLoaded = (what: string, es: string, l: Loaded<unknown>): Missing => ({ missing: reasonOf(l) ?? bi(`${what} is loading.`, `${es} se está cargando.`) });
+  const notLoaded = (what: string, es: string, l: Loaded<unknown>): Missing => {
+    const reason = reasonOf(l);
+    return reason ? { missing: reason } : { missing: bi(`${what} is loading.`, `${es} se está cargando.`), loading: true };
+  };
   const setup = c02 ? setupFinding(c02) : notLoaded('The case C02', 'El caso C02', loaded.c02);
   const dev = c08 ? deviceFinding(c08) : notLoaded('The case C08', 'El caso C08', loaded.c08);
   const method = c02 ? methodFinding(c02) : notLoaded('The case C02', 'El caso C02', loaded.c02);
@@ -594,6 +674,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
   const hold = c01 ? holdFinding(c01) : notLoaded('The case C01', 'El caso C01', loaded.c01);
   const findings: Record<StepId, Finding | Missing> = { setup, device: dev, method, compare, hold };
   const cursor = useLinkedView((s) => s.cursor);
+  const band = useStoryBand(active.id);
 
   // The views read the App's contexts: the actions a story step needs are the device switch and the trap selection of the shared store.
   const sel: Selection | null = useMemo(() => {
@@ -639,7 +720,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
     );
   }
 
-  const headlineOf = (f: Finding | Missing): Tx => ('missing' in f ? bi('This number is not available in the release', 'Esta cifra no está disponible en la versión') : f.headline);
+  const headlineOf = (f: Finding | Missing): Tx => ('missing' in f ? (f.loading ? bi('Loading this number', 'Cargando esta cifra') : bi('This number is not available in the release', 'Esta cifra no está disponible en la versión')) : f.headline);
   const summaryOf = (f: Finding | Missing): Tx => ('missing' in f ? f.missing : f.summary);
   const steps: StoryStep[] = STEP_DEFS.map((d) => ({
     id: d.id,
@@ -664,13 +745,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
     if (active.id === 'setup') return <div className="dh-story-view"><OpticalTrainView sel={sel} /></div>;
     if (active.id === 'device') return <div className="dh-story-view"><SlmSectionView sel={sel} /></div>;
     if (active.id === 'method') return <div className="dh-story-view"><MethodAtWorkView sel={sel} /></div>;
-    const items = 'missing' in f ? [] : holdCallouts(f as unknown as { kappa: number; fc: number }, sel.data, lang);
-    return (
-      <div className="dh-story-stage">
-        {items.length > 0 && <CalloutHeader items={items} className="dh-story-callouts" />}
-        <div className="dh-story-drawing"><div className="dh-story-card"><ParticleView sel={sel} /></div></div>
-      </div>
-    );
+    return <HoldStage sel={sel} finding={f as unknown as { kappa: number; fc: number } | Missing} lang={lang} />;
   };
   const point = sel && active.id === 'method' ? pointAt(sel.result?.history ?? [], cursor) : null;
   const extra: ReactNode = (() => {
@@ -702,7 +777,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
   const withStage = steps.map((s) => (s.id === current.id ? { ...s, stage, panel } : s));
   return (
     <ActionsContext.Provider value={actions}>
-      <StoryFrame className="dh-story" steps={withStage} activeId={active.id} mobileStageMinHeight={active.id === 'method' ? 900 : 640} onStepChange={onStepChange} onExit={onExit} />
+      <StoryFrame className="dh-story" steps={withStage} activeId={active.id} mobileStageMinHeight={storyStageFloor(active.id === 'method' ? 900 : active.id === 'hold' ? 860 : 640, band)} onStepChange={onStepChange} onExit={onExit} />
     </ActionsContext.Provider>
   );
 }
@@ -745,13 +820,15 @@ export function Story() {
       device={device}
       onDevice={setDevice}
       onStepChange={(next) => navigate(`/story/${next}${safeFrom ? `?from=${encodeURIComponent(safeFrom)}` : ''}`)}
-      onExit={() => navigate(safeFrom ?? exitHref(def, def.id === 'compare' ? pickedMethod : methodOfStep(def, { C02_grid_feedback: c02, C08_device_limited: c08, C01_square_grid: c01 })))}
+      onExit={() => navigate(safeFrom ?? exitHref(def, methodOfStep(def, { C02_grid_feedback: c02, C08_device_limited: c08, C01_square_grid: c01 }, pickedMethod)))}
     />
   );
 }
 
-/** The reference method of the step's case, which the exit loads into the App. */
-export function methodOfStep(def: StepDef, cases: { C02_grid_feedback: Loaded<CaseData>; C08_device_limited: Loaded<CaseData>; C01_square_grid: Loaded<CaseData> }): string | null {
+/** The method the exit loads into the App: the one the reader picked on the comparison, else the step's own (the device step's phase-fixed weighted GS, the comparison's weighted GS), else the reference method of the step's case. */
+export function methodOfStep(def: StepDef, cases: { C02_grid_feedback: Loaded<CaseData>; C08_device_limited: Loaded<CaseData>; C01_square_grid: Loaded<CaseData> }, picked: string | null = null): string | null {
+  if (picked) return picked;
+  if (def.method) return def.method;
   const l = cases[def.caseId as keyof typeof cases];
   return l?.state === 'ready' ? l.data.manifest.params.reference_method : null;
 }

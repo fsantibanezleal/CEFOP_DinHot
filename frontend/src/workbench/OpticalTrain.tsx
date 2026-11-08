@@ -8,7 +8,7 @@ import { PlotCard, Stage, formatNumber, prefersReducedMotion, useLinkedView, use
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Text } from '../lib/contract.types';
 import { ReadinessNote } from '../readiness/ReadinessNote';
-import { CalloutHeader } from './CalloutHeader';
+import { BAND_GAP, CalloutHeader, useCalloutBand } from './CalloutHeader';
 import { is3D, isShaped, methodName, type Selection } from './model';
 import { useNav, type ViewTarget } from './nav';
 import { CASE_ROWS, cardOf, StageBox, useStateKey } from './ui';
@@ -70,7 +70,7 @@ export function trainItems(sel: Selection, lang: Lang): TrainItem[] {
   return [
     { id: 'laser', name: NAMES.laser[lang], value: `${f(s.wavelength_nm, 0)} nm`, detail: t('wavelength', 'longitud de onda') },
     { id: 'expander', name: NAMES.expander[lang], value: `${f(beam.mm, 2)} mm`, detail: beam.flat ? t('flat beam over the aperture', 'haz plano sobre la apertura') : t('1/e2 diameter at the SLM', 'diámetro 1/e2 en el SLM') },
-    { id: 'slm', name: NAMES.slm[lang], value: `${s.n_pix} x ${s.n_pix} px`, detail: t(`pitch ${f(s.pitch_um, 1)} um, aperture ${f(aperture, 2)} mm`, `paso ${f(s.pitch_um, 1)} um, apertura ${f(aperture, 2)} mm`) },
+    { id: 'slm', name: NAMES.slm[lang], value: `${s.n_pix} x ${s.n_pix} px`, detail: t(`pitch ${f(s.pitch_um, 1)} µm, aperture ${f(aperture, 2)} mm`, `paso ${f(s.pitch_um, 1)} µm, apertura ${f(aperture, 2)} mm`) },
     { id: 'relay', name: NAMES.relay[lang], value: '', detail: t('not modelled: one Fourier lens', 'no modelado: una lente de Fourier') },
     { id: 'objective', name: NAMES.objective[lang], value: `f ${f(s.focal_mm, 1)} mm`, detail: `NA ${f(s.na, 2)}, n ${f(s.n_imm, 2)}` },
     {
@@ -110,6 +110,9 @@ export function calloutBand(width: number): number {
   return 8 + rows * h + (rows - 1) * gap + 22;
 }
 
+/** The height above the focal square that holds its extent label ("±17.0 µm"), so the label never sits over the dots. */
+const EXTENT_LINE = 14;
+
 /** The width of one character of a 11 px label in px, taken wide enough for the gate's wide-font pass, and the line step of a label. */
 const LABEL_CHAR_PX = 6.8;
 const LABEL_LINE_PX = 13;
@@ -148,8 +151,8 @@ export function extraDetailLines(sel: Selection, lang: Lang, width: number): num
 
 /** The geometry of the train at a stage size: six columns on a line, or at phone width six rows down a vertical beam. `extraLines` is the
  * number of lines the detail labels take beyond one (extraDetailLines): the block under the glyphs grows by that many line steps. */
-export function trainLayout(width: number, height: number, extraLines = 0): TrainLayout {
-  const band = calloutBand(width);
+export function trainLayout(width: number, height: number, extraLines = 0, measuredBand?: number): TrainLayout {
+  const band = measuredBand ?? calloutBand(width);
   const rest = Math.max(0, height - band);
   if (width >= 520) {
     const m = 12;
@@ -162,8 +165,8 @@ export function trainLayout(width: number, height: number, extraLines = 0): Trai
     TRAIN_IDS.forEach((id, i) => {
       items[id] = { x: m + i * col + 3, y, w: col - 6, h: gh };
     });
-    const side = Math.min(items.focal.w - 8, gh);
-    const field = { x: items.focal.x + (items.focal.w - side) / 2, y: y + (gh - side) / 2, w: side, h: side };
+    const side = Math.min(items.focal.w - 8, gh - EXTENT_LINE);
+    const field = { x: items.focal.x + (items.focal.w - side) / 2, y: y + EXTENT_LINE + (gh - EXTENT_LINE - side) / 2, w: side, h: side };
     return { mode: 'line', band, items, field, axisY: y + gh / 2 };
   }
   const m = 12;
@@ -173,18 +176,18 @@ export function trainLayout(width: number, height: number, extraLines = 0): Trai
   TRAIN_IDS.forEach((id, i) => {
     items[id] = i < 5 ? { x: m, y: band + 4 + i * rowH, w: width - 2 * m, h: rowH - 4 } : { x: m, y: band + 4 + 5 * rowH, w: width - 2 * m, h: focalH };
   });
-  const side = Math.min(focalH - 10, 96);
+  const side = Math.min(focalH - 10 - EXTENT_LINE, 96);
   const f = items.focal;
-  return { mode: 'rows', band, items, field: { x: f.x + f.w - side - 6, y: f.y + (f.h - side) / 2, w: side, h: side }, axisY: items.laser.y };
+  return { mode: 'rows', band, items, field: { x: f.x + f.w - side - 6, y: f.y + EXTENT_LINE + (f.h - EXTENT_LINE - side) / 2, w: side, h: side }, axisY: items.laser.y };
 }
 
 const center = (b: Box) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
 
 /** The three callouts of the train: the laser's wavelength, the SLM aperture and the share of the light that reaches the traps. */
-export function trainCallouts(sel: Selection, lang: Lang, width: number, height: number): SceneCalloutDef[] {
+export function trainCallouts(sel: Selection, lang: Lang, width: number, height: number, band?: number): SceneCalloutDef[] {
   const s = sel.data.manifest.params.setup;
   const f = (v: number, d: number) => formatNumber(v, lang, { decimals: d });
-  const layout = trainLayout(width, height, extraDetailLines(sel, lang, width));
+  const layout = trainLayout(width, height, extraDetailLines(sel, lang, width), band);
   const at = (id: TrainId) => {
     const c = center(layout.items[id]);
     return { x: c.x / width, y: c.y / height };
@@ -199,7 +202,7 @@ export function trainCallouts(sel: Selection, lang: Lang, width: number, height:
       unit: 'nm',
       state: 'normal',
       anchor: at('laser'),
-      source: { en: 'wavelength: params.setup.wavelength_nm', es: 'longitud de onda: params.setup.wavelength_nm' },
+      source: { en: 'case parameters: wavelength', es: 'parámetros del caso: longitud de onda' },
     },
     {
       id: 'slm',
@@ -208,7 +211,7 @@ export function trainCallouts(sel: Selection, lang: Lang, width: number, height:
       unit: 'mm',
       state: 'normal',
       anchor: at('slm'),
-      source: { en: 'aperture: params.setup.n_pix x pitch_um', es: 'apertura: params.setup.n_pix x pitch_um' },
+      source: { en: 'case parameters: SLM pixels times pitch', es: 'parámetros del caso: píxeles del SLM por paso' },
     },
     {
       id: 'focal',
@@ -218,7 +221,7 @@ export function trainCallouts(sel: Selection, lang: Lang, width: number, height:
       // the thresholds of the rail readout of the same quantity (Workbench: good 0.8, bad 0.4)
       state: eff === null ? 'inactive' : eff >= 0.8 ? 'normal' : eff >= 0.4 ? 'warning' : 'alarm',
       anchor: at('focal'),
-      source: { en: `light in the traps: trace, ${methodName(m).en}: final.efficiency`, es: `luz en las trampas: trace, ${methodName(m).es}: final.efficiency` },
+      source: { en: `light in the traps: final efficiency of ${methodName(m).en}`, es: `luz en las trampas: eficiencia final de ${methodName(m).es}` },
     },
   ];
 }
@@ -231,6 +234,8 @@ interface DrawingProps {
   lang: Lang;
   width: number;
   height: number;
+  /** The band the callout cards measured; absent until they are measured. */
+  band?: number;
   /** Motion is allowed (the page does not ask for reduced motion). */
   motion: boolean;
   /** The reader has not paused the light. */
@@ -260,7 +265,7 @@ const extentOf = (traps: readonly { x_um: number; y_um: number; z_um: number }[]
 export function OpticalTrainDrawing(p: DrawingProps) {
   const { sel, lang, width, height, motion, playing, selectedId } = p;
   const items = trainItems(sel, lang);
-  const L = trainLayout(width, height, extraDetailLines(sel, lang, width));
+  const L = trainLayout(width, height, extraDetailLines(sel, lang, width), p.band);
   const byId = Object.fromEntries(items.map((i) => [i.id, i])) as Record<TrainId, TrainItem>;
   const animated = motion && playing;
   const flow = animated ? 'dh-flow' : undefined;
@@ -428,7 +433,7 @@ export function OpticalTrainDrawing(p: DrawingProps) {
       {/* the focal plane: a button for the view, the array face-on inside it */}
       {elementBox('focal')}
       <rect x={L.field.x} y={L.field.y} width={L.field.w} height={L.field.h} rx="4" fill="var(--color-bg)" stroke="var(--color-border)" strokeWidth="1" pointerEvents="none" />
-      <text x={L.field.x + 4} y={L.field.y + 11} fill="var(--color-fg-subtle)" fontSize="10" fontFamily="var(--font-mono)" pointerEvents="none">{traps.length ? `±${f(ext / 1.1, 1)} um${is3D(traps) ? t(', z oblique', ', z oblicuo') : ''}` : ''}</text>
+      <text x={L.field.x + 2} y={L.field.y - 4} fill="var(--color-fg-subtle)" fontSize="10" fontFamily="var(--font-mono)" pointerEvents="none">{traps.length ? `±${f(ext / 1.1, 1)} µm${is3D(traps) ? t(', z oblique', ', z oblicuo') : ''}` : ''}</text>
       {TRAIN_IDS.map((id) => textBlock(id))}
       <g data-train-sites="">
         {sites
@@ -491,6 +496,7 @@ export function OpticalTrainView({ sel }: { sel: Selection }) {
   const [playing, setPlaying] = useState(true);
   const selectedId = useLinkedView((s) => s.selectedId);
   const select = useLinkedView((s) => s.select);
+  const cb = useCalloutBand(0);
   const onOpen = useCallback((id: TrainId) => nav && openTrainElement(id, nav.open), [nav]);
   const onSelectTrap = useCallback((id: number) => select(String(id), 'scene'), [select]);
   const t = (en: string, es: string) => (lang === 'es' ? es : en);
@@ -509,14 +515,17 @@ export function OpticalTrainView({ sel }: { sel: Selection }) {
       <ReadinessNote ids={CASE_ROWS} />
       <StageBox>
       <Stage label={{ en: 'Optical train of the case with the value of each element', es: 'Tren óptico del caso con el valor de cada elemento' }}>
-        {({ width, height }) =>
-          width < 120 || height < 120 ? null : (
+        {({ width, height }) => {
+          if (width < 120 || height < 120) return null;
+          // the drawing sits under the band the cards measure, not under a band computed from their nominal sizes
+          const band = cb.band > 0 ? cb.band + BAND_GAP : undefined;
+          return (
             <div className="dh-scene">
-              <OpticalTrainDrawing sel={sel} lang={lang} width={width} height={height} motion={motion} playing={playing} selectedId={selectedId} onOpen={onOpen} onSelectTrap={onSelectTrap} />
-              <CalloutHeader items={trainCallouts(sel, lang, width, height)} />
+              <OpticalTrainDrawing sel={sel} lang={lang} width={width} height={height} band={band} motion={motion} playing={playing} selectedId={selectedId} onOpen={onOpen} onSelectTrap={onSelectTrap} />
+              <CalloutHeader items={trainCallouts(sel, lang, width, height, band)} onLayout={cb.onLayout} />
             </div>
-          )
-        }
+          );
+        }}
       </Stage>
       </StageBox>
       <div className="dh-row" data-caos-plot-control="">

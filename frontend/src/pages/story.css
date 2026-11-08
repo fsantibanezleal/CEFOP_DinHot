@@ -45,7 +45,7 @@
   .dh-cmp { height: auto; }
   .dh-cmp-stage { flex: none; height: 560px; }
   .dh-mw { padding-top: 175px; }
-  .dh-mw-box { flex: none; height: 1140px; }
+  .dh-mw-box { flex: none; height: calc(var(--dh-band, 175px) + 965px); }
   .dh-mw-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; align-content: start; }
   .dh-mw-charts, .dh-mw-maps { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; }
   .dh-mw-charts .dh-mw-cell { height: 210px; }
