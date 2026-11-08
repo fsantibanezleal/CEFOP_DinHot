@@ -31,6 +31,8 @@ export interface Actions {
   setVolThreshold: (fraction: number) => void;
   /** Loads a method of the case into the workbench, as the rail's method choice does (the Pareto view's method load). */
   setMethod: (id: string) => void;
+  /** The Pareto view's benchmark cell (a `cellKey`, null for the case's own) and scope, held in the run state and the selection key. */
+  setPareto: (p: { cell?: string | null; scope?: 'top' | 'all' }) => void;
 }
 export const ActionsContext = createContext<Actions | null>(null);
 export function useActions(): Actions {

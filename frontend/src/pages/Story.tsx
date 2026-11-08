@@ -717,6 +717,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
       setPlane: () => undefined,
       setVolThreshold: () => undefined,
       setMethod: () => undefined,
+      setPareto: () => undefined,
     }),
     [select, onDevice],
   );

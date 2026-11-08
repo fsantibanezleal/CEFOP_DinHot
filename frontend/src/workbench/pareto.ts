@@ -28,6 +28,18 @@ export interface Cell {
   budget: Budget;
 }
 
+/** A cell as the run state holds it: `geometry|device|kind|value`. */
+export const cellKey = (c: Cell): string => `${c.geometry}|${c.device}|${c.budget.kind}|${c.budget.value}`;
+
+/** The cell a key names, or null for a key that does not parse (the view then opens on the case's own cell). */
+export function cellFromKey(key: string | null | undefined): Cell | null {
+  if (!key) return null;
+  const [geometry, device, kind, value] = key.split('|');
+  const v = Number(value);
+  if (!geometry || (device !== 'ideal' && device !== 'device') || !kind || !Number.isFinite(v)) return null;
+  return { geometry, device, budget: { kind: kind as Budget['kind'], value: v } };
+}
+
 /**
  * The benchmark geometry of the case's dimensions whose trap count is closest to the case's (the lower id on a tie); null when none has those
  * dimensions. A case with traps is never matched to the geometry of shaped fields (no traps), nor a shaped case to an array of traps.

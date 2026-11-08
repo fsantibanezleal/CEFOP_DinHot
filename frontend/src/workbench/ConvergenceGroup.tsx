@@ -10,7 +10,7 @@ import { ReadinessNote } from '../readiness/ReadinessNote';
 import { cardOf } from './HologramGroup';
 import { MethodAtWorkView } from './MethodAtWork';
 import { historyAt, is3D, methodLabel, methodName, useSelection, type Selection } from './model';
-import { cellWithRows, intervalDots, openingCell, recommend, recommendationText, SERIES_COLORS, type Cell } from './pareto';
+import { cellFromKey, cellKey, cellWithRows, intervalDots, openingCell, recommend, recommendationText, SERIES_COLORS, type Cell } from './pareto';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 import { useNav } from './nav';
 
@@ -119,10 +119,13 @@ export function ParetoView({ sel }: { sel: Selection }) {
   const actions = useActions();
   const c = cardOf(sel);
   const bench = useArtifact((s) => loadBenchmark(s), []);
-  const [choice, setChoice] = useState<Cell | null>(null);
+  // the cell and the scope are the workbench's (the run state and the selection key, gate G9), not this view's
+  const choice = useMemo(() => cellFromKey(sel.paretoCell), [sel.paretoCell]);
+  const setChoice = (next: Cell | null) => actions.setPareto({ cell: next ? cellKey(next) : null });
   const [chosen, setChosen] = useState<string | null>(null);
   // the methods cluster at the top of the uniformity range: by default the chart shows the more uniform half, so that the cluster is readable
-  const [scope, setScope] = useState<'top' | 'all'>('top');
+  const scope = sel.paretoScope ?? 'top';
+  const setScope = (next: 'top' | 'all') => actions.setPareto({ scope: next });
   const res = bench.state === 'ready' ? bench.data : null;
   const caseDevice: Device = sel.data.manifest.params.device ? 'device' : 'ideal';
   const wanted = useMemo(() => (res ? openingCell(res, { dims: is3D(sel.traps) ? 3 : 2, nTraps: sel.traps.length, device: caseDevice }) : null), [res, sel.traps, caseDevice]);
@@ -187,8 +190,8 @@ export function ParetoView({ sel }: { sel: Selection }) {
       title={{ en: 'Efficiency against uniformity', es: 'Eficiencia contra uniformidad' }}
       {...c}
       lane="replay"
-      // the view's state: the case's, the benchmark cell shown and the scope of methods (G9: every control changes what the view shows)
-      dataKey={cell ? `${stateKey}|${cell.geometry}|${cell.device}|${cell.budget.kind}:${cell.budget.value}|${scope}` : `${stateKey}|${scope}`}
+
+      dataKey={stateKey}
       note={{
         en: 'Every method of one benchmark cell, its seed range, the Pareto front of the cell and this case’s own methods. Up and to the right is better on both.',
         es: 'Cada método de una celda del benchmark, su rango entre semillas, el frente de Pareto de la celda y los métodos de este caso. Arriba y a la derecha es mejor en ambos.',

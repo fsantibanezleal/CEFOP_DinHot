@@ -138,6 +138,9 @@ export interface Selection {
   coeffKey: string;
   /** The plane of the axial cut and the threshold of the 3D view (fraction of the peak). */
   plane: 'xz' | 'yz';
+  /** The Pareto view's benchmark cell (`geometry|device|kind|value`; null or absent: the cell closest to the case) and its scope. */
+  paretoCell?: string | null;
+  paretoScope?: 'top' | 'all';
   volThreshold: number;
   /** Which model answered the learned slot this method uses, for the label. */
   slot: { slot: 'cgh-net' | 'warmstart-model'; answered: 'model' | 'baseline' } | null;

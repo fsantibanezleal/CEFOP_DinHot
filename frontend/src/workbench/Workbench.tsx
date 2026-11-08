@@ -57,6 +57,9 @@ interface Rail {
   corrected: boolean;
   plane: 'xz' | 'yz';
   volThreshold: number;
+  /** The Pareto view's benchmark cell (`geometry|device|kind|value`, null: the cell closest to the case) and its scope of methods. */
+  paretoCell: string | null;
+  paretoScope: 'top' | 'all';
   overrides: Record<number, number>;
   traps: Trap[] | null;
   region: Region | null;
@@ -74,6 +77,8 @@ function railOf(data: CaseData): Rail {
     stage: 'ideal',
     sortBy: 'id',
     bandPct: 5,
+    paretoCell: null,
+    paretoScope: 'top',
     trapId: p.dynamics?.trap_id ?? trapsOf(data.manifest, data.trace)[0]?.id ?? null,
     powerMw: p.dynamics?.power_mw ?? 0,
     seed: data.manifest.seed,
@@ -250,6 +255,8 @@ export function Workbench() {
       coeffKey: coeffs.join(','),
       plane: r.plane,
       volThreshold: r.volThreshold,
+      paretoCell: r.paretoCell,
+      paretoScope: r.paretoScope,
       slot: live.slot,
       running: live.running,
       progress: live.progress,
@@ -291,6 +298,7 @@ export function Workbench() {
       setPlane: (plane) => patch({ plane }),
       setVolThreshold: (volThreshold) => patch({ volThreshold }),
       setMethod: (id) => setMethodId(id),
+      setPareto: (p) => patch({ ...(p.cell !== undefined ? { paretoCell: p.cell } : {}), ...(p.scope ? { paretoScope: p.scope } : {}) }),
     }),
     [r?.mode, r?.zmode, r?.trapId, r?.overrides, traps, halfField, editError, patch],
   );
@@ -596,6 +604,8 @@ export function Workbench() {
                     stage: r.stage,
                     sortBy: r.sortBy,
                     bandPct: r.bandPct,
+                    paretoCell: r.paretoCell ?? '',
+                    paretoScope: r.paretoScope,
                     trapId: r.trapId,
                     powerMw: r.powerMw,
                     seed: r.seed,
