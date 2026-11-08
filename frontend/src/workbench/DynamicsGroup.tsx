@@ -336,7 +336,9 @@ export function ParticleView({ sel, callouts = false }: { sel: Selection; callou
     </div>
   );
   return (
-    <PlotCard fill title={{ en: 'Particle trajectory over the focal map', es: 'Trayectoria de la partícula sobre el mapa focal' }} {...c} lane={tr?.lane ?? 'replay'} dataKey={stateKey} note={note}>
+    // while the engine's trajectory for this selection is still computing, the card shows the baked one and says it is recomputing (a key
+    // other than the selection's): the live answer replaces the series when it lands, so the view is not settled before it (gates G7, G20)
+    <PlotCard fill title={{ en: 'Particle trajectory over the focal map', es: 'Trayectoria de la partícula sobre el mapa focal' }} {...c} lane={tr?.lane ?? 'replay'} dataKey={tr?.pending ? `${stateKey}|pending` : stateKey} note={note}>
       <div className="dh-stack">
           <ReadinessNote ids={CASE_ROWS} />
           <div className="dh-scrub">
