@@ -6,7 +6,7 @@ import { isValidElement, type ReactElement, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { apertureEnvelopeAtEdge, crosstalkWeights, fillFactorEfficiency, levelOf, quantizationEfficiency, stagePhase, TWO_PI } from './decode';
-import { slmCallouts, slmDeviceSwitch, SlmSectionDrawing, slmLosses, slmPixel, slmRow, windowStart } from './SlmSection';
+import { slmCallouts, slmDeviceSwitch, slmLayout, SlmSectionDrawing, slmLosses, slmPixel, slmRow, windowStart } from './SlmSection';
 import { realSelection } from './test-real';
 
 vi.stubGlobal('__APP_VERSION__', 'test-version');
@@ -200,5 +200,15 @@ describe('the scrubbed window', () => {
     const narrow = nodes(<SlmSectionDrawing sel={sel} row={r} col={64} lang="en" width={340} height={400} onCol={vi.fn()} />).filter((n) => n.props['data-slm-pixel'] !== undefined);
     expect(wide).toHaveLength(16);
     expect(narrow).toHaveLength(8);
+  });
+});
+
+describe('the electrodes label and the kernel label never share a line (gate G10)', () => {
+  it('the kernel starts at least 24 px under the electrodes, at every stage size, so the two labels sit one under the other', () => {
+    for (const [w, h] of [[340, 400], [390, 560], [768, 640], [1000, 460], [1280, 700]] as const) {
+      const L = slmLayout(w, h);
+      expect(L.kernel.y - (L.elec.y + L.elec.h), `${w} x ${h}`).toBeGreaterThanOrEqual(24);
+      expect(L.kernel.y + L.kernel.h).toBeLessThanOrEqual(L.caption);
+    }
   });
 });

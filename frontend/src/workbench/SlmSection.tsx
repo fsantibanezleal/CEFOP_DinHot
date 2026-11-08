@@ -139,7 +139,10 @@ export function slmLayout(width: number, height: number): SlmLayout {
   const kernelH = Math.max(28, a * 0.18);
   const coverH = 14;
   const elecH = 12;
-  const lcH = Math.max(30, a - gh - kernelH - (coverH + elecH + 12 + 14));
+  // the electrodes' label sits under the electrodes and the kernel's above its bars: the gap holds both lines, one under the other, so a narrow
+  // stage or a wide font never puts them on one baseline
+  const labelGap = 28;
+  const lcH = Math.max(30, a - gh - kernelH - (coverH + elecH + 12 + labelGap));
   const secTop = band + 4 + gh + 12;
   const w = x1 - x0;
   return {
@@ -150,7 +153,7 @@ export function slmLayout(width: number, height: number): SlmLayout {
     cover: { x: x0, y: secTop, w, h: coverH },
     lc: { x: x0, y: secTop + coverH, w, h: lcH },
     elec: { x: x0, y: secTop + coverH + lcH, w, h: elecH },
-    kernel: { x: x0, y: secTop + coverH + lcH + elecH + 14, w, h: kernelH },
+    kernel: { x: x0, y: secTop + coverH + lcH + elecH + labelGap, w, h: kernelH },
     caption: height - 6,
   };
 }
