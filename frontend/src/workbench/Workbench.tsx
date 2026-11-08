@@ -599,6 +599,8 @@ export function Workbench() {
               activeId: method,
               onSelect: setMethodId,
               title: { en: 'Method', es: 'Método' },
+              // fourteen methods named by their names do not fit the rail as chips (ADR-0071 rule 7, shell 0.25.0)
+              layout: 'select',
             }}
             rail={rails.length ? rails : <p className="caos-pending" data-state="loading">…</p>}
             focus={{ hud }}

@@ -52,7 +52,7 @@ The repository by area: its folder, whether the area is active or dormant, and w
 
 | Area | Folder | Status | What it holds |
 |---|---|---|---|
-| Web | [`frontend/`](frontend/) | active | The workbench (`/app`) and the five documentation routes (`/introduction`, `/methodology`, `/implementation`, `/experiments`, `/benchmark`) on the shared shell 0.23.2, with the engine ported to the browser. Build and test: `cd frontend && npm ci && npm run build && npm test`. |
+| Web | [`frontend/`](frontend/) | active | The workbench (`/app`) and the five documentation routes (`/introduction`, `/methodology`, `/implementation`, `/experiments`, `/benchmark`) on the shared shell 0.25.0, with the engine ported to the browser. Build and test: `cd frontend && npm ci && npm run build && npm test`. |
 | API | [`app/`](app/) | dormant: this solution does not require it at the moment | Ships dormant, the site is static; activation is [guide 04](docs/guides/04_run-the-api.md). |
 | Core pipelines | [`data-pipeline/`](data-pipeline/) | active | The engine (`pipeline/model/holo/`: forward model, 24 methods in four families, the learned slots), the named stages (bake, evaluate, benchmark, train) and the canonical bake of the fourteen cases: `./scripts/precompute.sh`. See [data-pipeline/README.md](data-pipeline/README.md). |
 | Packages | (PyPI) [numpy](https://pypi.org/project/numpy/) | active: consumes numpy, and in the notebooks matplotlib, scipy, [slmsuite](https://pypi.org/project/slmsuite/) 0.5.0 and [onnxruntime](https://pypi.org/project/onnxruntime/) 1.31.1 | DinHot publishes no package of its own; the methods live in the pipeline and are imported by path. |
