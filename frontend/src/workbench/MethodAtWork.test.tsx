@@ -7,7 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEngineClient, type EngineClient, type RunResult, type WorkerLike } from '../engine/holo/client';
 import { EngineRunner, type InMsg, type OutMsg } from '../engine/holo/runner';
-import { PHASE_FREEZE, focalAtIteration, freezeIteration, methodCallouts, MethodAtWorkView, pointAt, runRequestAt, spreadText } from './MethodAtWork';
+import { PHASE_FREEZE, focalAtIteration, focalPending, freezeIteration, methodCallouts, MethodAtWorkView, pointAt, runRequestAt, spreadText } from './MethodAtWork';
 import { realCase } from './test-real';
 import { selectionFor } from './test-data';
 
@@ -153,6 +153,15 @@ describe('the view', () => {
     );
   };
   afterEach(() => vi.unstubAllGlobals());
+
+  it('declares the live focal run as loading while it is pending, so the page is not taken for settled before the engine answers', () => {
+    const html = render(false);
+    expect(html).toContain('data-state="loading"');
+    expect(html).toContain('The engine is computing the focal plane');
+    expect(focalPending({ state: 'loading', at: null })).toBe(true);
+    expect(focalPending({ state: 'unavailable', reason: { en: 'x', es: 'x' } })).toBe(false);
+    expect(focalPending({ state: 'error', error: 'x', at: null })).toBe(false);
+  });
 
   it('offers the play control that can pause, with a slider for the iteration, when motion is allowed', () => {
     const html = render(false);

@@ -4,13 +4,14 @@
 // the same value. The focal plane at iteration k is the engine's own run in the browser with the method's budget set to k, started 200 ms
 // after the last scrub (LiveScheduler) and kept by its key: the bake records the spread and the efficiency per iteration but not the map.
 // A method the engine does not port, or a build without the engine, shows the recorded history and says the map is the final one.
-import { PlotCard, SceneCallouts, Stage, formatNumber, useLinkedCursor, useLinkedView, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
+import { PlotCard, Stage, formatNumber, pick, useLinkedCursor, useLinkedView, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../pages/story.css';
 import type { EngineClient, RunResult } from '../engine/holo/client';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { INTENSITY_LUT } from './colormaps';
+import { CalloutHeader } from './CalloutHeader';
 import { Heatmap, type HeatMark } from './HeatmapStage';
 import { cardOf } from './HologramGroup';
 import { historyAt, liveMaps, methodLabel, methodName, type HistoryPoint, type MapSet, type MethodResult, type Selection } from './model';
@@ -77,6 +78,9 @@ function ownClient(): Promise<EngineClient | null> {
 const CACHE = new Map<string, FocalAt>();
 const CACHE_MAX = 64;
 const keyOf = (sel: Selection, k: number) => `${sel.data.manifest.case_id}|${sel.methodId}|${sel.device}|${sel.edited ? sel.traps.map((t) => `${t.id},${t.x_um},${t.y_um}`).join(';') : 'case'}|${k}`;
+
+/** Whether the live focal run is still to come: the page is not at rest until the engine has answered, and says so (a `loading` state the gate and a reader can see). */
+export const focalPending = (focal: FocalState): boolean => focal.state === 'loading';
 
 export type FocalState =
   | { state: 'unavailable'; reason: { en: string; es: string } }
@@ -264,13 +268,20 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
   const trapI = view.trapI;
   const band = sel.bandPct / 100;
   const logSpread = history.every((p) => p.relStdPct > 0);
-  const note = {
-    en: `${methodLabel(sel.methodId).en}, iteration ${k} of ${lastIteration}: spread ${spreadText(point!.relStdPct, 'en')} %, efficiency ${f(point!.efficiency * 100, 'en', 1)} %. ${
+  // what the focal plane is, by the state of the live run: its own line under the controls, two lines high in every state, so that the
+  // answer of the engine (a longer or a shorter sentence) never moves the charts above it (a change of height rebuilds a chart and
+  // clears its crosshair)
+  const focalLine = {
+    en: `${
       focal.state === 'ready' ? `The focal plane and the trap intensities are the engine's run of ${focal.at.k} iterations in your browser (${f(focal.at.ms, 'en', 0)} ms).` : focal.state === 'unavailable' ? `The focal plane is the final one of the bake: ${focal.reason.en}.` : focal.state === 'error' ? `The engine failed (${focal.error}); the last map is kept.` : 'The engine is computing the focal plane at this iteration.'
-    } Click a chart or move the slider to choose the iteration.`,
-    es: `${methodLabel(sel.methodId).es}, iteración ${k} de ${lastIteration}: dispersión ${spreadText(point!.relStdPct, 'es')} %, eficiencia ${f(point!.efficiency * 100, 'es', 1)} %. ${
+    }`,
+    es: `${
       focal.state === 'ready' ? `El plano focal y las intensidades de las trampas son la corrida del motor de ${focal.at.k} iteraciones en su navegador (${f(focal.at.ms, 'es', 0)} ms).` : focal.state === 'unavailable' ? `El plano focal es el final de la generación: ${focal.reason.es}.` : focal.state === 'error' ? `Falló el motor (${focal.error}); se conserva el último mapa.` : 'El motor está calculando el plano focal en esta iteración.'
-    } Pulse un gráfico o mueva el control para elegir la iteración.`,
+    }`,
+  };
+  const note = {
+    en: `${methodLabel(sel.methodId).en}, iteration ${k} of ${lastIteration}: spread ${spreadText(point!.relStdPct, 'en')} %, efficiency ${f(point!.efficiency * 100, 'en', 1)} %. Click a chart or move the slider to choose the iteration.`,
+    es: `${methodLabel(sel.methodId).es}, iteración ${k} de ${lastIteration}: dispersión ${spreadText(point!.relStdPct, 'es')} %, eficiencia ${f(point!.efficiency * 100, 'es', 1)} %. Pulse un gráfico o mueva el control para elegir la iteración.`,
   };
   return (
     <PlotCard fill title={{ en: `${methodLabel(sel.methodId).en} at work`, es: `${methodLabel(sel.methodId).es} trabajando` }} {...c} lane={view.lane} dataKey={stateKey} note={note}>
@@ -280,7 +291,7 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
           {({ width, height }) =>
             width < 120 || height < 120 ? null : (
               <div className="dh-scene dh-mw">
-                <SceneCallouts items={methodCallouts(sel, k!, lang)} placement="header" />
+                <CalloutHeader items={methodCallouts(sel, k!, lang)} />
                 <div className="dh-mw-grid">
                   <div className="dh-mw-charts">
                     <div className="dh-mw-cell">
@@ -399,6 +410,9 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
         ) : (
           <span className="caos-plot-note">{t('Reduced motion: the iterations do not play; scrub them with the slider.', 'Movimiento reducido: las iteraciones no se reproducen; recórralas con el control.')}</span>
         )}
+        <p className="caos-plot-note dh-mw-focal" role="status" data-state={focalPending(focal) ? 'loading' : undefined}>
+          {pick(focalLine, lang)}
+        </p>
       </div>
     </PlotCard>
   );
