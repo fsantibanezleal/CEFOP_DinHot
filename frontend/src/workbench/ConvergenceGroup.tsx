@@ -187,7 +187,8 @@ export function ParetoView({ sel }: { sel: Selection }) {
       title={{ en: 'Efficiency against uniformity', es: 'Eficiencia contra uniformidad' }}
       {...c}
       lane="replay"
-      dataKey={stateKey}
+      // the view's state: the case's, the benchmark cell shown and the scope of methods (G9: every control changes what the view shows)
+      dataKey={cell ? `${stateKey}|${cell.geometry}|${cell.device}|${cell.budget.kind}:${cell.budget.value}|${scope}` : `${stateKey}|${scope}`}
       note={{
         en: 'Every method of one benchmark cell, its seed range, the Pareto front of the cell and this case’s own methods. Up and to the right is better on both.',
         es: 'Cada método de una celda del benchmark, su rango entre semillas, el frente de Pareto de la celda y los métodos de este caso. Arriba y a la derecha es mejor en ambos.',
