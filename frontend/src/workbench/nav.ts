@@ -46,17 +46,6 @@ export function initialTab(search: string): { group: GroupId; tab: string } | nu
   return tab && /^[a-z][a-z0-9-]{0,31}$/.test(tab) ? { group: initialGroup(search), tab } : null;
 }
 
-/** Opens the sub-view of the open group by pressing its tab, for a group whose sub-tabs the shell keeps itself (the groups that do not take the switch as a controlled value). Gives up after `tries` frames when the tab never appears. */
-export function pressSubTab(tab: string, root: ParentNode = document, tries = 30, frame: (f: () => void) => void = (f) => requestAnimationFrame(f)): void {
-  const press = (left: number) => {
-    const el = [...root.querySelectorAll<HTMLElement>('.subtablist [role="tab"]')].find((b) => b.getAttribute('data-tab') === tab);
-    if (el) {
-      if (el.getAttribute('aria-selected') !== 'true') el.click();
-    } else if (left > 0) frame(() => press(left - 1));
-  };
-  press(tries);
-}
-
 /** Whether the URL asks for a view (`?view=` or `?tab=`): the reader arrived by a deep link to a view, not to the workbench as a whole. */
 export function opensView(search: string): boolean {
   const q = new URLSearchParams(search);

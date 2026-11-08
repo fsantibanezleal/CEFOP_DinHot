@@ -29,6 +29,8 @@ export interface Actions {
   setCoeff: (j: number, value: number) => void;
   setPlane: (plane: 'xz' | 'yz') => void;
   setVolThreshold: (fraction: number) => void;
+  /** Loads a method of the case into the workbench, as the rail's method choice does (the Pareto view's method load). */
+  setMethod: (id: string) => void;
 }
 export const ActionsContext = createContext<Actions | null>(null);
 export function useActions(): Actions {

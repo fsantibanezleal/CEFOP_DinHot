@@ -16,11 +16,13 @@ import { is3D, isShaped, methodName, useSelection, type Axial, type Selection } 
 import { pixelToUm, umToPixel } from './traps';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { CASE_ROWS, Fill, LOADING, Pending, Provenance, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
+import { useNav } from './nav';
 
 const Lobes3D = lazy(() => import('./Lobes3D').then((m) => ({ default: m.Lobes3D })));
 const Volume3D = lazy(() => import('./Volume3D').then((m) => ({ default: m.Volume3D })));
 
 export function FocalGroup() {
+  const nav = useNav();
   const { t } = useT();
   const sel = useSelection();
   const tabs = [
@@ -34,7 +36,7 @@ export function FocalGroup() {
         ]
       : []),
   ];
-  return <SubTabs ariaLabel={t('Focal plane views', 'Vistas del plano focal')} tabs={tabs} />;
+  return <SubTabs ariaLabel={t('Focal plane views', 'Vistas del plano focal')} tabs={tabs} value={nav?.tabs.focal} onChange={nav ? (id) => nav.setTab('focal', id) : undefined} />;
 }
 
 export function FocalPlaneView({ sel }: { sel: Selection }) {

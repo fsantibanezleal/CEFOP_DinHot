@@ -701,6 +701,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
       setCoeff: () => undefined,
       setPlane: () => undefined,
       setVolThreshold: () => undefined,
+      setMethod: () => undefined,
     }),
     [select, onDevice],
   );
@@ -757,7 +758,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
         <div className="dh-story-picks">
           <ChipGroup id="story-geometry" label={{ en: 'Geometry', es: 'Geometría' }} value={cell.geometry} onChange={(v) => onCell?.({ ...cell, geometry: v })} options={geos.map((g) => ({ id: g.id, label: { en: g.id, es: g.id }, hint: g.name }))} />
           <ChipGroup id="story-budget" label={{ en: 'Iterations', es: 'Iteraciones' }} value={String(cell.budget)} onChange={(v) => onCell?.({ ...cell, budget: Number(v) })} options={[10, 30, 100].map((b) => ({ id: String(b), label: { en: String(b), es: String(b) } }))} />
-          {selectedId && <p>{t('Selected', 'Elegido')}: <strong>{nameOf(selectedId, lang)}</strong> ({selectedId}). {t('Leave the story to load it in the App.', 'Salga del recorrido para cargarlo en la App.')}</p>}
+          {selectedId && <p>{t('Selected', 'Elegido')}: <strong>{nameOf(selectedId, lang)}</strong>. {t('Leave the story to load it in the App.', 'Salga del recorrido para cargarlo en la App.')}</p>}
         </div>
       );
     }

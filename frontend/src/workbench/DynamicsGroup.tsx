@@ -17,6 +17,7 @@ import { appHref, beadWindow, DYNAMICS_CASE, framePoint, frameTimeMs, particleCa
 import { umToPixel } from './traps';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { CASE_ROWS, Fill, LOADING, Pending, Unavailable, useFmt, useStateKey, useT } from './ui';
+import { useNav } from './nav';
 
 const KB = 1.380649e-23;
 const AMU = 1.66053906660e-27;
@@ -24,9 +25,12 @@ const AMU = 1.66053906660e-27;
 export function DynamicsGroup() {
   const { t } = useT();
   const sel = useSelection();
+  const nav = useNav();
   return (
     <SubTabs
       ariaLabel={t('Dynamics views', 'Vistas de dinámica')}
+      value={nav?.tabs.dynamics}
+      onChange={nav ? (id) => nav.setTab('dynamics', id) : undefined}
       tabs={[
         { id: 'particle', label: t('Trapped particle', 'Partícula atrapada'), content: sel ? <ParticleView sel={sel} callouts /> : <Pending label={LOADING} /> },
         { id: 'psd', label: t('Spectrum', 'Espectro'), content: sel ? <SpectrumView sel={sel} /> : <Pending label={LOADING} /> },
@@ -145,12 +149,13 @@ function DynamicsOffer() {
   const index = useArtifact((s) => loadIndex(s), []);
   const entry = index.state === 'ready' ? index.data.cases.find((x) => x.case_id === DYNAMICS_CASE) : undefined;
   const title = entry ? pick(entry.title) : DYNAMICS_CASE;
+  const nav = useNav();
   const href = appHref(import.meta.env.BASE_URL, { case: DYNAMICS_CASE, view: 'dynamics' });
   return (
     <div className="dh-pv-offer" data-dynamics-offer="">
       <Unavailable reason={NO_DYNAMICS} />
       <p>{t(`The case "${title}" holds one: a bead held in a trap of the array.`, `El caso "${title}" tiene una: una microesfera sujeta en una trampa de la matriz.`)}</p>
-      <button type="button" className="btn" data-open-dynamics-case="" onClick={() => window.location.assign(href)}>
+      <button type="button" className="btn" data-open-dynamics-case="" onClick={() => (nav?.openCase ? nav.openCase(DYNAMICS_CASE) : window.location.assign(href))}>
         {t('Open the dynamics case', 'Abrir el caso de dinámica')}
       </button>
     </div>

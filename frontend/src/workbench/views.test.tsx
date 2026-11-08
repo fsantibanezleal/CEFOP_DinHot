@@ -35,6 +35,7 @@ const actions: Actions = {
   setCoeff: () => undefined,
   setPlane: () => undefined,
   setVolThreshold: () => undefined,
+  setMethod: () => undefined,
 };
 
 function render(node: ReactElement, sel: Selection | null, unavailable: { en: string; es: string } | null = null): string {

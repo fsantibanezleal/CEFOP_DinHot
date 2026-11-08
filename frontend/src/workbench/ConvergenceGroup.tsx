@@ -10,16 +10,19 @@ import { ReadinessNote } from '../readiness/ReadinessNote';
 import { cardOf } from './HologramGroup';
 import { MethodAtWorkView } from './MethodAtWork';
 import { historyAt, is3D, methodLabel, methodName, useSelection, type Selection } from './model';
-import { appHref } from './particle';
 import { cellWithRows, intervalDots, openingCell, recommend, recommendationText, SERIES_COLORS, type Cell } from './pareto';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
+import { useNav } from './nav';
 
 export function ConvergenceGroup() {
   const { t } = useT();
   const sel = useSelection();
+  const nav = useNav();
   return (
     <SubTabs
       ariaLabel={t('Convergence views', 'Vistas de convergencia')}
+      value={nav?.tabs.convergence}
+      onChange={nav ? (id) => nav.setTab('convergence', id) : undefined}
       tabs={[
         { id: 'method', label: t('Method at work', 'Método trabajando'), content: sel ? <MethodAtWorkView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'metrics', label: t('Metrics by iteration', 'Métricas por iteración'), content: sel ? <MetricsView sel={sel} /> : <Pending label={LOADING} /> },
@@ -113,6 +116,7 @@ export function ParetoView({ sel }: { sel: Selection }) {
   const { t, pick, lang } = useT();
   const fmt = useFmt();
   const stateKey = useStateKey();
+  const actions = useActions();
   const c = cardOf(sel);
   const bench = useArtifact((s) => loadBenchmark(s), []);
   const [choice, setChoice] = useState<Cell | null>(null);
@@ -251,7 +255,7 @@ export function ParetoView({ sel }: { sel: Selection }) {
                     data-load-method={shown}
                     disabled={!ranInCase}
                     title={ranInCase ? undefined : t('This case did not run that method', 'Este caso no corrió ese método')}
-                    onClick={() => window.location.assign(appHref(import.meta.env.BASE_URL, { case: sel.data.manifest.case_id, method: shown, view: 'convergence' }))}
+                    onClick={() => actions.setMethod(shown)}
                   >
                     {t(`Load ${nameOf(shown, 'en')} into the App`, `Cargar ${nameOf(shown, 'es')} en la aplicación`)}
                   </button>

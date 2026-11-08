@@ -12,6 +12,7 @@ import { histogram, isShaped, methodName, trapDeviation, useSelection, type Sele
 import { selectedSeries, selectedValue } from './trapSelection';
 import { umToPixel } from './traps';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
+import { useNav } from './nav';
 
 // More than this many bars put their id labels on top of each other (G10): a sorted-points chart carries the larger arrays.
 const BARS_MAX = 12;
@@ -19,9 +20,12 @@ const BARS_MAX = 12;
 export function TrapsGroup() {
   const { t } = useT();
   const sel = useSelection();
+  const nav = useNav();
   return (
     <SubTabs
       ariaLabel={t('Trap views', 'Vistas de las trampas')}
+      value={nav?.tabs.traps}
+      onChange={nav ? (id) => nav.setTab('traps', id) : undefined}
       tabs={[
         { id: 'uniformity', label: t('Per-trap intensity', 'Intensidad'), content: sel ? <IntensityView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'depth', label: t('Depth', 'Pozo'), content: sel ? <DepthView sel={sel} /> : <Pending label={LOADING} /> },

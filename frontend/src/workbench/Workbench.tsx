@@ -27,7 +27,7 @@ import { ConvergenceGroup } from './ConvergenceGroup';
 import type { DeviceStage } from './decode';
 import { DynamicsGroup } from './DynamicsGroup';
 import { laneOf } from './engine';
-import { GROUP_IDS, initialGroup, initialTab, makeNav, NavContext, opensView, pressSubTab, revealStage, type GroupId } from './nav';
+import { GROUP_IDS, initialGroup, initialTab, makeNav, NavContext, opensView, revealStage, type GroupId } from './nav';
 import { FocalGroup } from './FocalGroup';
 import { HologramGroup } from './HologramGroup';
 import { isShaped, methodLabel, methodName, replayMaps, replayResult, trapsOf, UnavailableContext, ViewContext, type DeviceChoice, type Region, type Selection } from './model';
@@ -143,14 +143,11 @@ export function Workbench() {
   // The open group is the workbench's (a controlled value of the shell), so a view can open another: the optical train opens Device effects
   // and the Focal plane group (ADR-0082 rule 6). The URL keeps `?view=` as the shell would have kept it.
   const [group, setGroup] = useState<GroupId>(() => (typeof window === 'undefined' ? GROUP_IDS[0] : initialGroup(window.location.search)));
-  // the sub-view a deep link names (`?view=convergence&tab=pareto`): a controlled group takes it from here, the others have their tab pressed once
-  const firstTab = useRef(typeof window === 'undefined' ? null : initialTab(window.location.search));
-  const [subTabs, setSubTabs] = useState<Record<string, string | undefined>>(() => (firstTab.current ? { [firstTab.current.group]: firstTab.current.tab } : {}));
-  useEffect(() => {
-    const want = firstTab.current;
-    firstTab.current = null;
-    if (want) pressSubTab(want.tab);
-  }, []);
+  // the sub-view a deep link names (`?view=convergence&tab=pareto`): every group takes its sub-view from here (a controlled value)
+  const [subTabs, setSubTabs] = useState<Record<string, string | undefined>>(() => {
+    const first = typeof window === 'undefined' ? null : initialTab(window.location.search);
+    return first ? { [first.group]: first.tab } : {};
+  });
   // a deep link to a view at phone width: the stage, not the rail, is what the reader came for. The rail is as tall as it will be only once the
   // case has loaded, so the stage is brought into view then, once.
   const reveal = useRef(typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches && opensView(window.location.search));
@@ -293,6 +290,7 @@ export function Workbench() {
       setCoeff: (j, v) => patch({ overrides: { ...(r?.overrides ?? {}), [j]: v } }),
       setPlane: (plane) => patch({ plane }),
       setVolThreshold: (volThreshold) => patch({ volThreshold }),
+      setMethod: (id) => setMethodId(id),
     }),
     [r?.mode, r?.zmode, r?.trapId, r?.overrides, traps, halfField, editError, patch],
   );
