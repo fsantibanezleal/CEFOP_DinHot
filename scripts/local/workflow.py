@@ -289,8 +289,16 @@ def install_frontend(root, config, env):
         stamp.write_text(fingerprint + "\n", encoding="ascii")
 
 
+NOT_SHIPPED = ("training", "missing")
+
+
 def required_paths(root, config):
+    """The documents a shipped or staged tree must hold: ``required`` of the config plus every document the catalog names under
+    ``data/derived/`` or ``models/``. Since 0.15.004 the documents of a contract that ``readiness_exceptions`` declares not shipped
+    (state ``training`` or ``missing``) are not required: the slot is answered by the product's declared fallback, as the readiness
+    checks already admit. A ``partial`` or undeclared contract still requires its documents."""
     result = set(config["required"])
+    exceptions = config.get("readiness_exceptions", {})
     catalog = root / "docs/contracts/catalog.md"
     if catalog.is_file():
         header = None
@@ -301,6 +309,9 @@ def required_paths(root, config):
             if "documents" in cells:
                 header = cells
             elif header and len(cells) == len(header):
+                contract = cells[header.index("id")] if "id" in header else cells[0]
+                if exceptions.get(contract) in NOT_SHIPPED:
+                    continue
                 for name in cells[header.index("documents")].split(","):
                     name = name.strip().strip(chr(96))
                     if name.startswith(("data/derived/", "models/")):
