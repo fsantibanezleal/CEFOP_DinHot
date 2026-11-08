@@ -16,6 +16,13 @@ tagged.
   finding per step, computed from the release's artifacts; the comparison step is on the modelled device.
 - Every method is named by its name in the app, the notebooks, the manuscripts and the README; the engine ids stay in code and data.
 - The notebook runtimes live in the device's venvs root (`<venvs root>/dinhot/`), as the base requires.
+- Re-baked at 0.02.003: case C01 traps a bead in water (medium index 1.33), so its stiffness and corner frequency are 1.98 pN/um and
+  34.5 Hz; the other twelve cases reproduce; the benchmark was run again (its cells run the seeds a 600 s wall-clock bound admits);
+  the model metrics are measured again at this version by the generation itself.
+- Publications: the technical report v0.02.003 (10.5281/zenodo.24049958) and the device-aware weighted GS and flicker-bounded
+  sequences paper v0.04 (10.5281/zenodo.24049969), and three new papers: the efficiency-uniformity front (10.5281/zenodo.24022463),
+  the aberration-robust hologram (10.5281/zenodo.24022465) and the learned warm start (10.5281/zenodo.24022471), each generated
+  from this bake and reviewed by a reader other than its writer.
 
 ### Fixed
 
