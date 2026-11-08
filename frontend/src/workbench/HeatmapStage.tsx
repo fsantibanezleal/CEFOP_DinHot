@@ -138,7 +138,8 @@ function drawAxes(
     ctx.lineWidth = 3;
     text(fmtTick(v), px, bottom - 8, 'center');
   }
-  for (const v of axisTicks(umAtY(top + 14), umAtY(bottom - 24), step)) {
+  // the y ticks start under the axis title, which sits at the top left beside its axis (the Reset zoom control holds the top right)
+  for (const v of axisTicks(umAtY(top + 30), umAtY(bottom - 24), step)) {
     const py = pxOfY(v);
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -150,7 +151,7 @@ function drawAxes(
   }
   ctx.lineWidth = 3;
   text('x (µm)', right - 4, bottom - 22, 'right');
-  text('y (µm)', right - 4, top + 12, 'right');
+  text('y (µm)', left + 8, top + 14, 'left');
   ctx.restore();
 }
 
@@ -286,7 +287,11 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
         ctx.setLineDash([]);
         ctx.font = '11px sans-serif';
         ctx.fillStyle = token(TONE[r.tone]);
-        ctx.fillText(r.label, Math.max(a.x, fit.ox) + 4, Math.max(a.y, fit.oy) + 13);
+        // at the top centre of the visible part of the box: the axis title holds the top left and the Reset zoom control the top right
+        const x0 = Math.max(a.x, fit.ox), x1 = Math.min(b.x, fit.ox + fit.sx * cols);
+        ctx.textAlign = 'center';
+        ctx.fillText(r.label, (x0 + x1) / 2, Math.max(a.y, fit.oy) + 13);
+        ctx.textAlign = 'start';
       }
     }
     ctx.setLineDash([]);
