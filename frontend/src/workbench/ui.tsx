@@ -113,10 +113,12 @@ export function Unavailable({ reason }: { reason: BiText }) {
  * takes the height that is left.
  */
 /** `quiet` leaves out the readiness note: the first card of a row carries it, the others do not repeat it. */
-export function Fill({ children, rows = CASE_ROWS, mapsOnly = false, quiet = false }: { children: ReactNode; rows?: string[]; mapsOnly?: boolean; quiet?: boolean }) {
+export function Fill({ children, rows = CASE_ROWS, mapsOnly = false, quiet = false, noteAfter = false }: { children: ReactNode; rows?: string[]; mapsOnly?: boolean; quiet?: boolean; noteAfter?: boolean }) {
   const sel = useSelection();
+  // `noteAfter`: on a phone the provenance line follows the view instead of preceding it (a view whose controls must stay in the panel's
+  // first screen, above the Focus HUD); the reading order is unchanged
   return (
-    <div className="dh-stack">
+    <div className={noteAfter ? 'dh-stack dh-note-after' : 'dh-stack'}>
       {!quiet && <ReadinessNote ids={rows} />}
       {sel && !quiet && <Provenance sel={sel} mapsOnly={mapsOnly} />}
       <div className="dh-fill">{children}</div>

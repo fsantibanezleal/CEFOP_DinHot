@@ -206,7 +206,7 @@ export function AberrationView({ sel }: { sel: Selection }) {
     <>
       <ViewsRow shares={[3, 2]}>
         <PlotCard fill title={{ en: 'Zernike coefficients', es: 'Coeficientes de Zernike' }} {...c} dataKey={stateKey}>
-          <Fill>
+          <Fill noteAfter>
             <div className="dh-stack">
             <div className="dh-controls">
               <ChipGroup

@@ -35,4 +35,7 @@
   .dh-pv-side .dh-pv-cell { height: 210px; }
   .dh-pf { flex: none; }
   .dh-pf-chart { flex: none; height: 360px; }
+  /* each choice of the benchmark cell on a row of its own, its select as wide as the row, so a geometry's name is shown whole (G5) */
+  .dh-pf-controls label { flex: 1 1 100%; }
+  .dh-pf-controls select { flex: 1 1 auto; }
 }

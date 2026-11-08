@@ -88,9 +88,17 @@
   min-width: 0;
 }
 
+/* On a phone the aberration choice takes its own row and the two sliders share the next one, so the controls end high enough that the
+   Focus HUD at the bottom of the stage never meets a slider that the panel has not scrolled to (gate G18, shell known defect 50). */
 @media (max-width: 900px) {
   .dh-controls {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .dh-controls > :first-child {
+    grid-column: 1 / -1;
+  }
+  .dh-note-after > .dh-lane {
+    order: 2;
   }
 }
 

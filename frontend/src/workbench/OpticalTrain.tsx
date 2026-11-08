@@ -465,7 +465,9 @@ export function OpticalTrainDrawing(p: DrawingProps) {
       {/* the focal plane: a button for the view, the array face-on inside it */}
       {elementBox('focal')}
       <rect x={L.field.x} y={L.field.y} width={L.field.w} height={L.field.h} rx="4" fill="var(--color-bg)" stroke="var(--color-border)" strokeWidth="1" pointerEvents="none" />
-      <text x={L.field.x + 2} y={L.field.y - 4} fill="var(--color-fg-subtle)" fontSize="10" fontFamily="var(--font-mono)" pointerEvents="none">{traps.length ? `±${f(ext / 1.1, 1)} µm${is3D(traps) ? t(', z oblique', ', z oblicuo') : ''}` : ''}</text>
+      {/* the extent above the focal square, ending at its right edge: a volume array's longer label grows to the left, over the room above
+          the element's own text, never past the drawing's edge on a phone (gate G10 at 390) */}
+      <text x={L.field.x + L.field.w} y={L.field.y - 4} textAnchor="end" fill="var(--color-fg-subtle)" fontSize="10" fontFamily="var(--font-mono)" pointerEvents="none">{traps.length ? `±${f(ext / 1.1, 1)} µm${is3D(traps) ? t(', z oblique', ', z oblicuo') : ''}` : ''}</text>
       {TRAIN_IDS.map((id) => textBlock(id))}
       <g data-train-sites="">
         {sites
