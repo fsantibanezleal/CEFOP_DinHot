@@ -331,6 +331,19 @@ export interface CompareLayout {
   xTicks: number[];
 }
 /** The geometry of the scatter: efficiency across (0 to 1), the relative spread up on a log scale from SPREAD_FLOOR (a median of zero sits on the floor). */
+/**
+ * Where the two compared methods print their name and their quartile line: the upper dot labels above itself and the lower one below
+ * itself, so the two label blocks move apart instead of meeting between the dots (gate G10 at 1280 in Spanish with the wide font); a
+ * block that would leave the plot goes to the other side of its dot. Offsets are from the dot's centre, in pixels.
+ */
+export function pairLabelOffsets(cy: number, otherCy: number | null, plotTop: number, plotBottom: number): { name: number; quartiles: number } {
+  const above = { name: -20, quartiles: -8 };
+  const below = { name: 18, quartiles: 30 };
+  const upper = otherCy === null || cy <= otherCy;
+  if (upper) return cy - 32 >= plotTop ? above : below;
+  return cy + 34 <= plotBottom ? below : above;
+}
+
 export function compareLayout(width: number, height: number, band?: number): CompareLayout {
   const left = 58;
   const right = 14;
@@ -437,6 +450,8 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
                     const cy = L.y(p.spread.median);
                     const tone = p.method === WEIGHTED_GS ? 'var(--color-warn)' : p.onFront ? 'var(--color-good)' : 'var(--color-accent)';
                     const label = on || p.method === WEIGHTED_GS || p === pts[0];
+                    const other = compared.includes(p.method) ? dots[compared.find((m) => m !== p.method) ?? ''] ?? null : null;
+                    const pair = compared.includes(p.method) ? pairLabelOffsets(cy, other ? other.y : null, L.plot.y, L.plot.y + L.plot.h) : null;
                     return (
                       <g key={p.method}>
                         {/* the whiskers and the label are outside the button, so its box (and the pointer's hit) is the dot */}
@@ -447,8 +462,8 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
                           <line x1={cx} x2={cx} y1={Math.max(L.y(p.spread.q1), cy + CAP)} y2={Math.min(L.y(p.spread.q3), cy - CAP)} stroke={tone} strokeWidth={1.5} />
                           <line x1={cx - CAP} x2={cx + CAP} y1={Math.max(L.y(p.spread.q1), cy + CAP)} y2={Math.max(L.y(p.spread.q1), cy + CAP)} stroke={tone} strokeWidth={1.5} />
                           <line x1={cx - CAP} x2={cx + CAP} y1={Math.min(L.y(p.spread.q3), cy - CAP)} y2={Math.min(L.y(p.spread.q3), cy - CAP)} stroke={tone} strokeWidth={1.5} />
-                          {label && <text x={cx + (cx > L.plot.x + L.plot.w * 0.6 ? -9 : 9)} y={cy - 7} textAnchor={cx > L.plot.x + L.plot.w * 0.6 ? 'end' : 'start'} fontSize={11} fill="var(--color-fg)">{short(p.method, lang)}</text>}
-                          {compared.includes(p.method) && <text x={cx + (cx > L.plot.x + L.plot.w * 0.6 ? -9 : 9)} y={cy + 14} textAnchor={cx > L.plot.x + L.plot.w * 0.6 ? 'end' : 'start'} fontSize={10} fill="var(--color-fg-subtle)">{t('quartiles', 'cuartiles')} {spreadText(p.spread.q1, lang)} {t('to', 'a')} {spreadText(p.spread.q3, lang)} %</text>}
+                          {label && <text x={cx + (cx > L.plot.x + L.plot.w * 0.6 ? -9 : 9)} y={cy + (pair ? pair.name : -7)} textAnchor={cx > L.plot.x + L.plot.w * 0.6 ? 'end' : 'start'} fontSize={11} fill="var(--color-fg)">{short(p.method, lang)}</text>}
+                          {pair && <text x={cx + (cx > L.plot.x + L.plot.w * 0.6 ? -9 : 9)} y={cy + pair.quartiles} textAnchor={cx > L.plot.x + L.plot.w * 0.6 ? 'end' : 'start'} fontSize={10} fill="var(--color-fg-subtle)">{t('quartiles', 'cuartiles')} {spreadText(p.spread.q1, lang)} {t('to', 'a')} {spreadText(p.spread.q3, lang)} %</text>}
                         </g>
                         <g data-method={p.method} data-linked-id={p.method} data-linked-view="scene" data-linked-selected={on ? 'true' : 'false'} role="button" tabIndex={0} aria-pressed={on} aria-label={t(`${nameOf(p.method, 'en')}: median spread ${spreadText(p.spread.median, 'en')} %, efficiency ${num(p.eff.median, 'en', 3)}, ${p.seeds} seeds`, `${nameOf(p.method, 'es')}: dispersión mediana ${spreadText(p.spread.median, 'es')} %, eficiencia ${num(p.eff.median, 'es', 3)}, ${p.seeds} semillas`)} onClick={() => select(on ? null : p.method, 'scene')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), select(on ? null : p.method, 'scene'))} style={{ cursor: 'pointer' }}>
                           <circle cx={cx} cy={cy} r={on ? 8 : 5.5} fill={tone} stroke={on ? 'var(--color-fg)' : 'var(--color-surface)'} strokeWidth={on ? 2 : 1} />

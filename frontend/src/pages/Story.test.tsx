@@ -23,6 +23,7 @@ import {
   compareCallouts,
   compareFinding,
   compareLayout,
+  pairLabelOffsets,
   comparePoints,
   deviceFinding,
   exitHref,
@@ -479,5 +480,24 @@ describe('the stage floor on a phone follows the band', () => {
     expect(storyStageFloor(640, 260)).toBe(750);
     expect(storyStageFloor(860, 260)).toBe(860);
     expect(storyStageFloor(640, 700)).toBe(900);
+  });
+});
+
+describe('the compared pair labels its dots apart (gate G10, 1280 in Spanish with the wide font)', () => {
+  it('adversarial: the upper dot labels above itself and the lower one below, so the blocks never meet between the dots', () => {
+    // the 0.02.003 full gate: the device-aware WGS name above its dot met the weighted GS quartile line below the dot just above it
+    const upper = pairLabelOffsets(200, 226, 40, 500);
+    const lower = pairLabelOffsets(226, 200, 40, 500);
+    expect(upper.name).toBeLessThan(0);
+    expect(upper.quartiles).toBeLessThan(0);
+    expect(lower.name).toBeGreaterThan(0);
+    expect(lower.quartiles).toBeGreaterThan(0);
+    // the lowest text line of the upper block sits above the highest of the lower block, with the 26 px between the dots
+    expect(200 + Math.max(upper.name, upper.quartiles)).toBeLessThan(226 + Math.min(lower.name, lower.quartiles) - 12);
+  });
+
+  it('a block that would leave the plot goes to the other side of its dot', () => {
+    expect(pairLabelOffsets(50, 300, 40, 500).name).toBeGreaterThan(0);
+    expect(pairLabelOffsets(490, 100, 40, 500).name).toBeLessThan(0);
   });
 });
