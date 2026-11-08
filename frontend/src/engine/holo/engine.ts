@@ -496,7 +496,7 @@ export function simulateParticle(req: {
       return -depth * (row[i0] + (row[i0 + 1] - row[i0]) * (t - i0));
     };
     tv = boltzmannCheck(x, pot, d.temperature_k).totalVariation;
-    stiff = { value: kappa * 1e6, unit: 'pN/um' };
+    stiff = { value: kappa * 1e6, unit: 'pN/µm' };
     depthOut = { value: depth / (tp.KB_J_PER_K * d.temperature_k), unit: 'kBT' };
   } else {
     const om0 = (2 * Math.PI * tp.C_M_PER_S) / RB_LAMBDA0_M, gam = 2 * Math.PI * RB_GAMMA_HZ, delta = 2 * Math.PI * (d.detuning_thz as number) * 1e12;
@@ -512,7 +512,7 @@ export function simulateParticle(req: {
     let bi = 1;
     for (let i = 1; i < sm.length - 1; i++) if (sm[i] > sm[bi]) bi = i;
     measured = spec.f[bi];
-    stiff = { value: mass * omega ** 2 * 1e6, unit: 'pN/um' };
+    stiff = { value: mass * omega ** 2 * 1e6, unit: 'pN/µm' };
     depthOut = { value: (depth / tp.KB_J_PER_K) * 1e6, unit: 'uK' };
   }
   const dec = Math.max(1, Math.ceil((nSteps + 1) / MAX_TRAJECTORY));

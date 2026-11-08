@@ -16,8 +16,8 @@ export function outsideField(t: Trap, halfFieldUm: number): Text | null {
     if (Math.abs(t[axis]) >= halfFieldUm) {
       const bound = halfFieldUm.toFixed(1);
       return {
-        en: `trap ${t.id} has ${axis}=${g(t[axis])} um, outside the unaliased field of view (abs must be below ${bound} um = lambda f / (2 p))`,
-        es: `la trampa ${t.id} tiene ${axis}=${gEs(t[axis])} um, fuera del campo de visión sin solapamiento (abs debe ser menor que ${bound.replace('.', ',')} um = lambda f / (2 p))`,
+        en: `trap ${t.id} has ${axis}=${g(t[axis])} µm, outside the unaliased field of view (abs must be below ${bound} µm = lambda f / (2 p))`,
+        es: `la trampa ${t.id} tiene ${axis}=${gEs(t[axis])} µm, fuera del campo de visión sin solapamiento (abs debe ser menor que ${bound.replace('.', ',')} µm = lambda f / (2 p))`,
       };
     }
   }
