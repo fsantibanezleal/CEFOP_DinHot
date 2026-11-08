@@ -15,7 +15,8 @@ from planting import NODE, NODE_MODULES, link_node_modules, unlink_node_modules
 
 ROOT = Path(__file__).resolve().parents[2]
 MARK = "A product takes this file verbatim"
-SCRIPT_IMPORT = re.compile(r"""(?:from\s+|new URL\(\s*)['"](?:\.\./)+scripts/[^'"]+\.mjs['"]""")
+# A base script is a frontend/scripts/*.mjs that is not a product module (*.product.mjs, 0.15.005): a test of the latter is the product's.
+SCRIPT_IMPORT = re.compile(r"""(?:from\s+|new URL\(\s*)['"](?:\.\./)+scripts/[^'"]+(?<!\.product)\.mjs['"]""")
 needs_web = pytest.mark.skipif(NODE is None or not (NODE_MODULES / "@fasl-work").is_dir(),
                                reason="needs node and `npm ci` in frontend/")
 
