@@ -258,6 +258,33 @@ function siteAt(field: Box, ext: number, tr: { x_um: number; y_um: number; z_um:
   return { x: field.x + half + p.x * k, y: field.y + field.h / 2 - p.y * k };
 }
 
+/**
+ * The points of every trap in the focal square, with no dot over another (gate G5: each is a control). The oblique depth offset can land
+ * two traps of a volume array within a dot of each other; a later trap (traps are placed from the farthest plane to the nearest) is then
+ * moved along the depth direction, a pixel at a time, until it clears every placed dot. A schematic of the array, not its measured
+ * geometry: the focal plane view (V3) draws the measured one.
+ */
+export function placeSites(field: Box, ext: number, traps: readonly { id: number; x_um: number; y_um: number; z_um: number }[], dot: number): Map<number, { x: number; y: number }> {
+  const out = new Map<number, { x: number; y: number }>();
+  const placed: { x: number; y: number }[] = [];
+  const gap = 2 * dot + 1;
+  // the screen direction of the depth offset (x grows to the right, y down on screen)
+  const len = Math.hypot(0.5, 0.3);
+  const ux = 0.5 / len, uy = -0.3 / len;
+  const order = [...traps].sort((a, b) => a.z_um - b.z_um || a.id - b.id);
+  for (const tr of order) {
+    const s = siteAt(field, ext, tr);
+    let x = s.x, y = s.y;
+    for (let step = 0; step < 40 && placed.some((q) => Math.hypot(q.x - x, q.y - y) < gap); step++) {
+      x += ux;
+      y += uy;
+    }
+    placed.push({ x, y });
+    out.set(tr.id, { x, y });
+  }
+  return out;
+}
+
 const extentOf = (traps: readonly { x_um: number; y_um: number; z_um: number }[]): number =>
   Math.max(1e-6, ...traps.map((t) => { const p = projectTrap(t.x_um, t.y_um, t.z_um); return Math.max(Math.abs(p.x), Math.abs(p.y)); })) * 1.1;
 
@@ -402,6 +429,7 @@ export function OpticalTrainDrawing(p: DrawingProps) {
   };
 
   const dot = Math.max(2.2, Math.min(4, (L.field.w - 10) / (2 * Math.sqrt(Math.max(1, traps.length)))));
+  const placedSites = sites ? placeSites(L.field, ext, traps, dot) : null;
   const selectedTrap = selectedId === null ? null : traps.find((tr) => String(tr.id) === selectedId) ?? null;
 
   return (
@@ -438,7 +466,7 @@ export function OpticalTrainDrawing(p: DrawingProps) {
       <g data-train-sites="">
         {sites
           ? traps.map((tr) => {
-              const s = siteAt(L.field, ext, tr);
+              const s = placedSites?.get(tr.id) ?? siteAt(L.field, ext, tr);
               const chosen = selectedId === String(tr.id);
               return (
                 <circle

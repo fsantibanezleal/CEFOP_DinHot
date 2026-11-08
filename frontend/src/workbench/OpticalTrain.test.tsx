@@ -4,7 +4,7 @@ import { formatNumber, layoutSceneCallouts, type BiText } from '@fasl-work/caos-
 import { isValidElement, type ReactElement, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { columnChars, detailLines, extraDetailLines, openTrainElement, OpticalTrainDrawing, TRAIN_TARGET, trainCallouts, trainItems, trainLayout, wrapLabel, type TrainId } from './OpticalTrain';
+import { columnChars, detailLines, extraDetailLines, openTrainElement, OpticalTrainDrawing, placeSites, TRAIN_TARGET, trainCallouts, trainItems, trainLayout, wrapLabel, type TrainId } from './OpticalTrain';
 import { richCase, selectionFor } from './test-data';
 import { realCase, realSelection } from './test-real';
 
@@ -326,5 +326,35 @@ describe('the labels under the elements fit their column (gate G10)', () => {
     const slm = trainItems(sel, 'en').find((i) => i.id === 'slm')!;
     expect(detailLines(slm.detail, 768).length).toBeGreaterThan(1);
     expect(out.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ')).toContain(slm.detail);
+  });
+});
+
+describe('the focal square places every trap dot clear of the others (gate G5: each dot is a control)', () => {
+  // four traps of C14_volume_learned (3 planes 8.658 um apart): the oblique depth offset put trap 1 within 1.65 um of trap 26, and trap 46
+  // within 1.65 um of trap 18, under a dot of each other in the 0.02.003 full gate (1280 x 800)
+  const traps = [
+    { id: 1, x_um: -10.2, y_um: -10.2, z_um: -8.658 },
+    { id: 18, x_um: 14.45, y_um: 14.45, z_um: 0 },
+    { id: 26, x_um: -14.45, y_um: -14.45, z_um: 0 },
+    { id: 46, x_um: 10.2, y_um: 10.2, z_um: 8.658 },
+  ];
+  const field = { x: 0, y: 0, w: 120, h: 120 };
+  const ext = 27;
+  const dot = 3.2;
+
+  it('adversarial: no two dots closer than a dot and a pixel, and every trap placed', () => {
+    const at = placeSites(field, ext, traps, dot);
+    expect(at.size).toBe(traps.length);
+    const pts = [...at.values()];
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+      expect(Math.hypot(pts[i]!.x - pts[j]!.x, pts[i]!.y - pts[j]!.y)).toBeGreaterThanOrEqual(2 * dot + 1 - 1e-9);
+    }
+  });
+
+  it('leaves a trap where the projection puts it when nothing is in its way', () => {
+    const lone = placeSites(field, ext, [traps[1]!], dot).get(18)!;
+    const half = field.w / 2, k = (half - 5) / ext;
+    expect(lone.x).toBeCloseTo(field.x + half + 14.45 * k, 9);
+    expect(lone.y).toBeCloseTo(field.y + field.h / 2 - 14.45 * k, 9);
   });
 });
