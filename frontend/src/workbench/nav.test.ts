@@ -35,14 +35,10 @@ describe('the workbench view switch', () => {
     expect(opensView('?tab=pareto')).toBe(true);
     expect(opensView('?case=C02_grid_feedback')).toBe(false);
     const scrolled = vi.fn();
-    revealStage({ querySelector: () => ({ scrollIntoView: scrolled }) } as unknown as ParentNode);
+    expect(revealStage({ querySelector: () => ({ scrollIntoView: scrolled }) } as unknown as ParentNode)).toBe(true);
     expect(scrolled).toHaveBeenCalledWith({ block: 'start' });
-    let row: unknown = null;
-    const frames: (() => void)[] = [];
-    revealStage({ querySelector: () => row } as unknown as ParentNode, 3, (f) => frames.push(f));
-    row = { scrollIntoView: scrolled };
-    frames.shift()!();
-    expect(scrolled).toHaveBeenCalledTimes(2);
+    expect(revealStage({ querySelector: () => null } as unknown as ParentNode)).toBe(false);
+    expect(scrolled).toHaveBeenCalledTimes(1);
   });
 
   it('the first group is the Hologram group, and the URL names a group only when it exists', () => {

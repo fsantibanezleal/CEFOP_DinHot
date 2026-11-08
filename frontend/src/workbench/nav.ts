@@ -52,14 +52,15 @@ export function opensView(search: string): boolean {
   return q.has('view') || q.has('tab');
 }
 
-/** On a phone the rail stacks above the stage, so a deep link to a view opens on the rail with the stage below the fold: bring the row of group tabs to the top of the screen, once. Gives up after `tries` frames. */
-export function revealStage(root: ParentNode = document, tries = 30, frame: (f: () => void) => void = (f) => requestAnimationFrame(f)): void {
-  const reveal = (left: number) => {
-    const row = root.querySelector<HTMLElement>('.caos-cw > .tabs');
-    if (row) row.scrollIntoView({ block: 'start' });
-    else if (left > 0) frame(() => reveal(left - 1));
-  };
-  reveal(tries);
+/**
+ * On a phone the rail stacks above the stage, so a deep link to a view opens on the rail with the stage below the fold: bring the row of
+ * group tabs to the top of the screen, once. The workbench calls it from an effect that runs once the case has loaded, when the row is in
+ * the document; it returns whether it found the row.
+ */
+export function revealStage(root: ParentNode = document): boolean {
+  const row = root.querySelector<HTMLElement>('.caos-cw > .tabs');
+  if (row) row.scrollIntoView({ block: 'start' });
+  return row !== null;
 }
 
 export const NavContext = createContext<Nav | null>(null);
