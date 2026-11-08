@@ -1,6 +1,6 @@
 // The files the site serves from data/derived (T3): the index, the readiness document, every manifest it lists, every artifact each
 // manifest names (one `artifact`, or a list of `artifacts` for variants baked apart), and the further files the
-// index declares in `files` (a product's contract declarations, say), without the refused cases, which have none. Shared by copy-data.mjs and its test, so the
+// index declares in `files` (a product's contract declarations, say). Shared by copy-data.mjs and its test, so the
 // rule the build applies is the rule the test checks.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -29,6 +29,18 @@ export function declaredAbsent(derived) {
   }
 }
 
+/** The manifest path a case entry names: `manifest_path`, or `path` (a product's case-index contract may name it either way). */
+export function manifestOf(entry) {
+  const named = entry?.manifest_path ?? entry?.path;
+  return typeof named === 'string' && named ? named : null;
+}
+
+/** A refused case: the index lists it with `status` `refused`, or with a null manifest path (`manifest_path` or `path` present
+ * and null), and it has no manifest to copy; it declares nothing and is not missing. */
+export function isRefused(entry) {
+  return entry?.status === 'refused' || entry?.manifest_path === null || (entry?.manifest_path === undefined && entry?.path === null);
+}
+
 /** Every declared file under `derived`, the ones missing (`missing`), the part of those the readiness declares absent
  * (`tolerated`: a partial bake builds without them), and the manifests that name no artifact. */
 export function declaredFiles(derived) {
@@ -36,13 +48,17 @@ export function declaredFiles(derived) {
   const declared = [INDEX_REL, READINESS_REL, ...(Array.isArray(index.files) ? index.files : [])];
   const problems = [];
   for (const entry of index.cases) {
-    // A refused case (status "refused", path null) has no manifest and no artifact: the index carries its reason (catalog row case-index).
-    if (entry.status === 'refused' || entry.path === null) continue;
-    declared.push(entry.path);
-    const at = join(derived, entry.path);
+    if (isRefused(entry)) continue; // no manifest to copy: declares nothing
+    const manifest = manifestOf(entry);
+    if (manifest === null) {
+      problems.push(`${entry?.case_id ?? '(case without an id)'}: names neither manifest_path nor path`);
+      continue;
+    }
+    declared.push(manifest);
+    const at = join(derived, manifest);
     if (!existsSync(at)) continue; // reported among the missing files
     const paths = artifactPaths(JSON.parse(readFileSync(at, 'utf8')));
-    if (!paths.length) problems.push(`${entry.path}: names no artifact (artifact or artifacts)`);
+    if (!paths.length) problems.push(`${manifest}: names no artifact (artifact or artifacts)`);
     declared.push(...paths);
   }
   const unique = [...new Set(declared)];

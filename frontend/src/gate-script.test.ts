@@ -2,18 +2,22 @@
 // surface) and fails an App without Focus mode: --require-focus is always in effect, whatever extra arguments a run passes, and
 // it is dropped only for a surface App that records why ADR-0070 does not apply, in product.json and on the SDD's ADR-0070 row
 // (WB-014, WB-015; shell 0.19.1, ADR-0070). The runner is executed here against a stub shell gate that records its arguments.
+// A product takes this file verbatim: it reads the product's own product.json and SDD, never the example's (0.15.003).
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
 const frontend = fileURLToPath(new URL('..', import.meta.url));
 const gate = readFileSync(new URL('../scripts/gate.mjs', import.meta.url), 'utf8');
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { scripts: Record<string, string> };
 const realProduct = JSON.parse(readFileSync(new URL('../../product.json', import.meta.url), 'utf8')) as Record<string, unknown>;
 const realSdd = readFileSync(new URL('../../docs/design/SDD.md', import.meta.url), 'utf8');
+
+// Every test spawns node on the runner; the default 5 s timed out under a fully loaded CPU (ChancaDEM, 2026-11-07).
+vi.setConfig({ testTimeout: 60_000 });
 
 const REASON = 'this hub only links to studies and runs no simulation or dynamic synthetic scenario';
 const ROW_PREFIX = '| ADR-0070 |';
@@ -179,8 +183,9 @@ describe('the gate runner by the App kind (WB-014, WB-015)', () => {
   });
 
   it('requires all documented and story routes when a custom route list is supplied', () => {
-    const declared = (realProduct.showcase as { story_routes: string[] }).story_routes;
-    const complete = `/app,/introduction,/methodology,/implementation,/experiments,/benchmark,${declared.join(',')}`;
+    // the product's own declared steps, never the example's (0.15.003)
+    const steps = ((realProduct.showcase as { story_routes?: string[] } | undefined)?.story_routes) ?? [];
+    const complete = ['/app', '/introduction', '/methodology', '/implementation', '/experiments', '/benchmark', ...steps].join(',');
     expect(run({ extra: ['--routes', complete] }).args).toContain('--require-showcase');
     expect(run({ extra: ['--routes', '/,/app'] }).args).toBeNull();
     expect(run({ product: { app: 'surface' }, extra: ['--app-route', '/console', '--routes', '/,/console'] }).args).toBeNull();
