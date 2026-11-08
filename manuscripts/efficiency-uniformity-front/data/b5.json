@@ -13,6 +13,11 @@
     "parts": "ablation,diagnostic",
     "only_variants": "start_gsw100",
     "wall_clock_s": 179.8439980999974
+   },
+   {
+    "parts": "stored",
+    "only_variants": "",
+    "wall_clock_s": 0.13840840000193566
    }
   ]
  },
@@ -8382,7 +8387,7 @@
   "trials": 20
  },
  "stored": {
-  "engine_version": "0.02.002",
+  "engine_version": "0.02.003",
   "n_rows": 1326,
   "seeds": 20,
   "geometries": [
@@ -8390,145 +8395,145 @@
     "budget": 30,
     "geometry": "G1",
     "name": "Square 10 x 10",
-    "hv_front": 0.8375724760319999,
-    "hv_published": 0.8268388535669999,
-    "n_front": 7,
-    "lam_max": 0.3157894736842105,
+    "hv_front": 0.8352017632750001,
+    "hv_published": 0.82696261235,
+    "n_front": 3,
+    "lam_max": 0.10526315789473684,
     "n_published": 4,
     "seeds_b5": 7,
-    "margin": 0.010733622464999981
+    "margin": 0.00823915092500005
    },
    {
     "budget": 30,
     "geometry": "G2",
     "name": "Ring of 36 traps",
-    "hv_front": 0.6986045961499999,
-    "hv_published": 0.6965593978410001,
-    "n_front": 2,
-    "lam_max": 0.05263157894736842,
+    "hv_front": 0.70816885234,
+    "hv_published": 0.696573866843,
+    "n_front": 7,
+    "lam_max": 0.3684210526315789,
     "n_published": 4,
-    "seeds_b5": 6,
-    "margin": 0.0020451983089998516
+    "seeds_b5": 11,
+    "margin": 0.011594985496999999
    },
    {
     "budget": 30,
     "geometry": "G3",
     "name": "Random 100 traps",
-    "hv_front": 0.708430733912,
-    "hv_published": 0.7041839548440001,
-    "n_front": 3,
-    "lam_max": 0.10526315789473684,
+    "hv_front": 0.7144257871840001,
+    "hv_published": 0.704135788259,
+    "n_front": 6,
+    "lam_max": 0.2631578947368421,
     "n_published": 4,
-    "seeds_b5": 6,
-    "margin": 0.004246779067999862
+    "seeds_b5": 9,
+    "margin": 0.010289998925000043
    },
    {
     "budget": 30,
     "geometry": "G4",
     "name": "Quasi-periodic 119",
-    "hv_front": 0.7663346169140001,
-    "hv_published": 0.7644265988050001,
-    "n_front": 3,
-    "lam_max": 0.10526315789473684,
+    "hv_front": 0.7708135931019999,
+    "hv_published": 0.7643077758629999,
+    "n_front": 5,
+    "lam_max": 0.21052631578947367,
     "n_published": 4,
-    "seeds_b5": 6,
-    "margin": 0.001908018108999987
+    "seeds_b5": 8,
+    "margin": 0.006505817239000011
    },
    {
     "budget": 30,
     "geometry": "G5",
     "name": "3D lattice 5 x 5 x 3",
-    "hv_front": 0.89298334579,
-    "hv_published": 0.8875269636730001,
-    "n_front": 3,
-    "lam_max": 0.10526315789473684,
+    "hv_front": 0.901157915304,
+    "hv_published": 0.8875749684790001,
+    "n_front": 5,
+    "lam_max": 0.21052631578947367,
     "n_published": 4,
-    "seeds_b5": 6,
-    "margin": 0.005456382116999947
+    "seeds_b5": 9,
+    "margin": 0.013582946824999942
    },
    {
     "budget": 30,
     "geometry": "G6",
     "name": "Large: 32 x 32 and disordered 819",
-    "hv_front": 0.791031,
-    "hv_published": 0.787070513595,
+    "hv_front": 0.79103,
+    "hv_published": 0.791605031061,
     "n_front": 1,
     "lam_max": 0.0,
     "n_published": 4,
     "seeds_b5": 2,
-    "margin": 0.003960486405000019
+    "margin": -0.0005750310609999865
    },
    {
     "budget": 100,
     "geometry": "G1",
     "name": "Square 10 x 10",
-    "hv_front": 0.8375724760319999,
-    "hv_published": 0.8394548627459999,
-    "n_front": 7,
-    "lam_max": 0.3157894736842105,
+    "hv_front": 0.8352017632750001,
+    "hv_published": 0.839486883349,
+    "n_front": 3,
+    "lam_max": 0.10526315789473684,
     "n_published": 4,
     "seeds_b5": 7,
-    "margin": -0.001882386713999984
+    "margin": -0.004285120073999948
    },
    {
     "budget": 100,
     "geometry": "G2",
     "name": "Ring of 36 traps",
-    "hv_front": 0.6986045961499999,
-    "hv_published": 0.701632935614,
-    "n_front": 2,
-    "lam_max": 0.05263157894736842,
+    "hv_front": 0.70816885234,
+    "hv_published": 0.701656173375,
+    "n_front": 7,
+    "lam_max": 0.3684210526315789,
     "n_published": 4,
-    "seeds_b5": 6,
-    "margin": -0.0030283394640000516
+    "seeds_b5": 11,
+    "margin": 0.006512678965000074
    },
    {
     "budget": 100,
     "geometry": "G3",
     "name": "Random 100 traps",
-    "hv_front": 0.708430733912,
-    "hv_published": 0.710615609455,
-    "n_front": 3,
-    "lam_max": 0.10526315789473684,
+    "hv_front": 0.7144257871840001,
+    "hv_published": 0.710572322565,
+    "n_front": 6,
+    "lam_max": 0.2631578947368421,
     "n_published": 4,
-    "seeds_b5": 6,
-    "margin": -0.0021848755430000644
+    "seeds_b5": 9,
+    "margin": 0.0038534646190000466
    },
    {
     "budget": 100,
     "geometry": "G4",
     "name": "Quasi-periodic 119",
-    "hv_front": 0.7663346169140001,
-    "hv_published": 0.771859791892,
-    "n_front": 3,
-    "lam_max": 0.10526315789473684,
+    "hv_front": 0.7708135931019999,
+    "hv_published": 0.771831069109,
+    "n_front": 5,
+    "lam_max": 0.21052631578947367,
     "n_published": 4,
-    "seeds_b5": 6,
-    "margin": -0.00552517497799998
+    "seeds_b5": 8,
+    "margin": -0.0010174760070000843
    },
    {
     "budget": 100,
     "geometry": "G5",
     "name": "3D lattice 5 x 5 x 3",
-    "hv_front": 0.89298334579,
-    "hv_published": 0.8985680422290001,
-    "n_front": 3,
-    "lam_max": 0.10526315789473684,
+    "hv_front": 0.901157915304,
+    "hv_published": 0.8985090975360001,
+    "n_front": 5,
+    "lam_max": 0.21052631578947367,
     "n_published": 4,
-    "seeds_b5": 6,
-    "margin": -0.005584696439000059
+    "seeds_b5": 9,
+    "margin": 0.002648817767999967
    },
    {
     "budget": 100,
     "geometry": "G6",
     "name": "Large: 32 x 32 and disordered 819",
-    "hv_front": 0.791031,
-    "hv_published": 0.798268388909,
+    "hv_front": 0.79103,
+    "hv_published": 0.8037410590009999,
     "n_front": 1,
     "lam_max": 0.0,
     "n_published": 4,
     "seeds_b5": 2,
-    "margin": -0.007237388908999942
+    "margin": -0.012711059000999891
    }
   ],
   "bake": {
