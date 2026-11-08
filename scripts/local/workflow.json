@@ -158,6 +158,13 @@
       ]
     },
     {
+      "script": "scripts/local/dinhot_bridge.py",
+      "args": [
+        "evaluate",
+        "{stage}"
+      ]
+    },
+    {
       "script": "data-pipeline/run.py",
       "args": [
         "benchmark",
