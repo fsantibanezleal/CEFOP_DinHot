@@ -7,7 +7,7 @@ tagged.
 
 ### Changed
 
-- Adopted CAOS_PRODUCT_TEMPLATE 0.15.005 and the shared app shell 0.25.0. The shell's gate now measures DinHot's long
+- Adopted CAOS_PRODUCT_TEMPLATE 0.15.006 and the shared app shell 0.25.0. The shell's gate now measures DinHot's long
   documentation pages, because the walk's budget scales with the document. The story's callout cards show their state. The
   fourteen methods in the rail are one select, using the shell's variant select layout, which was added for DinHot. The site's
   further files (the benchmark, the model metrics, the released models) are served through the base's product hook.
