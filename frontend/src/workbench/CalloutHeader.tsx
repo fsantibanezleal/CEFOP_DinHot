@@ -55,6 +55,22 @@ export function useCalloutBand(fallback: number): { band: number; onLayout: (inf
 /** The space between the last card and the drawing under it, in px. */
 export const BAND_GAP = 8;
 
+/**
+ * A value once it has held for `ms`: null until then, and again while it changes. The shell's header layer can report a band laid out
+ * before it has its width (CEFOP_DinHot, story hold at 2560 x 1440: 182, then 357, then 87 px, about 400 ms apart, shell known defect 65);
+ * a view sized by the band mounts on the settled one, so it is built once, at its final size.
+ */
+export function useSettledValue<T>(value: T | null, ms: number): T | null {
+  const [settled, setSettled] = useState<T | null>(null);
+  useEffect(() => {
+    setSettled(null);
+    if (value === null) return undefined;
+    const timer = setTimeout(() => setSettled(value), ms);
+    return () => clearTimeout(timer);
+  }, [value, ms]);
+  return settled !== null && settled === value ? settled : null;
+}
+
 /** An anchor written as fractions of the drawing (the part of the stage under the band), as fractions of the whole stage: y' = (band + y (H - band)) / H. */
 export function anchorInDrawing(anchor: { x: number; y: number }, band: number, height: number): { x: number; y: number } {
   if (!(height > band)) return anchor;

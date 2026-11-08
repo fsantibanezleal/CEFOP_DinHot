@@ -15,7 +15,7 @@ import { ParticleView } from '../workbench/DynamicsGroup';
 import { Heatmap, type HeatMark } from '../workbench/HeatmapStage';
 import { MethodAtWorkView, freezeIteration, pointAt, spreadText, useFocalAtIteration } from '../workbench/MethodAtWork';
 import { methodName, replayMaps, replayResult, trapsOf, type DeviceChoice, type Selection } from '../workbench/model';
-import { BAND_GAP, CalloutHeader, anchorInDrawing, useCalloutBand } from '../workbench/CalloutHeader';
+import { BAND_GAP, CalloutHeader, anchorInDrawing, useCalloutBand, useSettledValue } from '../workbench/CalloutHeader';
 import { OpticalTrainView } from '../workbench/OpticalTrain';
 import { paramsFor } from '../workbench/run';
 import { SlmSectionView } from '../workbench/SlmSection';
@@ -620,12 +620,21 @@ function HoldStage({ sel, finding, lang }: { sel: Selection; finding: { kappa: n
   }, []);
   const band = cb.band > 0 ? cb.band + BAND_GAP : null;
   const items = 'missing' in finding ? [] : holdCallouts(finding, sel.data, lang, band !== null && height > 0 ? { band, height } : undefined);
+  // the particle view (its charts rebuild when their height changes) mounts once the band has settled, at its final size (gate G20)
+  const settled = useSettledValue(band, 600);
+  const ready = items.length === 0 || settled !== null;
   return (
     <div className="dh-story-stage" ref={box}>
       {items.length > 0 && <CalloutHeader items={items} className="dh-story-callouts" onLayout={cb.onLayout} />}
-      <div className="dh-story-drawing" style={band !== null ? ({ paddingTop: band } as CSSProperties) : undefined}>
+      <div className="dh-story-drawing" style={settled !== null ? ({ paddingTop: settled } as CSSProperties) : undefined}>
         <div className="dh-story-card">
-          <ParticleView sel={sel} />
+          {ready ? (
+            <ParticleView sel={sel} />
+          ) : (
+            <p className="caos-pending" data-state="loading" role="status">
+              {lang === 'es' ? 'Preparando la vista de la microesfera' : 'Preparing the view of the bead'}
+            </p>
+          )}
         </div>
       </div>
     </div>
