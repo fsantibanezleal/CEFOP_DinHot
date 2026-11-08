@@ -208,6 +208,13 @@ export function ParticleView({ sel, callouts = false }: { sel: Selection; callou
     },
     { loop: false },
   );
+  // Pausing also puts the frame back to the one last drawn, so an update the playback had already queued cannot move the now line
+  // (and rebuild the chart) after the reader's key or press.
+  const pauseOnInput = () => {
+    if (!viz.playing) return;
+    viz.pause();
+    setFrame(frameRef.current);
+  };
   // Pause when the window loses focus (the shell already halts a hidden tab).
   useEffect(() => {
     const off = () => viz.pause();
@@ -299,9 +306,14 @@ export function ParticleView({ sel, callouts = false }: { sel: Selection; callou
         )}
       </div>
       <div className="dh-pv-side">
-        <div className="dh-pv-cell">
+        {/* The reader's input to the series pauses the bead (ADR-0082 rule 4): while it plays, the moving now line rebuilds the chart every
+            frame and would drop the reader's crosshair (shell known defect 64), so a key or a press on the chart stops the playback first. */}
+        <div className="dh-pv-cell" data-pause-on-input="" onKeyDownCapture={pauseOnInput} onPointerDownCapture={pauseOnInput}>
           {series && (
             <UPlotChart
+              onCursor={(k) => {
+                if (k !== null) pauseOnInput();
+              }}
               height="fill"
               title={{ en: 'Bead position against time', es: 'Posición de la microesfera contra el tiempo' }}
               x={{ values: series.ms, label: { en: 'Time', es: 'Tiempo' }, unit: 'ms', format: { decimals: 0 } }}
