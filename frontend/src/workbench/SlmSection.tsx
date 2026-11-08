@@ -4,11 +4,12 @@
 // section the phase asked for and the phase displayed. The displayed phase is the engine's own order (decode.ts stagePhase: quantize,
 // response curve, crosstalk blur). The ideal device is a choice of the same switch as the rail's: one state, not a copy. A case with no
 // device block shows the ideal device and says so; its case-device choice is disabled with the reason. Nothing here moves.
-import { ChipGroup, PlotCard, SceneCallouts, Stage, formatNumber, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
+import { ChipGroup, PlotCard, Stage, formatNumber, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
 import { useMemo, useState } from 'react';
 import type { Text } from '../lib/contract.types';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { apertureEnvelopeAtEdge, crosstalkWeights, fillFactorEfficiency, levelOf, quantizationEfficiency, stagePhase, TWO_PI } from './decode';
+import { CalloutHeader } from './CalloutHeader';
 import type { Selection } from './model';
 import { calloutBand } from './OpticalTrain';
 import { CASE_ROWS, cardOf, StageBox, useActions, useStateKey } from './ui';
@@ -368,7 +369,7 @@ export function SlmSectionView({ sel }: { sel: Selection }) {
           width < 120 || height < 120 || !p ? null : (
             <div className="dh-scene">
               <SlmSectionDrawing sel={sel} row={row} col={col} lang={lang} width={width} height={height} onCol={(cc) => setPos({ col: cc, row: rowIx })} />
-              <SceneCallouts items={slmCallouts(sel, row, col, lang, width, height)} placement="header" />
+              <CalloutHeader items={slmCallouts(sel, row, col, lang, width, height)} />
             </div>
           )
         }

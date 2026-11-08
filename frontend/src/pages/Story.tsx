@@ -2,7 +2,7 @@
 // computed here from the loaded artifact (case-manifest, trace, benchmark-results), never typed; a number the artifact does not hold is
 // stated as missing on the step. The views are the App's (V1, V2, V4, V5) composed in the shell's story frame; the exit lands on /app with
 // the step's case, the group and the method. Routes: /story/setup, /story/device, /story/method, /story/compare, /story/hold.
-import { ChipGroup, PlotCard, SceneCallouts, Stage, StoryFrame, formatNumber, pick, useLinkedCursor, useLinkedItem, useLinkedView, useShellLang, type BiText, type SceneCalloutDef, type StoryStep } from '@fasl-work/caos-app-shell';
+import { ChipGroup, PlotCard, Stage, StoryFrame, formatNumber, pick, useLinkedCursor, useLinkedItem, useLinkedView, useShellLang, type BiText, type SceneCalloutDef, type StoryStep } from '@fasl-work/caos-app-shell';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { loadBenchmark, loadCase, loadIndex, useArtifact, type CaseData, type Loaded } from '../api/artifacts';
@@ -15,6 +15,7 @@ import { ParticleView } from '../workbench/DynamicsGroup';
 import { Heatmap, type HeatMark } from '../workbench/HeatmapStage';
 import { MethodAtWorkView, freezeIteration, pointAt, spreadText, useFocalAtIteration } from '../workbench/MethodAtWork';
 import { methodName, replayMaps, replayResult, trapsOf, type DeviceChoice, type Selection } from '../workbench/model';
+import { CalloutHeader } from '../workbench/CalloutHeader';
 import { OpticalTrainView } from '../workbench/OpticalTrain';
 import { paramsFor } from '../workbench/run';
 import { SlmSectionView } from '../workbench/SlmSection';
@@ -406,7 +407,7 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
                     );
                   })}
                 </svg>
-                {'missing' in finding ? null : <SceneCallouts items={compareCallouts(finding, lang, L, width, height)} placement="header" />}
+                {'missing' in finding ? null : <CalloutHeader items={compareCallouts(finding, lang, L, width, height)} />}
               </div>
             );
           }}
@@ -654,7 +655,10 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
   const current = steps.find((s) => s.id === active.id)!;
   const f = findings[active.id];
   const provenance = (active.id === 'compare' ? 'synthetic' : (sel?.data.manifest.real_or_synthetic ?? 'synthetic')) as 'synthetic' | 'real';
+  // the step's artifacts are still loading: the stage says so, so that the page is not taken for settled while it has no scene and no callouts
+  const activeLoad = active.id === 'device' ? loaded.c08 : active.id === 'hold' ? loaded.c01 : active.id === 'compare' ? loaded.bench : loaded.c02;
   const stageOf = (): ReactNode => {
+    if (activeLoad.state === 'loading') return <p className="caos-pending" data-state="loading" role="status">{t('Loading the story…', 'Cargando el recorrido…')}</p>;
     if (active.id === 'compare') return bench ? <div className="dh-story-view"><CompareView bench={bench} cell={cell} finding={compare as ReturnType<typeof compareFinding>} /></div> : null;
     if (!sel) return null;
     if (active.id === 'setup') return <div className="dh-story-view"><OpticalTrainView sel={sel} /></div>;
@@ -663,7 +667,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
     const items = 'missing' in f ? [] : holdCallouts(f as unknown as { kappa: number; fc: number }, sel.data, lang);
     return (
       <div className="dh-story-stage">
-        {items.length > 0 && <SceneCallouts items={items} placement="header" className="dh-story-callouts" />}
+        {items.length > 0 && <CalloutHeader items={items} className="dh-story-callouts" />}
         <div className="dh-story-drawing"><div className="dh-story-card"><ParticleView sel={sel} /></div></div>
       </div>
     );

@@ -4,10 +4,11 @@
 // direction instead). Each element carries the value of the selected case; the SLM opens Device effects, the focal plane opens the Focal
 // plane group, a trap site selects that trap everywhere (the shell's linked store). Three SceneCallouts name what the reader should read.
 // Nothing here is a default: a value the case lacks is said to be absent. The geometry is a pure function of the stage size (trainLayout).
-import { PlotCard, SceneCallouts, Stage, formatNumber, prefersReducedMotion, useLinkedView, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
+import { PlotCard, Stage, formatNumber, prefersReducedMotion, useLinkedView, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Text } from '../lib/contract.types';
 import { ReadinessNote } from '../readiness/ReadinessNote';
+import { CalloutHeader } from './CalloutHeader';
 import { is3D, isShaped, methodName, type Selection } from './model';
 import { useNav, type ViewTarget } from './nav';
 import { CASE_ROWS, cardOf, StageBox, useStateKey } from './ui';
@@ -512,7 +513,7 @@ export function OpticalTrainView({ sel }: { sel: Selection }) {
           width < 120 || height < 120 ? null : (
             <div className="dh-scene">
               <OpticalTrainDrawing sel={sel} lang={lang} width={width} height={height} motion={motion} playing={playing} selectedId={selectedId} onOpen={onOpen} onSelectTrap={onSelectTrap} />
-              <SceneCallouts items={trainCallouts(sel, lang, width, height)} placement="header" />
+              <CalloutHeader items={trainCallouts(sel, lang, width, height)} />
             </div>
           )
         }

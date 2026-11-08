@@ -305,6 +305,14 @@ describe('the story renders each step over the loaded artifacts', () => {
     expect(es).toContain('Volver a la App');
   });
 
+  it('the step whose case is still loading declares its stage as loading, so the page is not taken for settled with no callouts', () => {
+    for (const [step, key] of [['setup', 'c02'], ['device', 'c08'], ['method', 'c02'], ['hold', 'c01'], ['compare', 'bench']] as const) {
+      const html = render(step, { [key]: { state: 'loading' } });
+      expect(html, step).toContain('data-state="loading"');
+    }
+    expect(render('setup')).not.toContain('data-state="loading"');
+  });
+
   it('the other steps still name their findings while one case is loading', () => {
     const html = render('hold', { c08: { state: 'loading' } });
     expect(html).toContain(`The bead feels ${formatNumber(realCase('C01_square_grid').trace.dynamics!.kappa_pn_per_um!, 'en', { decimals: 2 })} pN/um`);
