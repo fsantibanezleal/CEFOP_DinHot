@@ -2,26 +2,26 @@
 \caption{Benchmark, per method: medians over the point-trap geometries the method ran on (of 6) at 100 iterations with the default parameters, on the ideal device and on the C08 device. $\sigma$ relative standard deviation (\%): the median over the geometries of the cell medians and, in brackets, the median over the geometries of the first and third quartiles over the seeds of each cell; $e$ efficiency; time wall-clock seconds under shared load.}\label{tab:benchmethods}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.3\textwidth} r r r r r r@{}}\toprule Method & Geometries & $\sigma$ ideal & $e$ ideal & time (s) & $\sigma$ C08 & $e$ C08\\\midrule
 \multicolumn{7}{@{}l}{\textit{Published methods}}\\
-Superposition of prisms and lenses & 6 & 136 [66, 136] & 0.399 & 0.0044 & 175 [27, 175] & 0.279\\
-Random superposition & 6 & 25 [19, 33] & 0.710 & 0.0053 & 31 [21, 49] & 0.478\\
-Random mask & 6 & 78 [75, 82] & 0.015 & 0.068 & 89 [85, 94] & 0.013\\
-Gerchberg-Saxton & 6 & 14 [11, 15] & 0.799 & 0.82 & 31 [22, 33] & 0.523\\
-Generalized adaptive additive GS & 6 & 9.1 [7.8, 11] & 0.780 & 1.1 & 24 [21, 30] & 0.514\\
-Weighted GS & 6 & 0.3 [0.19, 0.35] & 0.775 & 0.72 & 21 [20, 27] & 0.518\\
-Phase-fixed weighted GS & 5 & 0.012 [$<$0.001, 0.17] & 0.751 & 0.55 & 26 [20, 28] & 0.503\\
+Superposition of prisms and lenses & 6 & 136 [66, 136] & 0.399 & 0.0086 & 175 [27, 175] & 0.267\\
+Random superposition & 6 & 26 [19, 33] & 0.710 & 0.009 & 49 [21, 50] & 0.478\\
+Random mask & 6 & 78 [75, 82] & 0.016 & 0.21 & 89 [85, 94] & 0.013\\
+Gerchberg-Saxton & 6 & 14 [11, 15] & 0.799 & 0.99 & 31 [22, 33] & 0.523\\
+Generalized adaptive additive GS & 6 & 10 [7.8, 11] & 0.798 & 0.94 & 24 [21, 30] & 0.514\\
+Weighted GS & 6 & 0.3 [0.19, 0.35] & 0.775 & 0.87 & 21 [20, 27] & 0.518\\
+Phase-fixed weighted GS & 5 & 0.012 [$<$0.001, 0.17] & 0.751 & 0.97 & 26 [20, 28] & 0.503\\
 Mixed-region amplitude freedom & 0 & n/a & n/a & n/a & n/a & n/a\\
-Direct search & 6 & 0.059 [0.057, 0.06] & 0.641 & 58 & 20 [20, 23] & 0.431\\
-Conjugate-gradient minimization & 6 & 2.6 [2, 3] & 0.751 & 0.66 & 21 [20, 25] & 0.486\\
-Wirtinger gradient descent with Adam & 6 & 1.2 [0.91, 1.2] & 0.776 & 0.4 & 14 [11, 15] & 0.510\\
-Closed-loop weighted GS & 2 & 19 [19, 20] & 0.822 & 7.2 & 34 [26, 35] & 0.575\\
-Device-aware CG with pixel crosstalk & 5 & 2.2 [2, 2.7] & 0.737 & 0.77 & 17 [14, 18] & 0.486\\
-Zernike correction and sensorless modal recovery & 6 & 0.83 [0.68, 1] & 0.742 & 0.48 & 20 [20, 28] & 0.511\\
+Direct search & 6 & 0.059 [0.057, 0.06] & 0.641 & 160 & 21 [21, 23] & 0.431\\
+Conjugate-gradient minimization & 6 & 2.6 [2, 3] & 0.751 & 1.2 & 24 [20, 25] & 0.486\\
+Wirtinger gradient descent with Adam & 6 & 1.2 [0.91, 1.3] & 0.765 & 1 & 14 [13, 15] & 0.509\\
+Closed-loop weighted GS & 2 & 19 [18, 20] & 0.822 & 17 & 34 [29, 35] & 0.570\\
+Device-aware CG with pixel crosstalk & 5 & 2.2 [2, 2.7] & 0.737 & 1.8 & 18 [15, 18] & 0.480\\
+Zernike correction and sensorless modal recovery & 6 & 0.82 [0.68, 0.97] & 0.742 & 1.2 & 20 [20, 28] & 0.511\\
 Optimal-transport initialized MRAF & 0 & n/a & n/a & n/a & n/a & n/a\\
-Volumetric 3D GS & 1 & 16 [15, 17] & 0.890 & 6.9 & n/a & n/a\\
+Volumetric 3D GS & 1 & 17 [15, 17] & 0.892 & 18 & n/a & n/a\\
 \multicolumn{7}{@{}l}{\textit{Methods proposed here}}\\
-Device-aware weighted GS & 5 & $<$0.001 [$<$0.001, $<$0.001] & 0.751 & 18 & 17 [11, 24] & 0.501\\
-Flicker-bounded phase-continuous sequence & 6 & $<$0.001 [$<$0.001, 0.097] & 0.756 & 2.5 & 21 [20, 25] & 0.503\\
-Learned warm start for phase-fixed WGS & 6 & 0.006 [$<$0.001, 0.13] & 0.754 & 1 & 21 [20, 28] & 0.503\\
-Aberration- and pointing-robust hologram & 5 & 0.4 [0.39, 0.41] & 0.744 & 26 & 21 [20, 25] & 0.499\\
-Efficiency-uniformity Pareto front & 6 & 0.31 [0.28, 0.36] & 0.774 & 57 & 21 [20, 25] & 0.529\\
+Device-aware weighted GS & 5 & $<$0.001 [$<$0.001, $<$0.001] & 0.751 & 43 & 17 [11, 24] & 0.501\\
+Flicker-bounded phase-continuous sequence & 6 & $<$0.001 [$<$0.001, 0.097] & 0.756 & 2.3 & 21 [20, 25] & 0.503\\
+Learned warm start for phase-fixed WGS & 6 & 0.006 [$<$0.001, 0.13] & 0.754 & 0.96 & 21 [20, 28] & 0.503\\
+Aberration- and pointing-robust hologram & 5 & 0.4 [0.4, 0.41] & 0.744 & 53 & 21 [20, 25] & 0.498\\
+Efficiency-uniformity Pareto front & 6 & 0.28 [0.24, 0.37] & 0.773 & 39 & 21 [20, 25] & 0.506\\
 \bottomrule\end{tabular}\end{table}
