@@ -6,13 +6,16 @@ import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { rayleighUm } from '../lib/ort';
 import { INTENSITY_LUT } from './colormaps';
+import { CalloutScene } from './CalloutScene';
 import { cutRequest, type Plane } from './cuts';
 import { getEngine } from './engine';
 import { Heatmap, type HeatMark, type HeatRect } from './HeatmapStage';
+import { focalCallouts } from './focalCallouts';
 import { cardOf } from './HologramGroup';
 import { is3D, isShaped, methodName, useSelection, type Axial, type Selection } from './model';
 import { pixelToUm, umToPixel } from './traps';
-import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
+import { ReadinessNote } from '../readiness/ReadinessNote';
+import { CASE_ROWS, Fill, LOADING, Pending, Provenance, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 
 const Lobes3D = lazy(() => import('./Lobes3D').then((m) => ({ default: m.Lobes3D })));
 const Volume3D = lazy(() => import('./Volume3D').then((m) => ({ default: m.Volume3D })));
@@ -35,7 +38,7 @@ export function FocalGroup() {
 }
 
 export function FocalPlaneView({ sel }: { sel: Selection }) {
-  const { t, pick } = useT();
+  const { t, pick, lang } = useT();
   const fmt = useFmt();
   const stateKey = useStateKey();
   const act = useActions();
@@ -52,7 +55,8 @@ export function FocalPlaneView({ sel }: { sel: Selection }) {
       const [col, row] = umToPixel(tr.x_um, tr.y_um, size, bin);
       return { id: tr.id, col, row, kind: 'ring', tone: tr.id === sel.trapId ? 'accent' : 'good', selected: tr.id === sel.trapId, label: sel.traps.length <= 64 ? String(tr.id) : tr.id === sel.trapId ? String(tr.id) : undefined };
     });
-    out.push({ col: centre, row: centre, kind: 'cross', tone: 'warn', radius: 8, label: t('zero order', 'orden cero') });
+    // the zero order is a cross with no label: a label here would be drawn over the trap array; its callout names it and points at it
+    out.push({ col: centre, row: centre, kind: 'cross', tone: 'warn', radius: 8 });
     return out;
   }, [focal, sel.traps, sel.trapId, size, bin, centre, t]);
 
@@ -96,14 +100,18 @@ export function FocalPlaneView({ sel }: { sel: Selection }) {
           es: 'dB respecto de la trampa media; y aumenta hacia abajo, como en el motor. Pulse una trampa para elegirla; arrastre un recuadro para elegir una región; los modos del editor en el panel agregan, mueven o borran trampas.',
         }}
       >
-        <Fill>
+        <div className="dh-stack">
+          <ReadinessNote ids={CASE_ROWS} />
+          <Provenance sel={sel} mapsOnly={false} />
           {act.editError && (
             <p className="dh-alert" role="alert" data-editor-error="">
               {pick(act.editError)}
             </p>
           )}
           {focal ? (
+            <CalloutScene items={(geom) => focalCallouts(sel, lang, geom)}>
             <Heatmap
+              axes={{ umPerCell: bin }}
               label={{ en: 'Focal-plane intensity in dB with trap markers', es: 'Intensidad del plano focal en dB con marcas de trampas' }}
               data={focal.db}
               cols={size}
@@ -138,17 +146,20 @@ export function FocalPlaneView({ sel }: { sel: Selection }) {
               onDelete={(id) => act.deleteTrap(id)}
               describe={(col, row, v) => {
                 const [x, y] = pixelToUm(col, row, size, bin);
-                return pick({ en: `x ${fmt(x, { decimals: 2 })} um, y ${fmt(y, { decimals: 2 })} um: ${fmt(v, { decimals: 1 })} dB`, es: `x ${fmt(x, { decimals: 2 })} um, y ${fmt(y, { decimals: 2 })} um: ${fmt(v, { decimals: 1 })} dB` });
+                return pick({ en: `x ${fmt(x, { decimals: 2 })} µm, y ${fmt(y, { decimals: 2 })} µm: ${fmt(v, { decimals: 1 })} dB`, es: `x ${fmt(x, { decimals: 2 })} µm, y ${fmt(y, { decimals: 2 })} µm: ${fmt(v, { decimals: 1 })} dB` });
               }}
               summary={t(
-                `Focal-plane intensity, ${size} by ${size} bins of ${fmt(bin, { decimals: 2 })} um, ${sel.traps.length} traps marked, colour scale ${fmt(sel.dbFloor, { decimals: 0 })} to 0 dB.`,
-                `Intensidad del plano focal, ${size} por ${size} bins de ${fmt(bin, { decimals: 2 })} um, ${sel.traps.length} trampas marcadas, escala de color de ${fmt(sel.dbFloor, { decimals: 0 })} a 0 dB.`,
+                `Focal-plane intensity, ${size} by ${size} bins of ${fmt(bin, { decimals: 2 })} µm, ${sel.traps.length} traps marked, colour scale ${fmt(sel.dbFloor, { decimals: 0 })} to 0 dB.`,
+                `Intensidad del plano focal, ${size} por ${size} bins de ${fmt(bin, { decimals: 2 })} µm, ${sel.traps.length} trampas marcadas, escala de color de ${fmt(sel.dbFloor, { decimals: 0 })} a 0 dB.`,
               )}
             />
+            </CalloutScene>
           ) : (
-            <Unavailable reason={{ en: 'The browser inference of this model returns the SLM phase only; the focal plane of a learned phase comes from the engine, which is not on this build.', es: 'La inferencia en el navegador de este modelo devuelve solo la fase del SLM; el plano focal de una fase aprendida lo calcula el motor, que no está en esta versión.' }} />
+            <div className="dh-fill">
+              <Unavailable reason={{ en: 'The browser inference of this model returns the SLM phase only; the focal plane of a learned phase comes from the engine, which is not on this build.', es: 'La inferencia en el navegador de este modelo devuelve solo la fase del SLM; el plano focal de una fase aprendida lo calcula el motor, que no está en esta versión.' }} />
+            </div>
           )}
-        </Fill>
+        </div>
       </PlotCard>
       <PlotCard fill title={{ en: 'Profiles through the selected trap', es: 'Perfiles por la trampa elegida' }} {...c} dataKey={stateKey}>
         <Fill quiet>
@@ -156,7 +167,7 @@ export function FocalPlaneView({ sel }: { sel: Selection }) {
             <UPlotChart
               height="fill"
               title={through.id === null ? { en: 'Intensity along x and y through the centre of the field', es: 'Intensidad a lo largo de x e y por el centro del campo' } : { en: `Intensity along x and y through trap ${through.id}`, es: `Intensidad a lo largo de x e y por la trampa ${through.id}` }}
-              x={{ values: profile.xs, label: { en: 'Offset from the centre', es: 'Distancia al centro' }, unit: 'um', format: { decimals: 1 } }}
+              x={{ values: profile.xs, label: { en: 'Offset from the centre', es: 'Distancia al centro' }, unit: 'µm', format: { decimals: 1 } }}
               y={{ label: { en: 'Intensity', es: 'Intensidad' }, unit: 'dB', range: [sel.dbFloor, 3] }}
               series={[
                 { label: { en: 'Along x', es: 'A lo largo de x' }, values: profile.alongX, color: '--color-accent' },
@@ -243,8 +254,8 @@ export function AxialView({ sel }: { sel: Selection }) {
       lane={lane}
       dataKey={stateKey}
       note={{
-        en: `Intensity in dB, ${lateral} across and z down, dashed lines at plus and minus one Rayleigh range (${fmt(zr, { decimals: 2 })} um). ${source.en}`,
-        es: `Intensidad en dB, ${lateral} a lo ancho y z hacia abajo, líneas segmentadas en más y menos un rango de Rayleigh (${fmt(zr, { decimals: 2 })} um). ${source.es}`,
+        en: `Intensity in dB, ${lateral} across and z down, dashed lines at plus and minus one Rayleigh range (${fmt(zr, { decimals: 2 })} µm). ${source.en}`,
+        es: `Intensidad en dB, ${lateral} a lo ancho y z hacia abajo, líneas segmentadas en más y menos un rango de Rayleigh (${fmt(zr, { decimals: 2 })} µm). ${source.es}`,
       }}
       actions={
         <ChipGroup
@@ -274,9 +285,9 @@ export function AxialView({ sel }: { sel: Selection }) {
             describe={(col, row, v) => {
               const z = axial.zUm[0] + (row / axial.nz) * (axial.zUm[1] - axial.zUm[0]);
               const x = (col - Math.floor(axial.nx / 2)) * maps.binUm;
-              return pick({ en: `${lateral} ${fmt(x, { decimals: 2 })} um, z ${fmt(z, { decimals: 2 })} um: ${fmt(v, { decimals: 1 })} dB`, es: `${lateral} ${fmt(x, { decimals: 2 })} um, z ${fmt(z, { decimals: 2 })} um: ${fmt(v, { decimals: 1 })} dB` });
+              return pick({ en: `${lateral} ${fmt(x, { decimals: 2 })} µm, z ${fmt(z, { decimals: 2 })} µm: ${fmt(v, { decimals: 1 })} dB`, es: `${lateral} ${fmt(x, { decimals: 2 })} µm, z ${fmt(z, { decimals: 2 })} µm: ${fmt(v, { decimals: 1 })} dB` });
             }}
-            summary={t(`Axial ${plane} cut of trap ${axial.trapId}, ${axial.nx} columns by ${axial.nz} rows, z from ${fmt(axial.zUm[0], { decimals: 2 })} to ${fmt(axial.zUm[1], { decimals: 2 })} um.`, `Corte axial ${plane} de la trampa ${axial.trapId}, ${axial.nx} columnas por ${axial.nz} filas, z de ${fmt(axial.zUm[0], { decimals: 2 })} a ${fmt(axial.zUm[1], { decimals: 2 })} um.`)}
+            summary={t(`Axial ${plane} cut of trap ${axial.trapId}, ${axial.nx} columns by ${axial.nz} rows, z from ${fmt(axial.zUm[0], { decimals: 2 })} to ${fmt(axial.zUm[1], { decimals: 2 })} µm.`, `Corte axial ${plane} de la trampa ${axial.trapId}, ${axial.nx} columnas por ${axial.nz} filas, z de ${fmt(axial.zUm[0], { decimals: 2 })} a ${fmt(axial.zUm[1], { decimals: 2 })} µm.`)}
           />
         ) : needEngine && !error ? (
           <Pending label={{ en: 'The engine is computing the cut', es: 'El motor está calculando el corte' }} />

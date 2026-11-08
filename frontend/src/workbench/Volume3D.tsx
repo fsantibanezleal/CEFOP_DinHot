@@ -267,7 +267,7 @@ export function Volume3D({ sel }: { sel: Selection }) {
               <thead>
                 <tr>
                   <th>{t('plane', 'plano')}</th>
-                  <th>{t('position (um)', 'posición (um)')}</th>
+                  <th>{t('position (µm)', 'posición (µm)')}</th>
                   <th>{t('through trap', 'por la trampa')}</th>
                   <th>{t('voxels', 'vóxeles')}</th>
                 </tr>
