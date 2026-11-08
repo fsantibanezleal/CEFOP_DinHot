@@ -3,12 +3,14 @@
 All notable changes to this product. Versions are X.XX.XXX (VERSION is the single source); every release is
 tagged.
 
-## [0.02.003], 2026-11-07
+## [0.02.003], 2026-11-08
 
 ### Changed
 
-- Adopted CAOS_PRODUCT_TEMPLATE 0.15.002 and the shared app shell 0.23.1, whose gate now measures DinHot's long documentation
-  pages (the walk's budget scales with the document).
+- Adopted CAOS_PRODUCT_TEMPLATE 0.15.005 and the shared app shell 0.25.0. The shell's gate now measures DinHot's long
+  documentation pages, because the walk's budget scales with the document. The story's callout cards show their state. The
+  fourteen methods in the rail are one select, using the shell's variant select layout, which was added for DinHot. The site's
+  further files (the benchmark, the model metrics, the released models) are served through the base's product hook.
 - The App opens on the optical train, from the laser to the traps, drawn from the case's setup, and shows the SLM in section, one
   pixel row with its commanded and displayed phase; both carry anchored callouts. A trap selected on the focal plane, in the per-trap
   bars or on the optical train is selected everywhere. The method at work redraws the focal plane at the iteration the reader scrubs.
@@ -28,6 +30,9 @@ tagged.
 
 - The review findings of the technical report, the four method papers and the notebooks of topics 01 to 08, and the citations checked
   against the full texts where they were open.
+- The full gate's findings on the release build: labels that overlapped or were cut in the optical train, the SLM section, the
+  phasor figure and the lanes figure; the story's callouts, which overlapped at some sizes and were missing on the phone; the
+  method step, which kept changing while idle.
 
 ## [0.02.002], 2026-10-31
 
