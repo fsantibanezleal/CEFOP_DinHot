@@ -1,0 +1,38 @@
+/* The App views of the visual-review fixes (ADR-0082): a drawing under its callout header, the dynamics view and the Pareto view.
+   Product classes only, shell tokens only; the shell's callouts, cards and charts are composed, never restyled. */
+/* the wrapper of the shell's header callouts has no box of its own (CalloutHeader sets the same inline) */
+.dh-callouts { display: contents; }
+
+.dh-va-box { position: relative; flex: 1 1 0; min-width: 0; min-height: 0; height: 100%; }
+.dh-va-scene { position: relative; width: 100%; height: 100%; min-width: 0; min-height: 0; box-sizing: border-box; padding-top: 86px; overflow: hidden; }
+.dh-va-scene.dh-va-bare { padding-top: 0; }
+.dh-va-map { position: relative; width: 100%; height: 100%; min-width: 0; min-height: 0; }
+
+/* V4: the bead in its trap on the left, its position against time and its spectrum on the right */
+.dh-pv-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-2); width: 100%; height: 100%; min-height: 0; }
+.dh-pv-side { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-2); min-width: 0; min-height: 0; }
+.dh-pv-cell { position: relative; min-width: 0; min-height: 0; }
+.dh-pv-offer { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); min-width: 0; }
+.dh-pv-offer p { margin: 0; overflow-wrap: anywhere; }
+
+/* V6: the cell controls over the front, and the list of methods under it */
+.dh-pf { flex: 1 1 0; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; min-height: 0; }
+.dh-pf-controls { flex: none; display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; font-size: var(--text-sm); min-width: 0; }
+.dh-pf-controls label { display: inline-flex; gap: var(--space-1); align-items: center; min-width: 0; }
+.dh-pf-controls select { max-width: 100%; min-width: 0; }
+.dh-pf-chart { position: relative; flex: 1 1 0; min-width: 0; min-height: 12rem; }
+.dh-pf-take { flex: none; margin: 0; font-size: var(--text-sm); overflow-wrap: anywhere; }
+.dh-pf-load { flex: none; display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; font-size: var(--text-sm); }
+
+@media (max-width: 900px) {
+  .dh-va-scene { padding-top: 175px; }
+  .dh-va-scene.dh-va-bare { padding-top: 0; }
+  .dh-va-box { flex: none; height: clamp(520px, 80vh, 640px); }
+  .dh-va-box.dh-va-tall { height: 1010px; }
+  .dh-pv-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; align-content: start; }
+  .dh-pv-grid > .dh-pv-cell, .dh-pv-grid .dh-pv-map { height: 280px; }
+  .dh-pv-side { grid-template-rows: auto auto; }
+  .dh-pv-side .dh-pv-cell { height: 210px; }
+  .dh-pf { flex: none; }
+  .dh-pf-chart { flex: none; height: 360px; }
+}

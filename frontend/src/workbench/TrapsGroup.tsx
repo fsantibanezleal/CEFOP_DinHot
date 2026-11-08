@@ -9,6 +9,7 @@ import { INTENSITY_LUT } from './colormaps';
 import { cardOf } from './HologramGroup';
 import { Heatmap } from './HeatmapStage';
 import { histogram, isShaped, methodName, trapDeviation, useSelection, type Selection } from './model';
+import { selectedSeries, selectedValue } from './trapSelection';
 import { umToPixel } from './traps';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 
@@ -86,6 +87,9 @@ export function IntensityView({ sel }: { sel: Selection }) {
   const stats = useMemo(() => (trapI ? trapDeviation(trapI) : null), [trapI]);
   const items = useMemo(() => (trapI ? ordered({ ...sel, sortBy }, trapI) : []), [sel, trapI, sortBy]);
   const hist = useMemo(() => (trapI ? histogram(trapI, Math.min(0.5, ...trapI), Math.max(1.5, ...trapI), 21) : null), [trapI]);
+  // the trap selected anywhere (focal plane, bars, optical train) is marked here, in the bars or the sorted points and in the histogram
+  const picked = useMemo(() => selectedSeries(items, sel.trapId), [items, sel.trapId]);
+  const pickedValue = selectedValue(items, sel.trapId);
   const within = trapI ? trapI.filter((v) => Math.abs(v - 1) <= band).length : 0;
   const noTraps = !trapI || trapI.length === 0;
   if (noTraps && isShaped(sel.data.manifest)) {
@@ -134,7 +138,10 @@ export function IntensityView({ sel }: { sel: Selection }) {
               title={{ en: 'Trap intensity, sorted by deviation from the mean', es: 'Intensidad de las trampas, ordenada por desviación de la media' }}
               x={{ values: items.map((_, i) => i + 1), label: { en: 'Trap rank', es: 'Rango de la trampa' }, format: { decimals: 0 } }}
               y={{ label: { en: 'Intensity over the mean', es: 'Intensidad sobre la media' }, format: { decimals: 2 } }}
-              series={[{ label: { en: 'Trap intensity', es: 'Intensidad de la trampa' }, values: items.map((i) => i.v), color: '--color-accent', mode: 'points', size: 4 }]}
+              series={[
+                { label: { en: 'Trap intensity', es: 'Intensidad de la trampa' }, values: items.map((i) => i.v), color: '--color-accent', mode: 'points', size: 4 },
+                ...(picked ? [{ label: { en: `Selected trap ${sel.trapId}`, es: `Trampa elegida ${sel.trapId}` }, values: picked, color: '--color-magenta' as const, mode: 'points' as const, size: 12 }] : []),
+              ]}
               yMarks={[
                 { y: 1 + band, label: { en: 'band', es: 'banda' }, tone: 'warn' },
                 { y: 1 - band, tone: 'warn' },
@@ -173,7 +180,7 @@ export function IntensityView({ sel }: { sel: Selection }) {
             x={{ values: hist.centres, label: { en: 'Intensity over the mean', es: 'Intensidad sobre la media' }, format: { decimals: 2 } }}
             y={{ label: { en: 'Traps', es: 'Trampas' }, format: { decimals: 0 } }}
             series={[{ label: { en: 'Traps', es: 'Trampas' }, values: hist.counts, color: '--color-accent', dots: true }]}
-            marks={[{ x: 1, label: { en: 'mean', es: 'media' } }]}
+            marks={[{ x: 1, label: { en: 'mean', es: 'media' } }, ...(pickedValue !== null ? [{ x: pickedValue, label: { en: `trap ${sel.trapId}`, es: `trampa ${sel.trapId}` } }] : [])]}
           />
         </Fill>
       </PlotCard>
@@ -196,6 +203,7 @@ export function DepthView({ sel }: { sel: Selection }) {
   const values = trapI ? trapI.map((v) => (scale === null ? v : v * scale)) : null;
   const unit = scale === null ? { en: 'ratio to the mean', es: 'razón a la media' } : { en: dyn!.depth.unit, es: dyn!.depth.unit };
   const items = useMemo(() => (values ? sel.traps.map((tr, i) => ({ id: tr.id, v: values[i] })) : []), [sel.traps, values]);
+  const picked = useMemo(() => selectedSeries(items, sel.trapId), [items, sel.trapId]);
   if ((!values || values.length === 0) && isShaped(sel.data.manifest)) {
     return (
       <ShapedPotential
@@ -235,7 +243,10 @@ export function DepthView({ sel }: { sel: Selection }) {
             title={{ en: 'Trap depth by trap id', es: 'Profundidad por identificador de trampa' }}
             x={{ values: items.map((i) => i.id), label: { en: 'Trap id', es: 'Identificador de trampa' }, format: { decimals: 0, grouping: false } }}
             y={{ label: { en: 'Depth', es: 'Profundidad' }, unit, format: { decimals: 2 } }}
-            series={[{ label: { en: 'Depth', es: 'Profundidad' }, values: items.map((i) => i.v), color: '--color-accent', mode: 'points', size: 4 }]}
+            series={[
+              { label: { en: 'Depth', es: 'Profundidad' }, values: items.map((i) => i.v), color: '--color-accent', mode: 'points', size: 4 },
+              ...(picked ? [{ label: { en: `Selected trap ${sel.trapId}`, es: `Trampa elegida ${sel.trapId}` }, values: picked, color: '--color-magenta' as const, mode: 'points' as const, size: 12 }] : []),
+            ]}
             yMarks={[{ y: mean, label: { en: 'mean', es: 'media' }, tone: 'neutral' }]}
             onPick={(k) => act.selectTrap(items[k]?.id ?? null)}
           />
