@@ -32,13 +32,19 @@ Every method runs on the product's cases with the same seeds and metrics, and is
 
 ## Technical report and manuscripts
 
-The detailed technical report and the manuscript of the proposed methods are on Zenodo, each under its own concept DOI, and are
+The detailed technical report and the manuscripts of the proposed methods are on Zenodo, each under its own concept DOI, and are
 declared in `product.json` `manuscripts`.
 
 - Technical report (Zenodo, CC BY 4.0), the product, its 24 methods, fourteen cases and the benchmark:
   [10.5281/zenodo.23788731](https://doi.org/10.5281/zenodo.23788731) (concept DOI, always the latest version).
 - Manuscript on device-aware weighted GS and flicker-bounded phase-continuous sequences (Zenodo, CC BY 4.0):
   [10.5281/zenodo.23788733](https://doi.org/10.5281/zenodo.23788733) (concept DOI).
+- Manuscript on the weighted-cost continuation of the efficiency-uniformity front (Zenodo, CC BY 4.0):
+  [10.5281/zenodo.24022462](https://doi.org/10.5281/zenodo.24022462) (concept DOI).
+- Manuscript on aberration-robust holograms by expected-cost optimization (Zenodo, CC BY 4.0):
+  [10.5281/zenodo.24022464](https://doi.org/10.5281/zenodo.24022464) (concept DOI).
+- Manuscript on a learned warm start for phase-fixed weighted GS, a measured negative result (Zenodo, CC BY 4.0):
+  [10.5281/zenodo.24022470](https://doi.org/10.5281/zenodo.24022470) (concept DOI).
 
 ## Areas
 
