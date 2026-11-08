@@ -59,3 +59,13 @@
 /* V5, the line that says what the focal plane is (the engine's run, or the bake's final one, or that the run is pending): two lines high in
    every state, so that its answer never changes the height of the charts above it */
 .dh-mw-focal { flex: 1 1 100%; margin: 0; min-height: 2.9em; }
+
+/* The hold step on a phone (the stage's floor cannot exceed the shell's 900 px, and the card has about 675 px under the callout band): the
+   bead on its map and the spectrum that gives the headline's corner frequency, at heights that fit the card; the position against time is
+   one action away, in the App's Trapped particle view the step's exit opens. The App's own view keeps all three (viz-app.css). */
+@media (max-width: 900px) {
+  .dh-story-card .dh-va-box.dh-va-tall { height: auto; }
+  .dh-story-card .dh-pv-grid .dh-pv-map { height: 230px; }
+  .dh-story-card .dh-pv-side > .dh-pv-cell:first-child { display: none; }
+  .dh-story-card .dh-pv-side { grid-template-rows: auto; }
+}
