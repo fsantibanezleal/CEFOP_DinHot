@@ -292,7 +292,7 @@ describe('the story renders each step over the loaded artifacts', () => {
     // the frame's own language is the shell's store (English here); the panel follows the `lang` the page passes from the same store
     expect(render('setup', {}, 'es')).toContain('Dividir el haz');
     expect(render('setup', {}, 'es')).toContain('79,8 %');
-    expect(render('hold')).toContain('The bead feels 4.01 pN/um');
+    expect(render('hold')).toContain(`The bead feels ${formatNumber(realCase('C01_square_grid').trace.dynamics!.kappa_pn_per_um!, 'en', { decimals: 2 })} pN/um`);
     expect(render('compare')).toContain('Square 10 x 10');
   });
 
@@ -307,7 +307,7 @@ describe('the story renders each step over the loaded artifacts', () => {
 
   it('the other steps still name their findings while one case is loading', () => {
     const html = render('hold', { c08: { state: 'loading' } });
-    expect(html).toContain('The bead feels 4.01 pN/um');
+    expect(html).toContain(`The bead feels ${formatNumber(realCase('C01_square_grid').trace.dynamics!.kappa_pn_per_um!, 'en', { decimals: 2 })} pN/um`);
   });
 });
 
