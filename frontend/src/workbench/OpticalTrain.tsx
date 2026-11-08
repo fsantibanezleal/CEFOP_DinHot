@@ -109,16 +109,54 @@ export function calloutBand(width: number): number {
   return 8 + rows * h + (rows - 1) * gap + 22;
 }
 
-/** The geometry of the train at a stage size: six columns on a line, or at phone width six rows down a vertical beam. */
-export function trainLayout(width: number, height: number): TrainLayout {
+/** The width of one character of a 11 px label in px, taken wide enough for the gate's wide-font pass, and the line step of a label. */
+const LABEL_CHAR_PX = 6.8;
+const LABEL_LINE_PX = 13;
+
+/** A label broken at spaces into lines of at most `maxChars` characters (a word longer than that stays whole). Each line but the last keeps its
+ * trailing space, so the lines read back as the label. */
+export function wrapLabel(text: string, maxChars: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let cur = '';
+  for (const w of words) {
+    if (cur && (cur + ' ' + w).length > maxChars) {
+      lines.push(cur + ' ');
+      cur = w;
+    } else cur = cur ? cur + ' ' + w : w;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+/** The characters one column of the line layout holds in a label line. */
+export function columnChars(width: number): number {
+  const colW = (width - 24) / 6 - 6;
+  return Math.max(8, Math.floor(colW / LABEL_CHAR_PX));
+}
+
+/** The lines a column's detail text takes at a stage width in the line layout (one at phone width, which draws rows). */
+export function detailLines(detail: string, width: number): string[] {
+  return width >= 520 ? wrapLabel(detail, columnChars(width)) : [detail];
+}
+
+/** The lines the detail labels take beyond the first, at their widest: the layout makes room for them under the glyphs. */
+export function extraDetailLines(sel: Selection, lang: Lang, width: number): number {
+  return Math.max(0, ...trainItems(sel, lang).map((i) => detailLines(i.detail, width).length - 1));
+}
+
+/** The geometry of the train at a stage size: six columns on a line, or at phone width six rows down a vertical beam. `extraLines` is the
+ * number of lines the detail labels take beyond one (extraDetailLines): the block under the glyphs grows by that many line steps. */
+export function trainLayout(width: number, height: number, extraLines = 0): TrainLayout {
   const band = calloutBand(width);
   const rest = Math.max(0, height - band);
   if (width >= 520) {
     const m = 12;
     const col = (width - 2 * m) / 6;
-    const gh = Math.max(56, Math.min(240, rest * 0.5));
-    // the glyphs and the three label lines under them form one block, centred in what the callout row leaves
-    const y = band + Math.max(6, (rest - gh - 56) / 2);
+    const labels = 56 + extraLines * LABEL_LINE_PX;
+    const gh = Math.max(56, Math.min(240, rest * 0.5, rest - labels - 12));
+    // the glyphs and the label lines under them form one block, centred in what the callout row leaves
+    const y = band + Math.max(6, (rest - gh - labels) / 2);
     const items = {} as Record<TrainId, Box>;
     TRAIN_IDS.forEach((id, i) => {
       items[id] = { x: m + i * col + 3, y, w: col - 6, h: gh };
@@ -145,7 +183,7 @@ const center = (b: Box) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
 export function trainCallouts(sel: Selection, lang: Lang, width: number, height: number): SceneCalloutDef[] {
   const s = sel.data.manifest.params.setup;
   const f = (v: number, d: number) => formatNumber(v, lang, { decimals: d });
-  const layout = trainLayout(width, height);
+  const layout = trainLayout(width, height, extraDetailLines(sel, lang, width));
   const at = (id: TrainId) => {
     const c = center(layout.items[id]);
     return { x: c.x / width, y: c.y / height };
@@ -220,8 +258,8 @@ const extentOf = (traps: readonly { x_um: number; y_um: number; z_um: number }[]
 /** The drawing: pure, so its tests read the element tree. Positions are pixels of the stage. */
 export function OpticalTrainDrawing(p: DrawingProps) {
   const { sel, lang, width, height, motion, playing, selectedId } = p;
-  const L = trainLayout(width, height);
   const items = trainItems(sel, lang);
+  const L = trainLayout(width, height, extraDetailLines(sel, lang, width));
   const byId = Object.fromEntries(items.map((i) => [i.id, i])) as Record<TrainId, TrainItem>;
   const animated = motion && playing;
   const flow = animated ? 'dh-flow' : undefined;
@@ -336,7 +374,9 @@ export function OpticalTrainDrawing(p: DrawingProps) {
       <g key={`t-${id}`} pointerEvents="none">
         <text x={b.x + b.w / 2} y={top} textAnchor="middle" fill="var(--color-fg)" fontSize="11" fontWeight="700" letterSpacing="0.5">{i.name.toUpperCase()}</text>
         {i.value ? <text x={b.x + b.w / 2} y={top + 17} textAnchor="middle" fill="var(--color-fg)" fontSize="13" fontFamily="var(--font-mono)">{i.value}</text> : null}
-        <text x={b.x + b.w / 2} y={top + (i.value ? 33 : 17)} textAnchor="middle" fill="var(--color-fg-subtle)" fontSize="11">{i.detail}</text>
+        <text x={b.x + b.w / 2} y={top + (i.value ? 33 : 17)} textAnchor="middle" fill="var(--color-fg-subtle)" fontSize="11">
+          {detailLines(i.detail, width).map((line, k) => <tspan key={k} x={b.x + b.w / 2} dy={k === 0 ? 0 : LABEL_LINE_PX}>{line}</tspan>)}
+        </text>
       </g>
     );
   };

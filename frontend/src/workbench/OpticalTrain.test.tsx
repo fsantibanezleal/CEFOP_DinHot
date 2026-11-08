@@ -4,7 +4,7 @@ import { formatNumber, layoutSceneCallouts, type BiText } from '@fasl-work/caos-
 import { isValidElement, type ReactElement, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { openTrainElement, OpticalTrainDrawing, TRAIN_TARGET, trainCallouts, trainItems, trainLayout, type TrainId } from './OpticalTrain';
+import { columnChars, detailLines, extraDetailLines, openTrainElement, OpticalTrainDrawing, TRAIN_TARGET, trainCallouts, trainItems, trainLayout, wrapLabel, type TrainId } from './OpticalTrain';
 import { richCase, selectionFor } from './test-data';
 import { realCase, realSelection } from './test-real';
 
@@ -128,7 +128,7 @@ describe('the three callouts', () => {
   it('carry the case values and are anchored on the element they describe', () => {
     const sel = realSelection('C02_grid_feedback');
     const items = trainCallouts(sel, 'en', W, H);
-    const layout = trainLayout(W, H);
+    const layout = trainLayout(W, H, extraDetailLines(sel, 'en', W));
     const byId = Object.fromEntries(items.map((c) => [c.id, c]));
     const eff = formatNumber(sel.result!.metrics!.efficiency, 'en', { percent: true, decimals: 1 });
     expect(byId.laser.value).toBe(formatNumber(850, 'en', { decimals: 0 }));
@@ -288,5 +288,43 @@ describe('the narrow layout', () => {
       expect(b.x + b.w).toBeLessThanOrEqual(340);
       expect(b.y + b.h).toBeLessThanOrEqual(400);
     }
+  });
+});
+
+describe('the labels under the elements fit their column (gate G10)', () => {
+  it('wrapLabel breaks at spaces, keeps every word and reads back as the label', () => {
+    expect(wrapLabel('pitch 20.0 um, aperture 5.12 mm', 16)).toEqual(['pitch 20.0 um, ', 'aperture 5.12 mm']);
+    expect(wrapLabel('wavelength', 4)).toEqual(['wavelength']);
+    expect(wrapLabel('', 10)).toEqual([]);
+    const label = 'no modelado: una lente de Fourier';
+    expect(wrapLabel(label, 17).join('')).toBe(label);
+  });
+  it('a column holds fewer characters at a narrower stage, and a line never exceeds it unless one word does', () => {
+    expect(columnChars(768)).toBeLessThan(columnChars(1280));
+    for (const lang of ['en', 'es'] as const) {
+      for (const width of [520, 768, 1000, 1280]) {
+        const cap = columnChars(width);
+        for (const item of trainItems(realSelection('C02_grid_feedback'), lang)) {
+          for (const line of detailLines(item.detail, width)) expect(line.trimEnd().length <= cap || !line.includes(' ')).toBe(true);
+        }
+      }
+    }
+  });
+  it('the SLM and expander details of the 768 px stage take two lines, and the layout makes room for them', () => {
+    const sel = realSelection('C02_grid_feedback');
+    const extra = extraDetailLines(sel, 'en', 768);
+    expect(extra).toBeGreaterThanOrEqual(1);
+    const plain = trainLayout(768, 640, 0);
+    const roomy = trainLayout(768, 640, extra);
+    // the label block grows downward by the extra lines and never leaves the stage
+    expect(roomy.items.slm.y + roomy.items.slm.h + 56 + extra * 13).toBeLessThanOrEqual(640 + 1);
+    expect(roomy.items.slm.h).toBeLessThanOrEqual(plain.items.slm.h);
+  });
+  it('the drawing prints the wrapped detail as lines of one text, and the text content still reads as the detail', () => {
+    const { props, sel } = draw({ width: 768, height: 640 });
+    const out = html(props);
+    const slm = trainItems(sel, 'en').find((i) => i.id === 'slm')!;
+    expect(detailLines(slm.detail, 768).length).toBeGreaterThan(1);
+    expect(out.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ')).toContain(slm.detail);
   });
 });
