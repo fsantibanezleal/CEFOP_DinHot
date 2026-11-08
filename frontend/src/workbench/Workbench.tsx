@@ -101,7 +101,16 @@ const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringif
 
 
 /** The first clause of an engine message, for a rail line a few words wide; the full text stays in the title and the backend hint. */
-function shortReason(reason: string): string {
+/** The engine's WebGPU reasons (in English, from engine/holo/gpu) as the rail says them, in the reader's language. */
+const GPU_REASONS: { starts: string; en: string; es: string }[] = [
+  { starts: 'WebGPU has no adapter', en: 'the browser offers no WebGPU adapter', es: 'el navegador no ofrece un adaptador WebGPU' },
+  { starts: 'WebGPU is not available', en: 'the browser offers no WebGPU', es: 'el navegador no ofrece WebGPU' },
+  { starts: 'a shaped-field target has no WebGPU path', en: 'a shaped field has no WebGPU path', es: 'un campo con forma no tiene ruta WebGPU' },
+  { starts: 'the case device model', en: 'the case device model runs on the CPU only', es: 'el modelo del dispositivo del caso corre sólo en CPU' },
+];
+export function shortReason(reason: string, lang: 'en' | 'es' = 'en'): string {
+  const known = GPU_REASONS.find((r) => reason.startsWith(r.starts));
+  if (known) return known[lang];
   const head = reason.split(/[:(]/)[0].trim();
   return head.length > 48 ? `${head.slice(0, 45).trim()}...` : head;
 }
@@ -112,12 +121,12 @@ function backendLine(lang: 'en' | 'es', used: 'cpu' | 'gpu' | null, gpu: GpuProb
   const es = lang === 'es';
   const name = used === 'gpu' ? 'WebGPU' : 'CPU';
   if (used) {
-    if (fallback) return es ? `Calculado con ${name}. WebGPU no disponible: ${shortReason(fallback)}.` : `Computed on ${name}. WebGPU unavailable: ${shortReason(fallback)}.`;
+    if (fallback) return es ? `Calculado con ${name}. WebGPU no disponible: ${shortReason(fallback, 'es')}.` : `Computed on ${name}. WebGPU unavailable: ${shortReason(fallback)}.`;
     return es ? `Calculado con ${name}.` : `Computed on ${name}.`;
   }
   if (!gpu) return es ? 'Consultando WebGPU.' : 'Asking the browser for WebGPU.';
   if (gpu.ok) return es ? 'WebGPU disponible; el cálculo corre en CPU salvo que lo elija.' : 'WebGPU is available; the run uses it when it can.';
-  return es ? `WebGPU no disponible: ${shortReason(gpu.reason)}. Se usa CPU.` : `WebGPU unavailable: ${shortReason(gpu.reason)}. CPU is used.`;
+  return es ? `WebGPU no disponible: ${shortReason(gpu.reason, 'es')}. Se usa CPU.` : `WebGPU unavailable: ${shortReason(gpu.reason)}. CPU is used.`;
 }
 
 /** The method the URL asks for, on the first load of the case it names (the story's exit writes `?case=...&method=...`): the parameter when the case lists that method, else the case's reference method. */

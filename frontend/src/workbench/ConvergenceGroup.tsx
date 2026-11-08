@@ -176,7 +176,8 @@ export function ParetoView({ sel }: { sel: Selection }) {
     return t(`${name}${where}: efficiency ${fmt(e.y * 100, { decimals: 1 })} %, uniformity ${fmt(e.x, { decimals: 3 })}${seeds}`, `${name}${where}: eficiencia ${fmt(e.y * 100, { decimals: 1 })} %, uniformidad ${fmt(e.x, { decimals: 3 })}${seeds}`);
   };
 
-  const geometries = res?.geometries.map((g) => ({ id: g.id, text: `${pick(g.name)}${g.n_traps ? `, ${g.n_traps} ${t('traps', 'trampas')}` : ''}` })) ?? [];
+  // the geometry's name already states its size; the line under the choices gives the trap count of the one shown (G5: a long option at 390)
+  const geometries = res?.geometries.map((g) => ({ id: g.id, text: pick(g.name) })) ?? [];
   const budgets = res ? budgetsOf(res).map((b) => ({ id: budgetId(b), text: pick(budgetText(b)) })) : [];
   const set = (over: Partial<Cell>) => cell && setChoice({ ...cell, ...over });
   const cellWhy = choice
