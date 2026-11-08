@@ -342,12 +342,26 @@ describe('the focal square places every trap dot clear of the others (gate G5: e
   const ext = 27;
   const dot = 3.2;
 
-  it('adversarial: no two dots closer than a dot and a pixel, and every trap placed', () => {
+  it('adversarial: no dot covers the centre of another, and every trap placed', () => {
     const at = placeSites(field, ext, traps, dot);
     expect(at.size).toBe(traps.length);
     const pts = [...at.values()];
     for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
-      expect(Math.hypot(pts[i]!.x - pts[j]!.x, pts[i]!.y - pts[j]!.y)).toBeGreaterThanOrEqual(2 * dot + 1 - 1e-9);
+      expect(Math.hypot(pts[i]!.x - pts[j]!.x, pts[i]!.y - pts[j]!.y)).toBeGreaterThanOrEqual(dot + 1.5 - 1e-9);
+    }
+  });
+
+  it('adversarial: a dense lattice on one plane, whose dots touch, is not moved (the first fix pushed a 10 x 10 grid off the square)', () => {
+    const grid = Array.from({ length: 100 }, (_, k) => ({ id: k, x_um: ((k % 10) - 4.5) * 5, y_um: (Math.floor(k / 10) - 4.5) * 5, z_um: 0 }));
+    const box = { x: 0, y: 0, w: 70, h: 70 };
+    const e = 22.5 * 1.1;
+    const d = 3;
+    const at = placeSites(box, e, grid, d);
+    const half = box.w / 2, k = (half - 5) / e;
+    for (const tr of grid) {
+      const s = at.get(tr.id)!;
+      expect(s.x).toBeCloseTo(box.x + half + tr.x_um * k, 9);
+      expect(s.y).toBeCloseTo(box.y + box.h / 2 - tr.y_um * k, 9);
     }
   });
 

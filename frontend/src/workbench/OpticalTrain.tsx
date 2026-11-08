@@ -259,15 +259,17 @@ function siteAt(field: Box, ext: number, tr: { x_um: number; y_um: number; z_um:
 }
 
 /**
- * The points of every trap in the focal square, with no dot over another (gate G5: each is a control). The oblique depth offset can land
- * two traps of a volume array within a dot of each other; a later trap (traps are placed from the farthest plane to the nearest) is then
- * moved along the depth direction, a pixel at a time, until it clears every placed dot. A schematic of the array, not its measured
+ * The points of every trap in the focal square, with no dot over another's centre (gate G5: each is a control, reached at its centre).
+ * The oblique depth offset can land two traps of a volume array within a dot of each other; a later trap (traps are placed from the
+ * farthest plane to the nearest) is then moved along the depth direction, a pixel at a time, until its centre clears every placed dot,
+ * and kept inside the square. Dots that only touch (a dense lattice) stay where they are. A schematic of the array, not its measured
  * geometry: the focal plane view (V3) draws the measured one.
  */
 export function placeSites(field: Box, ext: number, traps: readonly { id: number; x_um: number; y_um: number; z_um: number }[], dot: number): Map<number, { x: number; y: number }> {
   const out = new Map<number, { x: number; y: number }>();
   const placed: { x: number; y: number }[] = [];
-  const gap = 2 * dot + 1;
+  // a centre is reachable when no other dot covers it: more than a radius and a pixel and a half from every other centre
+  const gap = dot + 1.5;
   // the screen direction of the depth offset (x grows to the right, y down on screen)
   const len = Math.hypot(0.5, 0.3);
   const ux = 0.5 / len, uy = -0.3 / len;
@@ -279,6 +281,8 @@ export function placeSites(field: Box, ext: number, traps: readonly { id: number
       x += ux;
       y += uy;
     }
+    x = Math.min(field.x + field.w - dot, Math.max(field.x + dot, x));
+    y = Math.min(field.y + field.h - dot, Math.max(field.y + dot, y));
     placed.push({ x, y });
     out.set(tr.id, { x, y });
   }
