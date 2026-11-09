@@ -208,7 +208,9 @@ describe('the headlines are computed from the artifacts', () => {
     b.rows = b.rows.filter((r) => !(r.geometry === 'G3' && r.device === 'device'));
     const m = compareFinding(b) as Missing;
     expect(m.missing.en).toContain('is not in the artifact');
-    expect(m.missing.en).toContain('G3');
+    // the cell is named by its geometry's name, never its id (the second reading's N5)
+    expect(m.missing.en).toContain('Random 100 traps');
+    expect(m.missing.en).not.toContain('G3');
     const html = render('compare', { bench: { state: 'ready', data: b } });
     expect(html).toContain('data-missing');
   });

@@ -96,7 +96,7 @@ export function setupFinding(data: CaseData): (Finding & { n: number; eff: numbe
   const ref = data.manifest.params.reference_method;
   const final = data.trace.methods[ref]?.final;
   const n = data.trace.traps.length;
-  if (!final || !n) return absent(`The efficiency of ${methodName(ref).en} or the trap count of ${data.manifest.case_id}`, `La eficiencia de ${methodName(ref).es} o el número de trampas de ${data.manifest.case_id}`);
+  if (!final || !n) return absent(`The efficiency of ${methodName(ref).en} or the trap count of ${data.manifest.title.en}`, `La eficiencia de ${methodName(ref).es} o el número de trampas de ${data.manifest.title.es}`);
   const eff = final.efficiency;
   return {
     n,
@@ -116,7 +116,7 @@ export function deviceFinding(data: CaseData): (Finding & { ideal: { spread: num
   const m = data.trace.methods[DEVICE_STEP_METHOD];
   const dev = data.manifest.params.device;
   const last = m?.history[m.history.length - 1];
-  if (!m || !last || !dev) return absent(`The device block or the ${methodName(DEVICE_STEP_METHOD).en} history of ${data.manifest.case_id}`, `El bloque del dispositivo o el historial de ${methodName(DEVICE_STEP_METHOD).es} de ${data.manifest.case_id}`);
+  if (!m || !last || !dev) return absent(`The device block or the ${methodName(DEVICE_STEP_METHOD).en} history of ${data.manifest.title.en}`, `El bloque del dispositivo o el historial de ${methodName(DEVICE_STEP_METHOD).es} de ${data.manifest.title.es}`);
   const ideal = { spread: last.rel_std_pct, eff: last.efficiency };
   const device = { spread: m.final.rel_std_pct, eff: m.final.efficiency };
   const ref = data.manifest.params.reference_method;
@@ -144,7 +144,7 @@ export function deviceFinding(data: CaseData): (Finding & { ideal: { spread: num
 export function methodFinding(data: CaseData): (Finding & { first: number; last: number; iterations: number; freeze: number | null; method: string }) | Missing {
   const ref = data.manifest.params.reference_method;
   const h = data.trace.methods[ref]?.history ?? [];
-  if (h.length < 2) return absent(`The iteration history of ${methodName(ref).en} on ${data.manifest.case_id}`, `El historial de iteraciones de ${methodName(ref).es} en ${data.manifest.case_id}`);
+  if (h.length < 2) return absent(`The iteration history of ${methodName(ref).en} on ${data.manifest.title.en}`, `El historial de iteraciones de ${methodName(ref).es} en ${data.manifest.title.es}`);
   const first = h[0].rel_std_pct;
   const last = h[h.length - 1].rel_std_pct;
   const iterations = h[h.length - 1].iteration;
@@ -198,8 +198,8 @@ export function compareFinding(bench: BenchmarkResults, at: CompareCell = COMPAR
   const fixed = pts.find((p) => p.method === PHASE_FIXED_GS);
   const best = pts[0];
   const geo = bench.geometries.find((g) => g.id === cell.geometry);
-  if (!best || !gs || !fixed || !geo) return absent(`The cell ${cell.geometry} on ${cellDevice(cell.device, 'en')} at ${cell.budget} iterations, or the weighted GS or phase-fixed weighted GS row on it,`, `La celda ${cell.geometry} en ${cellDevice(cell.device, 'es')} a ${cell.budget} iteraciones, o la fila del GS ponderado o del GS ponderado de fase fija en ella,`);
-  const src = (p: ComparePoint): Tx => both((l) => (l === 'en' ? `benchmark: median over the seeds of ${nameOf(p.method, l)} on ${cell.geometry}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iterations` : `benchmark: mediana sobre las semillas de ${nameOf(p.method, l)} en ${cell.geometry}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iteraciones`));
+  if (!best || !gs || !fixed || !geo) return absent(`The cell ${geo?.name.en ?? 'chosen'} on ${cellDevice(cell.device, 'en')} at ${cell.budget} iterations, or the weighted GS or phase-fixed weighted GS row on it,`, `La celda ${geo?.name.es ?? 'elegida'} en ${cellDevice(cell.device, 'es')} a ${cell.budget} iteraciones, o la fila del GS ponderado o del GS ponderado de fase fija en ella,`);
+  const src = (p: ComparePoint): Tx => both((l) => (l === 'en' ? `benchmark: median over the seeds of ${nameOf(p.method, l)} on ${geo.name.en}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iterations` : `benchmark: mediana sobre las semillas de ${nameOf(p.method, l)} en ${geo.name.es}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iteraciones`));
   return {
     best,
     gs,
@@ -215,7 +215,7 @@ export function compareFinding(bench: BenchmarkResults, at: CompareCell = COMPAR
       { label: both((l) => (l === 'en' ? `${nameOf(best.method, l)}, median spread` : `${nameOf(best.method, l)}, dispersión mediana`)), value: both((l) => `${spreadText(best.spread.median, l)} %`), source: src(best) },
       { label: both((l) => (l === 'en' ? `${nameOf(gs.method, l)}, median spread` : `${nameOf(gs.method, l)}, dispersión mediana`)), value: both((l) => `${spreadText(gs.spread.median, l)} %`), source: src(gs) },
       { label: both((l) => (l === 'en' ? `${nameOf(fixed.method, l)}, median spread` : `${nameOf(fixed.method, l)}, dispersión mediana`)), value: both((l) => `${spreadText(fixed.spread.median, l)} %`), source: src(fixed) },
-      { label: bi('Seeds', 'Semillas'), value: bi(`${best.seeds}, ${gs.seeds} and ${fixed.seeds}`, `${best.seeds}, ${gs.seeds} y ${fixed.seeds}`), source: both((l) => (l === 'en' ? `benchmark: seeds of each of the three cells (${cell.geometry}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iterations)` : `benchmark: semillas de cada una de las tres celdas (${cell.geometry}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iteraciones)`)) },
+      { label: bi('Seeds', 'Semillas'), value: bi(`${best.seeds}, ${gs.seeds} and ${fixed.seeds}`, `${best.seeds}, ${gs.seeds} y ${fixed.seeds}`), source: both((l) => (l === 'en' ? `benchmark: seeds of each of the three cells (${geo.name.en}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iterations)` : `benchmark: semillas de cada una de las tres celdas (${geo.name.es}, ${cellDevice(cell.device, l, true)}, ${cell.budget} iteraciones)`)) },
     ],
   };
 }
@@ -225,7 +225,7 @@ export function holdFinding(data: CaseData): (Finding & { kappa: number; fc: num
   const ref = data.manifest.params.reference_method;
   const kappa = dyn?.kappa_pn_per_um;
   const fc = dyn?.fc_hz;
-  if (!dyn || kappa === undefined || fc === undefined) return absent(`The stiffness and the corner frequency of ${data.manifest.case_id}`, `La rigidez y la frecuencia de corte de ${data.manifest.case_id}`);
+  if (!dyn || kappa === undefined || fc === undefined) return absent(`The stiffness and the corner frequency of ${data.manifest.title.en}`, `La rigidez y la frecuencia de corte de ${data.manifest.title.es}`);
   return {
     kappa,
     fc,
@@ -411,7 +411,7 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
   const geo = bench.geometries.find((g) => g.id === cell.geometry);
   const front = pts.filter((p) => p.onFront).sort((a, b) => a.eff.median - b.eff.median);
   return (
-    <PlotCard fill title={{ en: 'Spread against efficiency, by method', es: 'Dispersión contra eficiencia, por método' }} lane="replay" provenance="synthetic" note={{ en: `${geo?.name.en ?? cell.geometry}, ${cell.budget} iterations, ${cellDevice(cell.device, 'en')}, default parameters. Each point is a method's median over its seeds with the quartile range drawn (a range narrower than a few pixels is drawn with its end caps and its numbers are printed beside the two compared points); the line joins the methods no other beats on both axes. A median of zero sits on the floor of the axis.`, es: `${geo?.name.es ?? cell.geometry}, ${cell.budget} iteraciones, ${cellDevice(cell.device, 'es')}, parámetros por defecto. Cada punto es la mediana de un método sobre sus semillas con el rango intercuartil dibujado (un rango más estrecho que unos pocos píxeles se dibuja con sus remates y sus cifras se imprimen junto a los dos puntos comparados); la línea une los métodos que ningún otro supera en ambos ejes. Una mediana de cero queda en el piso del eje.` }}>
+    <PlotCard fill title={{ en: 'Spread against efficiency, by method', es: 'Dispersión contra eficiencia, por método' }} lane="replay" provenance="synthetic" note={{ en: `${geo?.name.en ?? ''}, ${cell.budget} iterations, ${cellDevice(cell.device, 'en')}, default parameters. Each point is a method's median over its seeds with the quartile range drawn (a range narrower than a few pixels is drawn with its end caps and its numbers are printed beside the two compared points); the line joins the methods no other beats on both axes. A median of zero sits on the floor of the axis.`, es: `${geo?.name.es ?? ''}, ${cell.budget} iteraciones, ${cellDevice(cell.device, 'es')}, parámetros por defecto. Cada punto es la mediana de un método sobre sus semillas con el rango intercuartil dibujado (un rango más estrecho que unos pocos píxeles se dibuja con sus remates y sus cifras se imprimen junto a los dos puntos comparados); la línea une los métodos que ningún otro supera en ambos ejes. Una mediana de cero queda en el piso del eje.` }}>
       <ReadinessNote ids={['benchmark-results']} />
       <div className="dh-cmp" data-caos-flow="" data-compare-cell={`${cell.geometry}|${cell.device}|${cell.budget}`}>
         <div className="dh-cmp-stage">
@@ -463,7 +463,8 @@ function CompareView({ bench, cell, finding }: { bench: BenchmarkResults; cell: 
                           <line x1={cx - CAP} x2={cx + CAP} y1={Math.max(L.y(p.spread.q1), cy + CAP)} y2={Math.max(L.y(p.spread.q1), cy + CAP)} stroke={tone} strokeWidth={1.5} />
                           <line x1={cx - CAP} x2={cx + CAP} y1={Math.min(L.y(p.spread.q3), cy - CAP)} y2={Math.min(L.y(p.spread.q3), cy - CAP)} stroke={tone} strokeWidth={1.5} />
                           {label && <text x={cx + (cx > L.plot.x + L.plot.w * 0.6 ? -9 : 9)} y={cy + (pair ? pair.name : -7)} textAnchor={cx > L.plot.x + L.plot.w * 0.6 ? 'end' : 'start'} fontSize={11} fill="var(--color-fg)">{short(p.method, lang)}</text>}
-                          {pair && <text x={cx + (cx > L.plot.x + L.plot.w * 0.6 ? -9 : 9)} y={cy + pair.quartiles} textAnchor={cx > L.plot.x + L.plot.w * 0.6 ? 'end' : 'start'} fontSize={10} fill="var(--color-fg-subtle)">{t('quartiles', 'cuartiles')} {spreadText(p.spread.q1, lang)} {t('to', 'a')} {spreadText(p.spread.q3, lang)} %</text>}
+                          {/* the quartile line only where the plot has room for it: on a phone the whiskers draw the range and the seeds card states it (N6) */}
+                          {pair && L.plot.w >= 420 && <text x={cx + (cx > L.plot.x + L.plot.w * 0.6 ? -9 : 9)} y={cy + pair.quartiles} textAnchor={cx > L.plot.x + L.plot.w * 0.6 ? 'end' : 'start'} fontSize={10} fill="var(--color-fg-subtle)">{t('quartiles', 'cuartiles')} {spreadText(p.spread.q1, lang)} {t('to', 'a')} {spreadText(p.spread.q3, lang)} %</text>}
                         </g>
                         <g data-method={p.method} data-linked-id={p.method} data-linked-view="scene" data-linked-selected={on ? 'true' : 'false'} role="button" tabIndex={0} aria-pressed={on} aria-label={t(`${nameOf(p.method, 'en')}: median spread ${spreadText(p.spread.median, 'en')} %, efficiency ${num(p.eff.median, 'en', 3)}, ${p.seeds} seeds`, `${nameOf(p.method, 'es')}: dispersión mediana ${spreadText(p.spread.median, 'es')} %, eficiencia ${num(p.eff.median, 'es', 3)}, ${p.seeds} semillas`)} onClick={() => select(on ? null : p.method, 'scene')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), select(on ? null : p.method, 'scene'))} style={{ cursor: 'pointer' }}>
                           <circle cx={cx} cy={cy} r={on ? 8 : 5.5} fill={tone} stroke={on ? 'var(--color-fg)' : 'var(--color-surface)'} strokeWidth={on ? 2 : 1} />
@@ -753,7 +754,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
       const geos = bench.geometries.filter((g) => bench.rows.some((r) => r.geometry === g.id && r.device === cell.device));
       return (
         <div className="dh-story-picks">
-          <ChipGroup id="story-geometry" label={{ en: 'Geometry', es: 'Geometría' }} value={cell.geometry} onChange={(v) => onCell?.({ ...cell, geometry: v })} options={geos.map((g) => ({ id: g.id, label: { en: g.id, es: g.id }, hint: g.name }))} />
+          <ChipGroup id="story-geometry" label={{ en: 'Geometry', es: 'Geometría' }} value={cell.geometry} onChange={(v) => onCell?.({ ...cell, geometry: v })} options={geos.map((g) => ({ id: g.id, label: g.name }))} />
           <ChipGroup id="story-budget" label={{ en: 'Iterations', es: 'Iteraciones' }} value={String(cell.budget)} onChange={(v) => onCell?.({ ...cell, budget: Number(v) })} options={[10, 30, 100].map((b) => ({ id: String(b), label: { en: String(b), es: String(b) } }))} />
           {selectedId && <p>{t('Selected', 'Elegido')}: <strong>{nameOf(selectedId, lang)}</strong>. {t('Leave the story to load it in the App.', 'Salga del recorrido para cargarlo en la App.')}</p>}
         </div>
@@ -767,7 +768,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
       <h2>{pick(active.verb, lang)}</h2>
       {'missing' in f ? <MissingLine m={f} lang={lang} /> : <><p>{pick(f.summary, lang)}</p><Facts finding={f} lang={lang} /></>}
       {extra}
-      {sel && <p><strong>{pick(sel.data.manifest.title, lang)}</strong> · {sel.data.manifest.case_id}</p>}
+      {sel && <p><strong>{pick(sel.data.manifest.title, lang)}</strong></p>}
       <span className="badge" data-provenance={provenance}>{provenance === 'synthetic' ? t('Synthetic case replay', 'Reproducción de caso sintético') : t('Real data', 'Datos reales')}</span>
       <ReadinessNote ids={active.id === 'compare' ? ['benchmark-results'] : CASE_ROWS} />
     </section>

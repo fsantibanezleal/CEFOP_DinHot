@@ -7,6 +7,7 @@
 import { ChipGroup, PlotCard, Stage, formatNumber, useShellLang, type SceneCalloutDef } from '@fasl-work/caos-app-shell';
 import { useMemo, useState } from 'react';
 import type { Text } from '../lib/contract.types';
+import { loadIndex, useArtifact } from '../api/artifacts';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { apertureEnvelopeAtEdge, crosstalkWeights, fillFactorEfficiency, levelOf, quantizationEfficiency, stagePhase, TWO_PI } from './decode';
 import { BAND_GAP, CalloutHeader, useCalloutBand } from './CalloutHeader';
@@ -285,7 +286,21 @@ export function SlmSectionDrawing({ row, col, lang, width, height, band, onCol }
           </g>
         );
       })}
-      <text x={L.lc.x + 6} y={L.lc.y + L.lc.h - 6} fill="var(--color-fg)" fontSize={fs - 1} fontWeight="700" letterSpacing="0.4" pointerEvents="none">{t('LIQUID CRYSTAL', 'CRISTAL LÍQUIDO')}{on && levels !== null ? ` (${t(`level of ${levels}`, `nivel de ${levels}`)})` : ''}</text>
+      {/* the layer's name at the end away from the chosen pixel, over a halo of the page colour, so the chosen outline never crosses it (N6) */}
+      <text
+        x={pix.findIndex((q) => q.col === col) < pix.length / 2 ? L.lc.x + L.lc.w - 6 : L.lc.x + 6}
+        textAnchor={pix.findIndex((q) => q.col === col) < pix.length / 2 ? 'end' : 'start'}
+        y={L.lc.y + L.lc.h - 6}
+        fill="var(--color-fg)"
+        stroke="var(--color-bg)"
+        strokeWidth={3}
+        paintOrder="stroke"
+        fontSize={fs - 1}
+        fontWeight="700"
+        letterSpacing="0.4"
+        pointerEvents="none"
+      >
+        {t('LIQUID CRYSTAL', 'CRISTAL LÍQUIDO')}{on && levels !== null ? ` (${t(`level of ${levels}`, `nivel de ${levels}`)})` : ''}</text>
       <rect x={L.elec.x} y={L.elec.y} width={L.elec.w} height={L.elec.h} fill="var(--color-surface)" stroke="var(--color-border)" />
       {pix.map((q, i) => {
         const x = L.lc.x + i * L.cw;
@@ -350,6 +365,9 @@ export function SlmSectionView({ sel }: { sel: Selection }) {
   const n = sel.maps?.nPix ?? 0;
   const cb = useCalloutBand(0);
   const nav = useNav();
+  // the case with a device, named by its title (never its id) where the offer opens it
+  const index = useArtifact((s) => loadIndex(s), []);
+  const deviceTitle = index.state === 'ready' ? (index.data.cases.find((c) => c.case_id === DEVICE_CASE)?.title ?? null) : null;
   const [pos, setPos] = useState<{ col: number; row: number } | null>(null);
   const col = Math.max(0, Math.min(n - 1, pos?.col ?? Math.floor(n / 2)));
   const rowIx = Math.max(0, Math.min(n - 1, pos?.row ?? Math.floor(n / 2)));
@@ -390,12 +408,12 @@ export function SlmSectionView({ sel }: { sel: Selection }) {
         {sw.disabled ? (
           // a switch with one choice the reader cannot take is not drawn as a control (the rail does the same): the reason says what is shown
           <span className="caos-plot-note" data-state="ideal-only">
-            {sw.reason![lang]} {t(`C08 is the case with a device.`, `C08 es el caso con dispositivo.`)}
+            {sw.reason![lang]} {deviceTitle ? t(`The case "${deviceTitle.en}" has a device.`, `El caso "${deviceTitle.es}" tiene dispositivo.`) : t('Another case of the release has a device.', 'Otro caso de la entrega tiene dispositivo.')}
             {nav?.openCase && (
               <>
                 {' '}
                 <button type="button" className="btn" data-open-case={DEVICE_CASE} onClick={() => nav.openCase?.(DEVICE_CASE)}>
-                  {t('Open C08', 'Abrir C08')}
+                  {t('Open the case with a device', 'Abrir el caso con dispositivo')}
                 </button>
               </>
             )}

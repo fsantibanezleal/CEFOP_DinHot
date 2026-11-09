@@ -71,6 +71,8 @@ export interface HeatmapProps {
 }
 
 const RESET: BiText = { en: 'Reset zoom', es: 'Restablecer zoom' };
+/** The strip under the drawing that holds the readout and the Reset zoom control, so neither covers the map (the second reading's N3). */
+export const READOUT_STRIP = 30;
 const HIT = 9;
 
 interface View {
@@ -191,7 +193,9 @@ export function thinned(data: ArrayLike<number>, cols: number, rows: number, cap
 }
 
 function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
-  const { data, cols, rows, lut, range, describe, marks = [], rects = [], region = null, mode = 'inspect', width, height, square = true } = props;
+  const { data, cols, rows, lut, range, describe, marks = [], rects = [], region = null, mode = 'inspect', width, height: boxHeight, square = true } = props;
+  // the drawing takes the box less the strip that holds the readout and the reset control
+  const height = Math.max(0, boxHeight - READOUT_STRIP);
   const lang = useShellLang();
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const texture = useRef<HTMLCanvasElement | null>(null);
@@ -566,7 +570,7 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
   const reading = cursor && value !== null && !Number.isNaN(value) ? describe(cursor.col, cursor.row, value) : null;
   const table = useMemo(() => thinned(data, cols, rows), [data, cols, rows]);
   return (
-    <div style={{ position: 'relative', width, height }}>
+    <div style={{ position: 'relative', width, height: boxHeight }}>
       <canvas
         ref={canvas}
         tabIndex={0}
@@ -586,14 +590,16 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
-      <p className="dh-readout" role="status" aria-live="polite" data-heatmap-readout="">
-        {reading ?? (lang === 'es' ? 'Pase el puntero o use las flechas para leer valores.' : 'Hover or use the arrow keys to read values.')}
-      </p>
-      {zoomed && (
-        <button type="button" className="btn dh-reset" onClick={() => setView({ scale: 1, tx: 0, ty: 0 })}>
-          {pick(RESET, lang)}
-        </button>
-      )}
+      <div className="dh-readout-strip" style={{ height: READOUT_STRIP }}>
+        <p className="dh-readout" role="status" aria-live="polite" data-heatmap-readout="">
+          {reading ?? (lang === 'es' ? 'Pase el puntero o use las flechas para leer valores.' : 'Hover or use the arrow keys to read values.')}
+        </p>
+        {zoomed && (
+          <button type="button" className="btn dh-reset" onClick={() => setView({ scale: 1, tx: 0, ty: 0 })}>
+            {pick(RESET, lang)}
+          </button>
+        )}
+      </div>
       <p id={summaryId} className="sr-only">
         {props.summary}
       </p>

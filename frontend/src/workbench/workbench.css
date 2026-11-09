@@ -29,12 +29,19 @@
   flex-wrap: wrap;
 }
 
+/* The strip under a map: its readout at the left, its Reset zoom control at the right, never over the drawing (N3) */
+.dh-readout-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
 .dh-readout {
-  position: absolute;
-  left: var(--space-2);
-  bottom: var(--space-2);
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
-  max-width: calc(100% - 2 * var(--space-2));
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-sm);
   background: var(--color-surface-2);
@@ -45,9 +52,7 @@
 }
 
 .dh-reset {
-  position: absolute;
-  right: var(--space-2);
-  top: var(--space-2);
+  flex: none;
 }
 
 .dh-alert {

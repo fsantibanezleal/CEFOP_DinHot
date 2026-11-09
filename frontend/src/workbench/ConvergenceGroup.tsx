@@ -160,8 +160,18 @@ export function ParetoView({ sel }: { sel: Selection }) {
     if (has('front')) series.push({ label: { en: `Pareto front of ${geoName}`, es: `Frente de Pareto de ${geoName}` }, values: column('front'), color: SERIES_COLORS.front, mode: 'points', size: 6 });
     if (has('case')) series.push({ label: { en: 'Methods of this case', es: 'Métodos de este caso' }, values: column('case'), color: SERIES_COLORS.case, mode: 'points', size: 10 });
     if (rec) series.push({ label: { en: `Recommended: ${nameOf(rec.pick.method, 'en')}`, es: `Recomendado: ${nameOf(rec.pick.method, 'es')}` }, values: [rec.pick.row.efficiency.median], x: [rec.pick.row.uniformity.median], color: SERIES_COLORS.recommended, mode: 'points', size: 16 });
-    if (dots.x.length) series.push({ label: { en: 'Seed range, q1 to q3', es: 'Rango entre semillas, q1 a q3' }, values: dots.y, x: dots.x, color: SERIES_COLORS.spread, mode: 'points', size: 3 });
-    return { entries, series };
+    // the x window of the methods' own points, with room past the right edge so a point at uniformity 1.000 is drawn whole; a seed range
+    // reaching outside it is drawn up to its edge, so one wide range does not push every named point into a corner (the second reading's N4)
+    const xs = entries.map((e) => e.x).concat(rec ? [rec.pick.row.uniformity.median] : []);
+    const lo = Math.min(...xs);
+    const hi = Math.max(...xs);
+    const pad = Math.max(0.002, (hi - lo) * 0.04);
+    const range: [number, number] = [lo - pad, hi + pad];
+    const keep = dots.x.map((x) => x >= range[0] && x <= range[1]);
+    const dx = dots.x.filter((_, i) => keep[i]);
+    const dy = dots.y.filter((_, i) => keep[i]);
+    if (dx.length) series.push({ label: { en: 'Seed range, q1 to q3', es: 'Rango entre semillas, q1 a q3' }, values: dy, x: dx, color: SERIES_COLORS.spread, mode: 'points', size: 3 });
+    return { entries, series, range };
   }, [res, cell, rows, rec, dots, geoName, floor, sel.data.manifest.methods]);
 
   const shown = chosen ?? rec?.pick.method ?? null;
@@ -224,7 +234,7 @@ export function ParetoView({ sel }: { sel: Selection }) {
                     height="fill"
                     solo
                     title={{ en: 'Efficiency against uniformity, with the seed range of each method', es: 'Eficiencia contra uniformidad, con el rango entre semillas de cada método' }}
-                    x={{ values: chart.entries.map((e) => e.x), label: { en: 'Uniformity', es: 'Uniformidad' }, format: { decimals: 3 } }}
+                    x={{ values: chart.entries.map((e) => e.x), label: { en: 'Uniformity', es: 'Uniformidad' }, format: { decimals: 3 }, range: chart.range }}
                     y={{ label: { en: 'Efficiency', es: 'Eficiencia' }, format: { percent: true, decimals: 0 } }}
                     series={chart.series}
                     onPick={(k) => {

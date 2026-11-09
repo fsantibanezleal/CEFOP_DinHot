@@ -13,7 +13,7 @@ import { getEngine, type ParticleResult } from './engine';
 import { Heatmap } from './HeatmapStage';
 import { cardOf } from './HologramGroup';
 import { histogram, methodName, useSelection, type Selection } from './model';
-import { appHref, beadWindow, DYNAMICS_CASE, framePoint, frameTimeMs, particleCallouts } from './particle';
+import { appHref, beadWindow, cornerOnPlot, DYNAMICS_CASE, framePoint, frameTimeMs, particleCallouts } from './particle';
 import { umToPixel } from './traps';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { CASE_ROWS, Fill, LOADING, Pending, Unavailable, useFmt, useStateKey, useT } from './ui';
@@ -247,6 +247,39 @@ export function ParticleView({ sel, callouts = false }: { sel: Selection; callou
     return { ms, x, y, span: Math.ceil(peak * 1.15 * 20) / 20 };
   }, [tr, n]);
 
+  // where the bead and the corner frequency are drawn, measured in the laid-out view as fractions of the scene (the second reading's N1:
+  // fixed fractions missed both on the story's narrower card)
+  const grid = useRef<HTMLDivElement | null>(null);
+  const psdCell = useRef<HTMLDivElement | null>(null);
+  const [spots, setSpots] = useState<{ bead: { x: number; y: number }; spectrum: { x: number; y: number } } | null>(null);
+  const fRange = tr && tr.fHz.length > 1 ? [tr.fHz[0], tr.fHz[tr.fHz.length - 1]] : null;
+  useEffect(() => {
+    const root = grid.current;
+    if (!root || !tr) return undefined;
+    const measure = () => {
+      const scene = root.closest('.dh-va-box')?.getBoundingClientRect();
+      const map = root.querySelector('canvas[data-heatmap]')?.getBoundingClientRect();
+      const plot = psdCell.current?.querySelector('.u-over')?.getBoundingClientRect();
+      if (!scene || !map || !plot || scene.width === 0 || scene.height === 0 || plot.width === 0) return;
+      const fc = fRange ? cornerOnPlot(tr.fcHz, Math.max(1e-9, fRange[0] || fRange[1] / 1000), fRange[1]) : { x: 0.5, y: 0.3 };
+      const fx = (px: number) => Math.round(((px - scene.left) / scene.width) * 1000) / 1000;
+      const fy = (py: number) => Math.round(((py - scene.top) / scene.height) * 1000) / 1000;
+      const next = {
+        bead: { x: fx(map.left + map.width / 2), y: fy(map.top + map.height / 2) },
+        spectrum: { x: fx(plot.left + fc.x * plot.width), y: fy(plot.top + fc.y * plot.height) },
+      };
+      setSpots((cur) => (cur && JSON.stringify(cur) === JSON.stringify(next) ? cur : next));
+    };
+    const watch = new ResizeObserver(measure);
+    watch.observe(root);
+    if (psdCell.current) watch.observe(psdCell.current);
+    const late = setTimeout(measure, 400);
+    measure();
+    return () => {
+      watch.disconnect();
+      clearTimeout(late);
+    };
+  }, [tr, fRange?.[0], fRange?.[1]]);
   if (!params) {
     return (
       <PlotCard fill title={{ en: 'Trapped particle', es: 'Partícula atrapada' }} {...c} lane="replay" dataKey={stateKey}>
@@ -278,10 +311,10 @@ export function ParticleView({ sel, callouts = false }: { sel: Selection; callou
   const dyn = sel.data.trace.dynamics;
   const items = (geom: { width: number; band: number }) =>
     tr
-      ? particleCallouts({ tr, depth: dyn ? dyn.depth : null, depthScale: sel.powerMw > 0 && bakedPower > 0 ? sel.powerMw / bakedPower : 1, particle: params.particle, lang, narrow: geom.width <= 900 })
+      ? particleCallouts({ tr, depth: dyn ? dyn.depth : null, depthScale: sel.powerMw > 0 && bakedPower > 0 ? sel.powerMw / bakedPower : 1, particle: params.particle, lang, narrow: geom.width <= 900, spots })
       : [];
   const body = (
-    <div className="dh-pv-grid">
+    <div className="dh-pv-grid" ref={grid}>
       <div className="dh-pv-cell dh-pv-map">
         {focal && trail ? (
           <Heatmap
@@ -331,7 +364,7 @@ export function ParticleView({ sel, callouts = false }: { sel: Selection; callou
             />
           )}
         </div>
-        <div className="dh-pv-cell">{tr && fit && <PsdChart tr={tr} fit={fit} />}</div>
+        <div className="dh-pv-cell" ref={psdCell}>{tr && fit && <PsdChart tr={tr} fit={fit} />}</div>
       </div>
     </div>
   );

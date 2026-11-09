@@ -38,6 +38,17 @@ export interface ParticleCalloutArgs {
   lang: Lang;
   /** The narrow layout stacks the map over the charts, so the anchors move with it. */
   narrow: boolean;
+  /** Where the bead and the fitted corner frequency are drawn, as fractions of the scene (measured by the view once it is laid out);
+   * without them the anchors fall back to the layout's nominal places. */
+  spots?: { bead: { x: number; y: number }; spectrum: { x: number; y: number } } | null;
+}
+
+/** The point at the fitted corner frequency on a log-frequency plot area: its x from the frequency range, its y in the upper third
+ * where the Lorentzian is still flat (the fit's knee). Fractions of the plot area. */
+export function cornerOnPlot(fcHz: number, fMin: number, fMax: number): { x: number; y: number } {
+  if (!(fcHz > 0 && fMin > 0 && fMax > fMin)) return { x: 0.5, y: 0.3 };
+  const x = (Math.log(fcHz) - Math.log(fMin)) / (Math.log(fMax) - Math.log(fMin));
+  return { x: Math.min(0.98, Math.max(0.02, x)), y: 0.3 };
 }
 
 /** The stiffness (or the radial frequency of an atom), the corner frequency and the depth, each pinned to the mark of the picture that shows it. */
@@ -45,8 +56,8 @@ export function particleCallouts(a: ParticleCalloutArgs): SceneCalloutDef[] {
   const f = (v: number, d: number) => formatNumber(v, a.lang, { decimals: d });
   const bead = a.particle === 'bead';
   // the bead sits at the centre of the map (left half, or the top block when narrow); the spectrum is the lower chart of the right half
-  const atBead = a.narrow ? { x: 0.5, y: 0.3 } : { x: 0.25, y: 0.55 };
-  const atSpectrum = a.narrow ? { x: 0.5, y: 0.9 } : { x: 0.75, y: 0.8 };
+  const atBead = a.spots?.bead ?? (a.narrow ? { x: 0.5, y: 0.3 } : { x: 0.25, y: 0.55 });
+  const atSpectrum = a.spots?.spectrum ?? (a.narrow ? { x: 0.5, y: 0.9 } : { x: 0.75, y: 0.8 });
   const out: SceneCalloutDef[] = [
     {
       id: 'kappa',

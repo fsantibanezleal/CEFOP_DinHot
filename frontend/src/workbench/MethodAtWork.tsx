@@ -276,7 +276,14 @@ export function MethodAtWorkView({ sel }: { sel: Selection }) {
   const marks = useMemo(() => {
     const out: { x: number; label: { en: string; es: string } }[] = [];
     const fz = freezeIteration(sel.methodId);
-    if (fz !== null && history.length && fz >= history[0].iteration && fz <= lastIteration) out.push({ x: fz, label: { en: 'phase frozen', es: 'fase fijada' } });
+    const span = history.length ? Math.max(1, lastIteration - history[0].iteration) : 1;
+    const frozen = fz !== null && history.length && fz >= history[0].iteration && fz <= lastIteration ? fz : null;
+    // a scrubbed iteration near the freeze is one mark that says both, so the two labels never run together (the second reading's N6)
+    if (frozen !== null && k !== null && Math.abs(k - frozen) <= 0.12 * span) {
+      out.push({ x: k, label: k === frozen ? { en: 'scrubbed, phase frozen', es: 'elegida, fase fijada' } : { en: `scrubbed (phase frozen at ${frozen})`, es: `elegida (fase fijada en ${frozen})` } });
+      return out;
+    }
+    if (frozen !== null) out.push({ x: frozen, label: { en: 'phase frozen', es: 'fase fijada' } });
     if (k !== null) out.push({ x: k, label: { en: 'scrubbed', es: 'elegida' } });
     return out;
   }, [sel.methodId, history, lastIteration, k]);
