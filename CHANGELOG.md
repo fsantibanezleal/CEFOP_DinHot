@@ -33,6 +33,14 @@ tagged.
 - The full gate's findings on the release build: labels that overlapped or were cut in the optical train, the SLM section, the
   phasor figure and the lanes figure; the story's callouts, which overlapped at some sizes and were missing on the phone; the
   method step, which kept changing while idle.
+- Two readings of the views by a reviewer other than their builders:
+  - **The story:** its exits open the App on the step's view and method. Its callouts sit above their subjects on every screen size.
+    The hold step pins its cards to the bead and to the fitted corner frequency.
+  - **The App's views:**
+    - A trap selected anywhere is marked in the focal image and in the per-trap bars. The focal image has micrometre axes and three callouts.
+    - The dynamics view shows the bead in its trap with its position against time and its spectrum.
+    - The Pareto view tells its series apart, draws the seed ranges, and recommends a method with its reason.
+  - **Text:** cases and benchmark geometries are named by their names, never their ids, and micrometres are written µm.
 
 ## [0.02.002], 2026-10-31
 
