@@ -3,7 +3,7 @@
 // stated as missing on the step. The views are the App's (V1, V2, V4, V5) composed in the shell's story frame; the exit lands on /app with
 // the step's case, the group and the method. Routes: /story/setup, /story/device, /story/method, /story/compare, /story/hold.
 import { ChipGroup, PlotCard, Stage, StoryFrame, formatNumber, pick, useLinkedCursor, useLinkedItem, useLinkedView, useShellLang, type BiText, type SceneCalloutDef, type StoryStep } from '@fasl-work/caos-app-shell';
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { loadBenchmark, loadCase, loadIndex, useArtifact, type CaseData, type Loaded } from '../api/artifacts';
 import type { BenchmarkResults } from '../lib/contract.types';
@@ -15,7 +15,7 @@ import { ParticleView } from '../workbench/DynamicsGroup';
 import { Heatmap, type HeatMark } from '../workbench/HeatmapStage';
 import { MethodAtWorkView, freezeIteration, pointAt, spreadText, useFocalAtIteration } from '../workbench/MethodAtWork';
 import { methodName, replayMaps, replayResult, trapsOf, type DeviceChoice, type Selection } from '../workbench/model';
-import { BAND_GAP, CalloutHeader, anchorInDrawing, useCalloutBand, useSettledValue } from '../workbench/CalloutHeader';
+import { BAND_GAP, CalloutHeader, useCalloutBand } from '../workbench/CalloutHeader';
 import { OpticalTrainView } from '../workbench/OpticalTrain';
 import { paramsFor } from '../workbench/run';
 import { SlmSectionView } from '../workbench/SlmSection';
@@ -596,45 +596,17 @@ function StoryFocal({ sel }: { sel: Selection }) {
   );
 }
 
-export function holdCallouts(f: { kappa: number; fc: number }, data: CaseData, lang: Lang, drawing?: { band: number; height: number }): SceneCalloutDef[] {
-  const dyn = data.trace.dynamics!;
-  const place = (a: { x: number; y: number }) => (drawing ? anchorInDrawing(a, drawing.band, drawing.height) : a);
-  return [
-    { id: 'kappa', eyebrow: { en: 'STIFFNESS', es: 'RIGIDEZ' }, value: num(f.kappa, lang, 2), unit: 'pN/µm', state: 'selected', anchor: place({ x: 0.5, y: 0.5 }), source: { en: 'trace: stiffness of the simulated trap', es: 'traza: rigidez de la trampa simulada' } },
-    { id: 'fc', eyebrow: { en: 'CORNER FREQUENCY', es: 'FRECUENCIA DE CORTE' }, value: num(f.fc, lang, 1), unit: 'Hz', state: 'normal', anchor: place({ x: 0.5, y: 0.56 }), source: { en: 'trace: corner frequency of the position spectrum', es: 'traza: frecuencia de corte del espectro de la posición' } },
-    { id: 'depth', eyebrow: { en: 'TRAP DEPTH', es: 'PROFUNDIDAD' }, value: num(dyn.depth.value, lang, 0), unit: dyn.depth.unit, state: 'normal', anchor: place({ x: 0.45, y: 0.5 }), source: { en: 'trace: depth of the simulated trap', es: 'traza: profundidad de la trampa simulada' } },
-  ];
-}
-
-/** The hold step's stage: the callout cards over the drawing, the drawing under the band the cards measure, the anchors written on the drawing (anchorInDrawing). */
-function HoldStage({ sel, finding, lang }: { sel: Selection; finding: { kappa: number; fc: number } | Missing; lang: Lang }) {
-  const cb = useCalloutBand(0);
-  const box = useRef<HTMLDivElement | null>(null);
-  const [height, setHeight] = useState(0);
-  useEffect(() => {
-    const node = box.current;
-    if (!node) return;
-    const watch = new ResizeObserver((entries) => setHeight(entries[0]?.contentRect.height ?? 0));
-    watch.observe(node);
-    return () => watch.disconnect();
-  }, []);
-  const band = cb.band > 0 ? cb.band + BAND_GAP : null;
-  const items = 'missing' in finding ? [] : holdCallouts(finding, sel.data, lang, band !== null && height > 0 ? { band, height } : undefined);
-  // the particle view (its charts rebuild when their height changes) mounts once the band has settled, at its final size (gate G20)
-  const settled = useSettledValue(band, 600);
-  const ready = items.length === 0 || settled !== null;
+/**
+ * The hold step's stage: the App's particle view with its own callouts, which it pins to what they read (the bead in its trap, the
+ * trap's depth, the fitted corner frequency on the spectrum), so the step's cards point at their subjects (ADR-0082 rule 5; the second
+ * reading's N1). The header callouts stay declared loading until their band has held, so the view is read once it is laid out.
+ */
+function HoldStage({ sel }: { sel: Selection }) {
   return (
-    <div className="dh-story-stage" ref={box}>
-      {items.length > 0 && <CalloutHeader items={items} className="dh-story-callouts" onLayout={cb.onLayout} />}
-      <div className="dh-story-drawing" style={settled !== null ? ({ paddingTop: settled } as CSSProperties) : undefined}>
+    <div className="dh-story-stage">
+      <div className="dh-story-drawing dh-story-drawing-bare">
         <div className="dh-story-card">
-          {ready ? (
-            <ParticleView sel={sel} />
-          ) : (
-            <p className="caos-pending" data-state="loading" role="status">
-              {lang === 'es' ? 'Preparando la vista de la microesfera' : 'Preparing the view of the bead'}
-            </p>
-          )}
+          <ParticleView sel={sel} callouts />
         </div>
       </div>
     </div>
@@ -771,7 +743,7 @@ export function StoryView({ stepId, loaded, lang, onStepChange, onExit, cell = C
     if (active.id === 'setup') return <div className="dh-story-view"><OpticalTrainView sel={sel} /></div>;
     if (active.id === 'device') return <div className="dh-story-view"><SlmSectionView sel={sel} /></div>;
     if (active.id === 'method') return <div className="dh-story-view"><MethodAtWorkView sel={sel} /></div>;
-    return <HoldStage sel={sel} finding={f as unknown as { kappa: number; fc: number } | Missing} lang={lang} />;
+    return <HoldStage sel={sel} />;
   };
   const point = sel && active.id === 'method' ? pointAt(sel.result?.history ?? [], cursor) : null;
   const extra: ReactNode = (() => {

@@ -89,11 +89,18 @@ export function CalloutHeader({ items, className, onLayout }: CalloutHeaderProps
   const lang = useShellLang();
   const host = useRef<HTMLDivElement | null>(null);
   const [laidOut, setLaidOut] = useState(false);
+  // the band the layer reports: the cards are taken as laid out once it has held (shell known defect 65: it can swing while a scene mounts)
+  const [band, setBand] = useState(0);
+  const settledBand = useSettledValue(band > 0 ? band : null, 600);
   const ids = items.map((item) => item.id).join('\u0000');
   useEffect(() => {
     const layer = host.current?.querySelector<HTMLElement>('[data-caos-callout-layer]');
     if (!layer) return;
-    const check = () => setLaidOut(calloutsLaidOut(measure(layer), layer.offsetWidth));
+    const check = () => {
+      setLaidOut(calloutsLaidOut(measure(layer), layer.offsetWidth));
+      const b = Number.parseFloat(layer.style.getPropertyValue('--caos-callout-band'));
+      setBand(Number.isFinite(b) ? Math.round(b) : 0);
+    };
     const sizes = new ResizeObserver(check);
     const watch = () => {
       sizes.disconnect();
@@ -116,7 +123,7 @@ export function CalloutHeader({ items, className, onLayout }: CalloutHeaderProps
   return (
     <div ref={host} className="dh-callouts" style={{ display: 'contents' }}>
       <SceneCallouts items={items} placement="header" className={className} onLayout={onLayout} />
-      {!laidOut && (
+      {(!laidOut || (band > 0 && settledBand === null)) && (
         <span className="sr-only" data-state="loading">
           {lang === 'es' ? 'Colocando los valores sobre el dibujo' : 'Placing the values on the drawing'}
         </span>

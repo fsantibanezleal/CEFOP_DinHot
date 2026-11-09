@@ -18,7 +18,9 @@ export function focalCallouts(sel: Selection, lang: Lang, geom: { width: number;
     return mapAnchor(c, r, focal.size, focal.size, geom.width, geom.height, geom.band);
   };
   const out: SceneCalloutDef[] = [];
-  const idx = sel.traps.findIndex((t) => t.id === sel.trapId);
+  // the selected trap, or the first one while none is selected (the App opens on it), so the view always shows its three callouts
+  const picked = sel.traps.findIndex((t) => t.id === sel.trapId);
+  const idx = picked >= 0 ? picked : sel.traps.length ? 0 : -1;
   const trapI = res.trapI;
   if (idx >= 0 && trapI && trapI[idx] !== undefined) {
     const v = trapI[idx];
@@ -28,7 +30,8 @@ export function focalCallouts(sel: Selection, lang: Lang, geom: { width: number;
       id: 'trap',
       eyebrow: { en: `TRAP ${t.id}`, es: `TRAMPA ${t.id}` },
       value: f(v, 3),
-      unit: { en: 'of mean', es: 'de la media' },
+      // a short unit, so the eyebrow keeps its column on a phone (the second reading's N2: "TRAMPA 0" broke per letter at 390)
+      unit: { en: '× mean', es: '× media' },
       state: Math.abs(v - 1) <= band ? 'normal' : Math.abs(v - 1) <= 2 * band ? 'warning' : 'alarm',
       anchor: at(t.x_um, t.y_um),
       source: { en: 'Selected trap against its target, 1.000', es: 'Trampa elegida frente a su objetivo, 1,000' },

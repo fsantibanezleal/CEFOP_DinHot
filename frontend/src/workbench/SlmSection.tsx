@@ -207,8 +207,9 @@ export function slmCallouts(_sel: Selection, r: SlmRow, col: number, lang: Lang,
     {
       id: 'fill',
       eyebrow: { en: 'Fill', es: 'Llenado' },
-      value: r.fill === null ? 'ideal' : f(r.fill, 2),
-      unit: r.fill === null ? 'SLM' : { en: 'area', es: 'área' },
+      // the ideal SLM fills its whole pixel: 1.00 of the area, a number like the device's, never a word in the value (N7)
+      value: f(r.fill ?? 1, 2),
+      unit: { en: 'area', es: 'área' },
       state: r.fill === null ? 'inactive' : toneOfFill(fillFactorEfficiency(r.fill)),
       anchor: norm(px, L.elec.y + L.elec.h / 2),
       source: r.fill === null ? { en: 'the case has no device', es: 'el caso no tiene dispositivo' } : { en: 'case device: fill factor of the electrodes', es: 'dispositivo del caso: factor de llenado de los electrodos' },

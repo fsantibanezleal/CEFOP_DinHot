@@ -120,12 +120,13 @@ describe('a case without a device block', () => {
     expect(out).not.toMatch(/undefined|NaN/);
   });
 
-  it('the callouts say ideal for the device quantities', () => {
+  it('the callouts read the ideal SLM as numbers: the fill is the whole pixel, 1.00 of the area, and the card is inactive', () => {
     const r = slmRow(sel, 100);
     const items = slmCallouts(sel, r, 100, 'en', W, H);
     expect(items).toHaveLength(3);
     const fill = items.find((c) => c.id === 'fill')!;
-    expect(fill.value).toBe('ideal');
+    expect(fill.value).toBe('1.00');
+    expect(fill.unit).toEqual({ en: 'area', es: 'área' });
     expect(fill.state).toBe('inactive');
   });
 });

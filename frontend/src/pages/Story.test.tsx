@@ -27,7 +27,6 @@ import {
   comparePoints,
   deviceFinding,
   exitHref,
-  holdCallouts,
   holdFinding,
   methodFinding,
   methodOfStep,
@@ -370,8 +369,6 @@ describe('each step has its three callouts', () => {
     const f = must(compareFinding(bench()));
     const L = compareLayout(900, 420);
     hasFields(compareCallouts(f, 'en', L, 900, 420));
-    const c01 = realCase('C01_square_grid');
-    hasFields(holdCallouts(must(holdFinding(c01)), c01, 'en'));
   });
 
   it('the V5 callouts follow the scrubbed iteration and name the method', () => {

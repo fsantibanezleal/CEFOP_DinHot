@@ -70,3 +70,6 @@
   .dh-story-card .dh-pv-side > .dh-pv-cell:first-child { display: none; }
   .dh-story-card .dh-pv-side { grid-template-rows: auto; }
 }
+
+/* The hold step's drawing has no band of its own: the particle view carries its callouts inside it (N1) */
+.dh-story-drawing.dh-story-drawing-bare { padding-top: 0; }
