@@ -71,8 +71,9 @@ export interface HeatmapProps {
 }
 
 const RESET: BiText = { en: 'Reset zoom', es: 'Restablecer zoom' };
-/** The strip under the drawing that holds the readout and the Reset zoom control, so neither covers the map (the second reading's N3). */
-export const READOUT_STRIP = 30;
+/** The strip under the drawing that holds the readout and the Reset zoom control, so neither covers the map (the second reading's N3); as tall as the
+ * control (36 px), so the scene that clips its overflow never cuts it (gate G5). */
+export const READOUT_STRIP = 40;
 const HIT = 9;
 
 interface View {
