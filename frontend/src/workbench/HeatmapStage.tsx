@@ -570,6 +570,27 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
   const value = cursor ? data[cursor.row * cols + cursor.col] : null;
   const reading = cursor && value !== null && !Number.isNaN(value) ? describe(cursor.col, cursor.row, value) : null;
   const table = useMemo(() => thinned(data, cols, rows), [data, cols, rows]);
+  // The hidden table is formatted once per map and language, not on every render: a pointer move re-renders the canvas, and up to 256
+  // formatted cells per render cost frames while a story step mounts (shell known defect 68: `formatNumber` builds a formatter per call).
+  const caption = pick(props.tableLabel ?? props.label, lang);
+  const srTable = useMemo(
+    () => (
+      <table id={tableId} className="sr-only">
+        <caption>{caption}</caption>
+        <tbody>
+          {table.values.map((line, i) => (
+            <tr key={i}>
+              <th scope="row">{i * table.br}</th>
+              {line.map((v, j) => (
+                <td key={j}>{Number.isNaN(v) ? '' : formatNumber(v, lang, { digits: 4 })}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ),
+    [table, lang, tableId, caption],
+  );
   return (
     <div style={{ position: 'relative', width, height: boxHeight }}>
       <canvas
@@ -604,19 +625,7 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
       <p id={summaryId} className="sr-only">
         {props.summary}
       </p>
-      <table id={tableId} className="sr-only">
-        <caption>{pick(props.tableLabel ?? props.label, lang)}</caption>
-        <tbody>
-          {table.values.map((line, i) => (
-            <tr key={i}>
-              <th scope="row">{i * table.br}</th>
-              {line.map((v, j) => (
-                <td key={j}>{Number.isNaN(v) ? '' : formatNumber(v, lang, { digits: 4 })}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {srTable}
     </div>
   );
 }
