@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BenchmarkResults, BenchmarkRow } from '../lib/contract.types';
 import { pickRows } from '../content/benchmark/data';
-import { SERIES_COLORS, cellWithRows, closestGeometry, EFF_WINDOW, intervalDots, openingCell, recommend, recommendationText } from './pareto';
+import { SERIES_COLORS, cellWithRows, closestGeometry, EFF_WINDOW, intervalDots, mergeTies, openingCell, recommend, recommendationText } from './pareto';
 
 const stat = (m: number, spread = 0.01) => ({ median: m, q1: m - spread, q3: m + spread });
 const row = (method: string, geometry: string, eff: number, std: number, over: Partial<BenchmarkRow> = {}): BenchmarkRow =>
@@ -125,5 +125,29 @@ describe('the series of the chart', () => {
   it('each take a colour of their own', () => {
     const colours = Object.values(SERIES_COLORS);
     expect(new Set(colours).size).toBe(colours.length);
+  });
+});
+
+describe('the chart rows of the Pareto view: one row per uniformity value', () => {
+  // gate G20 at 390 px, case C08: a published and a proposed method at the same uniformity (0.717) were two rows at one x, and the
+  // chart's cursor snaps to the first row at an x, so the keyboard could never read the second point
+  const e = (x: number, y: number, kind: 'published' | 'proposed' | 'front' | 'case', method?: string) => ({ x, y, kind, method });
+
+  it('adversarial: entries of different kinds at one uniformity share one row, each in its own column', () => {
+    const rows = mergeTies([e(0.717, 0.473, 'published', 'M07'), e(0.717, 0.47, 'proposed', 'B4'), e(0.718, 0.479, 'published', 'M06')]);
+    expect(rows.map((r) => r.x)).toEqual([0.717, 0.718]);
+    expect(rows[0]!.items.map((i) => i.method)).toEqual(['M07', 'B4']);
+  });
+
+  it('keeps two entries of one kind at one uniformity on separate rows (one column cannot hold two values)', () => {
+    const rows = mergeTies([e(0.5, 0.4, 'published', 'M01'), e(0.5, 0.41, 'published', 'M02')]);
+    expect(rows).toHaveLength(2);
+  });
+
+  it('sorts by uniformity and keeps every entry', () => {
+    const input = [e(0.9, 0.3, 'front'), e(0.2, 0.6, 'case', 'M04'), e(0.2, 0.5, 'published', 'M04'), e(0.5, 0.5, 'proposed', 'B1')];
+    const rows = mergeTies(input);
+    expect(rows.map((r) => r.x)).toEqual([0.2, 0.5, 0.9]);
+    expect(rows.flatMap((r) => r.items)).toHaveLength(input.length);
   });
 });

@@ -138,3 +138,24 @@ export function intervalDots(rows: readonly Picked[], k = 9): { x: number[]; y: 
   }
   return { x, y };
 }
+
+/** A point of the view's chart: a method of the benchmark (published or proposed), a point of the front, or a method of this case. */
+export interface ChartEntry {
+  x: number;
+  y: number;
+  kind: 'published' | 'proposed' | 'front' | 'case';
+  method?: string;
+}
+
+/** One chart row per uniformity value: entries of different kinds at one x share a row, one column each; two entries of one kind at one x
+ * keep separate rows (a column holds one value). The chart's cursor snaps to the first row at an x, so a second row at the same x could not
+ * be read by the keyboard (gate G20 at 390 px, case C08: a published and a proposed method both at uniformity 0.717). Sorted by x. */
+export function mergeTies(entries: readonly ChartEntry[]): { x: number; items: ChartEntry[] }[] {
+  const rows: { x: number; items: ChartEntry[] }[] = [];
+  for (const e of [...entries].sort((a, b) => a.x - b.x)) {
+    const row = rows.find((r) => r.x === e.x && !r.items.some((i) => i.kind === e.kind));
+    if (row) row.items.push(e);
+    else rows.push({ x: e.x, items: [e] });
+  }
+  return rows.sort((a, b) => a.x - b.x);
+}

@@ -10,7 +10,7 @@ import { ReadinessNote } from '../readiness/ReadinessNote';
 import { cardOf } from './HologramGroup';
 import { MethodAtWorkView } from './MethodAtWork';
 import { historyAt, is3D, methodLabel, methodName, useSelection, type Selection } from './model';
-import { cellFromKey, cellKey, cellWithRows, intervalDots, openingCell, recommend, recommendationText, SERIES_COLORS, type Cell } from './pareto';
+import { cellFromKey, cellKey, cellWithRows, intervalDots, mergeTies, openingCell, recommend, recommendationText, SERIES_COLORS, type Cell, type ChartEntry } from './pareto';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 import { useNav } from './nav';
 
@@ -105,12 +105,7 @@ function Pick({ label, value, onChange, options }: { label: string; value: strin
 }
 
 type Kind = 'published' | 'proposed' | 'front' | 'case' | 'recommended';
-interface Entry {
-  x: number;
-  y: number;
-  kind: Kind;
-  method?: string;
-}
+type Entry = ChartEntry;
 
 export function ParetoView({ sel }: { sel: Selection }) {
   const { t, pick, lang } = useT();
@@ -151,8 +146,9 @@ export function ParetoView({ sel }: { sel: Selection }) {
     for (const p of rows) if (p.row.uniformity.median >= floor) entries.push({ x: p.row.uniformity.median, y: p.row.efficiency.median, kind: p.kind === 'proposed' ? 'proposed' : 'published', method: p.method });
     for (const p of frontOf(res, cell.geometry)) if (p.u >= floor) entries.push({ x: p.u, y: p.e, kind: 'front' });
     for (const [id, m] of Object.entries(sel.data.manifest.methods)) if (m.uniformity >= floor) entries.push({ x: m.uniformity, y: m.efficiency, kind: 'case', method: id });
-    entries.sort((a, b) => a.x - b.x);
-    const column = (k: Kind) => entries.map((e) => (e.kind === k ? e.y : null));
+    // one row per uniformity value (a published and a proposed method can share one; the cursor reads the first row at an x)
+    const rows2 = mergeTies(entries);
+    const column = (k: Kind) => rows2.map((r) => r.items.find((i) => i.kind === k)?.y ?? null);
     const has = (k: Kind) => entries.some((e) => e.kind === k);
     const series: ChartSeries[] = [];
     if (has('published')) series.push({ label: { en: 'Published methods', es: 'Métodos publicados' }, values: column('published'), color: SERIES_COLORS.published, mode: 'points', size: 7 });
@@ -171,7 +167,7 @@ export function ParetoView({ sel }: { sel: Selection }) {
     const dx = dots.x.filter((_, i) => keep[i]);
     const dy = dots.y.filter((_, i) => keep[i]);
     if (dx.length) series.push({ label: { en: 'Seed range, q1 to q3', es: 'Rango entre semillas, q1 a q3' }, values: dy, x: dx, color: SERIES_COLORS.spread, mode: 'points', size: 3 });
-    return { entries, series, range };
+    return { rows: rows2, series, range };
   }, [res, cell, rows, rec, dots, geoName, floor, sel.data.manifest.methods]);
 
   const shown = chosen ?? rec?.pick.method ?? null;
@@ -234,14 +230,14 @@ export function ParetoView({ sel }: { sel: Selection }) {
                     height="fill"
                     solo
                     title={{ en: 'Efficiency against uniformity, with the seed range of each method', es: 'Eficiencia contra uniformidad, con el rango entre semillas de cada método' }}
-                    x={{ values: chart.entries.map((e) => e.x), label: { en: 'Uniformity', es: 'Uniformidad' }, format: { decimals: 3 }, range: chart.range }}
+                    x={{ values: chart.rows.map((r) => r.x), label: { en: 'Uniformity', es: 'Uniformidad' }, format: { decimals: 3 }, range: chart.range }}
                     y={{ label: { en: 'Efficiency', es: 'Eficiencia' }, format: { percent: true, decimals: 0 } }}
                     series={chart.series}
                     onPick={(k) => {
-                      const m = chart.entries[k]?.method;
+                      const m = chart.rows[k]?.items.find((i) => i.method && i.kind !== 'front')?.method;
                       if (m) setChosen(m);
                     }}
-                    readout={(k) => readoutOf(chart.entries[k])}
+                    readout={(k) => (chart.rows[k]?.items ?? []).map(readoutOf).join('; ')}
                   />
                 </div>
               ) : (
