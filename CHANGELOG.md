@@ -3,6 +3,67 @@
 All notable changes to this product. Versions are X.XX.XXX (VERSION is the single source); every release is
 tagged.
 
+## [0.02.004], 2026-11-14
+
+The benchmark compares the methods at equal wall clock, the first proposed method is what its measurements support, and the
+publications are revised from a new generation.
+
+### Changed
+
+- Method B5 is "Efficiency-uniformity continuation" (Spanish "Continuación eficiencia-uniformidad") in the engine `SPEC`, the SDD ladder row and
+  views, the B5 design record, the methods and benchmark requirements, and every reader text of the app in both languages. Its paper
+  (Zenodo 10.5281/zenodo.24022463) finds 4 to 7 of its 20 points dominated by weighted GS iterates, so it is not the Pareto front.
+- The name "Pareto front" stays only for a non-dominated set computed from measured points (the Story page's front of the methods' medians).
+  The Methodology and the Benchmark pages say that the continuation points are not a non-dominated set.
+- The App's convergence sub-view `pareto` is labelled "Trade-off" (Spanish "Compromiso"): it compares every method of a benchmark cell on the
+  efficiency-uniformity plane and recommends one, and it draws no Pareto front. Its B5 series and readout read "Efficiency-uniformity
+  continuation". The Benchmark tab of the same name reads "Efficiency-uniformity continuation". The URL value `?tab=pareto` is unchanged.
+- Unchanged identifiers: the id `B5`, the module `b5_pareto.py`, the design record file names, the `pareto` key of `benchmark-results` and
+  every field name. The committed manifests under `data/derived` carry B5's old name until the 0.02.004 generation regenerates them.
+- Requirement MD-026 with its gates: the engine name test, `frontend/src/content/methodology/b5-name.test.ts` (source strings and the built
+  `dist` text) and an adversarial row.
+- The papers, the report and the notebooks are renamed by a later unit.
+- Every method stops at the deadline of a time row in every phase: `weighted_gs` takes a deadline, and the warm start, the outer loop and each
+  line-search evaluation of the device-aware WGS (B1), the frame 0 and every frame iteration of the flicker-bounded sequence (B2) and the warm start
+  and every lambda of the efficiency-uniformity front (B5) check it. A run cut by the deadline returns the iterate reached with its true counts.
+- Every benchmark row records the work done: `iterations` is the inner iterations a run performed (B1 warm plus CG steps, B2 frame 0 plus frame
+  iterations, B5 warm plus CG iterations) and the new `evaluations` statistic is the forward plus adjoint evaluations counted by `core/forward.py`
+  (and by the crosstalk model) between the run and its scoring.
+- The flicker-bounded sequence (B2) leaves the static benchmark: its frame 0 is the phase-fixed WGS it would be ranked against. Its sequence
+  experiments are unchanged.
+- Seeds: the time and converged rows run at least 5 seeds for every method, geometry and device; the iteration rows keep the 600 s group budget
+  with at least 2.
+- The large-array geometry is two geometries, `G6a` (lattice 32 x 32) and `G6b` (disordered 819); every seed runs both.
+- Contract `benchmark-results` is 2.0.0 (the version gate reads the new required `evaluations` and the geometry ids as a breaking change): the
+  report's extract scripts and the app refuse a 1.x document naming the version.
+- A cell is read as a win only if the best published and the best proposed method both have at least 5 seeds, their interquartile ranges of the
+  relative standard deviation do not overlap and their medians differ by at least 0.01 percentage points; otherwise it is a tie, and iteration rows
+  never produce a win. The report's benchmark table reads the 1 s row, prints n per cell and tie; the Benchmark page prints the same reading.
+- Requirements BM-008 to BM-016 with their gates; `tests/fixtures/benchmark-win-rule.json` is read by the Python and the TypeScript rule.
+- The committed `data/derived` bake and readiness are of contract 1.x until the 0.02.004 generation; the tests that read the committed bake fail
+  until it runs.
+- B1 is "Device-aware conjugate-gradient refinement" (Spanish: "Refinamiento por gradiente conjugado con modelo del dispositivo"), named
+  "Device-aware weighted GS" until 0.02.003; the id B1 is unchanged. The name is changed in the engine, the case library, the app's ladder, methodology
+  and case texts and the design documents of the method. The committed manifests, the bake and the papers keep the old name until the 0.02.004
+  generation and the later unit that renames the papers and the notebooks.
+- B1's `weights` option (the multiplicative weight update of weighted GS before every outer iteration) is False by default. The ablation of the paper
+  gives a spread 7 times lower without it on the acceptance task (0.030 against 0.205 percent) and 3 times lower on the full device (0.242 against
+  0.724 percent), and mixed results on the benchmark lattices. `weights=True` reproduces the 0.02.003 run exactly (a run recorded before the change is a
+  test fixture, `tests/fixtures/b1_recorded_before_0_02_004.npz`); the default equals the old `weights=False` exactly.
+- B1's new `loss` option: `'efficiency-level'` (default, the target of 0.02.003) or `'normalized-error'`, the normalized-error cost of Schroff et al. 2023
+  (Sci. Rep. 13, 3252, eq (3), p. 3) on the trap intensities through the same device model, with the same warm start, conjugate-gradient optimizer and
+  best-iterate safeguard, so a comparison isolates the loss. Its gradient is checked against finite differences. `steepness` (default: the relative
+  squared error scale) is an option; Schroff et al.'s `s = 1e12` is a pixel-grid constant that only rescales the cost.
+- M16's new `sequence` option: `'lpi'` (default, unchanged) or `'per-frame-gs'`, the hologram sequence of Kim, Kim, Lee and Ahn 2019 (Opt. Express 27(3),
+  2184): a weighted GS per frame towards that frame's trap positions, the previous frame's phase as the initial phase ("induction", section 3.3,
+  p. 2188), 5 iterations per frame (`frame_iterations`, Fig. 3 caption, p. 2190). The trajectory and the frame count are those of the linear phase
+  interpolation. `budget.time_s` is a deadline for it (a cut run returns the frames it reached, `meta['truncated']`), `meta['iterations']` counts the GS
+  iterations and the engine's evaluation counter counts the evaluations. `meta` of both sequences gains `sequence`, `frames_done`, `truncated` and
+  `max_phase_step`.
+- Requirements MD-023 to MD-025 with their gates and adversarial plants (`tests/adversarial/test_dinhot_methods_refuted.py`).
+- Known limits: the rearrangement driver of a case (`stages/rearrangement.py`) already warm-starts every frame from the previous one with the case's weight
+  method, so it is not M16's sequence and is unchanged; the benchmark and the bake are not run by this unit.
+
 ## [0.02.003], 2026-11-15
 
 ### Changed
