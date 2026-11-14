@@ -53,6 +53,7 @@
     "tests/fixtures/engine/zernike.noll_to_nm.json",
     "tests/fixtures/engine/zernike.wavefront.json"
   ],
+  "stage_engine_versions": {},
   "readiness_exceptions": {
     "params-record": "partial",
     "benchmark-results": "partial",

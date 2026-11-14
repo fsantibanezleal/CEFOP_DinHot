@@ -227,6 +227,50 @@ def test_adversarial_actual_readiness_inventory(workflow, tmp_path):
         workflow.check_readiness_inventory(ROOT, config, {**ready, "catalog_sha256": "0" * 64})
 
 
+def test_adversarial_custom_product_provider_admits_shipped_readiness_shape(workflow, fixture_repo):
+    root, config, _ = fixture_repo
+    config.update(
+        readiness_provider="scripts/local/provider.py",
+        readiness_check="scripts/check_readiness.py",
+        validators=[],
+        required=["data/derived/v2/catalog.json"],
+        promote=["data/derived"],
+    )
+    write(root / "scripts/local/workflow.json", json.dumps(config))
+    shutil.copyfile(ROOT / "scripts/check_readiness.py", root / "scripts/check_readiness.py")
+    write(
+        root / "scripts/local/provider.py",
+        """import json
+from pathlib import Path
+
+def validate(root):
+    readiness = json.loads((root / "data/derived/readiness.json").read_text())
+    assert readiness == {"schema": "inverse-earth.readiness/v1", "state": "available"}
+    assert (root / "data/derived/v2/catalog.json").is_file()
+""",
+    )
+    write(
+        root / "data/derived/readiness.json",
+        json.dumps({"schema": "inverse-earth.readiness/v1", "state": "available"}),
+    )
+    write(root / "data/derived/v2/catalog.json", '{"complete":true}\n')
+
+    stage = root.parent / "custom candidate"
+    write(stage / "data/derived/readiness.json", json.dumps({"schema": "inverse-earth.readiness/v1", "state": "available"}))
+    write(stage / "data/derived/v2/catalog.json", '{"complete":true}\n')
+    (stage / "models").mkdir(parents=True)
+    metadata(root, stage)
+    workflow.validate_stage(root, config, stage, sys.executable, {})
+    workflow.check_shipped(root, config)
+
+    write(stage / "data/derived/readiness.json", json.dumps({"schema": "inverse-earth.readiness/v1", "state": "partial"}))
+    with pytest.raises(workflow.Failure, match="Command failed"):
+        workflow.validate_stage(root, config, stage, sys.executable, {})
+    write(root / "data/derived/readiness.json", json.dumps({"schema": "inverse-earth.readiness/v1", "state": "partial"}))
+    with pytest.raises(workflow.Failure, match="Command failed"):
+        workflow.check_shipped(root, config)
+
+
 def test_adversarial_actual_template_registry(tmp_path):
     bridge = ROOT / "scripts/local/producer_bridge.py"
     if not (ROOT / "data-pipeline/pipeline/registry.py").is_file():

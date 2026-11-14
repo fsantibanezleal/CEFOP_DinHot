@@ -323,6 +323,14 @@ def required_paths(root, config):
 
 
 def check_shipped(root, config):
+    if config.get("readiness_provider"):
+        if not config.get("readiness_check"):
+            raise Failure("A custom readiness_provider requires the product's readiness_check.")
+        python = generation_python(root, config)
+        check_readiness_states(root, config, {}, root, python)
+        commands(root, config["validators"], substitutions(root, root, python), environment(root))
+        check_required_validation(root, config)
+        return
     version = (root / "VERSION").read_text().strip()
     index = json_read(root / "data/derived/manifests/index.json")
     ready = json_read(root / "data/derived/readiness.json")
@@ -343,14 +351,20 @@ def check_shipped(root, config):
         )
     else:
         check_readiness_states(root, config, ready, root)
-    if config.get("requires_validation"):
-        validation = json_read(root / "data/derived/validation.json")
-        if (
-            validation.get("engine_version") != version
-            or not validation.get("passed")
-            or validation.get("errors")
-        ):
-            raise Failure("Shipped whole-bake validation is missing, stale or failed.")
+    check_required_validation(root, config)
+
+
+def check_required_validation(root, config):
+    if not config.get("requires_validation"):
+        return
+    version = (root / "VERSION").read_text().strip()
+    validation = json_read(root / "data/derived/validation.json")
+    if (
+        validation.get("engine_version") != version
+        or not validation.get("passed")
+        or validation.get("errors")
+    ):
+        raise Failure("Shipped whole-bake validation is missing, stale or failed.")
 
 
 def initialize(root, config, gpu=False, notebooks=False):
@@ -468,11 +482,36 @@ def payload_hashes(stage, config, *, directories=None):
     return result
 
 
+VERSION_KEYS = ("engine_version", "product_version")
+
+
+def stamped_input(path):
+    """Whether a file is a version-stamped document: JSON whose top-level object carries a version key."""
+    if path.suffix.lower() != ".json":
+        return False
+    try:
+        value = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return False
+    return isinstance(value, dict) and any(key in value for key in VERSION_KEYS)
+
+
 def authored_inputs(root, config):
+    """The ``stage_inputs``: authored sources (tables, configuration) carried byte for byte into the stage.
+
+    A version-stamped document (template 0.15.007, #120) is produced by the generation, never carried: ``validate_stage``
+    refuses a stale stamp only after the whole bake, so the refusal is made here, in the first call of ``generate`` and of
+    the admission, before any stage or generation command exists."""
     inputs = {name: relative(root, name) for name in config.get("stage_inputs", [])}
     for name, path in inputs.items():
         if not path.is_file():
             raise Failure(f"Missing authored stage input: {name}")
+        if stamped_input(path):
+            raise Failure(
+                f"Stage input {name} is a version-stamped document ({' or '.join(VERSION_KEYS)}): such a document is "
+                "produced by the generation and never carried. Remove it from stage_inputs and produce it in a "
+                "generation step (for example the models step before the bake)."
+            )
     return inputs
 
 
@@ -495,6 +534,8 @@ def check_metadata_current(root, stage, config):
 
 
 def check_readiness_inventory(root, config, ready):
+    if config.get("readiness_provider"):
+        return
     catalog_ids = set()
     catalog = root / "docs/contracts/catalog.md"
     raw = catalog.read_bytes().replace(b"\r\n", b"\n")
@@ -525,6 +566,12 @@ def check_readiness_states(root, config, ready, view, python=None):
     interpreter running this helper does not have (BD-10)."""
     exceptions = config.get("readiness_exceptions", {})
     checker = config.get("readiness_check")
+    if config.get("readiness_provider"):
+        if not checker:
+            raise Failure("A custom readiness_provider requires the product's readiness_check.")
+        interpreter = python if python is not None else generation_python(root, config)
+        run([interpreter, "-B", relative(root, checker), view], root)
+        return
     if exceptions and not checker:
         raise Failure("Readiness exceptions require the actual current-readiness validator.")
     if not ready.get("contracts") or any(
@@ -564,14 +611,28 @@ def validate_stage(root, config, stage, python, env, receipt=False):
     missing = [name for name in required_paths(root, config) if not list(stage.glob(name))]
     if missing:
         raise Failure("Partial stage: " + ", ".join(missing[:5]))
-    for name in payload_hashes(stage, config):
+    payload = payload_hashes(stage, config)
+    engine_versions = config.get("stage_engine_versions", {})
+    if (not isinstance(engine_versions, dict)
+            or any(not isinstance(name, str) or not isinstance(value, str) or not value.strip()
+                   for name, value in engine_versions.items())):
+        raise Failure("stage_engine_versions must map exact staged JSON paths to non-empty engine versions.")
+    undeclared = sorted(set(engine_versions) - set(payload))
+    if undeclared:
+        raise Failure("stage_engine_versions names files outside the promoted payload: " + ", ".join(undeclared))
+    for name in payload:
         path = stage / name
         if path.suffix == ".json":
             value = json_read(path)
             if isinstance(value, dict):
                 for key in ("engine_version", "product_version"):
-                    if key in value and value[key] != version:
+                    expected = engine_versions.get(name, version) if key == "engine_version" else version
+                    if key in value and value[key] != expected:
                         raise Failure(f"Mixed/stale version in {name}.")
+    for name in engine_versions:
+        value = json_read(stage / name)
+        if not isinstance(value, dict) or value.get("engine_version") != engine_versions[name]:
+            raise Failure(f"Configured engine version is absent or mismatched in {name}.")
     ready = json_read(stage / "data/derived/readiness.json")
     check_readiness_inventory(root, config, ready)
     check_readiness_states(root, config, ready, stage, python)

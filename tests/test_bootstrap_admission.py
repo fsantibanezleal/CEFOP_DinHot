@@ -92,6 +92,37 @@ def test_adversarial_validator_cannot_change_accepted_identity(workflow, fixture
     assert workflow.payload_hashes(root, config) == before
 
 
+def test_adversarial_admission_accepts_only_an_explicit_engine_version_pin(workflow, fixture_repo):
+    root, config, env = fixture_repo
+    config["stage_engine_versions"] = {"data/derived/cases/a.json": "oreblocks==0.6.6"}
+    (root / "scripts/local/workflow.json").write_text(json.dumps(config), encoding="utf-8")
+    producer = root / "producer.py"
+    source = producer.read_text(encoding="utf-8")
+    source = source.replace(
+        '"data/derived/cases/a.json": {"engine_version":version,"value":"new"}',
+        '"data/derived/cases/a.json": {"engine_version":"oreblocks==0.6.6","product_version":version,"value":"new"}',
+    )
+    producer.write_text(source, encoding="utf-8")
+    stage = workflow.generate(root, config, env)
+    assert json.loads((stage / "data/derived/cases/a.json").read_text())["engine_version"] == "oreblocks==0.6.6"
+
+    document = stage / "data/derived/cases/a.json"
+    payload = json.loads(document.read_text())
+    payload["product_version"] = "stale"
+    document.write_text(json.dumps(payload))
+    with pytest.raises(workflow.Failure, match="Mixed/stale version"):
+        workflow.validate_stage(root, config, stage, Path(sys.executable), env)
+    payload["product_version"] = (root / "VERSION").read_text().strip()
+    payload["engine_version"] = "oreblocks==0.6.5"
+    document.write_text(json.dumps(payload))
+    with pytest.raises(workflow.Failure, match="Mixed/stale version"):
+        workflow.validate_stage(root, config, stage, Path(sys.executable), env)
+    payload.pop("engine_version")
+    document.write_text(json.dumps(payload))
+    with pytest.raises(workflow.Failure, match="Configured engine version is absent or mismatched"):
+        workflow.validate_stage(root, config, stage, Path(sys.executable), env)
+
+
 @pytest.mark.parametrize("mutation", ["incoming", "copy-source", "commit-source", "commit-payload"])
 def test_adversarial_copy_and_install_are_bound_to_original_receipt(workflow, fixture_repo, monkeypatch, mutation):
     root, config, env = fixture_repo

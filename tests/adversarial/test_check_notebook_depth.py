@@ -65,8 +65,12 @@ def product(root: Path) -> Path:
     return root
 
 
+# A load margin, not a behaviour change: the check takes about 13 s alone and timed out at 30 s under another session's gate load.
+GUARD_TIMEOUT = 120  # the limit planting.guard() uses
+
+
 def run(root: Path, *extra: str) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, "-I", str(SCRIPT), str(root), *extra], capture_output=True, encoding="utf-8", timeout=30)
+    return subprocess.run([sys.executable, "-I", str(SCRIPT), str(root), *extra], capture_output=True, encoding="utf-8", timeout=GUARD_TIMEOUT)
 
 
 def change(root: Path, mutate, lang: str = "en") -> None:
@@ -149,7 +153,7 @@ def test_adversarial_static_cli_refuses_bad_notebook_without_execution(tmp_path:
     stage = root / "data-pipeline/pipeline/stages/evaluate.py"
     stage.write_text(f"from pathlib import Path\nPath({str(canary)!r}).touch()\n", encoding="utf-8")
     change(root, lambda nb: nb["cells"].append({"cell_type": "code", "metadata": {}, "source": "raise RuntimeError('must not execute')", "execution_count": None, "outputs": []}))
-    result = subprocess.run([sys.executable, "-I", "-S", str(SCRIPT), str(root)], capture_output=True, encoding="utf-8", timeout=30)
+    result = subprocess.run([sys.executable, "-I", "-S", str(SCRIPT), str(root)], capture_output=True, encoding="utf-8", timeout=GUARD_TIMEOUT)
     assert result.returncode == 0, result.stdout + result.stderr
     assert not canary.exists()
     change(root, lambda nb: nb["cells"][1].update(source="## Method\nShort prose."))
