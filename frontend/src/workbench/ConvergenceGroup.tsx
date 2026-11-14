@@ -1,5 +1,5 @@
 // Group 4, Convergence: the method at work, coupled to the focal plane (V5), did the algorithm converge and what it traded (V4), the
-// efficiency-uniformity front of the benchmark (B5) and the camera feedback loop that removes the non-uniformity the optics leave (V9).
+// efficiency-uniformity continuation of the benchmark (B5) and the camera feedback loop that removes the non-uniformity the optics leave (V9).
 import { ChipGroup, PlotCard, SubTabs, ViewsRow } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useMemo, useState } from 'react';
@@ -26,7 +26,7 @@ export function ConvergenceGroup() {
       tabs={[
         { id: 'method', label: t('Method at work', 'Método trabajando'), content: sel ? <MethodAtWorkView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'metrics', label: t('Metrics by iteration', 'Métricas por iteración'), content: sel ? <MetricsView sel={sel} /> : <Pending label={LOADING} /> },
-        { id: 'pareto', label: t('Pareto front', 'Frente de Pareto'), content: sel ? <ParetoView sel={sel} /> : <Pending label={LOADING} /> },
+        { id: 'pareto', label: t('Trade-off', 'Compromiso'), content: sel ? <ParetoView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'camera', label: t('Camera feedback', 'Realimentación de cámara'), content: sel ? <CameraView sel={sel} /> : <Pending label={LOADING} /> },
       ]}
     />
@@ -153,7 +153,7 @@ export function ParetoView({ sel }: { sel: Selection }) {
     const series: ChartSeries[] = [];
     if (has('published')) series.push({ label: { en: 'Published methods', es: 'Métodos publicados' }, values: column('published'), color: SERIES_COLORS.published, mode: 'points', size: 7 });
     if (has('proposed')) series.push({ label: { en: 'Proposed methods', es: 'Métodos propuestos' }, values: column('proposed'), color: SERIES_COLORS.proposed, mode: 'points', size: 8 });
-    if (has('front')) series.push({ label: { en: `Pareto front of ${geoName}`, es: `Frente de Pareto de ${geoName}` }, values: column('front'), color: SERIES_COLORS.front, mode: 'points', size: 6 });
+    if (has('front')) series.push({ label: { en: `Efficiency-uniformity continuation of ${geoName}`, es: `Continuación eficiencia-uniformidad de ${geoName}` }, values: column('front'), color: SERIES_COLORS.front, mode: 'points', size: 6 });
     if (has('case')) series.push({ label: { en: 'Methods of this case', es: 'Métodos de este caso' }, values: column('case'), color: SERIES_COLORS.case, mode: 'points', size: 10 });
     if (rec) series.push({ label: { en: `Recommended: ${nameOf(rec.pick.method, 'en')}`, es: `Recomendado: ${nameOf(rec.pick.method, 'es')}` }, values: [rec.pick.row.efficiency.median], x: [rec.pick.row.uniformity.median], color: SERIES_COLORS.recommended, mode: 'points', size: 16 });
     // the x window of the methods' own points, with room past the right edge so a point at uniformity 1.000 is drawn whole; a seed range
@@ -174,7 +174,7 @@ export function ParetoView({ sel }: { sel: Selection }) {
   const shownRow = shown ? rows.find((p) => p.method === shown) : undefined;
   const ranInCase = shown ? sel.data.manifest.params.methods.includes(shown) : false;
   const readoutOf = (e: Entry): string => {
-    if (e.kind === 'front') return t(`Pareto front: efficiency ${fmt(e.y * 100, { decimals: 1 })} %, uniformity ${fmt(e.x, { decimals: 3 })}`, `Frente de Pareto: eficiencia ${fmt(e.y * 100, { decimals: 1 })} %, uniformidad ${fmt(e.x, { decimals: 3 })}`);
+    if (e.kind === 'front') return t(`Efficiency-uniformity continuation: efficiency ${fmt(e.y * 100, { decimals: 1 })} %, uniformity ${fmt(e.x, { decimals: 3 })}`, `Continuación eficiencia-uniformidad: eficiencia ${fmt(e.y * 100, { decimals: 1 })} %, uniformidad ${fmt(e.x, { decimals: 3 })}`);
     const row = e.kind === 'case' ? undefined : rows.find((p) => p.method === e.method);
     const name = nameOf(e.method ?? '', lang);
     const seeds = row ? t(`, ${row.row.n_seeds} seeds, spread ${fmt(row.row.rel_std_pct.median, { decimals: 2 })} %`, `, ${row.row.n_seeds} semillas, dispersión ${fmt(row.row.rel_std_pct.median, { decimals: 2 })} %`) : '';
@@ -200,8 +200,8 @@ export function ParetoView({ sel }: { sel: Selection }) {
 
       dataKey={stateKey}
       note={{
-        en: 'Every method of one benchmark cell, its seed range, the Pareto front of the cell and this case’s own methods. Up and to the right is better on both.',
-        es: 'Cada método de una celda del benchmark, su rango entre semillas, el frente de Pareto de la celda y los métodos de este caso. Arriba y a la derecha es mejor en ambos.',
+        en: 'Every method of one benchmark cell, its seed range, the efficiency-uniformity continuation of the cell and this case’s own methods. Up and to the right is better on both.',
+        es: 'Cada método de una celda del benchmark, su rango entre semillas, la continuación eficiencia-uniformidad de la celda y los métodos de este caso. Arriba y a la derecha es mejor en ambos.',
       }}
     >
       <div className="dh-stack">
@@ -218,7 +218,7 @@ export function ParetoView({ sel }: { sel: Selection }) {
                   value={scope}
                   onChange={(v) => setScope(v as 'top' | 'all')}
                   options={[
-                    { id: 'top', label: { en: 'More uniform half', es: 'Mitad más uniforme' }, hint: { en: 'The methods at or above the median uniformity of the cell, where the front and the recommendation are.', es: 'Los métodos con la uniformidad mediana de la celda o más, donde están el frente y la recomendación.' } },
+                    { id: 'top', label: { en: 'More uniform half', es: 'Mitad más uniforme' }, hint: { en: 'The methods at or above the median uniformity of the cell, where the continuation and the recommendation are.', es: 'Los métodos con la uniformidad mediana de la celda o más, donde están la continuación y la recomendación.' } },
                     { id: 'all', label: { en: 'All', es: 'Todos' }, hint: { en: 'Every method of the cell, including the least uniform.', es: 'Todos los métodos de la celda, también los menos uniformes.' } },
                   ]}
                 />

@@ -45,7 +45,7 @@ export const LADDER: LadderRow[] = [
   { id: ID.B2, tier: 'beyond', engine: ID.B2, name: { en: 'Flicker-bounded phase-continuous sequence', es: 'Secuencia de fase continua acotada en parpadeo' }, short: { en: 'Flicker-bounded sequence', es: 'Secuencia acotada en parpadeo' }, slug: 'flicker-bounded-sequence.md' },
   { id: ID.B3, tier: 'beyond', engine: ID.B3, name: { en: 'Learned warm start for phase-fixed WGS (refuted)', es: 'Arranque aprendido para el WGS de fase fija (refutado)' }, short: { en: 'Learned warm start', es: 'Arranque aprendido' }, slug: 'learned-warm-start.md' },
   { id: ID.B4, tier: 'beyond', engine: ID.B4, name: { en: 'Aberration-robust hologram', es: 'Holograma robusto a aberraciones' }, short: { en: 'Aberration-robust hologram', es: 'Holograma robusto a aberraciones' }, slug: 'aberration-robust-hologram.md' },
-  { id: ID.B5, tier: 'beyond', engine: ID.B5, name: { en: 'Efficiency-uniformity Pareto front', es: 'Frente de Pareto eficiencia-uniformidad' }, short: { en: 'Efficiency-uniformity front', es: 'Frente eficiencia-uniformidad' }, slug: 'pareto-front.md' },
+  { id: ID.B5, tier: 'beyond', engine: ID.B5, name: { en: 'Efficiency-uniformity continuation', es: 'Continuación eficiencia-uniformidad' }, short: { en: 'Efficiency-uniformity continuation', es: 'Continuación eficiencia-uniformidad' }, slug: 'pareto-front.md' },
 ];
 
 /** What a reader sees: the 19 methods of the literature are published, the five of DinHot are proposed. */

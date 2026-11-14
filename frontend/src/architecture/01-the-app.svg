@@ -127,9 +127,8 @@
   <text class="it l-es" x="690" y="150" text-anchor="middle">Métricas por</text>
   <text class="it l-es" x="690" y="164" text-anchor="middle">iteración</text>
   <rect class="bx" x="638" y="186" width="104" height="50" rx="6"/>
-  <text class="it l-en" x="690" y="215" text-anchor="middle">Pareto front</text>
-  <text class="it l-es" x="690" y="208" text-anchor="middle">Frente de</text>
-  <text class="it l-es" x="690" y="222" text-anchor="middle">Pareto</text>
+  <text class="it l-en" x="690" y="215" text-anchor="middle">Trade-off</text>
+  <text class="it l-es" x="690" y="215" text-anchor="middle">Compromiso</text>
   <rect class="bx" x="638" y="244" width="104" height="50" rx="6"/>
   <text class="it l-en" x="690" y="266" text-anchor="middle">Camera</text>
   <text class="it l-en" x="690" y="280" text-anchor="middle">feedback</text>

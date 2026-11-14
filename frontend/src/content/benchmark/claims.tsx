@@ -212,9 +212,9 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
       matrix: b5.length
         ? es
           ? `${b5.filter((c) => c.hvFront >= c.hvPublished).length} de ${b5.length} geometrías con frente tienen un hipervolumen del frente mayor o igual`
-          : `${b5.filter((c) => c.hvFront >= c.hvPublished).length} of ${b5.length} geometries with a front have a front hypervolume at least as large`
-        : es ? 'el documento no trae un frente eficiencia-uniformidad' : 'the document holds no efficiency-uniformity front',
-      recorded: es ? 'se calcula íntegra desde el documento (pestaña de frentes de Pareto)' : 'computed entirely from the document (the Pareto fronts tab)',
+          : `${b5.filter((c) => c.hvFront >= c.hvPublished).length} of ${b5.length} geometries with a continuation curve have a continuation hypervolume at least as large`
+        : es ? 'el documento no trae un continuación eficiencia-uniformidad' : 'the document holds no efficiency-uniformity continuation',
+      recorded: es ? 'se calcula íntegra desde el documento (pestaña de continuación eficiencia-uniformidad)' : 'computed entirely from the document (the efficiency-uniformity continuation tab)',
       verdict: v5,
       test: 'tests/methods/beyond/test_b5_pareto.py',
     },
@@ -321,12 +321,12 @@ function ClaimsBody({ res }: { res: BenchmarkResults }) {
         <P
           en={
             <>
- The efficiency-uniformity front method asks for the whole efficiency-uniformity front instead of one trade-off point <Cite id="dileonardo2007" />, and its criterion is a hypervolume at least that of the union of the M04, M05, M06 and M09 points. {b5.length ? <>{verdictLine(v5, false)} The areas, the front and the dominated points are on the Pareto fronts tab; here the count is {b5.filter((c) => c.hvFront >= c.hvPublished).length} of {b5.length} geometries with a front, at {budget ? budgetText(budget).en : 'the default budget'}. The margin of the ladder row is small by design, so it is worth reading the areas and not only the verdict.</> : <>The document holds no front, so the claim has no measurement on this page.</>}
+ The efficiency-uniformity continuation method traces the whole efficiency-uniformity trade-off instead of one trade-off point <Cite id="dileonardo2007" />, and its criterion is a hypervolume at least that of the union of the M04, M05, M06 and M09 points. {b5.length ? <>{verdictLine(v5, false)} The areas, the continuation points and the dominated points are on the efficiency-uniformity continuation tab; here the count is {b5.filter((c) => c.hvFront >= c.hvPublished).length} of {b5.length} geometries with a continuation curve, at {budget ? budgetText(budget).en : 'the default budget'}. The margin of the ladder row is small by design, so it is worth reading the areas and not only the verdict.</> : <>The document holds no continuation curve, so the claim has no measurement on this page.</>}
             </>
           }
           es={
             <>
- El método de frente eficiencia-uniformidad pide el frente completo de eficiencia-uniformidad en lugar de un punto de intercambio <Cite id="dileonardo2007" />, y su criterio es un hipervolumen al menos igual al de la unión de los puntos de M04, M05, M06 y M09. {b5.length ? <>{verdictLine(v5, true)} Las áreas, el frente y los puntos dominados están en la pestaña de frentes de Pareto; aquí el conteo es {b5.filter((c) => c.hvFront >= c.hvPublished).length} de {b5.length} geometrías con frente, con {budget ? budgetText(budget).es : 'el presupuesto por defecto'}. El margen de la fila de la escalera es pequeño por diseño, así que conviene leer las áreas y no solo el veredicto.</> : <>El documento no trae un frente, así que la afirmación no tiene una medición en esta página.</>}
+ El método de continuación eficiencia-uniformidad traza el compromiso eficiencia-uniformidad completo en lugar de un punto de intercambio <Cite id="dileonardo2007" />, y su criterio es un hipervolumen al menos igual al de la unión de los puntos de M04, M05, M06 y M09. {b5.length ? <>{verdictLine(v5, true)} Las áreas, los puntos de la continuación y los puntos dominados están en la pestaña de continuación eficiencia-uniformidad; aquí el conteo es {b5.filter((c) => c.hvFront >= c.hvPublished).length} de {b5.length} geometrías con curva de continuación, con {budget ? budgetText(budget).es : 'el presupuesto por defecto'}. El margen de la fila de la escalera es pequeño por diseño, así que conviene leer las áreas y no solo el veredicto.</> : <>El documento no trae una curva de continuación, así que la afirmación no tiene una medición en esta página.</>}
             </>
           }
         />

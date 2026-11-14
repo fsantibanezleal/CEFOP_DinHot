@@ -318,7 +318,7 @@ export function WarmFigure({ t }: { t: Tr }) {
   );
 }
 
-/** B5: the published efficiency and uniformity points and the front the continuation will trace. */
+/** B5: the published efficiency and uniformity points and the curve the continuation will trace. */
 export function ParetoFigure({ t }: { t: Tr }) {
   const X0 = 70;
   const Y0 = 190;
@@ -332,7 +332,7 @@ export function ParetoFigure({ t }: { t: Tr }) {
     ['SR', 0.69, 0.01],
   ];
   return (
-    <Svg h={250} label={t('Published efficiency and uniformity points of the 10 by 10 task and the schematic front a continuation traces', 'Puntos publicados de eficiencia y uniformidad de la tarea 10 por 10 y el frente esquemático que traza una continuación')}>
+    <Svg h={250} label={t('Published efficiency and uniformity points of the 10 by 10 task and the schematic curve a continuation traces', 'Puntos publicados de eficiencia y uniformidad de la tarea 10 por 10 y la curva esquemática que traza una continuación')}>
       <line x1={X0} y1={Y0} x2={X0 + 500} y2={Y0} className="dg-axis" />
       <line x1={X0} y1={Y0} x2={X0} y2={20} className="dg-axis" />
       <Label x={X0 + 250} y={Y0 + 34}>{t('efficiency e', 'eficiencia e')}</Label>
@@ -344,7 +344,7 @@ export function ParetoFigure({ t }: { t: Tr }) {
         </g>
       ))}
       <path d={`M ${sx(0.68)} ${sy(1.0)} C ${sx(0.85)} ${sy(1.0)} ${sx(0.93)} ${sy(0.99)} ${sx(0.96)} ${sy(0.9)}`} className="dg-curve-faint" />
-      <Label x={sx(0.68) - 4} y={sy(1.0) - 12} anchor="start" kind="note">{t('schematic front, not a result', 'frente esquemático, no un resultado')}</Label>
+      <Label x={sx(0.68) - 4} y={sy(1.0) - 12} anchor="start" kind="note">{t('schematic curve, not a result', 'curva esquemática, no un resultado')}</Label>
       {pts.map(([n, e, u]) => (
         <g key={n}>
           <circle cx={sx(e)} cy={sy(u)} r={5} className="dg-node" />

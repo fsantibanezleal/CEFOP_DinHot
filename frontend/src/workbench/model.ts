@@ -36,7 +36,7 @@ export const METHOD_NAMES: Record<string, Text> = {
   B2: { en: 'Flicker-bounded sequence', es: 'Secuencia acotada por parpadeo' },
   B3: { en: 'Learned warm start', es: 'Arranque aprendido' },
   B4: { en: 'Aberration-robust hologram', es: 'Holograma robusto a aberraciones' },
-  B5: { en: 'Efficiency-uniformity front', es: 'Frente eficiencia-uniformidad' },
+  B5: { en: 'Efficiency-uniformity continuation', es: 'Continuación eficiencia-uniformidad' },
 };
 
 /** A method by its name, never by its id (CAOS_MANAGE method-tiers rule, section 0); an id the ladder does not hold is shown as given. */

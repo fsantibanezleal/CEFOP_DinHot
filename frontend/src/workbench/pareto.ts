@@ -12,7 +12,7 @@ export const EFF_WINDOW = 0.05;
 /** The budget the view opens on: 100 iterations, the longest iteration budget of the protocol. */
 export const OPENING_BUDGET: Budget = { kind: 'iterations', value: 100 };
 
-/** One colour per series of the view (shell tokens), none repeated: the benchmark's methods, the front, this case's methods and the recommendation are told apart by colour and size. */
+/** One colour per series of the view (shell tokens), none repeated: the benchmark's methods, the continuation points of B5, this case's methods and the recommendation are told apart by colour and size. */
 export const SERIES_COLORS = {
   published: '--color-accent',
   proposed: '--color-accent-2',
