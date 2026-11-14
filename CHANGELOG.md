@@ -3,14 +3,19 @@
 All notable changes to this product. Versions are X.XX.XXX (VERSION is the single source); every release is
 tagged.
 
-## [0.02.003], 2026-11-08
+## [0.02.003], 2026-11-14
 
 ### Changed
 
-- Adopted CAOS_PRODUCT_TEMPLATE 0.15.006 and the shared app shell 0.25.0. The shell's gate now measures DinHot's long
+- Adopted CAOS_PRODUCT_TEMPLATE 0.15.010 and the shared app shell 0.26.0. The shell's gate now measures DinHot's long
   documentation pages, because the walk's budget scales with the document. The story's callout cards show their state. The
   fourteen methods in the rail are one select, using the shell's variant select layout, which was added for DinHot. The site's
-  further files (the benchmark, the model metrics, the released models) are served through the base's product hook.
+  further files (the benchmark, the model metrics, the released models) are served through the base's product hook. Shell 0.26.0
+  carries the fixes for the defects DinHot found on 0.25.0 (known defects 63 to 66 and 68): the story's step into the method view
+  runs at 59.5 to 59.9 frames per second on the fifth percentile, against 15 to 20 on 0.25.0, because the shell keeps one number
+  formatter per locale instead of building one per call. DinHot drops the two workarounds it carried for them: the particle view
+  no longer waits for the callout band to hold before it is drawn, and no longer pauses the bead when the reader touches its chart.
+  The generation's staged inputs are stamped and checked before a generation (template 0.15.007 to 0.15.010).
 - The App opens on the optical train, from the laser to the traps, drawn from the case's setup, and shows the SLM in section, one
   pixel row with its commanded and displayed phase; both carry anchored callouts. A trap selected on the focal plane, in the per-trap
   bars or on the optical train is selected everywhere. The method at work redraws the focal plane at the iteration the reader scrubs.
