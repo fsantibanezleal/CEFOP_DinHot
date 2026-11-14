@@ -46,7 +46,10 @@ from ..model.holo.core.types import Budget
 from ..stages import infer
 from . import geometries as G
 
-LADDER = [f"M{k:02d}" for k in range(1, 20)] + [f"B{k}" for k in range(1, 6)]
+# B2 is not in the static ladder (0.02.004): its frame 0 is phase-fixed WGS (M07's rule) and the rest of the run is a
+# frame sequence for moving traps, so a static cell would rank M07 plus a refinement against the methods it is built on
+# (review finding B-1 of the technical report); its sequence experiments (rearrangement, transient ratio) are unaffected.
+LADDER = [f"M{k:02d}" for k in range(1, 20)] + [f"B{k}" for k in (1, 3, 4, 5)]
 TUNING_CANDIDATES = 4
 TUNING_SEEDS = 3
 TUNING_SEED_OFFSET = 1000
@@ -56,6 +59,10 @@ MAX_WORKERS = 12
 # seeds it ran (n_seeds), so a group that stopped early says so instead of holding the whole run.
 GROUP_BUDGET_S = 600.0
 MIN_SEEDS = 2
+# Rows bounded by a deadline (time and converged) cost at most converged_s + sum(times) a seed, so they always run at least
+# MIN_BOUNDED_SEEDS seeds whatever the group has spent; only the iteration rows, whose cost is the method's own, keep the
+# 600 s group budget with MIN_SEEDS (a cell read as a win needs 5 seeds on both sides: ``manuscripts/.../extract.py``).
+MIN_BOUNDED_SEEDS = 5
 # the dossier's tuned parameters (D4.3 item 5); applied only when the method's run accepts the name
 FALLBACK_TUNING: dict[str, list[dict]] = {
     "M05": [{"alpha": a} for a in (0.25, 0.5, 0.75, 1.0)],
@@ -131,7 +138,8 @@ def _row(mid, geometry, device, kind, budget, params, outs) -> dict:
             "budget": budget, "params": params, "n_seeds": len(outs),
             "efficiency": _stat([o.score["efficiency"] for o in outs]), "uniformity": _stat([o.score["uniformity"] for o in outs]),
             "rel_std_pct": _stat([o.score["rel_std_pct"] for o in outs]), "time_s": _stat([o.seconds for o in outs]),
-            "iterations": _stat([float(o.iterations) for o in outs])}
+            "iterations": _stat([float(o.iterations) for o in outs]),
+            "evaluations": _stat([float(o.meta["forward_adjoint_evaluations"]) for o in outs])}
 
 
 def _record(geometry: str, device: bool, seed: int, reduced: bool) -> dict:
@@ -200,11 +208,12 @@ def _run_group(task: dict) -> dict:
     pareto = None
     t_group = time.perf_counter()
     for seed in range(proto.seeds):
-        if seed >= MIN_SEEDS and not proto.reduced and time.perf_counter() - t_group > GROUP_BUDGET_S:
+        spent = time.perf_counter() - t_group > GROUP_BUDGET_S
+        if spent and seed >= max(MIN_SEEDS, MIN_BOUNDED_SEEDS):
             break
         rec = _record(geometry, device, seed, proto.reduced)
         ctx = infer.case_context(rec)
-        runs = [("iterations", n, Budget(n)) for n in proto.iterations]
+        runs = [] if spent and seed >= MIN_SEEDS else [("iterations", n, Budget(n)) for n in proto.iterations]
         runs += [("time", t, Budget(proto.cap, t)) for t in proto.times]
         runs += [("converged", float(proto.cap), Budget(proto.cap, proto.converged_s))]
         for bk, b, budget in runs:
@@ -234,7 +243,9 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
                                      "fill factor 0.85, flicker 0.05 rad). Every hologram is scored against its device. The "
                                      "device rows run with the default parameters only (the tuning is done on the ideal "
                                      "model) and not on the multi-plane geometries (a device model is read at one focal "
-                                     "plane). The converged row runs to 300 iterations or 20 s; a group runs its seeds until 600 s of wall clock "
+                                     "plane). The converged row runs to 300 iterations or 20 s; every method stops at the deadline of a time row in every "
+                                     "phase and every row records its work (iterations and forward plus adjoint evaluations); the time and "
+                                     "converged rows run at least 5 seeds, the iteration rows run seeds until 600 s of wall clock "
                                      "(at least 2, n_seeds says how many). Times are wall-clock "
                                      "seconds of the machine that ran the benchmark, under shared load, and differ "
                                      "between runs.",
@@ -243,7 +254,9 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
                                      "su dispositivo. Las filas con dispositivo usan solo los parámetros por defecto (el ajuste "
                                      "se hace sobre el modelo ideal) y no se ejecutan en las geometrías de varios planos (el "
                                      "modelo del dispositivo se lee en un solo plano focal). La fila convergida corre hasta "
-                                     "300 iteraciones o 20 s; un grupo corre semillas hasta 600 s de reloj (al menos 2, n_seeds dice cuántas). "
+                                     "300 iteraciones o 20 s; todo método se detiene en el plazo de una fila de tiempo en cada fase y cada fila "
+                                     "registra su trabajo (iteraciones y evaluaciones directas más adjuntas); las filas de tiempo y "
+                                     "convergida corren al menos 5 semillas, las de iteraciones corren semillas hasta 600 s de reloj (al menos 2, n_seeds dice cuántas). "
                                      "Los tiempos son segundos de reloj de la máquina que ejecutó el "
                                      "benchmark, con carga compartida, y difieren entre ejecuciones.")},
         "geometries": [{"id": g, "name": G.GEOMETRIES[g][0], "n_traps": G.n_traps(g, proto.reduced), "dims": G.GEOMETRIES[g][2]}

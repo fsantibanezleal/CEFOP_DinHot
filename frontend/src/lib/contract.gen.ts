@@ -381,7 +381,7 @@ export interface components {
         };
         /**
          * BenchmarkResults
-         * @description Contract 2 (artifact), catalog row benchmark-results 1.0.0: the protocol's table, method by geometry by budget, written by data-pipeline/pipeline/stages/benchmark.py to data/derived/benchmark/results.json. Missing data: a cell that was not run is absent from rows and listed in skipped.
+         * @description Contract 2 (artifact), catalog row benchmark-results 2.0.0: the protocol's table, method by geometry by budget, written by data-pipeline/pipeline/stages/benchmark.py to data/derived/benchmark/results.json. Missing data: a cell that was not run is absent from rows and listed in skipped.
          */
         BenchmarkResults: {
             /** @constant */
@@ -419,6 +419,7 @@ export interface components {
                 rel_std_pct: components["schemas"]["stat"];
                 time_s: components["schemas"]["stat"];
                 iterations: components["schemas"]["stat"];
+                evaluations: components["schemas"]["stat"];
             }[];
             pareto: {
                 geometry: string;

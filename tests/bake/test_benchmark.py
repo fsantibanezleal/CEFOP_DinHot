@@ -115,7 +115,7 @@ def test_geometries_are_valid_records_and_in_units():
             rec = G.record(g, device=False, seed=0, reduced=reduced)
             rep = validate_records([{**rec, "case_id": "C99_bm"}])
             assert rep.ok, (g, reduced, rep.rejected)
-    assert G.n_traps("G1", False) == 100 and G.n_traps("G6", False) == 1024 and G.n_traps("G4", False) == 119
+    assert G.n_traps("G1", False) == 100 and G.n_traps("G6a", False) == 1024 and G.n_traps("G6b", False) == 819 and G.n_traps("G4", False) == 119
     assert G.n_traps("G5", False) == 75 and G.n_traps("G2", False) == 36 and G.n_traps("G3", False) == 100
     assert {G.record("G7", device=False, seed=s)["target"]["shape"] for s in range(4)} == {"ring", "disc", "line", "lg_ring"}
     assert G.unit_um(256) == pytest.approx(G.unit_um(512)) and G.unit_um(256) == pytest.approx(0.996, abs=1e-3)

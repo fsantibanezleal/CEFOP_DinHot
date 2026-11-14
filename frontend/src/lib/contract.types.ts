@@ -336,6 +336,7 @@ export const BENCHMARK = {
         rel_std_pct: STAT,
         time_s: STAT,
         iterations: STAT,
+        evaluations: STAT,
       } satisfies Record<keyof BenchmarkRow, Kind>,
     },
   },

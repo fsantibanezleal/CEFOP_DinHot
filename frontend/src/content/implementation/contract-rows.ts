@@ -46,7 +46,7 @@ export const CONTRACT_ROWS: ContractRow[] = [
   },
   {
     id: 'benchmark-results',
-    version: '1.0.0',
+    version: '2.0.0',
     owner: 'data-pipeline/pipeline/stages/benchmark.py',
     what: { en: 'The benchmark table (method by geometry by budget), the Pareto fronts and the skipped cells.', es: 'La tabla del benchmark (método por geometría por presupuesto), los frentes de Pareto y las celdas omitidas.' },
     reader: { en: 'The Benchmark page and the Pareto view', es: 'La página Benchmark y la vista de Pareto' },
