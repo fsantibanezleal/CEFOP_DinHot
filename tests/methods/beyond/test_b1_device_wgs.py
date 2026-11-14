@@ -1,4 +1,4 @@
-"""B1 device-aware weighted GS.
+"""B1 device-aware conjugate-gradient refinement (named device-aware weighted GS until 0.02.003).
 
 Acceptance (SDD): on the crosstalk device, relative standard deviation at least two times below M07 (phase-fixed WGS),
 efficiency at most 10 percent lower. M07 is unit E2's module; until the merge the baseline is this unit's
@@ -63,17 +63,53 @@ def test_without_a_device_the_loop_uses_the_ideal_model():
     assert res.history[-1]["rel_std"] < 5.0 and not res.meta["device_aware"]
 
 
-def test_the_weight_update_can_be_switched_off_and_the_default_keeps_it():
-    """``weights=False`` is the ablation option (BL-046): the weights stay at one and the run differs from the default."""
+def test_the_weight_update_is_an_option_and_off_by_default():
+    """MD-023: ``weights`` defaults to False (the weights stay at one); ``weights=True`` is the option and differs from it."""
     s = make_setup(64)
     traps = bin_grid(s, 4, 4, 8)
     dev = Device(crosstalk=(1.24, 1.8), bit_depth=5)
-    on = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(4))
-    off = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(4), weights=False)
-    assert on.meta["weight_update"] and not off.meta["weight_update"]
-    assert off.meta["weights"] == [1.0] * len(traps)
+    default = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(4))
+    on = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(4), weights=True)
+    assert not default.meta["weight_update"] and on.meta["weight_update"]
+    assert default.meta["weights"] == [1.0] * len(traps)
     assert any(abs(w - 1.0) > 1e-6 for w in on.meta["weights"])
-    assert not np.array_equal(on.phi, off.phi)
+    assert not np.array_equal(default.phi, on.phi)
+
+
+def test_spec_name_is_the_device_aware_conjugate_gradient_refinement():
+    """MD-023: the method is named for what it does; the id stays B1."""
+    assert B1.SPEC.id == "B1" and B1.SPEC.name == "Device-aware conjugate-gradient refinement"
+
+
+def _recorded():
+    return np.load(Path(__file__).resolve().parents[2] / "fixtures" / "b1_recorded_before_0_02_004.npz")
+
+
+def _small_run(**kw):
+    s = make_setup(64)
+    traps = bin_grid(s, 4, 4, 8)
+    dev = Device(crosstalk=(1.24, 1.8), bit_depth=5)
+    return B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(4), **kw)
+
+
+def test_weights_true_reproduces_the_run_recorded_before_the_default_changed():
+    """Must refute: ``weights=True`` not reproducing today's B1. The fixture is the output of the 0.02.003 code (default
+    ``weights=True``) on this target, device, seed and budget, recorded on 2026-11-14 before the change."""
+    rec = _recorded()
+    r = _small_run(weights=True)
+    assert np.allclose(r.phi, rec["phi_weights_true"], atol=1e-6)
+    assert np.allclose(r.meta["weights"], rec["w_true"], rtol=1e-8)
+    assert np.allclose([h["rel_std"] for h in r.history], rec["rel_std_true"], rtol=1e-6)
+    assert r.meta["best_iteration"] == int(rec["best_true"])
+
+
+def test_the_default_equals_the_weights_false_run_recorded_before_the_default_changed():
+    """The new default is today's ``weights=False`` exactly (MD-023)."""
+    rec = _recorded()
+    r = _small_run()
+    assert np.allclose(r.phi, rec["phi_weights_false"], atol=1e-6)
+    assert np.allclose([h["rel_std"] for h in r.history], rec["rel_std_false"], rtol=1e-6)
+    assert np.array_equal(r.phi, _small_run(weights=False).phi)
 
 
 def test_deterministic_for_a_seed():
@@ -97,15 +133,17 @@ def test_acceptance_two_times_lower_rel_std_than_phase_fixed_wgs_on_the_crosstal
 
 
 def test_adversarial_a_run_that_winds_up_returns_its_best_admissible_iterate():
-    """Must refute: B1 returning a runaway. On the benchmark's square lattice on the C08 device, seed 1 winds up (its own
-    history shows the loss rising and the efficiency falling to a few percent, measured 2026-10-30); the safeguard returns the
-    best iterate that keeps EFFICIENCY_FLOOR of the warm start's efficiency, so the result is never worse than the start."""
+    """Must refute: B1 returning a runaway. It occurs with the weight update on (``weights=True``; measured 2026-11-14, the default
+    without the update keeps 0.56 of the efficiency on this task, so the planted condition needs the option). On the benchmark's
+    square lattice on the C08 device, seed 1 winds up (its own history shows the loss rising and the efficiency falling to a few
+    percent, measured 2026-10-30); the safeguard returns the best iterate that keeps EFFICIENCY_FLOOR of the warm start's
+    efficiency, so the result is never worse than the start."""
     from pipeline.benchmark import protocol
     from pipeline.stages import infer
 
     rec = protocol._record("G1", True, 1, False)
     rec = {**rec, "device": {**rec["device"], "flicker_rad": 0.0}}
-    out = infer.run_method(rec, "B1", budget=Budget(10))
+    out = infer.run_method(rec, "B1", budget=Budget(10), extra={"weights": True})
     effs = [h["efficiency"] for h in out.history]
     assert min(effs) < 0.25 * out.meta["start_efficiency"]           # the run did wind up: the planted condition holds
     assert out.meta["efficiency_floor"] == pytest.approx(B1.EFFICIENCY_FLOOR * out.meta["start_efficiency"])
@@ -116,7 +154,132 @@ def test_adversarial_a_run_that_winds_up_returns_its_best_admissible_iterate():
 
 
 def test_a_converging_run_returns_an_iterate_of_its_tail():
+    """With the weight update on (the 0.02.003 default) the spread keeps falling and the best iterate is one of the last
+    (measured: 6 of 8); without it (the default) the run reaches a plateau by the fourth iterate (measured: 0.0319 from
+    iteration 4 on) and the returned iterate lies on it, within 0.1 percent of the last."""
     s = make_setup(256)
     traps = task_10x10(s)
-    res = B1.run(s, Target.from_traps(traps), device=DEVICE, budget=Budget(8), rng=Rng(1))
-    assert res.meta["best_iteration"] >= 6 and res.meta["efficiency_floor"] > 0
+    on = B1.run(s, Target.from_traps(traps), device=DEVICE, budget=Budget(8), rng=Rng(1), weights=True)
+    assert on.meta["best_iteration"] >= 6 and on.meta["efficiency_floor"] > 0
+    off = B1.run(s, Target.from_traps(traps), device=DEVICE, budget=Budget(8), rng=Rng(1))
+    k = off.meta["best_iteration"]
+    assert k >= 1 and off.history[k - 1]["rel_std"] <= 1.001 * off.history[-1]["rel_std"] and off.meta["efficiency_floor"] > 0
+
+
+# ---------------------------------------------------------------------------------------------------- the loss option (MD-024)
+
+def _cost(s, traps, dev, target, **kw):
+    c = B1.NormalizedErrorCost(s, traps, dev, **kw)
+    c.target = np.asarray(target, dtype=float)
+    return c
+
+
+def test_loss_option_is_validated_and_recorded():
+    s = make_setup(32)
+    traps = bin_grid(s, 2, 2, 16)
+    with pytest.raises(ValueError, match="loss"):
+        B1.run(s, Target.from_traps(traps), budget=Budget(1), rng=Rng(1), loss="l1")
+    d = B1.run(s, Target.from_traps(traps), device=DEVICE, budget=Budget(1), rng=Rng(1))
+    n = B1.run(s, Target.from_traps(traps), device=DEVICE, budget=Budget(1), rng=Rng(1), loss="normalized-error")
+    assert d.meta["loss"] == "efficiency-level" and n.meta["loss"] == "normalized-error"
+
+
+def test_normalized_error_value_is_schroff_eq3_on_the_trap_intensities():
+    """Schroff et al. 2023, Sci. Rep. 13, 3252, eq (3), p. 3: C = s sum_S (T~ - I~)^2, T~ = T / sum_S T, I~ = I / sum_S I,
+    here with S the target traps and I_m = |V_m|^2 on the device model."""
+    s = make_setup(64)
+    traps = bin_grid(s, 3, 3, 8)
+    rg = np.random.default_rng(3)
+    phi = rg.uniform(0, 2 * np.pi, (64, 64))
+    tgt = rg.uniform(0.5, 2.0, 9)
+    cost = _cost(s, traps, DEVICE, tgt)
+    value, _, v = cost.value_grad(phi)
+    i = np.abs(v) ** 2
+    t_n, i_n = tgt / tgt.sum(), i / i.sum()
+    assert value == pytest.approx(cost.steepness * np.sum((t_n - i_n) ** 2), rel=1e-12)
+    assert cost.steepness == pytest.approx(1.0 / np.sum(t_n**2))      # default: C is the relative squared error
+
+
+def test_normalized_error_is_invariant_to_the_power_of_the_target():
+    s = make_setup(32)
+    traps = bin_grid(s, 2, 2, 16)
+    phi = np.random.default_rng(2).uniform(0, 2 * np.pi, (32, 32))
+    a = _cost(s, traps, DEVICE, [1.0, 2.0, 1.0, 2.0]).value_grad(phi)
+    b = _cost(s, traps, DEVICE, [0.3, 0.6, 0.3, 0.6]).value_grad(phi)
+    assert a[0] == pytest.approx(b[0], rel=1e-12) and np.allclose(a[1], b[1], rtol=1e-9, atol=1e-15)
+
+
+def test_normalized_error_steepness_is_a_scale_and_is_validated():
+    s = make_setup(32)
+    traps = bin_grid(s, 2, 2, 16)
+    phi = np.random.default_rng(1).uniform(0, 2 * np.pi, (32, 32))
+    tgt = [1.0, 2.0, 1.0, 2.0]
+    a, b = _cost(s, traps, DEVICE, tgt), _cost(s, traps, DEVICE, tgt, steepness=1e12)   # 1e12: Schroff's s (Methods, p. 7)
+    va, ga, _ = a.value_grad(phi)
+    vb, gb, _ = b.value_grad(phi)
+    assert vb / va == pytest.approx(1e12 / a.steepness) and np.allclose(gb / ga, vb / va)
+    with pytest.raises(ValueError, match="steepness"):
+        B1.NormalizedErrorCost(s, traps, DEVICE, steepness=-1.0)
+
+
+@pytest.mark.parametrize("dev", [None, Device(crosstalk=(1.24, 1.8))], ids=["ideal", "crosstalk"])
+def test_normalized_error_gradient_matches_finite_differences(dev):
+    """Must refute: a Schroff loss whose gradient disagrees with finite differences (directional derivatives, central)."""
+    s = make_setup(64)
+    traps = bin_grid(s, 3, 3, 8)
+    rg = np.random.default_rng(11)
+    phi = rg.uniform(0, 2 * np.pi, (64, 64))
+    cost = _cost(s, traps, dev, rg.uniform(0.5, 2.0, 9))
+    _, grad, _ = cost.value_grad(phi)
+    for k in range(4):
+        d = rg.standard_normal(phi.shape)
+        d /= np.linalg.norm(d)
+        h = 1e-5
+        fd = (cost.value_grad(phi + h * d)[0] - cost.value_grad(phi - h * d)[0]) / (2 * h)
+        an = float(np.sum(grad * d))
+        assert an == pytest.approx(fd, rel=1e-5, abs=1e-9), (k, an, fd)
+
+
+def test_normalized_error_runs_the_same_warm_start_and_safeguard_and_differs_only_by_the_loss():
+    s = make_setup(64)
+    traps = bin_grid(s, 4, 4, 8)
+    dev = Device(crosstalk=(1.24, 1.8), bit_depth=5)
+    a = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(4))
+    b = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(4), loss="normalized-error")
+    for k in ("warm_iterations", "start_rel_std", "start_efficiency", "efficiency_floor", "steps", "warm"):
+        assert a.meta[k] == b.meta[k], k
+    assert not np.array_equal(a.phi, b.phi)
+    assert len(b.history) == 3 and b.meta["cg_steps"] >= 1 and b.meta["evaluations"] > 0
+    k = b.meta["best_iteration"]
+    assert k == 0 or b.history[k - 1]["efficiency"] >= b.meta["efficiency_floor"]
+
+
+def test_normalized_error_flattens_the_traps_on_the_crosstalk_device():
+    s = make_setup(128)
+    traps = bin_grid(s, 5, 5, 8)
+    base, _ = G.weighted_gs(s, traps, 12, Rng(2), variant="gsw")
+    res = B1.run(s, Target.from_traps(traps), device=DEVICE, budget=Budget(4), rng=Rng(2), loss="normalized-error")
+    assert on_device(res.phi, s, traps)[1] < on_device(base, s, traps)[1]
+
+
+def test_normalized_error_honours_the_deadline_and_counts_its_work():
+    """Must refute: a new option that overruns the deadline (the same deadline_fun as the default loss)."""
+    import time
+
+    from pipeline.model.holo.core import forward as F
+    s = make_setup(64)
+    traps = bin_grid(s, 6, 6, 6)
+    dev = Device(crosstalk=(1.24, 1.8), bit_depth=5)
+    F.reset_evaluations()
+    full = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(1), loss="normalized-error")
+    full_s_eval = F.evaluations()
+    assert full.meta["iterations"] == full.meta["warm_iterations"] + full.meta["cg_steps"] and full_s_eval > 0
+    t0 = time.perf_counter()
+    B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(3), rng=Rng(1), loss="normalized-error")
+    per_run = time.perf_counter() - t0
+    budget_s = per_run / 3.0
+    t0 = time.perf_counter()
+    cut = B1.run(s, Target.from_traps(traps), device=dev, budget=Budget(1000, budget_s), rng=Rng(1), loss="normalized-error")
+    took = time.perf_counter() - t0
+    assert took <= budget_s + 0.5 * per_run + 0.2, (took, budget_s, per_run)
+    assert cut.meta["iterations"] < 1000 and cut.meta["loss"] == "normalized-error"
