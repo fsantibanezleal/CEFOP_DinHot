@@ -139,7 +139,7 @@ export function intervalDots(rows: readonly Picked[], k = 9): { x: number[]; y: 
   return { x, y };
 }
 
-/** A point of the view's chart: a method of the benchmark (published or proposed), a point of the front, or a method of this case. */
+/** A point of the view's chart: a method of the benchmark (published or proposed), a point of the efficiency-uniformity continuation, or a method of this case. */
 export interface ChartEntry {
   x: number;
   y: number;
