@@ -274,6 +274,11 @@ export function placeSites(field: Box, ext: number, traps: readonly { id: number
   const len = Math.hypot(0.5, 0.3);
   const ux = 0.5 / len, uy = -0.3 / len;
   const order = [...traps].sort((a, b) => a.z_um - b.z_um || a.id - b.id);
+  const clamp = (x: number, y: number) => ({
+    x: Math.min(field.x + field.w - dot, Math.max(field.x + dot, x)),
+    y: Math.min(field.y + field.h - dot, Math.max(field.y + dot, y)),
+  });
+  const free = (p: { x: number; y: number }) => placed.every((q) => Math.hypot(q.x - p.x, q.y - p.y) >= gap);
   for (const tr of order) {
     const s = siteAt(field, ext, tr);
     let x = s.x, y = s.y;
@@ -281,10 +286,25 @@ export function placeSites(field: Box, ext: number, traps: readonly { id: number
       x += ux;
       y += uy;
     }
-    x = Math.min(field.x + field.w - dot, Math.max(field.x + dot, x));
-    y = Math.min(field.y + field.h - dot, Math.max(field.y + dot, y));
-    placed.push({ x, y });
-    out.set(tr.id, { x, y });
+    let at = clamp(x, y);
+    if (!free(at)) {
+      // the nudge ran into the field's edge (the clamp put the dot back onto another) or out of steps: the nearest free point of the
+      // field around the trap's own site, searched on rings one pixel apart (gate G5 at 390 px, case C06)
+      const c = clamp(s.x, s.y);
+      const reach = Math.max(field.w, field.h);
+      search: for (let r = 1; r <= reach; r += 1) {
+        const n = Math.max(12, Math.ceil(Math.PI * r));
+        for (let k = 0; k < n; k++) {
+          const q = clamp(c.x + r * Math.cos((2 * Math.PI * k) / n), c.y + r * Math.sin((2 * Math.PI * k) / n));
+          if (free(q)) {
+            at = q;
+            break search;
+          }
+        }
+      }
+    }
+    placed.push(at);
+    out.set(tr.id, at);
   }
   return out;
 }

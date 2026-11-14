@@ -365,6 +365,26 @@ describe('the focal square places every trap dot clear of the others (gate G5: e
     }
   });
 
+  it('adversarial: a dense line of traps at the edge of a small field keeps every centre reachable and inside the field (gate G5 at 390 px, case C06)', () => {
+    // 25 traps on a short line near the field's upper right corner: the nudge runs into the edge, and a clamp alone would put
+    // dots back onto each other
+    const line = Array.from({ length: 25 }, (_, k) => ({ id: k + 1, x_um: 20 + k * 0.05, y_um: 20 - k * 0.05, z_um: (k % 5) - 2 }));
+    const box = { x: 10, y: 20, w: 90, h: 60 };
+    const d = 3;
+    const at = placeSites(box, 22, line, d);
+    expect(at.size).toBe(line.length);
+    const pts = [...at.values()];
+    for (const p of pts) {
+      expect(p.x).toBeGreaterThanOrEqual(box.x + d - 1e-9);
+      expect(p.x).toBeLessThanOrEqual(box.x + box.w - d + 1e-9);
+      expect(p.y).toBeGreaterThanOrEqual(box.y + d - 1e-9);
+      expect(p.y).toBeLessThanOrEqual(box.y + box.h - d + 1e-9);
+    }
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+      expect(Math.hypot(pts[i]!.x - pts[j]!.x, pts[i]!.y - pts[j]!.y)).toBeGreaterThanOrEqual(d + 1.5 - 1e-9);
+    }
+  });
+
   it('leaves a trap where the projection puts it when nothing is in its way', () => {
     const lone = placeSites(field, ext, [traps[1]!], dot).get(18)!;
     const half = field.w / 2, k = (half - 5) / ext;
