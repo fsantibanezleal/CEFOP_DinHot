@@ -204,7 +204,9 @@ def benchmark_summary(ladder: list[dict]) -> dict:
     all_methods = sorted({s["method"] for s in r["skipped"]} | set(methods))
     geos = r["geometries"]
     point = [g["id"] for g in geos if g["n_traps"]]
-    it100, t1 = bench_cells(rows, "iterations", 100), bench_cells(rows, "time", 1.0)
+    # a cell is read at the longest time budget of the protocol (1 s in the release run)
+    read_time = max(r["protocol"]["budgets"]["time_s"])
+    it100, t1 = bench_cells(rows, "iterations", 100), bench_cells(rows, "time", read_time)
     by_geometry = {}
     for g in geos:
         for device in ("ideal", "device"):
@@ -234,7 +236,7 @@ def benchmark_summary(ladder: list[dict]) -> dict:
                 "time_s": statistics.median(x["time_s"]["median"] for x in xs)}
         by_method[m] = out
     return {"schema": r["schema"], "engine_version": r["engine_version"], "grids": r["protocol"]["grids"],
-            "seeds": r["protocol"]["seeds"], "budgets": r["protocol"]["budgets"], "geometries": geos, "point_geometries": point,
+            "seeds": r["protocol"]["seeds"], "budgets": r["protocol"]["budgets"], "geometries": geos, "point_geometries": point, "read_time_s": read_time,
             "rows": len(rows), "methods_measured": methods, "methods_in_protocol": all_methods,
             "skipped": len(r["skipped"]), "skipped_reasons": skipped,
             "seeds_min": min((x["n_seeds"] for x in rows), default=0), "seeds_max": max((x["n_seeds"] for x in rows), default=0),
@@ -437,19 +439,20 @@ def _result(c: dict) -> str:
 
 def table_benchmark(bench: dict) -> str:
     names = {g["id"]: g["name"]["en"] for g in bench["geometries"]}
-    out = ["\begin{table}[t]\centering\footnotesize\n",
-           "\caption{Benchmark at equal wall clock, per geometry and device: every method stops at the 1~s deadline in every phase. The published "
-           "method and the proposed method with the lowest median relative standard deviation $\sigma$ (\%) among those of their kind that reach at "
+    t = f"{bench['read_time_s']:g}"
+    out = ["\\begin{table}[t]\\centering\\footnotesize\n",
+           f"\\caption{{Benchmark at equal wall clock, per geometry and device: every method stops at the {t}~s deadline in every phase. The published "
+           "method and the proposed method with the lowest median relative standard deviation $\\sigma$ (\\%) among those of their kind that reach at "
            "least half of the best median efficiency of the kind, with the seeds behind each ($n$), and the reading of the cell: one kind wins only if both have "
            f"at least {WIN_MIN_SEEDS} seeds, their interquartile ranges do not overlap and their medians differ by at least {WIN_MIN_DIFF_PCT} percentage "
-           "points; otherwise the cell is a tie. Default parameters, medians over the seeds of each cell.}\label{tab:benchmark}\n",
-           "\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth} l >{\raggedright\arraybackslash}p{0.2\textwidth} >{\raggedright\arraybackslash}p{0.2\textwidth} l@{}}\toprule Geometry & Device & Published & Proposed & Reading\\\midrule\n"]
+           "points; otherwise the cell is a tie. Default parameters, medians over the seeds of each cell.}\\label{tab:benchmark}\n",
+           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.2\\textwidth} l >{\\raggedright\\arraybackslash}p{0.2\\textwidth} >{\\raggedright\\arraybackslash}p{0.2\\textwidth} l@{}}\\toprule Geometry & Device & Published & Proposed & Reading\\\\\\midrule\n"]
     for key, c in bench["by_geometry"].items():
         g, device = key.split("/")
         dev = "ideal" if device == "ideal" else "C08"
         out.append(f"{g} {tex_escape(names[g])} & {dev} & {_cell(c['published'])} & {_cell(c['proposed'])} & "
-                   f"{_result(c)}\\\n")
-    out.append("\bottomrule\end{tabular}\end{table}\n")
+                   f"{_result(c)}\\\\\n")
+    out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
 
