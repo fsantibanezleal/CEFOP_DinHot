@@ -4,8 +4,17 @@
 import { BarChart, Cite, DocSection, PlotCard, useShellLang, type BarDatum } from '@fasl-work/caos-app-shell';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import { bestOfKind, bestPublished, budgetText, KIND_ORDER, KIND_TEXT, mostUniform, nameOf, pickRows, type Lang, type Picked } from './data';
+import { bestOfKind, bestPublished, budgetText, cellReading, type Reading, WIN_MIN_DIFF_PCT, KIND_ORDER, KIND_TEXT, mostUniform, nameOf, pickRows, type Lang, type Picked } from './data';
 import { CellControls, Note, Ready, TableWrap, KIND_LEGEND, KIND_TONE, useBench, useNum, useResolved } from './shared';
+
+/** What the cell is read as: a win only under the rule of `cellReading`, else a tie. */
+const READING: Record<Reading, { en: string; es: string }> = {
+  published: { en: 'Published method wins', es: 'Gana el método publicado' },
+  proposed: { en: 'Proposed method wins', es: 'Gana el método propuesto' },
+  tie: { en: 'Tie', es: 'Empate' },
+};
+
+const esNum = (x: number) => String(x).replace('.', ',');
 
 function KindBody({ res }: { res: BenchmarkResults }) {
   const lang = useShellLang() as Lang;
@@ -20,7 +29,8 @@ function KindBody({ res }: { res: BenchmarkResults }) {
       <td key={key} className="caos-col-text" style={{ whiteSpace: 'normal' }}>
         {nameOf(b.method, lang)} {b.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : ''}
         <span className="caos-plot-note" style={{ display: 'block' }}>
-          {pct(b.row.rel_std_pct.median)}, {es ? 'eficiencia' : 'efficiency'} {n(b.row.efficiency.median)}
+          {pct(b.row.rel_std_pct.median)}, {es ? 'eficiencia' : 'efficiency'} {n(b.row.efficiency.median)}, n = {b.row.n_seeds},{' '}
+          {n(b.row.evaluations.median)} {es ? 'evaluaciones' : 'evaluations'}
         </span>
       </td>
     ) : (
@@ -49,8 +59,8 @@ function KindBody({ res }: { res: BenchmarkResults }) {
         <table className="caos-table" data-state="ready" data-table="kind-summary">
           <caption>
             {es
-              ? `El método publicado y el método propuesto más uniformes en cada geometría, con ${budgetText(budget).es} sobre el dispositivo ${device === 'ideal' ? 'ideal' : 'C08'}. La regla es la de la pestaña de cada geometría: la menor desviación estándar relativa entre los métodos que conservan al menos la mitad de la mejor eficiencia de su tipo de método. Un método ajustado se rotula como tal.`
-              : `The most uniform published method and proposed method on each geometry, at ${budgetText(budget).en} on the ${device === 'ideal' ? 'ideal' : 'C08'} device. The rule is the one of each geometry tab: the lowest relative standard deviation among the methods that keep at least half of the best efficiency of their kind of method. A tuned method is labelled as such.`}
+              ? `El método publicado y el método propuesto más uniformes en cada geometría, con ${budgetText(budget).es} sobre el dispositivo ${device === 'ideal' ? 'ideal' : 'C08'}. La regla es la de la pestaña de cada geometría: la menor desviación estándar relativa entre los métodos que conservan al menos la mitad de la mejor eficiencia de su tipo de método. Un método ajustado se rotula como tal. La última columna lee la celda: gana un tipo de método solo si los dos tienen al menos 5 semillas, sus rangos intercuartílicos no se solapan y sus medianas difieren al menos ${esNum(WIN_MIN_DIFF_PCT)} puntos porcentuales; si no, es un empate, y una celda de iteraciones nunca da un ganador (cada método corre sus propias iteraciones).`
+              : `The most uniform published method and proposed method on each geometry, at ${budgetText(budget).en} on the ${device === 'ideal' ? 'ideal' : 'C08'} device. The rule is the one of each geometry tab: the lowest relative standard deviation among the methods that keep at least half of the best efficiency of their kind of method. A tuned method is labelled as such. The last column reads the cell: one kind of method wins only if both have at least 5 seeds, their interquartile ranges do not overlap and their medians differ by at least ${WIN_MIN_DIFF_PCT} percentage points; otherwise it is a tie, and an iteration cell never gives a winner (each method runs its own iterations).`}
           </caption>
           <thead>
             <tr>
@@ -60,6 +70,7 @@ function KindBody({ res }: { res: BenchmarkResults }) {
                   {k === 'published' ? (es ? 'Mejor método publicado' : 'Best published method') : es ? 'Mejor método propuesto' : 'Best proposed method'}
                 </th>
               ))}
+              <th className="caos-col-text">{es ? 'Lectura de la celda' : 'Reading of the cell'}</th>
             </tr>
           </thead>
           <tbody>
@@ -69,6 +80,7 @@ function KindBody({ res }: { res: BenchmarkResults }) {
                   {g.id} {g.name[lang]}
                 </td>
                 {KIND_ORDER.map((k) => cell(rows, k, k))}
+                <td className="caos-col-text" data-reading={cellReading(rows).result}>{READING[cellReading(rows).result][lang]}</td>
               </tr>
             ))}
           </tbody>

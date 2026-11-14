@@ -61,7 +61,7 @@ export function Benchmark() {
               {
                 id: 'others',
                 label: t('Volume, large and shaped, G5 to G7', 'Volumen, grandes y con forma, G5 a G7'),
-                tabs: ['G5', 'G6', 'G7'].map(geo),
+                tabs: ['G5', 'G6a', 'G6b', 'G7'].map(geo),
               },
               {
                 id: 'comparison',

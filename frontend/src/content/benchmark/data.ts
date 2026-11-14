@@ -1,6 +1,6 @@
 // What the Benchmark page computes from the committed documents: the rows of one cell of the protocol, the kind of every method, the
 // Pareto and hypervolume arithmetic and the verdict of each proposed-method claim. Pure functions of the benchmark document
-// (`data/derived/benchmark/results.json`, catalog row benchmark-results 1.0.0), so a test can plant a document and a page can show
+// (`data/derived/benchmark/results.json`, catalog row benchmark-results 2.0.0), so a test can plant a document and a page can show
 // whatever the document holds: a method, a geometry or a budget that is absent is absent from the page, never typed into it.
 import { KIND_NAME, kindOfTier, LADDER, type Kind } from '../methodology/ladder';
 import type { BenchmarkResults, BenchmarkRow, Text } from '../../lib/contract.types';
@@ -122,6 +122,56 @@ export function mostUniform(rows: Picked[]): Picked | null {
 export const bestOfKind = (rows: Picked[], kind: Kind): Picked | null => mostUniform(rows.filter((p) => p.kind === kind));
 /** The strongest published method of a cell: the most uniform row among all the published methods (M01 to M19), the baseline of every proposed method. */
 export const bestPublished = (rows: Picked[]): Picked | null => bestOfKind(rows, 'published');
+
+// ---------------------------------------------------------------------------------------------------------------- the win rule
+
+/** Seeds behind the best method of each kind for a cell to be read as a win, and the least gap between the two medians, in percentage points. */
+export const WIN_MIN_SEEDS = 5;
+export const WIN_MIN_DIFF_PCT = 0.01;
+const EPS = 1e-9;
+
+export type Reading = 'published' | 'proposed' | 'tie';
+export interface CellReading {
+  published: Picked | null;
+  proposed: Picked | null;
+  result: Reading;
+  /** Why the cell is what it is, in English (the page words it in both languages from `result`). */
+  reason: string;
+}
+
+/**
+ * The reading of one cell (the rows of one geometry, device and budget): the best published and the best proposed method by `bestOfKind`, and a
+ * win of one kind only if both have at least `WIN_MIN_SEEDS` seeds, their interquartile ranges of `rel_std_pct` do not overlap (touching counts as
+ * overlapping) and their medians differ by at least `WIN_MIN_DIFF_PCT`; otherwise a tie. Iteration rows never produce a win: each method runs its
+ * own iterations there, so the cell is a tie. The same rule, on the same fixture, as `cell_result` of the report's extract scripts.
+ */
+export function cellReading(rows: Picked[]): CellReading {
+  const published = bestOfKind(rows, 'published');
+  const proposed = bestOfKind(rows, 'proposed');
+  const tie = (reason: string): CellReading => ({ published, proposed, result: 'tie', reason });
+  if (!published || !proposed) return tie('one kind has no row');
+  if (rows.some((p) => p.row.budget_kind === 'iterations')) return tie('iteration rows run each method at its own work and never produce a win');
+  if (Math.min(published.row.n_seeds, proposed.row.n_seeds) < WIN_MIN_SEEDS) return tie(`fewer than ${WIN_MIN_SEEDS} seeds`);
+  const a = published.row.rel_std_pct;
+  const b = proposed.row.rel_std_pct;
+  if (!(a.q3 < b.q1 || b.q3 < a.q1)) return tie('the interquartile ranges overlap');
+  if (Math.abs(a.median - b.median) < WIN_MIN_DIFF_PCT - EPS) return tie(`the medians differ by less than ${WIN_MIN_DIFF_PCT} percentage points`);
+  return { published, proposed, result: b.median < a.median ? 'proposed' : 'published', reason: 'the rule holds' };
+}
+
+/**
+ * Refuses a benchmark document of contract 1.x (rows without `evaluations`, or the pooled geometry G6) with a message that names the contract
+ * version, instead of guessing the missing field. Returns the document when it is of contract 2.0.0.
+ */
+export function requireBenchmarkContract(res: BenchmarkResults): BenchmarkResults {
+  const old = res.rows.some((r) => (r as Partial<BenchmarkRow>).evaluations === undefined) || res.geometries.some((g) => g.id === 'G6');
+  if (old) {
+    throw new Error(
+      'The benchmark document is of contract benchmark-results 1.x (rows without evaluations, or the pooled geometry G6); this build reads benchmark-results 2.0.0. Run the 0.02.004 benchmark. / El documento del benchmark es del contrato benchmark-results 1.x; esta versión lee benchmark-results 2.0.0.',
+    );
+  }
+  return res;
+}
 
 // ---------------------------------------------------------------------------------------------------------------- Pareto arithmetic
 

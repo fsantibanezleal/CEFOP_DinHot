@@ -38,6 +38,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import beyond_rows  # noqa: E402
+from extract_methods import WIN_MIN_DIFF_PCT, WIN_MIN_SEEDS, cell_result, require_contract  # noqa: E402
 from method_names import ID, NAME, RUN, label_name, named, slug  # noqa: E402,F401
 
 ROOT = HERE.parents[2]
@@ -191,6 +192,7 @@ def best_of(cells: dict, geometry: str, device: str, methods: set[str]) -> dict 
 
 def benchmark_summary(ladder: list[dict]) -> dict:
     r = load(DERIVED / "benchmark" / "results.json")
+    require_contract(r, "extract.py")
     rows = r["rows"]
     methods = sorted({x["method"] for x in rows})
     tier = {row["id"]: row["tier"] for row in ladder}
@@ -206,11 +208,17 @@ def benchmark_summary(ladder: list[dict]) -> dict:
     by_geometry = {}
     for g in geos:
         for device in ("ideal", "device"):
-            if not any(gg == g["id"] and d == device for (_, gg, d) in it100):
+            # a cell is read at the time row only (equal wall clock, every method at its deadline): the best of each kind and the
+            # win rule of extract_methods.cell_result; the iteration rows give each method's own iterations and never a win
+            rows_1s = [x for (m, gg, d), x in t1.items() if gg == g["id"] and d == device]
+            if not rows_1s:
                 continue
-            cell = {"best": best_of(it100, g["id"], device, set(methods)), "best_1s": best_of(t1, g["id"], device, set(methods))}
+            res = cell_result([{**x, "budget_kind": "time"} for x in rows_1s])
+            cell = {"result": res["result"], "reason": res["reason"]}
             for gr in GROUPS:
-                cell[gr] = best_of(it100, g["id"], device, {m for m in methods if group_of(tier_of[m]) == gr})
+                x = res[gr]
+                cell[gr] = None if x is None else {"method": x["method"], "sigma": x["rel_std_pct"]["median"],
+                                                   "eff": x["efficiency"]["median"], "n_seeds": x["n_seeds"]}
             by_geometry[f"{g['id']}/{device}"] = cell
     by_method = {}
     for m in methods:
@@ -221,6 +229,8 @@ def benchmark_summary(ladder: list[dict]) -> dict:
                 "n": len(xs), "sigma": statistics.median(x["rel_std_pct"]["median"] for x in xs),
                 "q1": statistics.median(x["rel_std_pct"]["q1"] for x in xs), "q3": statistics.median(x["rel_std_pct"]["q3"] for x in xs),
                 "eff": statistics.median(x["efficiency"]["median"] for x in xs),
+                "evals": statistics.median(x["evaluations"]["median"] for x in xs),
+                "its": statistics.median(x["iterations"]["median"] for x in xs),
                 "time_s": statistics.median(x["time_s"]["median"] for x in xs)}
         by_method[m] = out
     return {"schema": r["schema"], "engine_version": r["engine_version"], "grids": r["protocol"]["grids"],
@@ -418,22 +428,28 @@ def sig2(x: float) -> str:
 
 
 def _cell(b: dict | None) -> str:
-    return "n/a" if not b else f"{tex_escape(RUN[b['method']])} {sig(b['sigma'])}"
+    return "n/a" if not b else f"{tex_escape(RUN[b['method']])} {sig(b['sigma'])} (n={b['n_seeds']})"
+
+
+def _result(c: dict) -> str:
+    return "tie" if c["result"] == "tie" else c["result"]
 
 
 def table_benchmark(bench: dict) -> str:
     names = {g["id"]: g["name"]["en"] for g in bench["geometries"]}
-    out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Benchmark, per geometry and device: the published method and the proposed method with the lowest median relative standard deviation "
-           "$\\sigma$ (\\%) at 100 iterations among those that reach at least half of the best median efficiency of the cell, and the best "
-           "method of all at a time budget of 1~s. Default parameters, medians over the seeds of each cell.}\\label{tab:benchmark}\n",
-           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.2\\textwidth} l >{\\raggedright\\arraybackslash}p{0.17\\textwidth} >{\\raggedright\\arraybackslash}p{0.2\\textwidth} >{\\raggedright\\arraybackslash}p{0.2\\textwidth}@{}}\\toprule Geometry & Device & Published & Proposed & Best at 1 s\\\\\\midrule\n"]
+    out = ["\begin{table}[t]\centering\footnotesize\n",
+           "\caption{Benchmark at equal wall clock, per geometry and device: every method stops at the 1~s deadline in every phase. The published "
+           "method and the proposed method with the lowest median relative standard deviation $\sigma$ (\%) among those of their kind that reach at "
+           "least half of the best median efficiency of the kind, with the seeds behind each ($n$), and the reading of the cell: one kind wins only if both have "
+           f"at least {WIN_MIN_SEEDS} seeds, their interquartile ranges do not overlap and their medians differ by at least {WIN_MIN_DIFF_PCT} percentage "
+           "points; otherwise the cell is a tie. Default parameters, medians over the seeds of each cell.}\label{tab:benchmark}\n",
+           "\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth} l >{\raggedright\arraybackslash}p{0.2\textwidth} >{\raggedright\arraybackslash}p{0.2\textwidth} l@{}}\toprule Geometry & Device & Published & Proposed & Reading\\\midrule\n"]
     for key, c in bench["by_geometry"].items():
         g, device = key.split("/")
         dev = "ideal" if device == "ideal" else "C08"
         out.append(f"{g} {tex_escape(names[g])} & {dev} & {_cell(c['published'])} & {_cell(c['proposed'])} & "
-                   f"{_cell(c['best_1s'])}\\\\\n")
-    out.append("\\bottomrule\\end{tabular}\\end{table}\n")
+                   f"{_result(c)}\\\n")
+    out.append("\bottomrule\end{tabular}\end{table}\n")
     return "".join(out)
 
 
@@ -643,14 +659,10 @@ def main() -> int:
     for device, nm in (("ideal", "Ideal"), ("device", "Device")):
         cells = [c for k, c in bench["by_geometry"].items() if k.endswith("/" + device)]
         L.append(macro(f"benchGeo{nm}", len(cells)))
-        # a cell whose best spreads of two or more tiers sit below the file's resolution is a tie, not a win of one tier
-        def tied(c: dict) -> bool:
-            return sum(1 for gr in GROUPS if c[gr] and c[gr]["sigma"] < 1e-3) >= 2
-
+        # the win rule of extract_methods.cell_result at the time row: seeds, interquartile ranges and the 0.01 point floor
         for gr, gn in (("published", "Published"), ("proposed", "Proposed")):
-            L.append(macro(f"benchWins{nm}{gn}", sum(1 for c in cells if c["best"] and not tied(c)
-                                                     and bench["by_method"][c["best"]["method"]]["group"] == gr)))
-        L.append(macro(f"benchTies{nm}", sum(1 for c in cells if tied(c))))
+            L.append(macro(f"benchWins{nm}{gn}", sum(1 for c in cells if c["result"] == gr)))
+        L.append(macro(f"benchTies{nm}", sum(1 for c in cells if c["result"] == "tie")))
         meds = [v[device] for v in bench["by_method"].values() if v[device]]
         top = max((v["eff"] for v in meds), default=0.0)
         kept = sorted(v["sigma"] for v in meds if v["eff"] >= 0.5 * top)

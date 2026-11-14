@@ -15,7 +15,8 @@ const SOURCE: Record<string, { en: string; es: string }> = {
   G3: { en: 'Defined by the protocol: random positions with a minimum spacing, an array with no lattice symmetry.', es: 'Definida por el protocolo: posiciones aleatorias con un espaciamiento mínimo, una matriz sin simetría de red.' },
   G4: { en: 'The quasi-periodic set of Polin et al. 2005.', es: 'El conjunto cuasiperiódico de Polin et al. 2005.' },
   G5: { en: 'A three-dimensional lattice on three planes, the setting of the volumetric GS of Whyte and Courtial 2005; only the methods that handle traps off the focal plane run on it.', es: 'Una red tridimensional en tres planos, el escenario del GS volumétrico de Whyte y Courtial 2005; solo corren en ella los métodos que manejan trampas fuera del plano focal.' },
-  G6: { en: 'Large and disordered arrays at the scale of Kim et al. 2019.', es: 'Matrices grandes y desordenadas a la escala de Kim et al. 2019.' },
+  G6a: { en: 'A large regular array at the scale of Kim et al. 2019.', es: 'Una matriz regular grande a la escala de Kim et al. 2019.' },
+  G6b: { en: 'A large disordered array at the scale of Kim et al. 2019.', es: 'Una matriz desordenada grande a la escala de Kim et al. 2019.' },
   G7: { en: 'Shaped fields (ring, disc, line, Laguerre-Gaussian ring), the targets of Pasienski and DeVore 2008, for the methods that take a field and not a set of traps.', es: 'Campos con forma (anillo, disco, línea, anillo de Laguerre-Gauss), los objetivos de Pasienski y DeVore 2008, para los métodos que toman un campo y no un conjunto de trampas.' },
 };
 

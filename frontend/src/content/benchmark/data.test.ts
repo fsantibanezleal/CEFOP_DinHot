@@ -3,9 +3,13 @@
 // arithmetic and the verdicts behave on planted documents (a tuned row is never taken for a default one; a cell with no data is never a pass).
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { BenchmarkResults } from '../../lib/contract.types';
+import type { BenchmarkResults, BenchmarkRow } from '../../lib/contract.types';
 import {
   b5Cells,
+  cellReading,
+  requireBenchmarkContract,
+  WIN_MIN_DIFF_PCT,
+  WIN_MIN_SEEDS,
   budgetsOf,
   budgetText,
   CRITERIA,
@@ -274,5 +278,56 @@ describe('a spread below the resolution of the document', () => {
     expect(spreadText(0, 'en')).toBe('<\u00a00.001\u00a0%');
     expect(spreadText(0.0004, 'es')).toBe('<\u00a00,001\u00a0%');
     expect(spreadText(0.0657, 'en')).toBe('0.0657\u00a0%');
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------- the win rule (0.02.004)
+// The same fixture the Python side reads (tests/test_benchmark_win_rule.py): one rule, two implementations, one file.
+interface WinCell {
+  name: string;
+  rows: BenchmarkRow[];
+  best_published: string | null;
+  best_proposed: string | null;
+  result: 'published' | 'proposed' | 'tie';
+}
+const winFixture = JSON.parse(readFileSync(new URL('tests/fixtures/benchmark-win-rule.json', root), 'utf8')) as {
+  min_seeds: number;
+  min_diff_pct: number;
+  cells: WinCell[];
+};
+const picked = (rows: BenchmarkRow[]) =>
+  rows.map((row) => ({ method: row.method, kind: kindOf(row.method), row, params: 'default' as const, noTunedRow: false, hasTuned: false }));
+
+describe('the win rule of a benchmark cell', () => {
+  it('states the constants of the shared fixture', () => {
+    expect(WIN_MIN_SEEDS).toBe(winFixture.min_seeds);
+    expect(WIN_MIN_DIFF_PCT).toBe(winFixture.min_diff_pct);
+  });
+  for (const c of winFixture.cells) {
+    it(`reads the shared fixture cell: ${c.name}`, () => {
+      const got = cellReading(picked(c.rows));
+      expect(got.result).toBe(c.result);
+      expect(got.published?.method ?? null).toBe(c.best_published);
+      expect(got.proposed?.method ?? null).toBe(c.best_proposed);
+    });
+  }
+  it('refuses a document of contract 1.x naming the contract version, and accepts 2.0.0', () => {
+    const old = { ...fixture, rows: fixture.rows.map(({ evaluations: _e, ...r }) => r) } as unknown as BenchmarkResults;
+    expect(() => requireBenchmarkContract(old)).toThrow(/benchmark-results 1\.x.*2\.0\.0/);
+    const pooled = { ...fixture, geometries: [{ ...fixture.geometries[0], id: 'G6' }] } as BenchmarkResults;
+    expect(() => requireBenchmarkContract(pooled)).toThrow(/1\.x/);
+    expect(requireBenchmarkContract(fixture)).toBe(fixture);
+  });
+});
+
+describe('adversarial: a win is never read without its floors', () => {
+  const row = (method: string, n: number, med: number, q1: number, q3: number): BenchmarkRow =>
+    ({ ...fixture.rows[0], method, n_seeds: n, budget_kind: 'time', efficiency: { median: 0.9, q1: 0.9, q3: 0.9 }, rel_std_pct: { median: med, q1, q3 } }) as BenchmarkRow;
+  it('adversarial: four seeds, overlapping ranges, a 0.009 point gap and iteration rows are ties', () => {
+    expect(cellReading(picked([row('M06', 8, 5, 4.8, 5.2), row('B1', 4, 2, 1.9, 2.1)])).result).toBe('tie');
+    expect(cellReading(picked([row('M06', 8, 5, 4, 6), row('B1', 8, 4.5, 4.4, 5.5)])).result).toBe('tie');
+    expect(cellReading(picked([row('M06', 8, 0.109, 0.1085, 0.1095), row('B1', 8, 0.1, 0.0995, 0.1005)])).result).toBe('tie');
+    const it = picked([row('M06', 8, 5, 4.8, 5.2), row('B1', 8, 2, 1.9, 2.1)]).map((p) => ({ ...p, row: { ...p.row, budget_kind: 'iterations' as const } }));
+    expect(cellReading(it).result).toBe('tie');
   });
 });

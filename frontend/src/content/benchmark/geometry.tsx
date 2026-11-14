@@ -8,6 +8,8 @@ import { P } from '../bi';
 import type { Kind } from '../methodology/ladder';
 import {
   bestOfKind,
+  cellReading,
+  WIN_MIN_DIFF_PCT,
   kindOf,
   budgetText,
   geometryOf,
@@ -25,7 +27,7 @@ import {
 import { barLabel, CellControls, Note, Ready, TableWrap, KIND_LEGEND, KIND_TONE, useBench, useNum, useResolved, WRAP } from './shared';
 
 /** The geometry tab -> the references of the published task it mirrors (the benchmark protocol's own sources). */
-const GEOMETRY_REFS: Record<string, string> = { G1: 'dileonardo2007', G4: 'polin2005', G5: 'whyte2005', G6: 'kim2019', G7: 'pasienski2008' };
+const GEOMETRY_REFS: Record<string, string> = { G1: 'dileonardo2007', G4: 'polin2005', G5: 'whyte2005', G6a: 'kim2019', G6b: 'kim2019', G7: 'pasienski2008' };
 
 /** A relative standard deviation that is exactly 0 cannot sit on a log axis: it is drawn at this floor and the chart says so. */
 const SIGMA_FLOOR = 1e-3;
@@ -178,6 +180,8 @@ function LogPoints({ rows, pick, title, axis, unit, floor, view }: { rows: Picke
   );
 }
 
+const esNum = (x: number) => String(x).replace('.', ',');
+
 function Reading({ res, geometry }: { res: BenchmarkResults; geometry: string }) {
   const lang = useShellLang() as Lang;
   const es = lang === 'es';
@@ -185,6 +189,9 @@ function Reading({ res, geometry }: { res: BenchmarkResults; geometry: string })
   const { device, view, budget } = useResolved(res);
   if (!budget) return null;
   const rows = pickRows(res, geometry, device, budget, view);
+  const reading = cellReading(rows);
+  const readingEn = reading.result === 'tie' ? `The cell is a tie (${reading.reason}).` : `The ${reading.result} method wins the cell under the rule (at least 5 seeds each, disjoint interquartile ranges, medians at least ${WIN_MIN_DIFF_PCT} percentage points apart).`;
+  const readingEs = reading.result === 'tie' ? `La celda es un empate (la regla de victoria pide 5 semillas por lado, rangos intercuartílicos disjuntos y medianas a ${esNum(WIN_MIN_DIFF_PCT)} puntos porcentuales o más; las celdas de iteraciones nunca dan ganador).` : `Gana la celda el método ${reading.result === 'published' ? 'publicado' : 'propuesto'} bajo la regla (al menos 5 semillas por lado, rangos intercuartílicos disjuntos, medianas a ${esNum(WIN_MIN_DIFF_PCT)} puntos porcentuales o más).`;
   const parts = KIND_ORDER.map((kind) => {
     const b = bestOfKind(rows, kind);
     const nm = KIND_TEXT[kind][lang];
@@ -196,8 +203,8 @@ function Reading({ res, geometry }: { res: BenchmarkResults; geometry: string })
   });
   return (
     <P
-      en={`At ${budgetText(budget).en} on the ${device === 'ideal' ? 'ideal' : 'C08'} device, with ${view === 'default' ? 'every method at the default parameters of its paper' : 'the tuned rows where a method has one and its labelled default row where it has not'}, ${parts.join('; ')}. A method counts as the most uniform only if it keeps at least half of the best efficiency of its kind of method in the cell, so that a hologram that is uniform because it wastes the light does not take the place. The ranking is the one cell chosen above; the other budgets and the other device are one control away, and the whole matrix is in the table.`}
-      es={`Con ${budgetText(budget).es} sobre el dispositivo ${device === 'ideal' ? 'ideal' : 'C08'}, con ${view === 'default' ? 'cada método en los parámetros por defecto de su artículo' : 'las filas ajustadas donde un método las tiene y su fila por defecto rotulada donde no'}, ${parts.join('; ')}. Un método cuenta como el más uniforme solo si conserva al menos la mitad de la mejor eficiencia de su tipo de método en la celda, de modo que un holograma uniforme porque desperdicia la luz no ocupa el lugar. La clasificación es la de la celda elegida arriba; los otros presupuestos y el otro dispositivo están a un control de distancia, y toda la matriz está en la tabla.`}
+      en={`At ${budgetText(budget).en} on the ${device === 'ideal' ? 'ideal' : 'C08'} device, with ${view === 'default' ? 'every method at the default parameters of its paper' : 'the tuned rows where a method has one and its labelled default row where it has not'}, ${parts.join('; ')}. A method counts as the most uniform only if it keeps at least half of the best efficiency of its kind of method in the cell, so that a hologram that is uniform because it wastes the light does not take the place. The ranking is the one cell chosen above; the other budgets and the other device are one control away, and the whole matrix is in the table. ${readingEn}`}
+      es={`Con ${budgetText(budget).es} sobre el dispositivo ${device === 'ideal' ? 'ideal' : 'C08'}, con ${view === 'default' ? 'cada método en los parámetros por defecto de su artículo' : 'las filas ajustadas donde un método las tiene y su fila por defecto rotulada donde no'}, ${parts.join('; ')}. Un método cuenta como el más uniforme solo si conserva al menos la mitad de la mejor eficiencia de su tipo de método en la celda, de modo que un holograma uniforme porque desperdicia la luz no ocupa el lugar. La clasificación es la de la celda elegida arriba; los otros presupuestos y el otro dispositivo están a un control de distancia, y toda la matriz está en la tabla. ${readingEs}`}
     />
   );
 }
@@ -210,7 +217,7 @@ function GeometryBody({ res, geometry }: { res: BenchmarkResults; geometry: stri
   const ran = new Set(res.rows.filter((r) => r.geometry === geometry).map((r) => r.method));
   const skipped = skippedIn(res, geometry);
   const all = methodsIn(res);
-  // a group runs its seeds until the protocol's wall-clock bound (at least 2), so a cell holds between 2 and the protocol's seeds
+  // the time and converged rows run at least 5 seeds; the iteration rows run seeds until the protocol's wall-clock bound (at least 2)
   const seeds = res.rows.filter((r) => r.geometry === geometry).map((r) => r.n_seeds);
   const lo = seeds.length ? Math.min(...seeds) : res.protocol.seeds;
   const hi = seeds.length ? Math.max(...seeds) : res.protocol.seeds;
