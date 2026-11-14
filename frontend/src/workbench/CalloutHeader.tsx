@@ -55,22 +55,6 @@ export function useCalloutBand(fallback: number): { band: number; onLayout: (inf
 /** The space between the last card and the drawing under it, in px. */
 export const BAND_GAP = 8;
 
-/**
- * A value once it has held for `ms`: null until then, and again while it changes. The shell's header layer can report a band laid out
- * before it has its width (CEFOP_DinHot, story hold at 2560 x 1440: 182, then 357, then 87 px, about 400 ms apart, shell known defect 65);
- * a view sized by the band mounts on the settled one, so it is built once, at its final size.
- */
-export function useSettledValue<T>(value: T | null, ms: number): T | null {
-  const [settled, setSettled] = useState<T | null>(null);
-  useEffect(() => {
-    setSettled(null);
-    if (value === null) return undefined;
-    const timer = setTimeout(() => setSettled(value), ms);
-    return () => clearTimeout(timer);
-  }, [value, ms]);
-  return settled !== null && settled === value ? settled : null;
-}
-
 /** An anchor written as fractions of the drawing (the part of the stage under the band), as fractions of the whole stage: y' = (band + y (H - band)) / H. */
 export function anchorInDrawing(anchor: { x: number; y: number }, band: number, height: number): { x: number; y: number } {
   if (!(height > band)) return anchor;
@@ -89,18 +73,11 @@ export function CalloutHeader({ items, className, onLayout }: CalloutHeaderProps
   const lang = useShellLang();
   const host = useRef<HTMLDivElement | null>(null);
   const [laidOut, setLaidOut] = useState(false);
-  // the band the layer reports: the cards are taken as laid out once it has held (shell known defect 65: it can swing while a scene mounts)
-  const [band, setBand] = useState(0);
-  const settledBand = useSettledValue(band > 0 ? band : null, 600);
   const ids = items.map((item) => item.id).join('\u0000');
   useEffect(() => {
     const layer = host.current?.querySelector<HTMLElement>('[data-caos-callout-layer]');
     if (!layer) return;
-    const check = () => {
-      setLaidOut(calloutsLaidOut(measure(layer), layer.offsetWidth));
-      const b = Number.parseFloat(layer.style.getPropertyValue('--caos-callout-band'));
-      setBand(Number.isFinite(b) ? Math.round(b) : 0);
-    };
+    const check = () => setLaidOut(calloutsLaidOut(measure(layer), layer.offsetWidth));
     const sizes = new ResizeObserver(check);
     const watch = () => {
       sizes.disconnect();
@@ -123,7 +100,7 @@ export function CalloutHeader({ items, className, onLayout }: CalloutHeaderProps
   return (
     <div ref={host} className="dh-callouts" style={{ display: 'contents' }}>
       <SceneCallouts items={items} placement="header" className={className} onLayout={onLayout} />
-      {(!laidOut || (band > 0 && settledBand === null)) && (
+      {!laidOut && (
         <span className="sr-only" data-state="loading">
           {lang === 'es' ? 'Colocando los valores sobre el dibujo' : 'Placing the values on the drawing'}
         </span>

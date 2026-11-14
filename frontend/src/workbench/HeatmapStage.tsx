@@ -570,8 +570,8 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
   const value = cursor ? data[cursor.row * cols + cursor.col] : null;
   const reading = cursor && value !== null && !Number.isNaN(value) ? describe(cursor.col, cursor.row, value) : null;
   const table = useMemo(() => thinned(data, cols, rows), [data, cols, rows]);
-  // The hidden table is formatted once per map and language, not on every render: a pointer move re-renders the canvas, and up to 256
-  // formatted cells per render cost frames while a story step mounts (shell known defect 68: `formatNumber` builds a formatter per call).
+  // The hidden table is built once per map and language, not on every render: a pointer move re-renders the canvas, and its up to 256
+  // formatted cells would be rebuilt and reconciled each time.
   const caption = pick(props.tableLabel ?? props.label, lang);
   const srTable = useMemo(
     () => (

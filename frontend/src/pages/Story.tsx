@@ -600,7 +600,7 @@ function StoryFocal({ sel }: { sel: Selection }) {
 /**
  * The hold step's stage: the App's particle view with its own callouts, which it pins to what they read (the bead in its trap, the
  * trap's depth, the fitted corner frequency on the spectrum), so the step's cards point at their subjects (ADR-0082 rule 5; the second
- * reading's N1). The header callouts stay declared loading until their band has held, so the view is read once it is laid out.
+ * reading's N1). The header callouts stay declared loading until the shell has laid out their cards.
  */
 function HoldStage({ sel }: { sel: Selection }) {
   return (
