@@ -41,6 +41,12 @@ task on the crosstalk device it lowers the spread (0.24 against 0.72 percent). O
 iterations (median over three seeds) it lowers the spread on the square lattice (14 against 29 percent) at a lower
 efficiency (0.56 against 0.60), raises it on the ring of 36 (8.9 against 7.8), and leaves the random and quasi-periodic
 sets unchanged, so neither form dominates and the method keeps its weights.
+Equal work (2026-11-14). ``budget.time_s`` is a deadline in every phase: the warm start stops at it (``weighted_gs`` takes the
+deadline), the outer loop checks it, and inside a CG run every value-and-gradient evaluation of a line search checks it
+(``deadline_fun``), so a run overruns by at most one evaluation of the device model. A run cut by the deadline keeps the
+iterates it reached (the last accepted CG point) and the safeguard above still picks the returned one. ``meta['iterations']`` is the
+work done, the warm iterations plus the accepted CG steps, and the benchmark row's ``evaluations`` is the engine's count of
+forward and adjoint evaluations of the run.
 Defaults and measured numbers: tests ``test_b1_device_wgs.py`` and the E3 report.
 """
 from __future__ import annotations
@@ -54,7 +60,7 @@ from ...core.geometry import Setup
 from ...core.rng import Rng
 from ...core.types import Budget, MethodSpec, Result, Target
 from ..optim import _common as C
-from ..optim._gs_family import sr_start, weighted_gs
+from ..optim._gs_family import DeadlineHit, deadline_fun, sr_start, weighted_gs
 
 SPEC = MethodSpec(id="B1", name="Device-aware weighted GS", family="beyond", lane="baked", targets=("traps",),
                   dims=(2,))
@@ -74,10 +80,12 @@ def run(setup: Setup, target: Target, *, device: Device | None = None, budget: B
     traps = target.traps
     t0 = time.perf_counter()
     deadline = C.deadline_of(budget.time_s)
+    warm_its = 0
     if init is not None:
         phi = C.start_phase(setup, rng, init)
     elif warm > 0:
-        phi, _ = weighted_gs(setup, traps, warm, rng, variant="gsw")
+        phi, warm_hist = weighted_gs(setup, traps, warm, rng, variant="gsw", deadline=deadline)
+        warm_its = len(warm_hist)
     else:
         phi = sr_start(setup, traps, rng)
     cost = C.TrapCost(setup, traps, device, t=2, efficiency=0.9)
@@ -85,6 +93,7 @@ def run(setup: Setup, target: Target, *, device: Device | None = None, budget: B
     w = np.ones(len(traps))
     history: list = []
     evals = 0
+    cg_steps = 0
     v, _ = cost.fwd.fields(phi)
     start = C.trap_history(0, v, traps.weight, t0)
     floor = EFFICIENCY_FLOOR * start["efficiency"]
@@ -98,16 +107,34 @@ def run(setup: Setup, target: Target, *, device: Device | None = None, budget: B
             w = w * np.mean(r) / r
         amp2 = (w * a) ** 2
         cost.target = float(np.sum(np.abs(v) ** 2)) * amp2 / amp2.sum()
-        res = C.cg_minimize(cost.value_grad, phi, steps, deadline=deadline)
-        phi = res.x
-        evals += res.evaluations
+        accepted: list = []
+
+        def keep(i, x, f, aux, accepted=accepted):
+            accepted.append((i, x.copy(), f))
+            return False
+
+        cut = False
+        try:
+            res = C.cg_minimize(deadline_fun(cost.value_grad, deadline), phi, steps, deadline=deadline, callback=keep)
+            phi, loss, n_steps = res.x, res.f, res.iterations
+            evals += res.evaluations
+        except DeadlineHit:      # inside a line search: the last accepted point is the iterate reached
+            cut = True
+            n_steps = len(accepted)
+            if accepted:
+                phi, loss = accepted[-1][1], accepted[-1][2]
+        cg_steps += n_steps
+        if cut and not accepted:
+            break
         v, _ = cost.fwd.fields(phi)
-        entry = C.trap_history(it, v, traps.weight, t0, loss=res.f)
+        entry = C.trap_history(it, v, traps.weight, t0, loss=loss)
         history.append(entry)
         if entry["efficiency"] >= floor and entry["rel_std"] < best[3]:
             best = (phi.copy(), v, it, entry["rel_std"])
+        if cut:
+            break
     phi, v, best_it, _ = best
     return Result(phi=np.mod(phi, 2.0 * np.pi), history=history, fields=v,
-                  meta={"steps": steps, "warm": warm, "evaluations": evals, "weights": w.tolist(), "weight_update": weights,
+                  meta={"iterations": warm_its + cg_steps, "warm_iterations": warm_its, "cg_steps": cg_steps, "steps": steps, "warm": warm, "evaluations": evals, "weights": w.tolist(), "weight_update": weights,
                         "device_aware": device is not None, "best_iteration": best_it, "efficiency_floor": floor,
                         "start_rel_std": start["rel_std"], "start_efficiency": start["efficiency"]})

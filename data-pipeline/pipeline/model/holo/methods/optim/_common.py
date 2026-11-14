@@ -34,7 +34,7 @@ import numpy as np
 
 from ...core.device import Device, crosstalk, crosstalk_adjoint, displayed_phase
 from ...core.forward import (
-    fft_focal_field, fft_inverse, point_trap_backproject, point_trap_projection, slm_field, trap_bins,
+    count_evaluation, fft_focal_field, fft_inverse, point_trap_backproject, point_trap_projection, slm_field, trap_bins,
 )
 from ...core.geometry import Setup, input_amplitude
 from ...core.metrics import efficiency, rel_std, trap_intensities, uniformity
@@ -122,6 +122,7 @@ class FocalForward:
             f = slm_field(disp, s)
             e = fft_focal_field(disp, s)
             return e * self._swap_env[:, None] * self._swap_env[None, :], f
+        count_evaluation()                                   # the crosstalk model does not go through core/forward.py
         u = self._u
         psi = crosstalk(disp, d)
         g = self._amp_up * np.exp(1j * psi)
@@ -139,6 +140,7 @@ class FocalForward:
         if d.crosstalk is None:
             h = fft_inverse(grad_e * self._swap_env[:, None] * self._swap_env[None, :], s)
             return 2.0 * np.real(1j * cache * np.conj(h))
+        count_evaluation()
         n, m, u, mu = s.n_pix, s.n_fft, self._u, self._mu
         gc = grad_e * self._swap[:, None] * self._swap[None, :] / u
         gc = gc * np.conj(self._wramp)[:, None] * np.conj(self._wramp)[None, :]

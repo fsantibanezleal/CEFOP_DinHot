@@ -21,11 +21,36 @@ Conventions (all arrays indexed ``[iy, ix]``; the focal grid is ``n_fft x n_fft`
 from __future__ import annotations
 
 import math
+import threading
 
 import numpy as np
 
 from .geometry import Setup, focal_bin_m, input_amplitude, slm_grid
 from .traps import TrapSet, check_in_field
+
+# ---- evaluation counter ---------------------------------------------------------------------------------------------
+# One evaluation is one call of the forward model or of its adjoint on the full hologram: ``point_trap_projection``,
+# ``point_trap_backproject``, ``fft_focal_field``, ``fft_inverse``, and the same two directions of the crosstalk device
+# model (``methods/optim/_common.FocalForward``, which does not go through this module). The counter is per thread (a
+# benchmark worker is a process of its own, so counts never mix between workers); the method runner resets it before a
+# run and reads it right after, before the run is scored, so the integer is the work the method did (benchmark rows
+# ``evaluations``, contract benchmark-results 1.1.0).
+_COUNTER = threading.local()
+
+
+def reset_evaluations() -> None:
+    """Set the evaluation counter of this thread to zero."""
+    _COUNTER.n = 0
+
+
+def evaluations() -> int:
+    """Forward plus adjoint evaluations counted on this thread since the last ``reset_evaluations``."""
+    return int(getattr(_COUNTER, "n", 0))
+
+
+def count_evaluation(n: int = 1) -> None:
+    """Add ``n`` evaluations to this thread's counter (a model that does not call this module's transforms says so here)."""
+    _COUNTER.n = getattr(_COUNTER, "n", 0) + int(n)
 
 
 def _check_phi(phi: np.ndarray, setup: Setup) -> np.ndarray:
@@ -77,6 +102,7 @@ def point_trap_projection(field: np.ndarray, setup: Setup, traps: TrapSet, chunk
     ``O(chunk * n_pix)``); traps with a vortex use the dense form, one trap at a time (a few ``n_pix^2`` temporaries). Raises ``OutOfFieldError`` for a trap outside the field of view.
     """
     check_in_field(setup, traps)
+    count_evaluation()
     field = np.asarray(field, dtype=np.complex128)
     if field.shape != (setup.n_pix, setup.n_pix) or not np.all(np.isfinite(field)):
         raise ValueError("field must be a finite complex array of shape (n_pix, n_pix)")
@@ -106,6 +132,7 @@ def point_trap_backproject(coeffs: np.ndarray, setup: Setup, traps: TrapSet, chu
     It satisfies ``sum_m c_m conj(V_m(f)) = vdot(f, F) / N_pix``. Weighted Gerchberg-Saxton updates take its argument.
     """
     check_in_field(setup, traps)
+    count_evaluation()
     coeffs = np.asarray(coeffs, dtype=np.complex128)
     if coeffs.shape != (len(traps),) or not np.all(np.isfinite(coeffs)):
         raise ValueError(f"coeffs must be a finite vector of length {len(traps)}")
@@ -132,6 +159,7 @@ def _ramp(setup: Setup) -> np.ndarray:
 
 def fft_focal_field(phi: np.ndarray, setup: Setup) -> np.ndarray:
     """Centred, zero-padded, orthonormal FFT of the SLM field: shape ``(n_fft, n_fft)``, Parseval holds."""
+    count_evaluation()
     m = setup.n_fft
     padded = np.zeros((m, m), dtype=np.complex128)
     padded[: setup.n_pix, : setup.n_pix] = slm_field(phi, setup)
@@ -143,6 +171,7 @@ def fft_focal_field(phi: np.ndarray, setup: Setup) -> np.ndarray:
 def fft_inverse(e: np.ndarray, setup: Setup) -> np.ndarray:
     """Inverse of ``fft_focal_field`` back to the SLM grid (complex field, cropped to ``n_pix x n_pix``)."""
     e = _check_focal(e, setup)
+    count_evaluation()
     r = np.conj(_ramp(setup))
     full = np.fft.ifft2(np.fft.ifftshift(e * r[:, None] * r[None, :]), norm="ortho")
     return full[: setup.n_pix, : setup.n_pix]

@@ -21,6 +21,11 @@ closed form ``G_m = [2(1-\lambda)(I_m - T_m)/\sum T^2 - \lambda/e_0]\, V_m`` pul
 front) as ``phi``, and in ``meta``: ``lambdas``, ``front`` (the (e, u, sigma) of every lambda), ``pareto`` (indices of the
 non-dominated points), ``hypervolume`` against the reference point (0, 0) and ``phis`` (all holograms). ``hypervolume``
 and ``pareto_indices`` are public for the benchmark.
+
+Equal work (2026-11-14). ``budget.time_s`` is a deadline in every phase: the warm start stops at it, no new lambda starts
+after it and inside a lambda every evaluation of a line search checks it (``deadline_fun``). A lambda cut by the deadline is
+kept with the CG steps it completed; the front always holds at least the first point. ``meta['iterations']`` is the work
+done (the warm iterations plus the accepted CG steps over the lambdas run).
 """
 from __future__ import annotations
 
@@ -35,7 +40,7 @@ from ...core.rng import Rng
 from ...core.traps import TrapSet
 from ...core.types import Budget, MethodSpec, Result, Target
 from ..optim import _common as C
-from ..optim._gs_family import weighted_gs
+from ..optim._gs_family import DeadlineHit, deadline_fun, weighted_gs
 
 SPEC = MethodSpec(id="B5", name="Efficiency-uniformity Pareto front", family="beyond", lane="baked",
                   targets=("traps",), dims=(2, 3))
@@ -101,31 +106,55 @@ def run(setup: Setup, target: Target, *, device: Device | None = None, budget: B
     traps = target.traps
     t0 = time.perf_counter()
     deadline = C.deadline_of(budget.time_s)
+    warm_its = 0
     if init is not None:
         phi = C.start_phase(setup, rng, init)
     else:
-        phi, _ = weighted_gs(setup, traps, warm, rng, variant="pfwgs")
+        phi, warm_hist = weighted_gs(setup, traps, warm, rng, variant="pfwgs", deadline=deadline)
+        warm_its = len(warm_hist)
     fwd = C.TrapForward(setup, traps)
     v, _ = fwd.fields(phi)
     cost = _FrontCost(setup, traps, efficiency(trap_intensities(v)))
     lambdas = np.linspace(0.0, 1.0, n_lambda)
     phis, front, history = [], [], []
+    cg_steps = 0
     for k, lam in enumerate(lambdas):
         if C.expired(deadline) and k > 0:
             lambdas = lambdas[:k]
             break
         cost.lam = float(lam)
-        res = C.cg_minimize(cost.value_grad, phi, budget.iterations, deadline=deadline)
-        phi = res.x
+        accepted: list = []
+
+        def keep(i, x, f, aux, accepted=accepted):
+            accepted.append(x.copy())
+            return False
+
+        cut = False
+        try:
+            res = C.cg_minimize(deadline_fun(cost.value_grad, deadline), phi, budget.iterations, deadline=deadline,
+                                callback=keep)
+            phi, n_steps = res.x, res.iterations
+        except DeadlineHit:      # inside a line search: the last accepted point is the iterate reached
+            cut = True
+            n_steps = len(accepted)
+            if accepted:
+                phi = accepted[-1]
+        if cut and k > 0 and n_steps == 0:
+            lambdas = lambdas[:k]
+            break
+        cg_steps += n_steps
         v, _ = fwd.fields(phi)
         iw = trap_intensities(v, traps.weight)
         front.append((efficiency(trap_intensities(v)), uniformity(iw), rel_std(iw)))
         phis.append(np.mod(phi, 2.0 * np.pi))
         history.append(C.trap_history(k + 1, v, traps.weight, t0, lam=float(lam)))
+        if cut:
+            lambdas = lambdas[:k + 1]
+            break
     front_a = np.array(front)
     knee = int(np.argmax(front_a[:, 0] * front_a[:, 1]))
     v_knee, _ = fwd.fields(phis[knee])
     return Result(phi=phis[knee], history=history, fields=v_knee,
-                  meta={"lambdas": lambdas.tolist(), "front": front_a, "pareto": pareto_indices(front_a[:, :2]),
+                  meta={"iterations": warm_its + cg_steps, "lambdas": lambdas.tolist(), "front": front_a, "pareto": pareto_indices(front_a[:, :2]),
                         "hypervolume": hypervolume(front_a[:, :2]), "knee": knee, "phis": np.array(phis),
                         "e0": cost.e0})
