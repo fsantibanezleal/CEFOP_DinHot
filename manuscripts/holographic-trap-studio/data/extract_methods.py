@@ -48,7 +48,7 @@ _EPS = 1e-9
 
 
 def kind_of(method: str) -> str:
-    """Published (M01 to M19) or proposed (B1 to B5)."""
+    """Published (an id starting with M) or proposed (an id starting with B)."""
     return "proposed" if method.startswith("B") else "published"
 
 
