@@ -172,8 +172,9 @@ def refusal_reason(message: str) -> dict:
 
 
 def pareto_points(meta: dict) -> list[dict] | None:
-    """B5's non-dominated points from its ``meta``: ``pareto`` holds the indices into ``front`` (rows of efficiency, uniformity,
-    relative std) and ``lambdas`` the weight of each row. None when the result carries no front."""
+    """B5's continuation points that no other point of the same curve dominates, from its ``meta``: ``pareto`` holds the
+    indices into ``front`` (rows of efficiency, uniformity, relative std) and ``lambdas`` the weight of each row. None when
+    the result carries no curve."""
     idx, front, lambdas = meta.get("pareto"), meta.get("front"), meta.get("lambdas")
     if idx is None or front is None or lambdas is None or len(idx) == 0:
         return None
@@ -269,7 +270,7 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
 
 
 def _load_done(path: Path, proto: Protocol) -> tuple[list[dict], list[dict]]:
-    """Rows and Pareto fronts of an earlier run of this version with this protocol (for ``--resume``)."""
+    """Rows and B5 continuation points of an earlier run of this version with this protocol (for ``--resume``)."""
     if not path.is_file():
         return [], []
     old = read_json(path)

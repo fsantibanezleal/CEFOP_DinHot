@@ -3,7 +3,7 @@
 EARS (Mavin et al., RE'09, doi:10.1109/RE.2009.9). Every requirement names the gate that fails when it is violated.
 The benchmark (`data-pipeline/pipeline/benchmark/protocol.py`, document `data/derived/benchmark/results.json`) runs every method valid for a
 geometry, with the same seeds, the same metrics and the same budgets, on the geometries G1 to G7: medians and inter-quartile ranges over the
-seeds, one row per method, geometry, device, budget and parameter set, and the Pareto fronts. Its numbers are DinHot's own and measured, never
+seeds, one row per method, geometry, device, budget and parameter set, and the points of the B5 efficiency-uniformity continuation. Its numbers are DinHot's own and measured, never
 quoted. Budgets: the 10, 30 and 100 iteration rows are runs of exactly that length, the 50 ms and 1 s rows are time-capped runs, and one
 converged run per seed serves as the 60 s row; every run is scored from its final phase through the device. Tuned rows exist only for
 methods that declare a tuning grid. A cell that cannot run is listed with a bilingual reason and is absent from the rows. The release run

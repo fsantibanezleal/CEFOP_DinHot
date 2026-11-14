@@ -1,4 +1,4 @@
-"""B5 efficiency-uniformity Pareto front by continuation.
+"""B5 efficiency-uniformity continuation (a weighted-cost continuation; its points are not the Pareto front).
 
 Acceptance (SDD): hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task, plus (dossier D5.1)
 at least one front point dominating each of GS (M04) and GAA (M05) and a front in under 60 s. The baseline points come
@@ -27,6 +27,13 @@ from pipeline.model.holo.methods.optim import m09_direct_search as M09  # noqa: 
 
 def test_spec():
     assert B5.SPEC.id == "B5" and B5.SPEC.targets == ("traps",)
+
+
+def test_name_is_the_continuation_not_a_pareto_front():
+    """U2b: the paper shows B5's points are not the Pareto front (4 to 7 of 20 are dominated), so the name says what it is."""
+    assert B5.SPEC.name == "Efficiency-uniformity continuation"
+    assert "pareto" not in B5.SPEC.name.lower() and "front" not in B5.SPEC.name.lower()
+    assert "Pareto front" not in (B5.__doc__ or "").splitlines()[0]
 
 
 def test_hypervolume_known_values():

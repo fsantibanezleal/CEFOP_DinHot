@@ -1,8 +1,9 @@
-r"""B5 efficiency-uniformity Pareto front by continuation (algorithms dossier D5.1 B5, SDD BS-5).
+r"""B5 efficiency-uniformity continuation: a weighted-cost continuation of the efficiency-uniformity trade-off (algorithms dossier D5.1 B5, SDD BS-5).
 
 Gap: every method trades efficiency against uniformity and reports single points (Di Leonardo et al. 2007: DS at
 ``f = 0.5`` and ``0.25``, GAA at 0.5; Polin et al. 2005 use one scalar weight ``f``; MRAF one mixing parameter); no
-source reports a whole front on the same task.
+source traces the whole trade-off on the same task. The points it returns are those of a weighted-cost continuation, not the Pareto
+front: weighted GS iterates dominate some of them (the method's paper, 4 to 7 of 20 points), so the name says what it is.
 
 Method. Continuation over ``lambda`` in [0, 1] of the loss
 
@@ -18,13 +19,13 @@ illumination), refined by the same CG; each next ``lambda`` is warm-started from
 ``budget.iterations`` Fletcher-Reeves/strong-Wolfe CG iterations (``_common.cg_minimize``). The gradient is the
 closed form ``G_m = [2(1-\lambda)(I_m - T_m)/\sum T^2 - \lambda/e_0]\, V_m`` pulled back by the point-trap adjoint
 (any trap z and vortex charge; the ideal device). ``run`` returns the point with the largest ``e * u`` (the knee of the
-front) as ``phi``, and in ``meta``: ``lambdas``, ``front`` (the (e, u, sigma) of every lambda), ``pareto`` (indices of the
+continuation curve) as ``phi``, and in ``meta``: ``lambdas``, ``front`` (the (e, u, sigma) of every lambda), ``pareto`` (indices of the
 non-dominated points), ``hypervolume`` against the reference point (0, 0) and ``phis`` (all holograms). ``hypervolume``
 and ``pareto_indices`` are public for the benchmark.
 
 Equal work (2026-11-14). ``budget.time_s`` is a deadline in every phase: the warm start stops at it, no new lambda starts
 after it and inside a lambda every evaluation of a line search checks it (``deadline_fun``). A lambda cut by the deadline is
-kept with the CG steps it completed; the front always holds at least the first point. ``meta['iterations']`` is the work
+kept with the CG steps it completed; the curve always holds at least the first point. ``meta['iterations']`` is the work
 done (the warm iterations plus the accepted CG steps over the lambdas run).
 """
 from __future__ import annotations
@@ -42,7 +43,7 @@ from ...core.types import Budget, MethodSpec, Result, Target
 from ..optim import _common as C
 from ..optim._gs_family import DeadlineHit, deadline_fun, weighted_gs
 
-SPEC = MethodSpec(id="B5", name="Efficiency-uniformity Pareto front", family="beyond", lane="baked",
+SPEC = MethodSpec(id="B5", name="Efficiency-uniformity continuation", family="beyond", lane="baked",
                   targets=("traps",), dims=(2, 3))
 DEFAULT_LAMBDAS = 20
 DEFAULT_WARM = 30
@@ -98,7 +99,7 @@ class _FrontCost:
 
 def run(setup: Setup, target: Target, *, device: Device | None = None, budget: Budget, rng: Rng,
         init: np.ndarray | None = None, n_lambda: int = DEFAULT_LAMBDAS, warm: int = DEFAULT_WARM) -> Result:
-    """The front over ``n_lambda`` values of ``lambda`` in [0, 1]; ``budget.iterations`` CG iterations per value."""
+    """The continuation curve over ``n_lambda`` values of ``lambda`` in [0, 1]; ``budget.iterations`` CG iterations per value."""
     if target.kind != "traps":
         raise ValueError("B5 supports trap targets only (targets: 'traps'); got a shaped field")
     if n_lambda < 2:

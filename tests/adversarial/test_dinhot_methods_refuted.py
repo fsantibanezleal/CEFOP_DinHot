@@ -1,4 +1,4 @@
-"""Method requirements MD-001 to MD-025 (docs/design/features/methods/): each test replaces the method's run by a degraded one (a flat phase with zero efficiency and uniformity) and runs the acceptance test of the ladder row in a child pytest, which must fail on its own assertion. The untouched acceptance tests are the suite tests/methods/, run by the ordinary session, so no control child repeats them here (they take tens of minutes)."""
+"""Method requirements MD-001 to MD-026 (docs/design/features/methods/): each test replaces the method's run by a degraded one (a flat phase with zero efficiency and uniformity) and runs the acceptance test of the ladder row in a child pytest, which must fail on its own assertion. The untouched acceptance tests are the suite tests/methods/, run by the ordinary session, so no control child repeats them here (they take tens of minutes)."""
 from __future__ import annotations
 
 import pytest
@@ -72,6 +72,9 @@ TABLE = {
     ]),
     'MD-022': ('tests/methods/beyond/test_b5_pareto.py::test_acceptance_hypervolume_and_domination_on_the_10x10_task', [
         {"target": 'pipeline.model.holo.methods.beyond.b5_pareto:run', "wrap": "lambda *a, **k: (lambda r: dataclasses.replace(r, meta=dict(r.meta, front=r.meta['front'] * 0.5)))(orig(*a, **k))"},
+    ]),
+    'MD-026': ('tests/methods/beyond/test_b5_pareto.py::test_name_is_the_continuation_not_a_pareto_front', [
+        {"target": 'pipeline.model.holo.methods.beyond.b5_pareto:SPEC', "wrap": 'dataclasses.replace(orig, name="Efficiency-uniformity Pareto front")'},
     ]),
     'MD-023': ('tests/methods/beyond/test_b1_device_wgs.py::test_the_default_equals_the_weights_false_run_recorded_before_the_default_changed', [
         {"target": 'pipeline.model.holo.methods.beyond.b1_device_wgs:run', "wrap": "lambda *a, **k: orig(*a, **dict({'weights': True}, **k))"},
@@ -213,3 +216,8 @@ def test_a_normalized_error_gradient_off_by_ten_percent_fails_its_gate(cases):
 def test_a_per_frame_sequence_without_induction_fails_its_gate(cases):
     """MD-025: a per-frame sequence that starts every frame from a fresh phase fails the continuity test"""
     cases.refuted('MD-025', asserted=True)
+
+
+def test_a_b5_named_a_pareto_front_again_fails_its_gate(cases):
+    """MD-026: a B5 whose SPEC name is Efficiency-uniformity Pareto front again fails the engine's name test"""
+    cases.refuted('MD-026', asserted=True)
