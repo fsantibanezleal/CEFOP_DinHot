@@ -622,10 +622,14 @@ def test_adversarial_locked_node_engines(workflow, tmp_path, monkeypatch, capsys
         workflow.compatible_node(tmp_path, (24, 14, 1))
 
 
-def test_adversarial_real_product_generation_admission(workflow):
+def test_adversarial_real_product_generation_admission(workflow, monkeypatch):
     if (ROOT / ".template-source").is_file():
         pytest.skip("The template example has a separate actual five-case generation control")
     config = workflow.settings(ROOT)
+    # The readiness provider runs in the primary generation environment (0.15.010); like the template's own integration
+    # control, the test resolves that environment's external root from the declared alias instead of the developer's shell.
+    runtime = (ROOT / config["primary_environment"]).resolve(strict=True)
+    monkeypatch.setenv("CAOS_VENVS_ROOT", str(runtime.parents[1]))
     ready = json.loads((ROOT / "data/derived/readiness.json").read_text(encoding="utf-8"))
     workflow.check_readiness_inventory(ROOT, config, ready)
     workflow.check_readiness_states(ROOT, config, ready, ROOT)
@@ -641,15 +645,19 @@ def test_adversarial_real_product_generation_admission(workflow):
     assert all((ROOT / name).is_file() for name in config.get("stage_inputs", []))
 
 
-def test_adversarial_dinhot_readiness_admission(workflow):
+def test_adversarial_dinhot_readiness_admission(workflow, monkeypatch):
     config = workflow.settings(ROOT)
+    runtime = (ROOT / config["primary_environment"]).resolve(strict=True)
+    monkeypatch.setenv("CAOS_VENVS_ROOT", str(runtime.parents[1]))
     # DinHot admits its 11 rows with exactly its declared outcomes: the refused case C11 (params-record partial), the skipped
     # benchmark cells (benchmark-results partial), the refuted warm-start model (warmstart-model training) and the dormant API.
     ready = json.loads((ROOT / "data/derived/readiness.json").read_text())
     assert len(ready["contracts"]) == 11
     assert config["readiness_exceptions"] == {"params-record": "partial", "benchmark-results": "partial",
                                               "warmstart-model": "training", "api": "missing"}
-    assert config["stage_inputs"] == ["data/examples/cases.json"]
+    # the generation's stamped inputs: the case library and every engine reference fixture the readiness provider reads (9ccd189)
+    fixtures = sorted(p.relative_to(ROOT).as_posix() for p in (ROOT / "tests/fixtures/engine").glob("*.json"))
+    assert config["stage_inputs"] == ["data/examples/cases.json", *fixtures]
     workflow.check_readiness_states(ROOT, config, ready, ROOT)
     rows = {row["id"]: i for i, row in enumerate(ready["contracts"])}
     for row_id, state in (("case-index", "missing"), ("trace", "partial"), ("cgh-net", None),
