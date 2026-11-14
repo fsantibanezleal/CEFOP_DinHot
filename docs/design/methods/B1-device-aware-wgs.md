@@ -1,4 +1,4 @@
-# BS-1: Device-aware weighted GS (engine id B1)
+# BS-1: Device-aware conjugate-gradient refinement (engine id B1; named device-aware weighted GS until 0.02.003)
 
 | Item | Value |
 |---|---|
@@ -9,21 +9,21 @@
 | Gate | `tests/methods/beyond/test_b1_device_wgs.py` |
 | Live port | none (lane `baked`; `getMethod('B1')` raises `NotLive`) |
 | Card | [B1](../../frameworks/B1_device-aware-wgs.md) |
-| Outcome | hypothesis confirmed on the ladder criterion (a median of 25.8 times below M07 over five seeds at 0.995 of its efficiency); in the benchmark on the C08 device it holds on the ring and the random set, not on the large set (1.73 times) nor on the two lattices, where it keeps its start (update of 2026-10-30) |
+| Outcome (measured with the weight update on, the 0.02.003 default; see the update of 2026-11-14) | hypothesis confirmed on the ladder criterion (a median of 25.8 times below M07 over five seeds at 0.995 of its efficiency); in the benchmark on the C08 device it holds on the ring and the random set, not on the large set (1.73 times) nor on the two lattices, where it keeps its start (update of 2026-10-30) |
 
 ## Tier and role
 
 Beyond the state of the art: DinHot's own proposal.
 
-**Hypothesis.** Putting the SLM's pixel crosstalk and quantizer inside the loop of the weighted GS for trap arrays, with the phase update replaced by a few conjugate-gradient
+**Hypothesis.** Putting the SLM's pixel crosstalk and quantizer inside the loop of a conjugate-gradient refinement that starts from weighted GS, for trap arrays, with a few conjugate-gradient
 steps on a device-aware loss, makes the traps equal on the device and not only in the ideal model: on the crosstalk device the relative standard deviation of the trap intensities is
 at least two times below that of phase-fixed WGS (M07), at an efficiency at most 10 percent lower.
 
 **The gap.** Schroff et al. 2023 (https://doi.org/10.1038/s41598-023-30296-6) put the crosstalk model into conjugate gradient on shaped potentials (10 minutes per hologram, no WGS
 comparison); Persson, Engstrom and Goksor 2012 (Opt. Express 20, 22334, https://opg.optica.org/oe/fulltext.cfm?uri=oe-20-20-22334) convolve the phase inside a weighted GS but
 replace amplitudes only; Kim et al. 2019 (https://doi.org/10.1364/OL.44.003178) and Ebadi et al. 2021 (https://arxiv.org/abs/2012.12281) use no device model in the solver and rely on
-camera feedback (the gap study, algorithms dossier D5.1 B1). The proposal is a combination of two published pieces, the weights of Di Leonardo et al. 2007
-(https://doi.org/10.1364/OE.15.001913) and the device model of Schroff et al., applied to trap arrays; it is a method that answers the problem differently from M07 (solver aware of the
+camera feedback (the gap study, algorithms dossier D5.1 B1). The proposal combines the device model of Schroff et al. with a weighted GS start (and, as an option, the weights of Di Leonardo et al. 2007
+(https://doi.org/10.1364/OE.15.001913)), applied to trap arrays, and it is run against Schroff et al.'s own loss (`loss='normalized-error'`, the update of 2026-11-14); it is a method that answers the problem differently from M07 (solver aware of the
 device) and not a validation protocol.
 
 ## Problem it answers
@@ -33,22 +33,22 @@ Hologram quality on a pixelated SLM with pixel crosstalk, 4-bit-class phase and 
 ## Inputs and outputs
 
 - Inputs: `setup`, a `Target` of kind `traps` (a shaped field raises a `ValueError` naming `traps`, `b1_device_wgs.py` line 56), `budget` (`iterations` is the number of outer iterations), `rng`,
-  optional `init` (overrides the warm start), `device` (a `core.device.Device`; with `None` the ideal model), `steps`, `warm`. Traps must be on FFT bins with $z = 0$ and no vortex when a
+  optional `init` (overrides the warm start), `device` (a `core.device.Device`; with `None` the ideal model), `steps`, `warm`, `weights` (default False), `loss` (`'efficiency-level'`, the default, or `'normalized-error'`), `steepness`. Traps must be on FFT bins with $z = 0$ and no vortex when a
   device is given (the traps are read at the nearest bin). `steps < 1` or `warm < 0` raises a `ValueError`.
 - Output: `Result` with `phi` in $[0, 2\pi)$, one `history` entry per outer iteration (with `loss`), `fields` the trap fields on the device, `meta` (`steps`, `warm`, `evaluations`, `weights`,
-  `device_aware`).
+  `weight_update`, `loss`, `device_aware`).
 
 ## The method
 
-Keep the weights of Di Leonardo et al. 2007, Eq. (18), $w_m \leftarrow w_m\langle r\rangle/r_m$ with $r_m = |V_m|/a_m$ the trap amplitude relative to its design amplitude, measured on the
-device's focal field. Replace the projection $\phi_j = \arg\sum_m c_m e^{+i\Delta_j^m}$ of the phase update by $K$ conjugate-gradient steps on the device-aware loss
+Start from weighted GS. With the option `weights=True` keep the weights of Di Leonardo et al. 2007, Eq. (18), $w_m \leftarrow w_m\langle r\rangle/r_m$ with $r_m = |V_m|/a_m$ the trap amplitude relative to its design amplitude, measured on the
+device's focal field (off by default, see the update of 2026-11-14). Replace the projection $\phi_j = \arg\sum_m c_m e^{+i\Delta_j^m}$ of the phase update by $K$ conjugate-gradient steps on the device-aware loss
 
 $$L(\phi) = \frac{\sum_m\big(|V_m(\phi)|^2 - T_m\big)^2}{\sum_m T_m^2},\qquad T_m = \eta\,\frac{(w_m a_m)^2}{\sum_k (w_k a_k)^2},\qquad \eta = \sum_m |V_m|^2,$$
 
 where $V = \mathrm{Op}(\phi)$ runs through the straight-through quantizer, the crosstalk operator $K * U$ (3 by 3 upsampling, circular convolution with the Schroff kernel), the FFT of the upsampled
 grid and the pixel-aperture envelope. The gradient is the closed form of `FocalForward.adjoint` (the adjoint of the crosstalk operator is the convolution with the reversed kernel followed by the sum
-over each 3 by 3 block): no autodiff. The target level is the current efficiency $\eta$, so the steps flatten the traps without trading efficiency away; the weights supply the integral feedback
-that the few steps per iteration lack (a one-shot fit would need many more steps). Fletcher-Reeves CG with a strong-Wolfe line search restarts at every outer iteration, because the target changes with the weights.
+over each 3 by 3 block): no autodiff. The target level is the current efficiency $\eta$, so the steps flatten the traps without trading efficiency away; with the weights on they supply an integral feedback
+that the few steps per iteration lack, and the ablation shows that without them the spread is lower (update of 2026-11-14). Fletcher-Reeves CG with a strong-Wolfe line search restarts at every outer iteration, because the target is set again at each of them.
 
 In the code, per outer iteration (`b1_device_wgs.py` lines 77 to 86): the trap fields on the device, the weight update, `cost.target = sum|v|^2 * (w a)^2 / sum (w a)^2`, then
 `C.cg_minimize(cost.value_grad, phi, steps)`. The start is `warm` iterations of ideal-model weighted GS from the SR superposition (lines 64 to 67), or `init`.
@@ -65,6 +65,8 @@ every iterate, and `meta` names the returned one (`best_iteration`), the floor a
 
 | Parameter | Default | Where | Source of the value |
 |---|---|---|---|
+| `weights` | False (the weight update is an option) | `b1_device_wgs.py` | the ablation of the paper, update of 2026-11-14 |
+| `loss` | `'efficiency-level'` | `b1_device_wgs.py` | `'normalized-error'` is the loss of Schroff et al. 2023, eq (3) |
 | `steps` | 3 CG steps per outer iteration | `b1_device_wgs.py` line 47 | DinHot's choice (a few steps; the weights give the integral feedback) |
 | `warm` | 12 ideal-model GSW iterations | line 48 | Kim's $N$ = 12 (the number of WGS iterations before the phase freeze) |
 | `DEFAULT_OUTER` | 4 | line 49 | the budget of the acceptance test (`Budget(B1.DEFAULT_OUTER)`); `run` itself takes the number of outer iterations from `budget.iterations` and does not read the constant |
@@ -151,3 +153,17 @@ B1 now returns its best iterate that keeps 0.9 of its warm start's efficiency (T
 | G6 Large: 32 x 32 and disordered 819 | 17.1 | 29.6 | 1.73 | 1.06 | 2, 9 |
 
 So in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.06); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds. On the lattices of this device every iterate past the start gives up more than a tenth of the light, so B1 keeps its start; on the ideal device the spreads of B1 and of M07 are both below the resolution of the file on most geometries, which is a tie and not a gain.
+
+## Update of 2026-11-14 (0.02.004): weights off by default, the normalized-error loss, the name
+
+An independent review of the device-aware paper found that its own ablation refutes the weights, and that the closest published method was not run
+(`wip/dinhot/msq-papers-2026-11-10.md`, findings DA-1 and DA-3). The method is therefore redefined and renamed (the id B1 stays):
+
+- **Name.** "Device-aware conjugate-gradient refinement" (Spanish: "Refinamiento por gradiente conjugado con modelo del dispositivo"). What distinguishes it from the ladder's weighted GS is the conjugate-gradient refinement through the device model, not the weights.
+- **Weights off by default.** `weights` defaults to False. The ablation (`manuscripts/device-aware-flicker-bounded/data/tab_abl_b1.tex`, five seeds, crosstalk device, 10 x 10 task): median spread 0.030 percent without the update against 0.205 percent with it, 7 times lower, at an efficiency ratio of 0.999 against 0.995;
+  on the full device (`tab_abl_b1_full.tex`, three seeds) 0.242 against 0.724 percent, 3 times lower. On the benchmark lattices the result is mixed (the C08 device at 10 iterations, median over three seeds: square lattice 14 against 29 percent at an efficiency of 0.56 against 0.60; ring of 36: 8.9 against 7.8; the random and quasi-periodic sets unchanged), so `weights=True` stays available and reproduces the 0.02.003 run exactly.
+  The numbers of this record that are not in this update (the acceptance run, the C08 bake, the benchmark table of 2026-10-30) were measured with the update on; the 0.02.004 generation re-measures them with the new default.
+- **The closest published method as a loss option.** `loss='normalized-error'` replaces the efficiency-level loss by the normalized-error cost of Schroff et al. 2023 (Sci. Rep. 13, 3252, eq (3), p. 3), $C = s\sum_{S}(\tilde T - \tilde I)^2$ with $\tilde T = T/\sum_S T$ and $\tilde I = I/\sum_S I$, on the trap intensities through the same device model;
+  the warm start, the conjugate-gradient optimizer, the outer iterations and the best-iterate safeguard are B1's own, so the comparison isolates the loss. The gradient is $\partial C/\partial I_k = (2s/P)(\sum_m d_m \tilde I_m - d_k)$ with $d = \tilde T - \tilde I$ and $P = \sum_m I_m$, through the adjoint of the device model, checked against finite differences.
+  The steepness $s$ is `1 / sum(T~^2)` by default (so that $C$ is the relative squared error); Schroff et al.'s constant `s = 1e12` (Methods, p. 7) is a pixel-grid scale and only rescales $C$.
+- **Tests.** `test_weights_true_reproduces_the_run_recorded_before_the_default_changed`, `test_the_default_equals_the_weights_false_run_recorded_before_the_default_changed`, `test_the_weight_update_is_an_option_and_off_by_default`, `test_spec_name_is_the_device_aware_conjugate_gradient_refinement` (MD-023); `test_normalized_error_value_is_schroff_eq3_on_the_trap_intensities`, `test_normalized_error_gradient_matches_finite_differences`, `test_normalized_error_runs_the_same_warm_start_and_safeguard_and_differs_only_by_the_loss`, `test_normalized_error_honours_the_deadline_and_counts_its_work` (MD-024).

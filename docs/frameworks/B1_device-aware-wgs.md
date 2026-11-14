@@ -1,4 +1,4 @@
-# B1, Device-aware weighted GS (beyond the published state of the art)
+# B1, Device-aware conjugate-gradient refinement (beyond the published state of the art; named device-aware weighted GS until 0.02.003)
 
 | Item | Value |
 |---|---|
@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Put the SLM's pixel crosstalk and quantizer inside the weighted GS loop for trap arrays, so the traps are equal on the device and not only
+Put the SLM's pixel crosstalk and quantizer inside a conjugate-gradient refinement that starts from weighted GS, for trap arrays, so the traps are equal on the device and not only
 in the ideal model.
 
 ## The gap
@@ -22,16 +22,16 @@ and rely on camera feedback.
 
 ## Method
 
-Keep the weights of Di Leonardo et al. 2007, Eq. (18), $w_m \leftarrow w_m\langle r\rangle/r_m$ with $r_m = |V_m|/a_m$ the trap amplitude relative to its design
-amplitude, measured on the device's focal field. Replace the projection of the phase update by $K$ conjugate-gradient steps on the device-aware loss
+Start from weighted GS. The weights of Di Leonardo et al. 2007, Eq. (18), $w_m \leftarrow w_m\langle r\rangle/r_m$ with $r_m = |V_m|/a_m$ the trap amplitude relative to its design
+amplitude, measured on the device's focal field, are an option (`weights=True`), off by default since 0.02.004: the ablation of the paper gives a spread 7 times lower on the acceptance task and 3 times lower on the full device without them. Replace the projection of the phase update by $K$ conjugate-gradient steps on the device-aware loss
 
 $$L(\phi) = \frac{\sum_m\big(|V_m(\phi)|^2 - T_m\big)^2}{\sum_m T_m^2}, \qquad T_m = \eta\,\frac{(w_ma_m)^2}{\sum_k(w_ka_k)^2}, \qquad \eta = \sum_m|V_m|^2$$
 
 where $V = \mathrm{Op}(\phi)$ runs through the straight-through quantizer, the crosstalk operator $K*U$ (3 by 3 upsampling, circular convolution with the Schroff kernel),
 the FFT of the upsampled grid and the pixel-aperture envelope ([P02](P02_device-model.md)). The gradient is the closed form of the crosstalk adjoint, so the TypeScript
-port needs no automatic differentiation. The target level is the current efficiency $\eta$, so the steps flatten the traps without trading efficiency away; the
-weights supply the integral feedback that the few steps per iteration lack. Fletcher-Reeves CG with a strong-Wolfe line search restarts at every outer iteration, because
-the target changes with the weights.
+port needs no automatic differentiation. The target level is the current efficiency $\eta$, so the steps flatten the traps without trading efficiency away; with the
+weights on they supply an integral feedback that the few steps per iteration lack. Fletcher-Reeves CG with a strong-Wolfe line search restarts at every outer iteration, because
+the target is set again at each of them. The option `loss='normalized-error'` runs the normalized-error cost of Schroff et al. 2023, eq (3), through the same operator, start, optimizer and safeguard, so the closest published loss is a baseline of the method itself.
 
 ## Implementation
 

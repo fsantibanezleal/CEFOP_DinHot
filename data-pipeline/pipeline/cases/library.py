@@ -396,9 +396,9 @@ def _build() -> list[Case]:
         _record("C08_device_limited", c08, {"kind": "traps", "traps": _grid(8, 8, 5.0)}, DEVICE, "B1",
                 {"efficiency": [0.1, hi], "rel_std_pct": [lo, 40.0]}, device=DEVICE_C08),
         {"en": "An 8 x 8 array on a device with 4-bit phase, pixel crosstalk, a fill factor of 0.85 and flicker. The "
-               "device-aware weighted GS recovers uniformity that the ideal-model methods lose.",
+               "device-aware conjugate-gradient refinement recovers uniformity that the ideal-model methods lose.",
          "es": "Una matriz 8 x 8 en un dispositivo con fase de 4 bits, diafonía de píxel, factor de llenado 0,85 y "
-               "parpadeo. El GS ponderado que conoce el dispositivo recupera la uniformidad que pierden los métodos del "
+               "parpadeo. El refinamiento por gradiente conjugado con modelo del dispositivo recupera la uniformidad que pierden los métodos del "
                "modelo ideal."},
         "synthetic",
         {"source": {"en": "Crosstalk parameters from Schroff et al. 2023; the 4-bit, fill-factor and flicker effects have no "

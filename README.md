@@ -24,7 +24,7 @@ Every method runs on the product's cases with the same seeds and metrics, and is
   the volumetric 3D GS, phase-fixed weighted GS, MRAF, optimal-transport starts, conjugate gradient and Wirtinger-Adam descent with a
   device model, closed-loop feedback, atom rearrangement and the learned multi-plane network. The level 3 notebooks run them against
   slmsuite 0.5.0 or against each other.
-- **Proposed methods** (5): device-aware weighted GS, flicker-bounded phase-continuous sequences, a learned warm start, an
+- **Proposed methods** (5): device-aware conjugate-gradient refinement, flicker-bounded phase-continuous sequences, a learned warm start, an
   aberration-robust hologram and an efficiency-uniformity front, each tested and reported as it came out, including two measured
   negatives (the learned warm start is refuted; the aberration-robust hologram gives no robustness to pointing errors at its acceptance budget, and reaches 1.48 times only with a displacement prior optimized alone at five times that budget)
   and one measured scope (the flicker-bounded sequence holds for short steps per frame; on long moves linear phase interpolation leads

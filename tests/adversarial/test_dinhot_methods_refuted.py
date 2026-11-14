@@ -1,4 +1,4 @@
-"""Method requirements MD-001 to MD-022 (docs/design/features/methods/): each test replaces the method's run by a degraded one (a flat phase with zero efficiency and uniformity) and runs the acceptance test of the ladder row in a child pytest, which must fail on its own assertion. The untouched acceptance tests are the suite tests/methods/, run by the ordinary session, so no control child repeats them here (they take tens of minutes)."""
+"""Method requirements MD-001 to MD-025 (docs/design/features/methods/): each test replaces the method's run by a degraded one (a flat phase with zero efficiency and uniformity) and runs the acceptance test of the ladder row in a child pytest, which must fail on its own assertion. The untouched acceptance tests are the suite tests/methods/, run by the ordinary session, so no control child repeats them here (they take tens of minutes)."""
 from __future__ import annotations
 
 import pytest
@@ -72,6 +72,15 @@ TABLE = {
     ]),
     'MD-022': ('tests/methods/beyond/test_b5_pareto.py::test_acceptance_hypervolume_and_domination_on_the_10x10_task', [
         {"target": 'pipeline.model.holo.methods.beyond.b5_pareto:run', "wrap": "lambda *a, **k: (lambda r: dataclasses.replace(r, meta=dict(r.meta, front=r.meta['front'] * 0.5)))(orig(*a, **k))"},
+    ]),
+    'MD-023': ('tests/methods/beyond/test_b1_device_wgs.py::test_the_default_equals_the_weights_false_run_recorded_before_the_default_changed', [
+        {"target": 'pipeline.model.holo.methods.beyond.b1_device_wgs:run', "wrap": "lambda *a, **k: orig(*a, **dict({'weights': True}, **k))"},
+    ]),
+    'MD-024': ('tests/methods/beyond/test_b1_device_wgs.py::test_normalized_error_gradient_matches_finite_differences', [
+        {"target": 'pipeline.model.holo.methods.beyond.b1_device_wgs:NormalizedErrorCost.value_grad', "wrap": "lambda self, phi: (lambda r: (r[0], r[1] * 1.1, r[2]))(orig(self, phi))"},
+    ]),
+    'MD-025': ('tests/methods/control/test_m16_rearrangement.py::test_per_frame_gs_trap_phases_do_not_jump_between_frames', [
+        {"target": 'pipeline.model.holo.methods.control.m16_rearrangement:weighted_gs', "wrap": "lambda setup, traps, its, rng, **k: orig(setup, traps, its, rng, **dict(k, init=None))"},
     ]),
 }
 
@@ -189,3 +198,18 @@ def test_a_degraded_b4_fails_its_acceptance_test(cases):
 def test_a_degraded_b5_fails_its_acceptance_test(cases):
     """MD-022: a degraded B5 fails its acceptance test"""
     cases.refuted('MD-022', asserted=True)
+
+
+def test_a_b1_with_the_weight_update_back_on_by_default_fails_its_gate(cases):
+    """MD-023: a B1 whose default is the weight update again fails the test of the recorded default"""
+    cases.refuted('MD-023', asserted=True)
+
+
+def test_a_normalized_error_gradient_off_by_ten_percent_fails_its_gate(cases):
+    """MD-024: a normalized-error gradient scaled by 1.1 fails the finite-difference test"""
+    cases.refuted('MD-024', asserted=True)
+
+
+def test_a_per_frame_sequence_without_induction_fails_its_gate(cases):
+    """MD-025: a per-frame sequence that starts every frame from a fresh phase fails the continuity test"""
+    cases.refuted('MD-025', asserted=True)

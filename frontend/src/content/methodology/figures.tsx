@@ -360,7 +360,7 @@ export function ParetoFigure({ t }: { t: Tr }) {
 export function DeviceWgsFigure({ t }: { t: Tr }) {
   const id = 'ah-b1';
   return (
-    <Svg h={230} label={t('One step of device-aware weighted GS through the crosstalk operator', 'Un paso de GS ponderado consciente del dispositivo a través del operador de diafonía')}>
+    <Svg h={230} label={t('One step of the device-aware conjugate-gradient refinement through the crosstalk operator', 'Un paso del refinamiento por gradiente conjugado con modelo del dispositivo a través del operador de diafonía')}>
       <ArrowDefs id={id} />
       <Box x={10} y={30} w={90} h={50} lines={[t('phase φ', 'fase φ')]} />
       <Box x={125} y={30} w={110} h={50} lines={[t('upsample U', 'sobremuestreo U'), t('blur K', 'difuminado K')]} tone="accent" />

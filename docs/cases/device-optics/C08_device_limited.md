@@ -6,7 +6,7 @@
 
 ## Why this case exists
 
-Quantization to 4 bits, pixel crosstalk, a fill factor of 0.85 and phase flicker together. It is the case for the device model ([P02](../../frameworks/P02_device-model.md)) and for B1, the device-aware weighted GS.
+Quantization to 4 bits, pixel crosstalk, a fill factor of 0.85 and phase flicker together. It is the case for the device model ([P02](../../frameworks/P02_device-model.md)) and for B1, the device-aware conjugate-gradient refinement.
 
 ## Formalization
 
@@ -36,12 +36,12 @@ The ladder rows valid for the case, each checked against the registered method d
 - [M07](../../frameworks/M07_phase-fixed-wgs.md), Phase-fixed weighted GS
 - [M10](../../frameworks/M10_conjugate-gradient.md), Conjugate-gradient minimization
 - [M13](../../frameworks/M13_crosstalk-aware-cg.md), Device-aware CG with pixel crosstalk
-- [B1](../../frameworks/B1_device-aware-wgs.md), Device-aware weighted GS
+- [B1](../../frameworks/B1_device-aware-wgs.md), Device-aware conjugate-gradient refinement
 - [B4](../../frameworks/B4_aberration-robust-hologram.md), Aberration-robust hologram
 
 ## Expected results
 
-An 8 by 8 array on a device with 4-bit phase, pixel crosstalk, a fill factor of 0.85 and flicker of 0.05 rad rms. The device-aware weighted GS recovers uniformity that the ideal-model methods lose. The case band is efficiency 0.1 to 1, relative standard deviation up to 40 percent. In the unit test of B1 (a different task, 10 by 10 on a crosstalk device) the device-aware method reached a spread 49 times below phase-fixed WGS.
+An 8 by 8 array on a device with 4-bit phase, pixel crosstalk, a fill factor of 0.85 and flicker of 0.05 rad rms. The device-aware conjugate-gradient refinement recovers uniformity that the ideal-model methods lose. The case band is efficiency 0.1 to 1, relative standard deviation up to 40 percent. In the unit test of B1 (a different task, 10 by 10 on a crosstalk device) the device-aware method reached a spread 49 times below phase-fixed WGS.
 
 ### Expected ranges (checked by the bake)
 
