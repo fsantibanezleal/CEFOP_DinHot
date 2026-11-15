@@ -20,7 +20,7 @@ y los notebooks los cubren así:
 - Los métodos publicados son los notebooks de nivel 3, una comparación con el método como se publicó o como lo implementa slmsuite: cada uno nombra el método que ejecuta en su metadato
   `caos.methods` (GS ponderado con fase fija en 03, MRAF y MRAF con transporte óptimo en 04, gradiente conjugado y gradiente de Wirtinger con Adam en 05, CG con modelo del dispositivo en 06, WGS en lazo cerrado y reordenamiento húngaro en 07, CNN no supervisada en 08).
 - Los métodos propuestos son los notebooks de nivel 4, cada uno con la afirmación que prueba en `caos.beyond`
-  (WGS con modelo del dispositivo en 03, frente eficiencia-uniformidad en 05, holograma robusto a aberraciones en 06, secuencia acotada por parpadeo en 07, arranque aprendido en 08, un negativo medido).
+  (refinamiento por gradiente conjugado con modelo del dispositivo en 03, continuación eficiencia-uniformidad en 05, holograma robusto a aberraciones en 06, secuencia acotada por parpadeo en 07, arranque aprendido en 08, un negativo medido).
 
 ## Cobertura de toda la herramienta
 
@@ -60,7 +60,7 @@ Un tema sin notebook de nivel 3 dice por qué en su fila.
 | [03-gerchberg-saxton/01-the-gs-loop.ipynb](03-gerchberg-saxton/01-the-gs-loop.ipynb) | 1 | las dos mitades de una iteración de Gerchberg-Saxton hechas a mano con nueve trampas (caso C01), comprobadas contra Gerchberg-Saxton |
 | [03-gerchberg-saxton/02-weights-for-uniformity.ipynb](03-gerchberg-saxton/02-weights-for-uniformity.ipynb) | 2 | qué ganan el GS ponderado y el adaptativo sobre el GS simple en C12: los primeros pesos, iteraciones hasta 5, 2 y 1 por ciento, el barrido de alfa, la dependencia de la semilla |
 | [03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb](03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb) | 3 | cómo se comparan GS ponderado y GS ponderado con fase fija con WGS-Leonardo y WGS-Kim de slmsuite 0.5.0 en las 1024 trampas de C03 con un mismo conjunto de métricas |
-| [03-gerchberg-saxton/04-device-aware-wgs.ipynb](03-gerchberg-saxton/04-device-aware-wgs.ipynb) | 4 | si el WGS consciente del dispositivo supera al WGS de fase fija y al gradiente conjugado con diafonía en el dispositivo del caso C08, y con qué intensidad de diafonía |
+| [03-gerchberg-saxton/04-device-aware-refinement.ipynb](03-gerchberg-saxton/04-device-aware-refinement.ipynb) | 4 | si el refinamiento por gradiente conjugado con modelo del dispositivo supera al WGS de fase fija y al gradiente conjugado con diafonía en el dispositivo del caso C08, si su ganancia se debe a la actualización de pesos o a su pérdida frente a la pérdida de error normalizado de Schroff et al., y con qué intensidad de diafonía |
 | [04-shaped-potentials/01-what-a-shaped-potential-asks.ipynb](04-shaped-potentials/01-what-a-shaped-potential-asks.ipynb) | 1 | qué le pide un potencial en forma de disco al holograma que no le piden nueve trampas puntuales, el error calculado a mano y dónde se detiene Gerchberg-Saxton simple en el disco del caso C04 |
 | [04-shaped-potentials/02-the-signal-and-the-noise-region.ipynb](04-shaped-potentials/02-the-signal-and-the-noise-region.ipynb) | 2 | cuánto del plano focal debe ceder un holograma con forma para ser preciso: regiones de señal hechas a mano, el reparto de potencia, MRAF frente a Gerchberg-Saxton simple, el margen oscuro |
 | [04-shaped-potentials/03-mraf-and-the-signal-region.ipynb](04-shaped-potentials/03-mraf-and-the-signal-region.ipynb) | 3 | cómo se compara MRAF con GS en un disco y un anillo, el parámetro de mezcla, el inicio y el MRAF de slmsuite sobre los mismos objetivos |
@@ -69,7 +69,7 @@ Un tema sin notebook de nivel 3 dice por qué en su fila.
 | [05-optimization/02-the-wirtinger-gradient-and-adams-step.ipynb](05-optimization/02-the-wirtinger-gradient-and-adams-step.ipynb) | 2 | el retroceso de Wirtinger por los modelos ideal y con diafonía, qué hace Adam con un gradiente de escala desconocida, el barrido de la tasa de aprendizaje |
 | [05-optimization/03-conjugate-gradient-against-weighted-gs.ipynb](05-optimization/03-conjugate-gradient-against-weighted-gs.ipynb) | 3 | cómo se compara el gradiente conjugado con el lazo de GS ponderado: el refinamiento que baja el costo y sube la dispersión, y la eficiencia que el gradiente conjugado devuelve exacta |
 | [05-optimization/04-wirtinger-adam-against-gerchberg-saxton.ipynb](05-optimization/04-wirtinger-adam-against-gerchberg-saxton.ipynb) | 3 | cómo se compara el gradiente de Wirtinger con Adam con el GS simple y ponderado a igual número de iteraciones en tres semillas y a 100 iteraciones |
-| [05-optimization/05-the-efficiency-uniformity-front.ipynb](05-optimization/05-the-efficiency-uniformity-front.ipynb) | 4 | el frente completo eficiencia-uniformidad por continuación contra seis métodos de punto único en C12 |
+| [05-optimization/05-the-efficiency-uniformity-continuation.ipynb](05-optimization/05-the-efficiency-uniformity-continuation.ipynb) | 4 | la curva que traza la continuación eficiencia-uniformidad contra seis métodos de punto único en C12, dónde la dominan iteraciones de métodos publicados, y por qué no es el frente de Pareto |
 | [06-device-and-aberrations/01-what-the-device-costs.ipynb](06-device-and-aberrations/01-what-the-device-costs.ipynb) | 1 | cuánto le cuestan al holograma de C08 la apertura del píxel, la cuantización y la diafonía |
 | [06-device-and-aberrations/02-zernike-correction.ipynb](06-device-and-aberrations/02-zernike-correction.ipynb) | 2 | los modos de Zernike en orden de Noll, la estimación de Strehl contra la pérdida medida en C09 y la recuperación modal sin sensor de la corrección de Zernike |
 | [06-device-and-aberrations/03-crosstalk-aware-cg-against-cg.ipynb](06-device-and-aberrations/03-crosstalk-aware-cg-against-cg.ipynb) | 3 | cómo se compara el CG con modelo del dispositivo con el gradiente conjugado en el dispositivo de C08, la detención temprana de la búsqueda de línea y el CG con modelo del dispositivo sin dispositivo |
@@ -86,7 +86,7 @@ Un tema sin notebook de nivel 3 dice por qué en su fila.
 
 ## Métodos propuestos
 
-Cinco afirmaciones del SDD del producto, cada una con un notebook de nivel 4 en ambos idiomas: el WGS consciente del dispositivo
+Cinco afirmaciones del SDD del producto, cada una con un notebook de nivel 4 en ambos idiomas: el refinamiento por gradiente conjugado con modelo del dispositivo
 (03-04), la secuencia acotada por parpadeo (07-05), el arranque aprendido, probado y refutado (08-04), el holograma robusto a aberraciones
-(06-04) y el frente eficiencia-uniformidad (05-05). Dos de ellas, el arranque aprendido y la parte de puntería del holograma robusto a aberraciones, son negativos medidos y
+(06-04) y la continuación eficiencia-uniformidad (05-05). Dos de ellas, el arranque aprendido y la parte de puntería del holograma robusto a aberraciones, son negativos medidos y
 los notebooks lo dicen.
