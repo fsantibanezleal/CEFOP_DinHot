@@ -1,0 +1,12 @@
+\begin{table}[htbp]\centering\footnotesize
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-case-spec schema 1.0.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-case-spec}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule
+Field & Type & Constraint & Unit / role\\\midrule
+P & object & additionalProperties=\allowbreak{}False & structural metadata /\allowbreak{} nested units\\
+q & array & maxItems=\allowbreak{}20000 & cost /\allowbreak{} decision unit\\
+A & object & additionalProperties=\allowbreak{}False & structural metadata /\allowbreak{} nested units\\
+lower & array & maxItems=\allowbreak{}20000 & original row unit\\
+upper & array & maxItems=\allowbreak{}20000 & original row unit\\
+penalty & object & additionalProperties=\allowbreak{}False & structural metadata /\allowbreak{} nested units\\
+\bottomrule\end{tabularx}
+\end{table}

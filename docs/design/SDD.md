@@ -135,7 +135,7 @@ resolves it to. The runtimes are Python 3.12 (CI; the device's venv may be newer
 | contracts | openapi-spec-validator | 0.9.0 | validates `docs/contracts/api.openapi.json` | none: the only maintained validator for the OpenAPI 3.1 document |
 | API | fastapi | 0.143.0 | the dormant `app/`, run by the API contract tests | flask, rejected: no response models to compare with the OpenAPI document |
 | API | httpx | 0.28.1 | the test client of the dormant `app/` | requests, rejected: FastAPI's test client needs httpx |
-| shell | @fasl-work/caos-app-shell | 0.19.6 | the shared app shell (pinned exactly, ADR-0078) | a hand-rolled shell, forbidden by ADR-0078 |
+| shell | @fasl-work/caos-app-shell | 0.26.2 | the shared app shell (pinned exactly, ADR-0078) | a hand-rolled shell, forbidden by ADR-0078 |
 | web | react | 19.3.0 | the UI | none: the shell requires it |
 | web | react-dom | 19.3.0 | the UI renderer | none: the shell requires it |
 | web | react-router | 8.4.0 | the routes | none: the shell requires it |
@@ -326,6 +326,27 @@ or the case's own), computed live where the method is live. The trap editor (add
   The feedback and rearrangement drivers use a weight-aware registered method (M07, else M06, else M04) with `init` and weights in the target;
   they do not call the internals of M12 or M16.
 
+## Visualization catalog
+
+DinHot applies the six view kinds of ADR-0082 to holographic optical trapping. The ids V1 to V6 below are the catalog's
+kinds; they are not the workbench view numbers of the section above. Every number a view or a story step prints comes from
+the case's baked artifacts (`trace`, `case-manifest`, `benchmark-results`) or from the engine run in the browser on the
+same case, and a step whose number is missing says so.
+
+| id | question | data contract | kind | interactions | linked views | placement |
+|---|---|---|---|---|---|---|
+| V1 | How does one laser beam become an array of traps, and how much of its power reaches them? | `case-manifest` (`params`: wavelength, power, SLM pixels and pitch, focal length, numerical aperture, device), `trace` (`methods.<id>.final` efficiency, `grid`) | System: the optical train drawn as the field draws it, a side view of the beam path (laser, beam expander, SLM, 4f relay, objective, focal plane), with the light animated along it and the case's value on each element | Select the case and the method; select an element to open its panel; read the beam diameter, the phase depth and the power at each element; play or pause the light | SLM element to V2; focal plane element to V3; the power at the focal plane to the Power budget view | App, Hologram group, first view (Optical train); story step `/story/setup` |
+| V2 | What does the device do to the phase the method asks for? | `case-manifest` (`params.device`: phase bits, crosstalk kernel, fill factor, flicker), `trace` (`reference.phase_u8`) | Key component: the SLM in section along one pixel row (cover glass, liquid-crystal layer with the tilt each pixel's level commands, pixel electrodes with the fill factor, the fringing field between neighbours), the commanded and the displayed phase drawn over it | Scrub the row along the mask; switch between the ideal and the case's device; read the commanded and the displayed phase of a pixel and the loss each effect costs | Phase mask and Device effects views; V1 (the SLM element); V3 (the efficiency the device costs) | App, Hologram group, Device effects; story step `/story/device` |
+| V3 | Where does the light land, and how equal are the traps? | `trace` (`reference.focal`, `reference.axial`, `methods.<id>.trap_intensity`, `traps`, `grid.bin_um`) | Domain diagram: the focal-plane intensity image with the trap sites marked, axes in micrometres and focal bins, and the per-trap intensity against its target with the relative spread | Select a trap (it is marked in the image and in the per-trap bars); add, drag or delete traps; zoom and pan; linear or logarithmic scale | V5 (the iteration on show); V1 (the focal plane element); V4 (the trap the particle sits in); Per-trap intensity view | App, Focal plane group; story steps `/story/setup` and `/story/method` |
+| V4 | Does the computed trap hold a particle, and how does the array evolve over time? | `trace` (`dynamics`: the bead or atom trace, its spectrum and corner frequency; `rearrangement`: the filling per step and the flicker bound; `feedback`: the spread per camera step) | State and dynamics: the particle's position against time with the now line, its power spectrum with the fitted corner frequency, the filling of the array per rearrangement step with its target line | Scrub or play the time cursor; select the particle or the step; read the stiffness, the corner frequency and the filling at the cursor | V3 (the trap and the sites at the cursor); V5 (the camera feedback steps) | App, Dynamics group; story step `/story/hold` |
+| V5 | How does the method reach equal traps, iteration by iteration? | `trace` (`methods.<id>.history`: spread, efficiency and weights per iteration), the engine run in the browser for the focal plane at an iteration | Method at work: the uniformity and the efficiency per iteration with the phase-freeze iteration marked, coupled to the focal plane and the per-trap intensities at the scrubbed iteration | Play or scrub the iteration; choose the method; read the spread, the efficiency and the trap weights at the cursor | V3 (redrawn at the scrubbed iteration); V6 (the method's place on the front) | App, Convergence group (Metrics by iteration, Camera feedback); story step `/story/method` |
+| V6 | Which method gives the most equal traps for the power, on this geometry and device, and by how much? | `benchmark-results` (`rows`: method by geometry by budget, with the seed spread; `pareto`) | Comparison and decision: the methods on shared axes of spread and efficiency, with the seed spread drawn on each point, the Pareto front, and the recommended method of the case with the reason | Choose the geometry, the iteration budget and the device; select a method to load it into the App | V5 and V3 for the selected method on the case | App, Convergence group (Pareto front); Benchmark page; story step `/story/compare` |
+
+The story has five steps over the App's state: `/story/setup` (V1, V3), `/story/device` (V2), `/story/method` (V5, V3),
+`/story/compare` (V6) and `/story/hold` (V4). Each headline states one finding with its number, read at build time from
+the default case (`C02_grid_feedback`), the device case (`C08_device_limited`), the benchmark and the bead case
+(`C01_square_grid`); the exit lands on the App with the step's case, method and view.
+
 ## Oracles
 
 - Parseval and the forward-model agreement: total power is conserved by the propagation, and the FFT and point-trap forms give
@@ -401,7 +422,7 @@ retired after the Pages site passes its live checks. The target is written in `d
 | ADR-0071 | the page is the viewport; one tab row; drawing at least half the viewport | the shell's `CaseWorkbench`; the gate |
 | ADR-0074 | CI runs cheap checks only; no training in CI | `.github/workflows/ci.yml`, `scripts/check_ci_budget.py` |
 | ADR-0075 | every requirement names its gate | `docs/design/features/` (eleven live features and the planned `architecture`), `tests/adversarial/` (the planted defects), `scripts/check_sdd.py` |
-| ADR-0078 | rules live in the base | shell 0.19.6 pinned exactly and template 0.12.000 |
+| ADR-0078 | rules live in the base | shell 0.26.2 pinned exactly and template 0.15.010 |
 | ADR-0080 | contract-first parallel delivery | `docs/contracts/`, `tests/contracts/`, `scripts/check_contracts.py`, `scripts/check_readiness.py` |
 | extension (no ADR) | a WebGPU backend for the live FFT iterations, optional, with the CPU path as the fallback and a browser agreement test; its gates (ADR-0069 A69.7): parity (`AGREEMENT_TOL` 2e-3 of the mean trap intensity inside the run, rejected otherwise, and the browser agreement test of `frontend/scripts/engine-browser.mjs`), latency and memory (measured in Lanes and Resources), and fallback (every absent, ineligible or failing GPU run takes the CPU path and records `fallbackReason`) | `frontend/src/engine/holo/gpu/`, feature `live-engine`; proposed to the base as a rule for in-browser accelerated compute |
 | extension (no ADR) | a perceptually uniform cyclic colormap for phase, which the visualization rubric does not name | `frontend/src/workbench/colormaps.ts`, its source and licence in `ATTRIBUTION.md` |

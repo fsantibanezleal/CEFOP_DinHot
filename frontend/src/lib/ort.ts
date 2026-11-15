@@ -12,6 +12,7 @@
 // worker. The WASM binary is the one in the pinned npm package (1.31.1), bundled by Vite as an asset of the site: no CDN is asked.
 import type { ModelCard, Setup, Text, Trap } from './contract.types';
 import { conform, MODEL_CARD, SCHEMAS } from './contract.types';
+import { ID } from './methodIds';
 
 export type SlotId = 'cgh-net' | 'warmstart-model';
 
@@ -31,7 +32,7 @@ export const CGH_GRID = 128;
 export const WARMSTART_MAX_TRAPS = 1024;
 
 /** The method ids of the learned slots in the ladder: M17 is cgh-net, B3 the warm start. */
-export const SLOT_METHOD: Record<SlotId, string> = { 'cgh-net': 'M17', 'warmstart-model': 'B3' };
+export const SLOT_METHOD: Record<SlotId, string> = { 'cgh-net': ID.M17, 'warmstart-model': ID.B3 };
 
 export interface SlotAnswer {
   slot: SlotId;
@@ -42,7 +43,7 @@ export interface SlotAnswer {
 }
 
 const BASELINE_NAME: Record<SlotId, Text> = {
-  'cgh-net': { en: 'the baseline (multi-plane Gerchberg-Saxton M19, 30 iterations)', es: 'la línea base (Gerchberg-Saxton multiplano M19, 30 iteraciones)' },
+  'cgh-net': { en: 'the baseline (multi-plane Gerchberg-Saxton, 30 iterations)', es: 'la línea base (Gerchberg-Saxton multiplano, 30 iteraciones)' },
   'warmstart-model': { en: 'the baseline (random trap phases)', es: 'la línea base (fases aleatorias de las trampas)' },
 };
 

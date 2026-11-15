@@ -1,0 +1,13 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for softqp-run-request. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-softqp-run-request}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}run-\allowbreak{}request/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+case\_\allowbreak{}id & string & pattern=\allowbreak{}\textasciicircum{}C[0-9]\{2\}\$ & structural metadata /\allowbreak{} nested units\\
+base\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+lower\_\allowbreak{}multiplier & number & minimum=\allowbreak{}0.\allowbreak{}01; maximum=\allowbreak{}100 & dimensionless factor\\
+upper\_\allowbreak{}multiplier & number & minimum=\allowbreak{}0.\allowbreak{}01; maximum=\allowbreak{}100 & dimensionless factor\\
+quadratic\_\allowbreak{}multiplier & number & minimum=\allowbreak{}0; maximum=\allowbreak{}100 & dimensionless factor\\
+\end{longtable}\endgroup

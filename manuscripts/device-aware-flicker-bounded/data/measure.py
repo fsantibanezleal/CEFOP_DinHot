@@ -94,17 +94,19 @@ def measure_b1(seeds: list[int], device: Device, label: str, with_baselines: boo
         t0 = time.perf_counter()
         row: dict = {"seed": seed}
         base = {}
-        for name, mod in (("M07", m07_phase_fixed_wgs), ("M04", m04_gs), ("M06", m06_gsw)):
-            if name != "M07" and not with_baselines:
+        for mod in (m07_phase_fixed_wgs, m04_gs, m06_gsw):
+            name = mod.SPEC.id  # the engine key of the stored baselines (data/derived keys, never printed)
+            is_pf = mod is m07_phase_fixed_wgs  # phase-fixed weighted GS, the reference of the study
+            if not is_pf and not with_baselines:
                 continue
             for its in (30, 100):
-                if name != "M07" and its == 100:
+                if not is_pf and its == 100:
                     continue
                 res = mod.run(setup, target, budget=Budget(its), rng=Rng(seed))
                 e, s = device_scores(res.phi, setup, traps, device)
                 ei, si = device_scores(res.phi, setup, traps, None)
                 base[f"{name}_{its}"] = {"eff": e, "sigma": s, "eff_ideal": ei, "sigma_ideal": si}
-                if name == "M07" and its == 30 and seed == seeds[0]:
+                if is_pf and its == 30 and seed == seeds[0]:
                     row["ratios_M07"] = trap_ratio(res.phi, setup, traps, device)
         row["baselines"] = base
         res = B1.run(setup, target, device=device, budget=Budget(B1.DEFAULT_OUTER), rng=Rng(seed))
@@ -259,7 +261,7 @@ def long_move(setup: Setup, bins: int):
 
 
 def c10_plan():
-    """Case C10's sort on M16's own plan (the B2 test): the setup, the origin and goal trap sets and the moving mask."""
+    """Case C10's sort on the rearrangement method's own plan (the flicker-bounded sequence test): the setup, the origin and goal trap sets and the moving mask."""
     from pipeline.cases import build, library  # noqa: PLC0415
     from pipeline.io.contract import read_cases  # noqa: PLC0415
     from pipeline.model.holo.methods.control import m16_rearrangement as M16  # noqa: PLC0415
@@ -278,9 +280,9 @@ def c10_plan():
 
 
 def measure_b2_scope(seeds_long: list[int], seeds_c10: list[int], c10_equal_frames: int = 25) -> dict:
-    """The measured limit of B2, as its test runs it on more seeds: (a) longer moves of the acceptance lattice (12 and 20 bins,
-    64 pixels), end phases from M07 at the destination, at the default frames and at the frames ``frames_for_move`` names; (b)
-    case C10's sort on M16's plan (end phases from M07 per seed, LPI on the same assignment) at an equal number of frames and at
+    """The measured limit of the flicker-bounded sequence, as its test runs it on more seeds: (a) longer moves of the acceptance lattice (12 and 20 bins,
+    64 pixels), end phases from phase-fixed weighted GS at the destination, at the default frames and at the frames ``frames_for_move`` names; (b)
+    case C10's sort on the rearrangement plan (end phases from phase-fixed weighted GS per seed, LPI on the same assignment) at an equal number of frames and at
     the frames of the move, and the held phases at the equal frames for the first seed."""
     out = {"claim_step_fu": float(B2.CLAIM_STEP_FU), "default_frames": int(B2.DEFAULT_FRAMES), "long": {},
            "phase_velocity_max": 1.0, "default_phase_velocity_max": float(B2.DEFAULT_PHASE_VELOCITY_MAX)}
@@ -542,10 +544,11 @@ def read_manifests() -> dict:
 
 
 def read_benchmark(budget: int = 100) -> dict:
-    """B1 in the studio's benchmark (``data/derived/benchmark/results.json``): on every geometry where both ran, the factor of
-    B1 over phase-fixed WGS (M07) on the relative standard deviation and the efficiency ratio, at ``budget`` iterations with the
+    """Device-aware WGS in the studio's benchmark (``data/derived/benchmark/results.json``): on every geometry where both ran, the factor of
+    device-aware WGS over phase-fixed WGS on the relative standard deviation and the efficiency ratio, at ``budget`` iterations with the
     default parameters, on the C08 device and on the ideal device."""
     r = json.loads((ROOT / "data" / "derived" / "benchmark" / "results.json").read_text(encoding="utf-8"))
+    pf = m07_phase_fixed_wgs.SPEC.id  # the engine key of the reference method in the benchmark document
     cells = {(x["method"], x["geometry"], x["device"]): x for x in r["rows"]
              if x["budget_kind"] == "iterations" and x["budget"] == budget and x["params"] == "default"}
     names = {g["id"]: g["name"]["en"] for g in r["geometries"]}
@@ -554,9 +557,9 @@ def read_benchmark(budget: int = 100) -> dict:
     for device in ("device", "ideal"):
         rows = []
         for (m, g, d), b1 in sorted(cells.items()):
-            if m != "B1" or d != device or ("M07", g, d) not in cells:
+            if m != "B1" or d != device or (pf, g, d) not in cells:
                 continue
-            m7 = cells[("M07", g, d)]
+            m7 = cells[(pf, g, d)]
             rows.append({"geometry": g, "name": names[g], "n_traps": ntraps[g],
                          "n_seeds": min(b1["n_seeds"], m7["n_seeds"]), "n_seeds_b1": b1["n_seeds"], "n_seeds_m07": m7["n_seeds"],
                          "sigma_b1": b1["rel_std_pct"]["median"], "sigma_m07": m7["rel_std_pct"]["median"],
@@ -935,7 +938,7 @@ def main() -> int:
     ap.add_argument("--seeds-b2", type=int, default=5)
     ap.add_argument("--frames", type=int, nargs="+", default=[13, 7, 25])
     ap.add_argument("--seeds-long", type=int, default=8, help="seeds of the long lattice moves (B2 scope)")
-    ap.add_argument("--seeds-c10", type=int, default=6, help="seeds of C10's sort on M16's plan (B2 scope)")
+    ap.add_argument("--seeds-c10", type=int, default=6, help="seeds of the sort of case C10 on the rearrangement plan (flicker-bounded sequence scope)")
     ap.add_argument("--seeds-abl-b1", type=int, default=5)
     ap.add_argument("--seeds-abl-b1-full", type=int, default=3)
     ap.add_argument("--seeds-abl-b2", type=int, default=5)

@@ -1,0 +1,64 @@
+\section{Introduction}\label{sec:introduction}
+An optimization model can be numerically feasible and operationally unacceptable.
+In a predictive controller, relaxing an actuator bound changes what the plant is
+permitted to do; relaxing a preferred room temperature changes the service being
+requested. Treating both departures as interchangeable slack conceals a policy
+decision. The application studied here makes that decision explicit: physical
+limits remain hard, while selected interval preferences receive specified lower-
+and upper-side prices. The intended use is the construction and inspection of
+small, reproducible optimization models before a practitioner embeds one in a
+larger controller. The examples are synthetic. They do not measure occupant
+satisfaction, building savings, industrial reliability or operational safety.
+
+The numerical foundation is a convex quadratic program with sparse affine rows.
+That foundation appears in constrained model predictive control, energy scheduling
+and repeated allocation problems~\cite{rawlings,mayne,mayne}. A soft constraint
+adds a convex price to selected departures rather than changing the definition of
+physical feasibility. The important modeling questions are therefore which rows
+may yield, which direction matters, which units a departure has, and which cost
+is actually optimized. Exact penalty theory explains why an adequately large
+linear price can sometimes recover a hard-constrained optimum; it does not say
+that an arbitrary finite price makes every returned elastic optimum acceptable
+for a physical system~\cite{kerrigan,nocedal}.
+
+The implementation compares explicit lifting, generalized slack projection,
+side-specific projection, DAQP, a fixed-parameter FlexQP reconstruction and
+ElastiQP on their genuine compatibility domains. A separate directional group
+peak implementation couples several interval departures while retaining the
+original interval rows in its principal system. Neither unequal side prices nor
+the ability to express a directional peak establishes a new modeling capability.
+DAQP already supports unequal side weights; directional row splitting and a
+compact epigraph express the grouped objective exactly~\cite{daqp,gsp,elasti}.
+The computational question is narrower: does a particular original-row proximal
+implementation reduce the cost of solving the same mathematical problem?
+
+Two completed studies answer that question negatively for their registered
+primary criteria. The first contains 456 seeded instances and retains 11592
+accepted and 7560 incompatible measured observations. Its 168 accepted held-out
+pairs yield a median relative cold end-to-end reduction of \OriginalEstimate\%,
+with a 95\% seed-cluster interval from \OriginalLower\% to \OriginalUpper\%.
+The second contains 210 repeated-forecast instances. Its complete 144-instance
+held-out endpoint yields \PrimaryEstimate\%, with corresponding limits
+\PrimaryLower\% and \PrimaryUpper\%, including \PrimaryFailed{} failed pairs.
+Neither result establishes the predicted 10\% improvement. These are distinct
+studies with different native packages, populations and timing boundaries.
+
+The technical contribution is an inspectable implementation and evidence chain,
+not a claim of uniform superiority. Specifically, the system provides an original-
+space model with physical row metadata; exact adapters with explicit incompatibility
+states; independent objective, hard-row and primal and dual checks; repeated-operation
+measurements with retained failures; and versioned producer/consumer boundaries.
+The distinction between numerical evidence and its presentation is implemented:
+native code computes solutions, local tools export validated results, and the
+static reader displays or imports matching evidence. A dormant API and unavailable
+coupled browser path remain visibly unavailable.
+
+The remainder gives the mathematical formulation and notation, details every
+data exchange and processing stage, derives each executable method, and states
+the experimental protocols. The results include model agreement, formulation
+size, conditioning, repeated control and complete negative primary inference.
+Validation and discussion distinguish a correct optimum from a fast computation
+and from an operationally useful decision. The accompanying research paper
+develops the two related proximal proposals and their separately attributed
+experiments; this technical account also describes the full software system and
+all of its contracts.

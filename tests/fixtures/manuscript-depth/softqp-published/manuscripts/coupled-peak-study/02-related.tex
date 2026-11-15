@@ -1,0 +1,79 @@
+\section{Related work}\label{sec:related}
+Convex analysis supplies the modeling and duality framework rather than a
+claim of new mathematics from changing a solver interface. Closed convex
+penalties, support functions and conjugates determine whether a recovered
+dual is consistent with an original objective~\cite{rockafellar,boydconvex}.
+Moreau's proximal decomposition and proximal-point methods explain why
+strongly convex auxiliary minimizations can be useful without changing the
+target objective~\cite{moreau,rockafellarppa}. Parikh and Boyd describe proximal
+operators and their composition limits in optimization~\cite{prox}. These
+sources support the vocabulary and identities used below; they do not
+assert that an arbitrary composition of projection and a proximal map is
+valid for every convex penalty.
+
+Douglas--Rachford and ADMM splitting have a substantial convergence literature.
+Lions and Mercier analyze splitting for sums of monotone operators, while
+Eckstein and Bertsekas establish the relation to the proximal-point
+framework~\cite{lions,eckstein}. The distributed-optimization treatment of
+ADMM makes the role of primal feasibility and dual consistency explicit
+\cite{admm}. Fixed-metric rate analyses require quantitative assumptions
+beyond basic convexity~\cite{giselsson}. We use these results to delimit a
+fixed positive metric and a fixed relaxation in its admissible range. We
+do not infer a variable-metric theorem or universal linear rate from the
+existence of a closed-form row update.
+
+OSQP combines operator splitting with a sparse quasi-definite system,
+warm starts and numerical infeasibility checks~\cite{osqp}. Lew and
+coauthors eliminate quadratic slack effects without increasing the main
+problem size; Schwan, Lew and Plancher generalize slack projection to
+supported convex penalty families~\cite{lew,gsp}. The latter work is the
+closest native projection reference. Its unconditional penalty assumptions
+include sign symmetry that is narrower than arbitrary side-specific costs.
+Its published grouped path nevertheless becomes a directional reference
+after an exact one-sided row transformation. Removing that reference would
+overstate the modeling difference of an original-row implementation.
+
+Active-set approaches provide another important comparison. The dual
+active-set foundation of Goldfarb and Idnani and the recursive updates of
+DAQP address structured quadratic programs without relying on the same
+projection iteration~\cite{goldfarb,daqp}. DAQP exposes side-specific soft
+weights, so asymmetry alone is established capability. Its proximal
+linear-programming extension also supplies a relevant registered reference
+for suitable grouped epigraphs~\cite{daqpprox}. qpOASES exploits parametric
+QP structure through an online active-set strategy~\cite{qpOASES}. These
+methods show why a retained active set or a vector-update interface cannot
+be presented as a new mechanism simply because it appears in a different
+software wrapper.
+
+FlexQP and Deep FlexQP distinguish fixed elastic splitting from learned
+numerical-parameter selection~\cite{flex}. The executable comparison here
+reconstructs only the fixed paper equations. ElastiQP supplies a separate
+published pure-linear elastic reference with hard-equality support on its
+admitted domain~\cite{elasti}. PIQP illustrates a proximal interior-point
+approach to quadratic programming~\cite{piqp}; it is numerical background,
+not an extra unrecorded timed competitor in the present populations.
+Classical linear programming and numerical optimization texts explain the
+dual bounds, curvature assumptions and conditioning issues needed to
+interpret these different formulations~\cite{vanderbei,nocedal}.
+
+The grouped construction also has directly relevant prior art. Orthant-
+monotonicity results concern coordinatewise contraction behavior and its
+relationship to signed convex geometry~\cite{orthant}. Weighted projection
+and threshold algorithms are established, including weighted norm-ball,
+simplex and linear-time projection calculations~\cite{weighted,duchi,condat}.
+The scalar active-prefix equation below specializes those ideas to a
+directional peak and diagonal metric; sorting or thresholding by itself
+is not claimed as a new algorithmic primitive. Floating-point and symmetry-
+preserving scaling work further cautions against confusing algebraic
+equivalence with identical numerical cost~\cite{higham,knight}.
+
+Finally, optimization benchmarking depends on explicit success criteria
+and problem inventories, as performance profiles and reproducible test
+collections make clear~\cite{dolan,cutest}. Bootstrap methods provide a
+framework for uncertainty, while clustered inference emphasizes dependence
+within shared experimental units~\cite{efron,davison,cameron}. These sources
+motivate complete populations, seed-level resampling and retained failures.
+They do not justify a post-hoc subset or guarantee precise coverage with
+only six seed clusters. The present experiments therefore report their
+negative registered endpoints separately and restrict descriptive component
+plots to their actual, narrower interpretation.

@@ -2,6 +2,7 @@
 // without throwing and says what it must (the lane, the reason a view is unavailable, the held edit), and the pure maths the views
 // lean on (the Lorentzian fit, the thermal width, the lobes and their overlaps, the metrics of a trap list) is held to known values.
 
+import { LinkedViewProvider } from '@fasl-work/caos-app-shell';
 import { createElement, type ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -21,6 +22,7 @@ vi.stubGlobal('__APP_VERSION__', 'test-version');
 const actions: Actions = {
   mode: 'inspect',
   selectTrap: () => undefined,
+  setDevice: () => undefined,
   setRegion: () => undefined,
   addTrap: () => undefined,
   moveTrap: () => undefined,
@@ -33,11 +35,13 @@ const actions: Actions = {
   setCoeff: () => undefined,
   setPlane: () => undefined,
   setVolThreshold: () => undefined,
+  setMethod: () => undefined,
+  setPareto: () => undefined,
 };
 
 function render(node: ReactElement, sel: Selection | null, unavailable: { en: string; es: string } | null = null): string {
   return renderToStaticMarkup(
-    createElement(UnavailableContext.Provider, { value: unavailable }, createElement(ViewContext.Provider, { value: sel }, createElement(ActionsContext.Provider, { value: actions }, node))),
+    createElement(LinkedViewProvider, null, createElement(UnavailableContext.Provider, { value: unavailable }, createElement(ViewContext.Provider, { value: sel }, createElement(ActionsContext.Provider, { value: actions }, node)))),
   );
 }
 
@@ -107,9 +111,9 @@ describe('what a view says when it cannot draw', () => {
     const s = selectionFor(cases.plain);
     expect(render(createElement(AxialView, { sel: s }), s)).toMatch(/no axial cut in the bake/);
   });
-  it('a method with no history in the bake says so instead of drawing an empty chart (M17 has none)', () => {
+  it('a method with no history in the bake says so instead of drawing an empty chart (the unsupervised CNN has none)', () => {
     const s = selectionFor(cases.device, { methodId: 'M17', result: replayResult(cases.device.trace, 'M17') });
-    expect(render(createElement(MetricsView, { sel: s }), s)).toMatch(/no iteration history for M17/);
+    expect(render(createElement(MetricsView, { sel: s }), s)).toMatch(/no iteration history for Unsupervised CNN/);
   });
   it('a focal map that the browser model cannot give says the engine is needed', () => {
     const base = selectionFor(cases.device);
@@ -122,7 +126,7 @@ describe('the lane of everything shown (ADR-0054)', () => {
   it('replayed maps are labelled replayed from the bake and name the reference method; they are never labelled live', () => {
     const s = selectionFor(cases.device);
     const html = render(createElement(Fill, null, 'x'), s);
-    expect(html).toMatch(/Replayed from the bake: the maps are those of the reference method M04/);
+    expect(html).toMatch(/Replayed from the bake: the maps are those of the reference method Gerchberg-Saxton/);
     expect(html).not.toMatch(/Live:/);
     expect(html).toContain('data-lane="replay"');
   });
@@ -130,7 +134,7 @@ describe('the lane of everything shown (ADR-0054)', () => {
     const base = selectionFor(cases.device);
     const s = selectionFor(cases.device, { maps: { ...base.maps!, lane: 'live', method: 'M06', backend: 'cpu', timeMs: 120, fallbackReason: 'no adapter' } });
     const html = renderToStaticMarkup(createElement(Provenance, { sel: s, mapsOnly: false }));
-    expect(html).toMatch(/Live: M06 computed in your browser \(CPU, 120 ms\)/);
+    expect(html).toMatch(/Live: Weighted GS computed in your browser \(CPU, 120 ms\)/);
     expect(html).not.toMatch(/fell back/); // the reason is in the rail, not repeated on every card
     expect(html).toContain('data-lane="live"');
   });
@@ -138,7 +142,7 @@ describe('the lane of everything shown (ADR-0054)', () => {
     const s = selectionFor(cases.device, { edited: true });
     expect(renderToStaticMarkup(createElement(Provenance, { sel: s, mapsOnly: false }))).toMatch(/edits are held: the live engine is not on this build/);
     const t = selectionFor(cases.device, { edited: true, engineAvailable: true, liveMethods: ['M04'], methodId: 'M06' });
-    expect(renderToStaticMarkup(createElement(Provenance, { sel: t, mapsOnly: false }))).toMatch(/M06 is replayed from the bake, not run live/);
+    expect(renderToStaticMarkup(createElement(Provenance, { sel: t, mapsOnly: false }))).toMatch(/Weighted GS is replayed from the bake, not run live/);
   });
   it('a cancelled run says the replay is shown', () => {
     const s = selectionFor(cases.device, { cancelled: true });
@@ -152,7 +156,7 @@ describe('the lane of everything shown (ADR-0054)', () => {
   });
   it('a baked method shows its own metrics and says the maps are those of the reference method', () => {
     const s = selectionFor(cases.device, { methodId: 'M06', result: replayResult(cases.device.trace, 'M06') });
-    expect(renderToStaticMarkup(createElement(Provenance, { sel: s, mapsOnly: false }))).toMatch(/M06 is not run live, so its metrics and per-trap intensities are its own but the maps drawn are those of the reference method M04/);
+    expect(renderToStaticMarkup(createElement(Provenance, { sel: s, mapsOnly: false }))).toMatch(/Weighted GS is not run live, so its metrics and per-trap intensities are its own but the maps drawn are those of the reference method Gerchberg-Saxton/);
   });
 });
 

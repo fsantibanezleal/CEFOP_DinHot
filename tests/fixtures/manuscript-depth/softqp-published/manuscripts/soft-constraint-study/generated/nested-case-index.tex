@@ -1,0 +1,23 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for case-index. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-case-index}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema & string & const=\allowbreak{}softqp.\allowbreak{}artifact-\allowbreak{}index/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+engine\_\allowbreak{}version & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+n\_\allowbreak{}cases & integer & minimum=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+default\_\allowbreak{}case & string & pattern=\allowbreak{}\textasciicircum{}C[0-9]\{2\}\$ & structural metadata /\allowbreak{} nested units\\
+cases & array & minItems=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+cases[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['case\_\allowbreak{}id', 'title', 'category', 'manifest\_\allowbreak{}path'] & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}case\_\allowbreak{}id & string & pattern=\allowbreak{}\textasciicircum{}C[0-9]\{2\}\$ & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}title & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['en', 'es'] & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}title.\allowbreak{}en & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}title.\allowbreak{}es & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}category & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['en', 'es'] & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}category.\allowbreak{}en & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}category.\allowbreak{}es & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}manifest\_\allowbreak{}path & string & pattern=\allowbreak{}\textasciicircum{}(?!.\allowbreak{}*\textbackslash{}.\allowbreak{}\textbackslash{}.\allowbreak{})[A-\allowbreak{}Za-\allowbreak{}z0-9\_\allowbreak{}.\allowbreak{}/\allowbreak{}-]+\textbackslash{}.\allowbreak{}json\$ & structural metadata /\allowbreak{} nested units\\
+files & array & uniqueItems=\allowbreak{}True & structural metadata /\allowbreak{} nested units\\
+files[] & string & pattern=\allowbreak{}\textasciicircum{}(?!.\allowbreak{}*\textbackslash{}.\allowbreak{}\textbackslash{}.\allowbreak{})[A-\allowbreak{}Za-\allowbreak{}z0-9\_\allowbreak{}.\allowbreak{}/\allowbreak{}-]+\textbackslash{}.\allowbreak{}(json\textbar{}\allowbreak{}csv\textbar{}\allowbreak{}jsonl)\$ & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

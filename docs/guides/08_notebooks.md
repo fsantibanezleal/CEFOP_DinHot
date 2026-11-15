@@ -25,12 +25,12 @@ What every notebook of a product does:
    immune share it printed.
 2. **Runs the method.** The method runs in the notebook, through the product's package or its named pipeline, on input data,
    one step per cell, each step showing its intermediate result. Reading baked results and printing them is not a method: it
-   may illustrate a point, never carry the notebook. The example reads only the five cases' parameters and runs `simulate`,
-   `final_size` and `peak_frac` itself.
+   may illustrate a point, never carry the notebook. The example reads synthetic case inputs and their declared boundaries, then calls `simulate`,
+   `final_size`, `peak_frac` and the actual surrogate stages.
 3. **Explains before and after.** Before each step: what it does, why, the equation with its source when there is one, and
    what to look for. After each figure or table: what it shows, what it does not show, and what follows from it.
-4. **Argues with figures.** Figures and tables carry the results, not print statements: at least one figure at level 1 and
-   two from level 2, each with a title, labelled axes and units, each read in the prose that follows it.
+4. **Argues with figures.** Figures and tables carry the results, not print statements: at least two figures at level 1 and
+   three from level 2, each with a title, labelled axes and units, each read in the prose that follows it.
 5. **Is its own text.** Written for this notebook: no paragraph pasted from another notebook of the set (the Setup install
    line, the Data source lines and the reference format excepted), no generic sentence that would fit any product
    ("Interpret the method with its units", "Trace the evidence from source contract to result").
@@ -52,6 +52,9 @@ What every notebook of a product does:
 
 ### The measured floors
 
+The 2026-11-02 whole-tool content bar is mandatory alongside the structural guard. Run both `scripts/check_notebooks.py` and `scripts/check_notebook_depth.py --report`; execution and independent reading remain separate release checks. `notebooks/coverage.json` maps every actual SDD method, catalog contract, stage and method package to lessons present in both languages. The example adds a level 2 lesson on the actual four-term surrogate, including features, temporary training, held-out evaluation, provenance, export responsibilities and omitted-input limits. It claims no scientific novelty or forecasting qualification.
+
+
 `scripts/check_notebooks.py` enforces these from template 0.12.000, statically, on the committed cells and outputs; the
 thresholds are in `scripts/notebook_bar.json`. A finding names the notebook, the measure, the value and the floor (for
 example `notebooks/en/01-x/02-y.ipynb: bar: method cells 2, the floor at level 2 is 5`). The floors catch the failure
@@ -60,9 +63,12 @@ described above; they do not certify a lesson, the review does.
 | Measure, per notebook | Level 1 | Levels 2 to 4 |
 |---|---|---|
 | Method cells: code cells that call the product's method package (`product.json` `method_packages`), its pipeline modules (`data-pipeline/`) or, at level 3, a pinned reference implementation (calls into the standard library, numpy, pandas and plotting, into a function the notebook defines, and readers, loaders, version prints and the pipeline's io, schema and config modules do not count; an object built from a method class and its `.fit` and `.predict` do) | at least 3 | at least 5 |
-| Figures (image outputs) | at least 1 | at least 2 |
+| Figures (distinct image outputs) | at least 2 | at least 3 |
 | A markdown cell of at least 40 words right after each figure | every figure | every figure |
-| Explanatory prose, in words, outside Setup, Data and References | at least 500 | at least 800 |
+| Explanatory prose, in words, outside Setup, Data and References | at least 1000 | at least 1500 |
+| Display equations with defined symbols | at least 1 | at least 2 |
+| Distinct primary references | at least 3 | at least 4 |
+| Third-level sensitivity/limits and own-data sections, in the lesson language | optional | required |
 | Setup and input/output cells (imports, versions, paths, readers, nothing else) | at most 2 | at most 2 |
 | Reproduction checks (cells comparing a recomputed value with a committed one) | at most 1 | at most 1 |
 | Sentences over 50 characters shared with another notebook of the tree, outside Setup, Data and References | at most 2 | at most 2 |

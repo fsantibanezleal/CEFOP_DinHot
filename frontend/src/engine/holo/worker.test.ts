@@ -185,7 +185,7 @@ describe('the live engine client over the worker protocol', () => {
     expect(sim.xUm.length).toBeGreaterThan(100);
     expect(sim.fcRatio).toBeGreaterThan(0.5);
     expect(sim.fcRatio).toBeLessThan(2);
-    expect(sim.stiffness.unit).toBe('pN/um');
+    expect(sim.stiffness.unit).toBe('pN/µm');
     expect(sim.psd.fHz.length).toBe(sim.psd.p.length);
     const approx = await client.particle({ focal: run.focal, focalSize: run.focalSize, binUm: run.binUm, dynamics: params.dynamics!, seed: params.seed, trap: { x_um: 16, y_um: 0, z_um: 0 }, setup: { pad: 2, nImm: 1.33 } });
     expect(approx.fcRatio).toBeGreaterThan(0.3);

@@ -91,11 +91,13 @@ def main() -> int:
         return 1
     allow = allowlist()
     hits: list[str] = []
+    affected_paths: set[str] = set()
     for rel in files:
         if rel in SELF or any(a in rel for a in allow):
             continue
         if any(rel == f or rel.startswith(f) for f in FORBIDDEN_FILES):
             hits.append(f"{rel}: a template blueprint file; delete it")
+            affected_paths.add(rel)
             continue
         if Path(rel).suffix.lower() not in TEXT_SUFFIXES:
             continue
@@ -107,6 +109,7 @@ def main() -> int:
             for name, pat in MARKERS:
                 if pat.search(line):
                     hits.append(f"{rel}:{n}: {name}")
+                    affected_paths.add(rel)
                     break
     if not hits:
         print(f"check_template_residue: OK, no example content in {len(files)} tracked files.")
@@ -116,6 +119,9 @@ def main() -> int:
         print(f"  {h}")
     if len(hits) > 200:
         print(f"  ... and {len(hits) - 200} more")
+        print(f"Affected paths ({len(affected_paths)}; detail limited to 200 hits):")
+        for rel in sorted(affected_paths):
+            print(f"  {rel}")
     return 1
 
 

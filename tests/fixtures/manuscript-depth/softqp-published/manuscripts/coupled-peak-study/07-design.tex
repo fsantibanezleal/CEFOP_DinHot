@@ -1,0 +1,80 @@
+\section{Experimental design}\label{sec:design}
+Two prospective protocols test two distinct computational predictions.
+The original separable study predicts at least 10\% median relative
+reduction in cold validated-call time against the faster admitted lift
+or DAQP reference in its specified asymmetric-elastic regime. The
+grouped study predicts a corresponding improvement in a complete
+repeated-forecast operation against its strongest compatible registered
+reference. Each prediction also requires a positive lower confidence
+limit and complete accuracy-qualified evidence. Neither protocol permits
+choosing a favorable subgroup after observing timings.
+
+The original study has 456 seeded instances: a main grid of dimensions
+32,64,128 and 256, densities 0.05 and 0.2, diagonal conditions 1 and 1000,
+and symmetric-elastic, asymmetric-elastic and asymmetric-linear
+families, plus a separately specified robustness grid. Its six
+evaluation seeds differ from development seeds. The primary regime
+contains 24 distinct held-out asymmetric-elastic problems with dimension
+at least 128 and density 0.05. Seven measured repetitions produce 168
+paired observations, not 168 independent generated problems. Each backend
+has one excluded warm-up, and method order is randomized by a fixed
+seed within each instance and repetition.
+
+Original cold timing includes validation, formulation, setup, solve
+and original-space evaluation while excluding generation, module
+import and export. Solver tolerances are$10^{-7}$; the stock-lift
+oracle uses$10^{-9}$. External objective discrepancy and raw hard
+error must not exceed$10^{-6}$. Objective discrepancy is normalized
+by the larger of one and the oracle objective magnitude. Stationarity
+is diagnostic in this protocol, not a newly imposed acceptance threshold.
+The exact native source and fixed numerical settings are retained,
+including the distinction between its historical source profile and
+later public wheel installations.
+
+For observation $j$, with native time $T_{N,j}$ and selected compatible
+baseline time $T_{B,j}$, the paired quantity is
+\begin{equation}\label{eq:paper-reduction}
+ R_j=1-T_{N,j}/T_{B,j}.
+\end{equation}
+The original endpoint uses its registered repeated paired observations.
+The grouped endpoint uses per-instance medians from its three measured
+operations and preserves its prescribed failed-pair rule. These
+different reductions are not pooled. Each stored 95\% interval resamples
+the six seed clusters; original bootstrap settings and seeds are
+retained rather than recomputed for this analysis. Dependence among
+repetitions makes cluster identity important, while few-cluster
+coverage remains a limitation~\cite{efron,davison,cameron}.
+
+The grouped study contains 48 development,144 held-out and 18 robustness
+inputs across sparse and synthetic hourly thermal families. The
+complete held-out 144-member population is the primary denominator.
+Nine method policies use one warm-up and three measured operations
+per input; an oracle observation is also retained. Thus 210 inputs
+produce 7770 raw observations and 5670 measured method observations.
+Each inner timed operation includes preparation/factorization,
+all 32 vector updates and solves, physical recovery and acceptance
+calculations. Compiled competitors are symmetrically preloaded before
+that timer. Process/library startup and serialization are excluded
+from inner timing but retained by the outer resource supervisor.
+
+The grouped references include stock-OSQP compact epigraphs,
+directional row-split generalized projection, direct DAQP epigraphs
+and documented proximal DAQP variants~\cite{daqpprox}. Compatibility
+depends on the original curvature and price family. Every returned
+candidate frame faces original objective, raw/repaired stationarity,
+bounded dual repair, per-group normalized Fenchel and per-hard-row
+complementarity checks. Incompatible cells, oracle limits,
+iteration-limited candidates and timeouts remain separate. Missing
+native or reference values are not imputed to construct a more
+favorable comparison.
+
+Retained component comparisons cover formulation choice, numerical
+conditioning and common-trajectory cold/warm reuse. They were not
+randomized interventions that independently disable each implementation
+feature. The ablation section therefore reports their actual scope
+and explicitly identifies unperformed interventions. Standard
+optimization benchmark guidance motivates this separation of
+accuracy, success and runtime~\cite{dolan,cutest}. The scientific
+inputs remain synthetic and the host nonreserved; neither prospective
+registration nor repeated execution turns the timing findings into
+an operational control or field-energy evaluation.

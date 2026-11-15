@@ -1,0 +1,91 @@
+\subsection{Fixed-parameter FlexQP reconstruction}\label{sec:flex}
+FlexQP addresses elastic quadratic optimization with a splitting formulation;
+Deep FlexQP additionally uses a learned numerical-parameter policy~\cite{flex}.
+The implemented reference reconstructs the fixed equations and Algorithm~1 from
+the paper. It is neither the authors' released implementation nor a reproduction
+of a learned policy. Trained weights, training data and a reproducible policy
+implementation were unavailable within the comparison. The fixed reconstruction
+is nevertheless executable on its stated domain and is evaluated against the
+same independent lifted original objective.
+
+The admitted model has positive finite-side linear prices and no finite hard
+rows or quadratic soft costs. After converting finite sides to inequalities,
+the elastic problem can be written as
+\begin{equation}\label{eq:flex-model}
+ \min_{x,s\geq0}\ \tfrac12x^\top P x+q^\top x+w^\top s
+ \quad\text{subject to}\quad Gx-s\leq h,\qquad w>0.
+\end{equation}
+Lower interval sides become signed inequalities with their own prices. This
+conversion preserves directionality, but it does not justify giving a hard
+physical row a finite weight. The adapter consequently refuses hard rows rather
+than choosing a numerically large weight and calling it exact hardness.
+
+The fixed numerical parameters are $\sigma_x=10^{-6}$, $\sigma_s=1$, $\rho=1$
+and relaxation $\alpha=1.6$. Eliminating the slack-related block produces the
+Schur system
+\begin{equation}\label{eq:flex-system}
+ K=P+\sigma_x I+cG^\top G,\qquad
+ c=(\sigma_s^{-1}+\rho^{-1})^{-1}.
+\end{equation}
+The positive proximal terms stabilize the numerical subproblem. They do not
+modify the scientific objective in \eqref{eq:flex-model}; treating $\sigma_x$
+as an objective regularizer would change the target optimizer. This distinction
+is checked through original objective evaluation and stationarity, not through
+a comparison of the stabilized subproblem's objective.
+
+The implementation uses Python and SciPy iteration around its prepared factors.
+It is less mature and has different language-level overhead from the compiled
+C backends. Observed runtime differences therefore measure these concrete
+implementations under the protocol, rather than an implementation-independent
+lower bound on the FlexQP formulation. The reconstruction is not retuned after
+examining the held-out results. In particular, the comparison does not choose a
+different proximal parameter for each unfavorable test instance.
+
+Algorithm~\ref{alg:flex} states the executable boundary without conflating
+fixed and learned variants. The original dual of \eqref{eq:flex-model} has
+finite-side bounds determined by the linear prices. The implementation checks
+stationarity and the projected dual-box residual rather than accepting only a
+small change between successive iterates. A stable iteration can converge to
+the wrong fixed point if the sign or price mapping is incorrect; original-space
+conditions are needed to distinguish that defect from a genuinely small step.
+
+\begin{algorithm}[htbp]
+\caption{Execute the fixed FlexQP equations on an admitted pure linear elastic problem, preserving original prices and independently testing the returned original-space optimum.}\label{alg:flex}
+\begin{algorithmic}[1]
+\Require Compatible pure linear elastic inequalities and fixed numerical parameters
+\State Refuse finite hard rows, quadratic prices and nonpositive admitted side prices
+\State Convert finite interval sides into $Gx-s\leq h$ with original linear prices
+\State Prepare \eqref{eq:flex-system} using the fixed proximal parameters
+\State Iterate the paper's fixed splitting and relaxation updates
+\State Check original stationarity and projected dual-box residuals
+\State Recover interval dual signs and compare the original objective to lifting
+\end{algorithmic}
+\end{algorithm}
+
+The relationship between a finite elastic optimum and hard feasibility requires
+care. If the original hard inequalities are feasible and suitable multiplier
+bounds are known, a sufficiently large exact linear price can recover a hard
+solution. That result does not make every finite price exact, nor does it make
+the output safe for a plant whose immutable limits have been softened. The
+application explicitly describes the objective being priced and separates it
+from the original hard mask. This is a modeling and acceptance requirement,
+not a criticism unique to one elastic algorithm.
+
+Compatibility exclusions remain part of the scientific denominator. Symmetric
+and asymmetric elastic families with nonzero quadratic side prices are outside
+this pure linear reconstruction. They are marked incompatible before timing,
+not counted as inaccurate solves or assigned zero durations. Conversely,
+admitted asymmetric linear cases are genuinely executed and checked, so an
+unavailable learned policy is not used to excuse omission of the fixed published
+reference. The complete six-path original comparison can therefore expose
+both semantic limits and implementation costs without pretending that all
+methods solve every penalty family.
+Within a prepared fixed-policy operation, the signed inequality matrix and
+its numerical factor can be retained while admitted vectors change. A new
+hard mask, finite-side pattern or price structure is not such a vector
+change. The reconstruction's boundary checks distinguish these cases before
+reuse. This is also why the complete-call timing is more informative than
+an isolated triangular solve: it includes the work required to admit and
+recover the actual scientific problem. The theoretical proximal regularizers
+and the practical implementation overhead must both remain visible when
+interpreting a comparison with a mature compiled backend.

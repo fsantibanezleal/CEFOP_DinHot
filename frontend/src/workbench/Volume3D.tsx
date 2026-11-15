@@ -9,7 +9,7 @@ import { cutRequest } from './cuts';
 import { INTENSITY_LUT, lutRgb } from './colormaps';
 import { getEngine } from './engine';
 import { cardOf } from './HologramGroup';
-import { type Selection } from './model';
+import { methodName, type Selection } from './model';
 import { Fill, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
 import { slabPlan, volumeExtent, volumePoints, type Slab } from './volume';
 
@@ -225,7 +225,7 @@ export function Volume3D({ sel }: { sel: Selection }) {
   }, [points, extent, trap?.id]);
 
   const lane = slabs ? 'live' : c.lane;
-  const from = sel.maps?.lane === 'live' ? t(`the live ${sel.maps.method} hologram`, `el holograma ${sel.maps.method} en vivo`) : t(`the baked ${sel.maps?.method} hologram (its 8-bit phase)`, `el holograma ${sel.maps?.method} de la generación (su fase de 8 bits)`);
+  const from = sel.maps?.lane === 'live' ? t(`the live ${methodName(sel.maps.method).en} hologram`, `el holograma ${methodName(sel.maps.method).es} en vivo`) : t(`the baked ${methodName(sel.maps?.method).en} hologram (its 8-bit phase)`, `el holograma ${methodName(sel.maps?.method).es} de la generación (su fase de 8 bits)`);
   return (
     <PlotCard
       fill
@@ -267,7 +267,7 @@ export function Volume3D({ sel }: { sel: Selection }) {
               <thead>
                 <tr>
                   <th>{t('plane', 'plano')}</th>
-                  <th>{t('position (um)', 'posición (um)')}</th>
+                  <th>{t('position (µm)', 'posición (µm)')}</th>
                   <th>{t('through trap', 'por la trampa')}</th>
                   <th>{t('voxels', 'vóxeles')}</th>
                 </tr>

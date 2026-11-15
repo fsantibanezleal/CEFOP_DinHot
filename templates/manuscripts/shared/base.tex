@@ -1,0 +1,47 @@
+% Presentation derived from the canonical CAOS Research foundational article.
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=1.1in,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,array,tabularx,longtable,graphicx}
+\usepackage{algorithm,algpseudocode}
+\usepackage{xcolor,xurl}
+\definecolor{linknavy}{RGB}{25,55,125}
+\usepackage[colorlinks=true,linkcolor=linknavy,citecolor=linknavy,urlcolor=linknavy]{hyperref}
+\usepackage{orcidlink}
+\usepackage{fancyhdr,etoolbox}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\DeclareMathOperator{\prox}{prox}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\median}{median}
+\DeclareMathOperator{\argmin}{argmin}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\pos}[1]{\left(#1\right)_{+}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert_{\infty}}
+\newcommand{\headerblock}{%
+\begin{center}
+\fbox{\parbox{0.94\textwidth}{\small\raggedright
+\textbf{\doctype} \quad$\cdot$\quad \docversion, \docdate \quad$\cdot$\quad Licence CC BY 4.0\\[2pt]
+CAOS Research programme \quad$\cdot$\quad \docscope\\[2pt]
+\ifdefempty{\versiondoi}{Version DOI: not assigned (unpublished blueprint)}{Version DOI \href{https://doi.org/\versiondoi}{\texttt{\versiondoi}}}\\[2pt] % voice-ok: required page-one header identity, not body narrative
+\ifdefempty{\conceptdoi}{Concept DOI: not assigned}{Concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptdoi}}}\\[2pt] % voice-ok: required page-one header identity, not body narrative
+Not peer reviewed. Source code, data and computational records:
+\href{https://\docrepo}{\texttt{\docrepo}}
+}}
+\end{center}
+\vspace{4pt}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small CAOS Research \doctype}
+\fancyhead[R]{\small \shorttitle\ \textperiodcentered\ \docversion}
+\fancyfoot[C]{\small \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small \thepage}\renewcommand{\headrulewidth}{0pt}}
+\setlength{\emergencystretch}{1.5em}

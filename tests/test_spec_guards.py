@@ -24,6 +24,13 @@ def run(script: str, *args: str) -> subprocess.CompletedProcess:
 
 SECTIONS = ("Problem and non-goals", "Research basis", "Sizing and contracts", "Technology and versions", "Resources",
             "Lanes", "Method ladder", "Cases", "Oracles", "Deploy driver", "Risks and kill criteria", "ADR fit")
+VISUALIZATION_CATALOG = ("| id | question | data contract | kind | interactions | linked views | placement |\n|---|---|---|---|---|---|---|\n"
+                        "| V1 | System question | test.trace/v1 | System: 2D compartments | Select and inspect | V3 and V4 | App |\n"
+                        "| V2 | Transition question | test.trace/v1 | Inapplicable physical asset because model is abstract; replacement transition | Inspect transition equation and current rate | V1 and V5 | App |\n"
+                        "| V3 | Phase question | equations and trace | Domain phase plane | Hover and scrub | V1 and V4 | App |\n"
+                        "| V4 | Dynamics question | test.trace/v1 | State dynamics | Hover and scrub | V1 and V3 | App |\n"
+                        "| V5 | Method question | Euler step trace | Integration method at work | Step and inspect residual | V1 and V3 | App |\n"
+                        "| V6 | Comparison question | paired solver artifact | Shared axis comparison | Select and inspect delta | V3 and V4 | App |\n")
 RESEARCH = ("- Doe 1927, https://doi.org/10.1098/rspa.1927.0118\n- Miller 2012, doi 10.1007/s11538-012-9749-6\n"
             "- Roe 2000, https://doi.org/10.1137/S0036144500371907\n\nUNVERIFIED: none\n")
 RESOURCES = ("| stage | memory | disk | time | where it runs |\n|---|---|---|---|---|\n"
@@ -57,6 +64,8 @@ def sdd_text(research: str = RESEARCH, resources: str = RESOURCES, skip: str = "
             continue
         body = {"Research basis": research, "Resources": resources, "Method ladder": ladder}.get(name, "text\n")
         out.append(f"## {name}\n\n{body}\n")
+        if name == "Sizing and contracts":
+            out.append(f"## Visualization catalog\n\n{VISUALIZATION_CATALOG}\n")
         if name == brief_after and brief is not None:
             out.append(f"## Executive brief\n\n{brief}\n")
         if name == "Oracles" and beyond is not None:
@@ -564,6 +573,12 @@ def test_view_the_example_passes(tmp_path):
 def test_view_the_real_repository_passes():
     r = run("check_sdd.py", str(ROOT))
     assert r.returncode == 0 and "check_sdd: OK" in r.stdout, r.stdout
+
+
+def test_adversarial_visualization_catalog_requires_each_kind_once(tmp_path):
+    text = sdd_text().replace(VISUALIZATION_CATALOG, VISUALIZATION_CATALOG.replace("| V5 |", "| V4 |", 1))
+    r = run("check_sdd.py", str(sdd_tree(tmp_path, validation=GOOD_VALIDATION, sdd=text)))
+    assert r.returncode == 1 and "missing V5" in r.stdout and "lists V4 2 times" in r.stdout, r.stdout
 
 
 def test_view_the_example_is_a_frame_of_the_problem_space_with_sourced_links():

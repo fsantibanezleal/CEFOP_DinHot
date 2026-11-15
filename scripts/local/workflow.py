@@ -169,12 +169,46 @@ def environment(root):
     return values
 
 
+def safe_environment_component(value, *, runtime=False):
+    if not isinstance(value, str) or value.endswith("."):
+        return False
+    pattern = r"\.?[A-Za-z0-9][A-Za-z0-9_.-]*" if runtime else r"[A-Za-z0-9][A-Za-z0-9_.-]*"
+    stem = value.lstrip(".").split(".", 1)[0].upper()
+    reserved = {"CON", "PRN", "AUX", "NUL"} | {f"{prefix}{number}" for prefix in ("COM", "LPT") for number in range(1, 10)}
+    return re.fullmatch(pattern, value) is not None and stem not in reserved
+
+
 def environment_directory(root, name):
-    declared = {item["path"] for item in settings(root)["environments"]}
+    config = settings(root)
+    declared = {item["path"] for item in config["environments"]}
     candidate = Path(name)
     if name not in declared or candidate.is_absolute() or ".." in candidate.parts:
         raise Failure(f"Undeclared or invalid environment alias: {name}")
     directory = root / candidate
+    if config.get("external_environments_required"):
+        configured = environment(root).get("CAOS_VENVS_ROOT", "").strip()
+        if not configured or not Path(configured).is_absolute():
+            raise Failure("Configure an absolute external CAOS_VENVS_ROOT before initialization.")
+        if os.path.lexists(configured) and not Path(configured).is_dir():
+            raise Failure("External CAOS_VENVS_ROOT must be a directory, not a file or broken alias.")
+        base = external(Path(configured), root)
+        namespace = config.get("environment_namespace")
+        if (not safe_environment_component(namespace)
+                or not safe_environment_component(name, runtime=True) or len(candidate.parts) != 1):
+            raise Failure("External environment namespace and runtime must be safe single components.")
+        target = base / namespace / candidate
+        for component in (base / namespace, target):
+            if os.path.lexists(component) and (
+                component.is_symlink() or getattr(component, "is_junction", lambda: False)()
+                or not component.is_dir()
+            ):
+                raise Failure("External environment namespace/runtime must be directories without redirection.")
+        target = target.resolve()
+        if not target.is_relative_to(base) or inside(target, root):
+            raise Failure("External environment namespace escapes its declared root.")
+        if os.path.lexists(directory) and (not directory.is_dir() or directory.resolve() != target):
+            raise Failure("Existing runtime must be an alias to its declared external environment.")
+        return target
     if os.path.lexists(directory) and not directory.is_dir():
         raise Failure(f"Declared environment alias is unavailable or not a directory: {directory}")
     return directory
@@ -255,8 +289,16 @@ def install_frontend(root, config, env):
         stamp.write_text(fingerprint + "\n", encoding="ascii")
 
 
+NOT_SHIPPED = ("training", "missing")
+
+
 def required_paths(root, config):
+    """The documents a shipped or staged tree must hold: ``required`` of the config plus every document the catalog names under
+    ``data/derived/`` or ``models/``. Since 0.15.004 the documents of a contract that ``readiness_exceptions`` declares not shipped
+    (state ``training`` or ``missing``) are not required: the slot is answered by the product's declared fallback, as the readiness
+    checks already admit. A ``partial`` or undeclared contract still requires its documents."""
     result = set(config["required"])
+    exceptions = config.get("readiness_exceptions", {})
     catalog = root / "docs/contracts/catalog.md"
     if catalog.is_file():
         header = None
@@ -267,6 +309,9 @@ def required_paths(root, config):
             if "documents" in cells:
                 header = cells
             elif header and len(cells) == len(header):
+                contract = cells[header.index("id")] if "id" in header else cells[0]
+                if exceptions.get(contract) in NOT_SHIPPED:
+                    continue
                 for name in cells[header.index("documents")].split(","):
                     name = name.strip().strip(chr(96))
                     if name.startswith(("data/derived/", "models/")):
@@ -278,6 +323,14 @@ def required_paths(root, config):
 
 
 def check_shipped(root, config):
+    if config.get("readiness_provider"):
+        if not config.get("readiness_check"):
+            raise Failure("A custom readiness_provider requires the product's readiness_check.")
+        python = generation_python(root, config)
+        check_readiness_states(root, config, {}, root, python)
+        commands(root, config["validators"], substitutions(root, root, python), environment(root))
+        check_required_validation(root, config)
+        return
     version = (root / "VERSION").read_text().strip()
     index = json_read(root / "data/derived/manifests/index.json")
     ready = json_read(root / "data/derived/readiness.json")
@@ -287,35 +340,47 @@ def check_shipped(root, config):
             "then explicitly promote with --release before 03_dev."
         )
     check_readiness_inventory(root, config, ready)
-    check_readiness_states(root, config, ready, root)
     if config.get("readiness_check"):
+        python = generation_python(root, config)
+        check_readiness_states(root, config, ready, root, python)
         commands(
             root,
             config["validators"],
-            substitutions(root, root, generation_python(root, config)),
+            substitutions(root, root, python),
             environment(root),
         )
-    if config.get("requires_validation"):
-        validation = json_read(root / "data/derived/validation.json")
-        if (
-            validation.get("engine_version") != version
-            or not validation.get("passed")
-            or validation.get("errors")
-        ):
-            raise Failure("Shipped whole-bake validation is missing, stale or failed.")
+    else:
+        check_readiness_states(root, config, ready, root)
+    check_required_validation(root, config)
+
+
+def check_required_validation(root, config):
+    if not config.get("requires_validation"):
+        return
+    version = (root / "VERSION").read_text().strip()
+    validation = json_read(root / "data/derived/validation.json")
+    if (
+        validation.get("engine_version") != version
+        or not validation.get("passed")
+        or validation.get("errors")
+    ):
+        raise Failure("Shipped whole-bake validation is missing, stale or failed.")
 
 
 def initialize(root, config, gpu=False, notebooks=False):
     prerequisites(root, False, False)
+    applicable = [item for item in config["environments"]
+                  if not item.get("when") or {"gpu": gpu, "notebooks": notebooks,
+                                             "api": api_active(root, config)}[item["when"]]]
+    if config.get("external_environments_required"):
+        for item in applicable:
+            environment_directory(root, item["path"])
     local = root / ".env"
     if not local.exists():
         with local.open("x", encoding="utf-8") as stream:
             stream.write((root / ".env.example").read_text(encoding="utf-8"))
     env = environment(root)
-    for item in config["environments"]:
-        when = item.get("when")
-        if when and not {"gpu": gpu, "notebooks": notebooks, "api": api_active(root, config)}[when]:
-            continue
+    for item in applicable:
         fingerprint = requirements_digest(root, item["requirements"])
         directory = environment_directory(root, item["path"])
         if not directory.exists():
@@ -376,6 +441,8 @@ def commands(root, rows, values, env):
 def source_identity(root, config):
     paths = [
         root / "VERSION",
+        root / "product.json",
+        root / "app/openapi.json",
         root / "scripts/local/workflow.json",
         root / "scripts/local/workflow.py",
         root / "scripts/local/producer_bridge.py",
@@ -401,25 +468,54 @@ def source_identity(root, config):
     return hashlib.sha256(json.dumps(values, sort_keys=True).encode()).hexdigest()
 
 
-def payload_hashes(stage, config):
+def payload_hashes(stage, config, *, directories=None):
     result = {}
     for name in config["promote"]:
-        directory = relative(stage, name)
+        directory = directories[name] if directories is not None else relative(stage, name)
         if not directory.is_dir():
             raise Failure(f"Incomplete stage: {name} is missing.")
         for path in directory.rglob("*"):
-            if path.is_symlink() or not inside(path, stage):
+            if path.is_symlink() or not inside(path, directory):
                 raise Failure("A staged payload cannot contain symlinks or escaped paths.")
             if path.is_file():
-                result[path.relative_to(stage).as_posix()] = digest(path)
+                result[(Path(name) / path.relative_to(directory)).as_posix()] = digest(path)
     return result
 
 
+VERSION_KEYS = ("engine_version", "product_version")
+
+
+def stamped_input(path):
+    """Whether a file is a version-stamped document: JSON whose top-level object carries a version key."""
+    if path.suffix.lower() != ".json":
+        return False
+    try:
+        value = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return False
+    return isinstance(value, dict) and any(key in value for key in VERSION_KEYS)
+
+
 def authored_inputs(root, config):
+    """The ``stage_inputs``: authored sources (tables, configuration) carried byte for byte into the stage.
+
+    A version-stamped document (template 0.15.007, #120) inside a promoted folder is produced by the generation, never
+    carried: ``validate_stage`` compares the stamps of the promoted payload with VERSION only after the whole bake, so the
+    refusal is made here, in the first call of ``generate`` and of the admission, before any stage or generation command
+    exists. A stamped document outside every promoted folder (a test fixture a readiness provider reads in the stage) is never
+    promoted and never compared, so it is carried like any authored input (0.15.013, RP-030)."""
     inputs = {name: relative(root, name) for name in config.get("stage_inputs", [])}
+    promoted = [Path(name).parts for name in config.get("promote", [])]
     for name, path in inputs.items():
         if not path.is_file():
             raise Failure(f"Missing authored stage input: {name}")
+        parts = Path(name).parts
+        if stamped_input(path) and any(parts[:len(folder)] == folder for folder in promoted):
+            raise Failure(
+                f"Stage input {name} is a version-stamped document ({' or '.join(VERSION_KEYS)}): such a document is "
+                "produced by the generation and never carried. Remove it from stage_inputs and produce it in a "
+                "generation step (for example the models step before the bake)."
+            )
     return inputs
 
 
@@ -442,6 +538,8 @@ def check_metadata_current(root, stage, config):
 
 
 def check_readiness_inventory(root, config, ready):
+    if config.get("readiness_provider"):
+        return
     catalog_ids = set()
     catalog = root / "docs/contracts/catalog.md"
     raw = catalog.read_bytes().replace(b"\r\n", b"\n")
@@ -465,10 +563,19 @@ def check_readiness_inventory(root, config, ready):
         raise Failure("Readiness is bound to a stale admission catalog.")
 
 
-def check_readiness_states(root, config, ready, view):
-    """Declared input/API outcomes are admitted only with the real recomputation guard."""
+def check_readiness_states(root, config, ready, view, python=None):
+    """Declared input/API outcomes are admitted only with the real recomputation guard, run with the product's generation
+    interpreter (``python``, default ``generation_python``): since 0.15.001 the checker loads the product's declared provider and
+    pipeline from the product root, and a real provider needs the generation packages (numpy, jsonschema) that the bootstrap
+    interpreter running this helper does not have (BD-10)."""
     exceptions = config.get("readiness_exceptions", {})
     checker = config.get("readiness_check")
+    if config.get("readiness_provider"):
+        if not checker:
+            raise Failure("A custom readiness_provider requires the product's readiness_check.")
+        interpreter = python if python is not None else generation_python(root, config)
+        run([interpreter, "-B", relative(root, checker), view], root)
+        return
     if exceptions and not checker:
         raise Failure("Readiness exceptions require the actual current-readiness validator.")
     if not ready.get("contracts") or any(
@@ -478,42 +585,69 @@ def check_readiness_states(root, config, ready, view):
     ):
         raise Failure("Partial readiness outside the declared input/API outcomes cannot be admitted.")
     if checker:
-        # This existing guard is stdlib-only and recomputes source facts, reasons and exact bytes.
-        run([sys.executable, "-B", relative(root, checker), view], root)
+        # The guard recomputes source facts, reasons and exact bytes with the product's own provider and engine, so it runs in
+        # the generation environment, never in whatever interpreter started the bootstrap.
+        interpreter = python if python is not None else generation_python(root, config)
+        run([interpreter, "-B", relative(root, checker), view], root)
+
+
+def check_admission_identity(root, config, stage, admitted):
+    if (source_identity(root, config) != admitted["source"]
+            or payload_hashes(stage, config) != admitted["files"]
+            or (admitted.get("receipt_sha256") is not None
+                and digest(stage / "local-generation.json") != admitted["receipt_sha256"])):
+        raise Failure("Stage source or payload fingerprint changed after admission.")
+    check_metadata_current(root, stage, config)
 
 
 def validate_stage(root, config, stage, python, env, receipt=False):
     stage = external(stage, root)
     if stage == stage.parent:
         raise Failure("A filesystem root is not a generation stage.")
-    if receipt:
-        record = json_read(stage / "local-generation.json")
-        if record["source"] != source_identity(root, config) or record["files"] != payload_hashes(
-            stage, config
-        ):
-            raise Failure("Stage source or payload fingerprint changed; generate a complete new candidate.")
+    receipt_bytes = (stage / "local-generation.json").read_bytes() if receipt else None
+    record = json.loads(receipt_bytes) if receipt else {
+        "source": source_identity(root, config), "files": payload_hashes(stage, config)}
+    admitted = {"source": record["source"], "files": dict(record["files"]),
+                "receipt_sha256": hashlib.sha256(receipt_bytes).hexdigest() if receipt else None}
+    check_admission_identity(root, config, stage, admitted)
     check_metadata_current(root, stage, config)
     version = (root / "VERSION").read_text().strip()
     missing = [name for name in required_paths(root, config) if not list(stage.glob(name))]
     if missing:
         raise Failure("Partial stage: " + ", ".join(missing[:5]))
-    for name in payload_hashes(stage, config):
+    payload = payload_hashes(stage, config)
+    engine_versions = config.get("stage_engine_versions", {})
+    if (not isinstance(engine_versions, dict)
+            or any(not isinstance(name, str) or not isinstance(value, str) or not value.strip()
+                   for name, value in engine_versions.items())):
+        raise Failure("stage_engine_versions must map exact staged JSON paths to non-empty engine versions.")
+    undeclared = sorted(set(engine_versions) - set(payload))
+    if undeclared:
+        raise Failure("stage_engine_versions names files outside the promoted payload: " + ", ".join(undeclared))
+    for name in payload:
         path = stage / name
         if path.suffix == ".json":
             value = json_read(path)
             if isinstance(value, dict):
                 for key in ("engine_version", "product_version"):
-                    if key in value and value[key] != version:
+                    expected = engine_versions.get(name, version) if key == "engine_version" else version
+                    if key in value and value[key] != expected:
                         raise Failure(f"Mixed/stale version in {name}.")
+    for name in engine_versions:
+        value = json_read(stage / name)
+        if not isinstance(value, dict) or value.get("engine_version") != engine_versions[name]:
+            raise Failure(f"Configured engine version is absent or mismatched in {name}.")
     ready = json_read(stage / "data/derived/readiness.json")
     check_readiness_inventory(root, config, ready)
-    check_readiness_states(root, config, ready, stage)
+    check_readiness_states(root, config, ready, stage, python)
     validation = stage / "data/derived/validation.json"
     if config.get("requires_validation") and (
         not validation.is_file() or not json_read(validation).get("passed")
     ):
         raise Failure("Missing or failed whole-bake validation.")
     commands(root, config["validators"], substitutions(root, stage, python), env)
+    check_admission_identity(root, config, stage, admitted)
+    return admitted
 
 
 def generate(root, config, env):
@@ -559,8 +693,10 @@ def generate(root, config, env):
         raise Failure(
             "Producer/contract/validation inputs changed during generation; the stage cannot be admitted."
         )
-    validate_stage(root, config, stage, python, child_env)
-    record = {"source": initial_source, "files": payload_hashes(stage, config)}
+    admitted = validate_stage(root, config, stage, python, child_env)
+    if admitted["source"] != initial_source:
+        raise Failure("Producer/contract/validation inputs changed during generation admission.")
+    record = {"source": admitted["source"], "files": admitted["files"]}
     (stage / "local-generation.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
     print(f"Validated sandbox: {stage}")
     return stage
@@ -583,7 +719,7 @@ def remove_owned(path, parent):
 
 
 def promote(root, config, stage, python, env):
-    validate_stage(root, config, stage, python, env, receipt=True)
+    admitted = validate_stage(root, config, stage, python, env, receipt=True)
     transaction = []
     try:
         for name in config["promote"]:
@@ -603,13 +739,19 @@ def promote(root, config, stage, python, env):
                 }
             )
             shutil.copytree(relative(stage, name), incoming)
+        check_admission_identity(root, config, stage, admitted)
+        incoming = {name: item["incoming"] for name, item in zip(config["promote"], transaction)}
+        if payload_hashes(stage, config, directories=incoming) != admitted["files"]:
+            raise Failure("Incoming bytes differ from the immutable admission receipt.")
         for item in transaction:
             if item["target"].exists():
                 os.replace(item["target"], item["backup"])
             os.replace(item["incoming"], item["target"])
             item["installed"] = True
-        if payload_hashes(root, config) != payload_hashes(stage, config):
-            raise Failure("Promoted bytes differ from the validated candidate.")
+            check_admission_identity(root, config, stage, admitted)
+        if payload_hashes(root, config) != admitted["files"]:
+            raise Failure("Promoted bytes differ from the immutable admission receipt.")
+        check_admission_identity(root, config, stage, admitted)
     except BaseException as original:
         errors = []
         for item in reversed(transaction):

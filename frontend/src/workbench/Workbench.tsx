@@ -11,11 +11,12 @@ import {
   Knob,
   Readout,
   formatNumber,
+  replaceQueryParam,
   useShellLang,
   type CaseDef,
   type RailSection,
 } from '@fasl-work/caos-app-shell';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadCase, loadIndex, useArtifact, type CaseData } from '../api/artifacts';
 import type { Text, Trap } from '../lib/contract.types';
 import { baselineName, cghApplies } from '../lib/ort';
@@ -26,15 +27,18 @@ import { ConvergenceGroup } from './ConvergenceGroup';
 import type { DeviceStage } from './decode';
 import { DynamicsGroup } from './DynamicsGroup';
 import { laneOf } from './engine';
+import { GROUP_IDS, initialGroup, initialTab, makeNav, NavContext, opensView, revealStage, type GroupId } from './nav';
 import { FocalGroup } from './FocalGroup';
 import { HologramGroup } from './HologramGroup';
-import { isShaped, methodLabel, replayMaps, replayResult, trapsOf, UnavailableContext, ViewContext, type DeviceChoice, type Region, type Selection } from './model';
+import { isShaped, methodLabel, methodName, replayMaps, replayResult, trapsOf, UnavailableContext, ViewContext, type DeviceChoice, type Region, type Selection } from './model';
 import { paramsFor, useEngine, useGpuProbe, useLiveRun, useSlots, type GpuProbe } from './run';
 import { addTrap, deleteTrap, moveTrap } from './traps';
 import { TrapsGroup } from './TrapsGroup';
+import { useTrapLink } from './trapLink';
 import { ActionsContext, CASE_ROWS, LOADING, localizeDecimals, Pending, type Actions, type EditMode } from './ui';
 import { coeffArray, J_MAX } from './zernike';
 import './workbench.css';
+import { ID } from '../lib/methodIds';
 
 interface Rail {
   caseId: string;
@@ -53,6 +57,9 @@ interface Rail {
   corrected: boolean;
   plane: 'xz' | 'yz';
   volThreshold: number;
+  /** The Pareto view's benchmark cell (`geometry|device|kind|value`, null: the cell closest to the case) and its scope of methods. */
+  paretoCell: string | null;
+  paretoScope: 'top' | 'all';
   overrides: Record<number, number>;
   traps: Trap[] | null;
   region: Region | null;
@@ -70,6 +77,8 @@ function railOf(data: CaseData): Rail {
     stage: 'ideal',
     sortBy: 'id',
     bandPct: 5,
+    paretoCell: null,
+    paretoScope: 'top',
     trapId: p.dynamics?.trap_id ?? trapsOf(data.manifest, data.trace)[0]?.id ?? null,
     powerMw: p.dynamics?.power_mw ?? 0,
     seed: data.manifest.seed,
@@ -85,11 +94,23 @@ function railOf(data: CaseData): Rail {
   };
 }
 
+/** The desktop rail width in CSS pixels (shell 0.21.0, bounded 150 to 360): narrow enough that the instrument takes 60 percent of the viewport. */
+const RAIL_WIDTH = 268;
+
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 
 /** The first clause of an engine message, for a rail line a few words wide; the full text stays in the title and the backend hint. */
-function shortReason(reason: string): string {
+/** The engine's WebGPU reasons (in English, from engine/holo/gpu) as the rail says them, in the reader's language. */
+const GPU_REASONS: { starts: string; en: string; es: string }[] = [
+  { starts: 'WebGPU has no adapter', en: 'the browser offers no WebGPU adapter', es: 'el navegador no ofrece un adaptador WebGPU' },
+  { starts: 'WebGPU is not available', en: 'the browser offers no WebGPU', es: 'el navegador no ofrece WebGPU' },
+  { starts: 'a shaped-field target has no WebGPU path', en: 'a shaped field has no WebGPU path', es: 'un campo con forma no tiene ruta WebGPU' },
+  { starts: 'the case device model', en: 'the case device model runs on the CPU only', es: 'el modelo del dispositivo del caso corre sólo en CPU' },
+];
+export function shortReason(reason: string, lang: 'en' | 'es' = 'en'): string {
+  const known = GPU_REASONS.find((r) => reason.startsWith(r.starts));
+  if (known) return known[lang];
   const head = reason.split(/[:(]/)[0].trim();
   return head.length > 48 ? `${head.slice(0, 45).trim()}...` : head;
 }
@@ -100,12 +121,21 @@ function backendLine(lang: 'en' | 'es', used: 'cpu' | 'gpu' | null, gpu: GpuProb
   const es = lang === 'es';
   const name = used === 'gpu' ? 'WebGPU' : 'CPU';
   if (used) {
-    if (fallback) return es ? `Calculado con ${name}. WebGPU no disponible: ${shortReason(fallback)}.` : `Computed on ${name}. WebGPU unavailable: ${shortReason(fallback)}.`;
+    if (fallback) return es ? `Calculado con ${name}. WebGPU no disponible: ${shortReason(fallback, 'es')}.` : `Computed on ${name}. WebGPU unavailable: ${shortReason(fallback)}.`;
     return es ? `Calculado con ${name}.` : `Computed on ${name}.`;
   }
   if (!gpu) return es ? 'Consultando WebGPU.' : 'Asking the browser for WebGPU.';
   if (gpu.ok) return es ? 'WebGPU disponible; el cálculo corre en CPU salvo que lo elija.' : 'WebGPU is available; the run uses it when it can.';
-  return es ? `WebGPU no disponible: ${shortReason(gpu.reason)}. Se usa CPU.` : `WebGPU unavailable: ${shortReason(gpu.reason)}. CPU is used.`;
+  return es ? `WebGPU no disponible: ${shortReason(gpu.reason, 'es')}. Se usa CPU.` : `WebGPU unavailable: ${shortReason(gpu.reason)}. CPU is used.`;
+}
+
+/** The method the URL asks for, on the first load of the case it names (the story's exit writes `?case=...&method=...`): the parameter when the case lists that method, else the case's reference method. */
+export function initialMethod(search: string, caseId: string, methods: readonly string[], reference: string): string {
+  const q = new URLSearchParams(search);
+  const named = q.get('case');
+  const wanted = q.get('method');
+  if ((named !== null && named !== caseId) || !wanted || !methods.includes(wanted)) return reference;
+  return wanted;
 }
 
 export function Workbench() {
@@ -120,14 +150,43 @@ export function Workbench() {
   const refused = entry?.status === 'refused';
   const loaded = useArtifact((s) => (selected && !refused ? loadCase(selected, s) : new Promise<CaseData>(() => undefined)), [selected, refused]);
   const [methodId, setMethodId] = useState<string | null>(null);
+  // the URL as the page was opened: read once, used for the first load of the case it names, then dropped (a method picked later is the reader's)
+  const firstSearch = useRef<string | null>(typeof window === 'undefined' ? null : window.location.search);
   const [rail, setRail] = useState<Rail | null>(null);
   const [editError, setEditError] = useState<Text | null>(null);
+  // The open group is the workbench's (a controlled value of the shell), so a view can open another: the optical train opens Device effects
+  // and the Focal plane group (ADR-0082 rule 6). The URL keeps `?view=` as the shell would have kept it.
+  const [group, setGroup] = useState<GroupId>(() => (typeof window === 'undefined' ? GROUP_IDS[0] : initialGroup(window.location.search)));
+  // the sub-view a deep link names (`?view=convergence&tab=pareto`): every group takes its sub-view from here (a controlled value)
+  const [subTabs, setSubTabs] = useState<Record<string, string | undefined>>(() => {
+    const first = typeof window === 'undefined' ? null : initialTab(window.location.search);
+    return first ? { [first.group]: first.tab } : {};
+  });
+  // a deep link to a view at phone width: the stage, not the rail, is what the reader came for. The rail is as tall as it will be only once the
+  // case has loaded, so the stage is brought into view then, once.
+  const reveal = useRef(typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches && opensView(window.location.search));
+  useEffect(() => {
+    if (!reveal.current || !rail) return;
+    reveal.current = false;
+    revealStage();
+  }, [rail]);
+  const changeGroup = useCallback((id: string) => {
+    setGroup(id as GroupId);
+    replaceQueryParam('view', id);
+  }, []);
+  const openCase = useCallback((id: string) => {
+    setCaseId(id);
+    setMethodId(null);
+  }, []);
+  const nav = useMemo(() => makeNav(changeGroup, (g, tab) => setSubTabs((cur) => ({ ...cur, [g]: tab })), subTabs, openCase), [changeGroup, subTabs, openCase]);
 
   const data = loaded.state === 'ready' && loaded.data.manifest.case_id === selected ? loaded.data : null;
   useEffect(() => {
     if (data) {
       setRail(railOf(data));
-      setMethodId(data.manifest.params.reference_method);
+      const p = data.manifest.params;
+      setMethodId(firstSearch.current === null ? p.reference_method : initialMethod(firstSearch.current, data.manifest.case_id, p.methods, p.reference_method));
+      firstSearch.current = null;
       setEditError(null);
     }
   }, [data]);
@@ -155,6 +214,9 @@ export function Workbench() {
     for (let j = 2; j <= J_MAX; j++) if (coeffs[j - 1] !== 0) o[String(j)] = coeffs[j - 1];
     return o;
   }, [coeffs]);
+
+  // One trap selection across the views: the workbench's trap and the shell's linked `selectedId` are the same selection.
+  useTrapLink(selected ?? '', r?.trapId ?? null, traps, (id) => patch({ trapId: id }));
 
   const live = useLiveRun({
     data,
@@ -202,6 +264,8 @@ export function Workbench() {
       coeffKey: coeffs.join(','),
       plane: r.plane,
       volThreshold: r.volThreshold,
+      paretoCell: r.paretoCell,
+      paretoScope: r.paretoScope,
       slot: live.slot,
       running: live.running,
       progress: live.progress,
@@ -217,6 +281,7 @@ export function Workbench() {
     () => ({
       mode: r?.mode ?? 'inspect',
       selectTrap: (id) => patch({ trapId: id }),
+      setDevice: (device) => patch({ device }),
       setRegion: (region) => patch({ region }),
       addTrap: (x, y) => {
         const e = addTrap(traps, x, y, halfField);
@@ -241,6 +306,8 @@ export function Workbench() {
       setCoeff: (j, v) => patch({ overrides: { ...(r?.overrides ?? {}), [j]: v } }),
       setPlane: (plane) => patch({ plane }),
       setVolThreshold: (volThreshold) => patch({ volThreshold }),
+      setMethod: (id) => setMethodId(id),
+      setPareto: (p) => patch({ ...(p.cell !== undefined ? { paretoCell: p.cell } : {}), ...(p.scope ? { paretoScope: p.scope } : {}) }),
     }),
     [r?.mode, r?.zmode, r?.trapId, r?.overrides, traps, halfField, editError, patch],
   );
@@ -413,7 +480,7 @@ export function Workbench() {
           ) : (
             <ChipGroup
               id="edit-mode"
-              label={{ en: `Trap editor: ${n} traps${edited ? ' (edited)' : ''}, field ±${formatNumber(halfField, 'en', { decimals: 1 })} um`, es: `Editor: ${n} trampas${edited ? ' (editadas)' : ''}, campo ±${formatNumber(halfField, 'es', { decimals: 1 })} um` }}
+              label={{ en: `Trap editor: ${n} traps${edited ? ' (edited)' : ''}, field ±${formatNumber(halfField, 'en', { decimals: 1 })} µm`, es: `Editor: ${n} trampas${edited ? ' (editadas)' : ''}, campo ±${formatNumber(halfField, 'es', { decimals: 1 })} µm` }}
               value={r.mode}
               onChange={(v) => (setEditError(null), patch({ mode: v as EditMode }))}
               options={[
@@ -484,21 +551,21 @@ export function Workbench() {
   const variantOf = (id: string) => {
     const lane1 = laneOf(id, liveMethods);
     const slotNote =
-      id === 'M17'
+      id === ID.M17
         ? slots.cgh?.answered === 'model'
           ? cghFit && !cghFit.ok
             ? { en: `${cghFit.reason.en} The baseline answers.`, es: `${cghFit.reason.es} Responde la línea base.` }
             : { en: 'The released cgh-net answers in your browser.', es: 'El cgh-net publicado responde en su navegador.' }
           : { en: `No released cgh-net: ${baselineName('cgh-net').en} answers.`, es: `No hay cgh-net publicado: responde ${baselineName('cgh-net').es}.` }
-        : id === 'B3'
+        : id === ID.B3
           ? slots.warm?.answered === 'model'
-            ? { en: 'The released warm start feeds M07 its trap phases.', es: 'El arranque aprendido publicado entrega a M07 las fases de las trampas.' }
+            ? { en: `The released warm start feeds ${PHASE_FIXED.en} its trap phases.`, es: `El arranque aprendido publicado entrega a ${PHASE_FIXED.es} las fases de las trampas.` }
             : { en: `No released warm start: ${baselineName('warmstart-model').en}.`, es: `No hay arranque aprendido publicado: ${baselineName('warmstart-model').es}.` }
           : null;
     return {
       id,
-      // The chip carries the id so twelve methods fit in a few rows (ADR-0071 rule 6); the note under the group names the active one in full.
-      label: { en: id, es: id },
+      // The chip carries the method's name; the shell's variant bar keeps the chips on one scrollable row (ADR-0071 rule 4), so a long name does not widen the rail.
+      label: methodName(id),
       lane: lane1,
       note: {
         en: slotNote ? `${methodLabel(id).en}. ${slotNote.en}` : methodLabel(id).en,
@@ -509,7 +576,7 @@ export function Workbench() {
 
   const hud = sel
     ? [
-        { label: { en: 'Method', es: 'Método' }, value: sel.methodId },
+        { label: { en: 'Method', es: 'Método' }, value: methodName(sel.methodId)[lang] },
         { label: { en: 'Efficiency', es: 'Eficiencia' }, value: metrics ? formatNumber(metrics.efficiency, lang, { percent: true, decimals: 1 }) : '-' },
         { label: { en: 'Uniformity', es: 'Uniformidad' }, value: metrics ? formatNumber(metrics.uniformity, lang, { decimals: 3 }) : '-' },
         { label: { en: 'Lane', es: 'Vía' }, value: lane === 'live' ? (lang === 'es' ? 'en vivo' : 'live') : lang === 'es' ? 'reproducción' : 'replay' },
@@ -520,6 +587,7 @@ export function Workbench() {
     <UnavailableContext.Provider value={unavailable}>
       <ViewContext.Provider value={sel}>
         <ActionsContext.Provider value={actions}>
+          <NavContext.Provider value={nav}>
           <CaseWorkbench
             caseId={selected ?? ''}
             source={data?.manifest.real_or_synthetic}
@@ -545,6 +613,8 @@ export function Workbench() {
                     stage: r.stage,
                     sortBy: r.sortBy,
                     bandPct: r.bandPct,
+                    paretoCell: r.paretoCell ?? '',
+                    paretoScope: r.paretoScope,
                     trapId: r.trapId,
                     powerMw: r.powerMw,
                     seed: r.seed,
@@ -561,10 +631,12 @@ export function Workbench() {
             }
             variants={{
               // M17 is offered only where the three-plane cgh-net applies (128 x 128 SLM, padding 1, traps on its planes)
-              variants: (params?.methods ?? []).filter((id) => id !== 'M17' || !data || cghApplies(data.manifest.params.setup, traps, slots.cgh?.card ?? null).ok).map(variantOf),
+              variants: (params?.methods ?? []).filter((id) => id !== ID.M17 || !data || cghApplies(data.manifest.params.setup, traps, slots.cgh?.card ?? null).ok).map(variantOf),
               activeId: method,
               onSelect: setMethodId,
               title: { en: 'Method', es: 'Método' },
+              // fourteen methods named by their names do not fit the rail as chips (ADR-0071 rule 7, shell 0.25.0)
+              layout: 'select',
             }}
             rail={rails.length ? rails : <p className="caos-pending" data-state="loading">…</p>}
             focus={{ hud }}
@@ -576,12 +648,19 @@ export function Workbench() {
               { id: 'dynamics', label: { en: 'Dynamics', es: 'Dinámica' }, lane: 'replay', provenance: prov, content: <DynamicsGroup /> },
             ]}
             context={{ content: <ContextView sel={sel} /> }}
+            group={group}
+            onGroupChange={changeGroup}
+            tabDensity="compact"
+            railWidth={RAIL_WIDTH}
           />
+          </NavContext.Provider>
         </ActionsContext.Provider>
       </ViewContext.Provider>
     </UnavailableContext.Provider>
   );
 }
+
+const PHASE_FIXED = methodName(ID.M07);
 
 function ContextView({ sel }: { sel: Selection | null }) {
   const lang = useShellLang();

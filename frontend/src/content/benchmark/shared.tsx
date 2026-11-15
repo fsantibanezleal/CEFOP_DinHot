@@ -6,7 +6,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 import { loadBenchmark, loadIndex, loadManifest, loadModelMetrics, useArtifact, type Loaded } from '../../api/artifacts';
 import type { BenchmarkResults, CaseIndex, CaseManifest, ModelMetrics } from '../../lib/contract.types';
 import { ReadinessNote } from '../../readiness/ReadinessNote';
-import { budgetId, budgetsOf, budgetText, parseBudget, type Budget, type Device, type Lang, type ParamsView, type Picked, KIND_TEXT } from './data';
+import { budgetId, budgetsOf, budgetText, ladderOf, nameIds, parseBudget, type Budget, type Device, type Lang, type ParamsView, type Picked, KIND_TEXT } from './data';
 import type { Kind } from '../methodology/ladder';
 
 export interface BenchData {
@@ -85,7 +85,7 @@ export function Pending({ of, wait = WAIT }: { of: Loaded<unknown>; wait?: BiTex
   if (of.state === 'unavailable') {
     return (
       <p className="caos-pending" data-state="unavailable">
-        {of.reason[lang]}
+        {nameIds(of.reason[lang], lang)}
       </p>
     );
   }
@@ -169,7 +169,8 @@ export const KIND_LEGEND = (['published', 'proposed'] as Kind[]).map((k) => ({ t
 /** A bar label that carries the parameter set it shows: a tuned result is never an unlabelled bar beside default ones. */
 export function barLabel(p: Picked, id: string, view: ParamsView): BiText {
   const tag = p.params === 'tuned' ? { en: 'tuned', es: 'ajustado' } : view === 'tuned' ? { en: p.noTunedRow ? 'default, not tuned here' : 'default', es: p.noTunedRow ? 'por defecto, sin ajuste aquí' : 'por defecto' } : null;
-  return tag ? { en: `${id} (${tag.en})`, es: `${id} (${tag.es})` } : { en: id, es: id };
+  const nm = ladderOf(id)?.short ?? { en: id, es: id };
+  return tag ? { en: `${nm.en} (${tag.en})`, es: `${nm.es} (${tag.es})` } : nm;
 }
 
 /** The smallest spread the benchmark document resolves, in percent: it stores six decimals, so a smaller value is a bound. */

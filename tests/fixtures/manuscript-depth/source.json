@@ -1,0 +1,645 @@
+{
+  "scope": "Frozen historical native source-only validation/formatting examples; not epidemic-teaching-example results or current global product admission.",
+  "source_repository": "https://github.com/fsantibanezleal/CAOS_SoftQP",
+  "tag": "v0.01.002",
+  "source_commit": "bbdd7909b2ee523881383764eb969eaab079d4de",
+  "author": "Felipe Santib\u00e1\u00f1ez-Leal",
+  "manuscript_license": "CC BY 4.0",
+  "technical_report": {
+    "record": "https://zenodo.org/records/23899079",
+    "version": "0.01.002",
+    "outcome": "negative timing criterion"
+  },
+  "paper": {
+    "record": "https://zenodo.org/records/23899142",
+    "version": "0.02.002",
+    "outcome": "negative registered directional comparison"
+  },
+  "historical_scope_note": "The preserved historical SDD/metadata describe their archived scope, including historical page-level qualifications. They do not waive the current ten-to-twelve-method/two-trained-model global bar.",
+  "excluded": "Admission/publishing sidecars, executables, raw datasets and generated main PDFs are not included. No source values or conclusions modified.",
+  "files": {
+    "VERSION": {
+      "sha256": "3e6e2c39571c783d6747cfdbe87f504560558ef373ed1c52941d7a9ca936d490",
+      "bytes": 9
+    },
+    "docs/contracts/catalog.md": {
+      "sha256": "00867c47d53d7c709e42cc8bdd1b65a36d33d3b22de58564b3c7fc4c1b7ba85f",
+      "bytes": 24783,
+      "storage": "docs/contracts/catalog.md.fixture"
+    },
+    "docs/design/SDD.md": {
+      "sha256": "fe225a34ad6008b8de4dff712601395c80ba42fc66433478ffcbad860f02d8a5",
+      "bytes": 38119,
+      "storage": "docs/design/SDD.md.fixture"
+    },
+    "manuscripts/coupled-peak-study/01-introduction.tex": {
+      "sha256": "e754256e73f18a472b793e699f16f7850285ab3ba6cb07a6126cc2abbdb0aa93",
+      "bytes": 4225
+    },
+    "manuscripts/coupled-peak-study/02-related.tex": {
+      "sha256": "187d90a8bdd681c2e810cea0ae058ceb07b2a838a0c33fd87038c19900ebf504",
+      "bytes": 5141
+    },
+    "manuscripts/coupled-peak-study/03-problem.tex": {
+      "sha256": "641d2d903ca480329992322aaa554f50db9a3172f64aed68d78885021b7f5ee3",
+      "bytes": 4019
+    },
+    "manuscripts/coupled-peak-study/04-separable.tex": {
+      "sha256": "0410892dca8a7ae0bc4306dd9267755bcc8c9801fcef84461140b6cb79dc0d78",
+      "bytes": 13980
+    },
+    "manuscripts/coupled-peak-study/05-directional.tex": {
+      "sha256": "c9ee9a1cd6e55454df903333123ab0320542642369819755cfa15da89362f16f",
+      "bytes": 13575
+    },
+    "manuscripts/coupled-peak-study/06-theory.tex": {
+      "sha256": "df58d7c239b88aeacfab8f42ad3634f98e535d06a041bf1c222f9c84aa3e745e",
+      "bytes": 6267
+    },
+    "manuscripts/coupled-peak-study/07-design.tex": {
+      "sha256": "e2dc63a822d56f5e29b5c0fb9a1c72d2fd18ee8c7b252ab56f7b92766b491685",
+      "bytes": 4717
+    },
+    "manuscripts/coupled-peak-study/08-results.tex": {
+      "sha256": "13c2fdadf4a07919bcab4ce8f16fcae8a56a0f80cc37aca391b8e3833ba3a7de",
+      "bytes": 5203
+    },
+    "manuscripts/coupled-peak-study/09-ablation.tex": {
+      "sha256": "ed86b7e779cd26bd89e788379b0f70f5aa81b519a2bc622bfd0294b9a5a6e925",
+      "bytes": 3730
+    },
+    "manuscripts/coupled-peak-study/10-discussion.tex": {
+      "sha256": "2cc582f6c7603344d5a2abd480ea9f0b82f50c3bef6671e560edae7ded22c341",
+      "bytes": 3518
+    },
+    "manuscripts/coupled-peak-study/11-limitations.tex": {
+      "sha256": "21b8068f709e5efd1c6b3db5a2c46ae370e33e8c960475b45d200061ae2b745d",
+      "bytes": 2835
+    },
+    "manuscripts/coupled-peak-study/12-reproducibility.tex": {
+      "sha256": "b9a7b48c07bfcffedb2dc8fcb16c91f1839155c36008208c3b2c66fe4f00dc28",
+      "bytes": 2800
+    },
+    "manuscripts/coupled-peak-study/13-conclusions.tex": {
+      "sha256": "d33d24a1984a1d8741275de8ad9e6fb7f81241055b46b08ce97935ca64850651",
+      "bytes": 1499
+    },
+    "manuscripts/coupled-peak-study/base.tex": {
+      "sha256": "1bd6177174edbc62e483cac0430aa697ca34f127a3d11dce4813e1bdcc74b3cf",
+      "bytes": 2105
+    },
+    "manuscripts/coupled-peak-study/coverage.json": {
+      "sha256": "05c8bbfbbb1be747fea6712566dfa798ead5a2a56968fc2062c6120abd42ff46",
+      "bytes": 211
+    },
+    "manuscripts/coupled-peak-study/figures/architecture.pdf": {
+      "sha256": "525e6e78a950ef43054bedbd64f7c9795b6490690880c5c15bc80fd494cd5746",
+      "bytes": 12262
+    },
+    "manuscripts/coupled-peak-study/figures/cold-times.pdf": {
+      "sha256": "509e076cceae191391fdb91ce5c20bd93fb30eb14b8a7e2983d2a080f3b2a4e8",
+      "bytes": 13826
+    },
+    "manuscripts/coupled-peak-study/figures/compatibility.pdf": {
+      "sha256": "ef971d03c18adc124a0438ffa32c572c374b5c30b03248662935700ad3e1bbfc",
+      "bytes": 12820
+    },
+    "manuscripts/coupled-peak-study/figures/conditioning.pdf": {
+      "sha256": "55afd780a548bf3bea9a4b1ae7471637e4a1ad62c48feef90f40e830ad268256",
+      "bytes": 15703
+    },
+    "manuscripts/coupled-peak-study/figures/control-stream.pdf": {
+      "sha256": "965aff6372f37776307c6a179b67ebde6676232cbf19b9d89bb04509e2196ca4",
+      "bytes": 12220
+    },
+    "manuscripts/coupled-peak-study/figures/coupled-formulations.pdf": {
+      "sha256": "7a8a5f6257bf16aad958a4973189988a960fe0207bf44eba582f0956757b6f35",
+      "bytes": 16812
+    },
+    "manuscripts/coupled-peak-study/figures/coupled-population.pdf": {
+      "sha256": "3e9c5a252e5a3123936910f38f856daecf5d7c1beebe728dc04f56b752e3b067",
+      "bytes": 18318
+    },
+    "manuscripts/coupled-peak-study/figures/coupled-states.pdf": {
+      "sha256": "5b0c440bca04f16bcb9c012de3ae8d8a1c8682394276e5914a6463095067ed9d",
+      "bytes": 25483
+    },
+    "manuscripts/coupled-peak-study/figures/directional-lesson.pdf": {
+      "sha256": "55fd10ca5154bb1d4317a38962da5dc0d4424796843ca8f2a1e8c7e278f8a8c1",
+      "bytes": 14332
+    },
+    "manuscripts/coupled-peak-study/figures/formulation-size.pdf": {
+      "sha256": "634f7b40af98fd6516235734ad1d5d7556af466decdc532afd3e2da562d0db53",
+      "bytes": 15129
+    },
+    "manuscripts/coupled-peak-study/figures/original-effect.pdf": {
+      "sha256": "a1ce8e87c84a3eb4693a6b75946528f3849e31f02b373c791948d910f5277c46",
+      "bytes": 10620
+    },
+    "manuscripts/coupled-peak-study/figures/scalar-objective.pdf": {
+      "sha256": "2319bab7b27549c28b42afdeec3d137718b5121474f2c8d65ef6db559624257d",
+      "bytes": 13702
+    },
+    "manuscripts/coupled-peak-study/figures/stream-reuse.pdf": {
+      "sha256": "a48de3e4b5ebc0f6a6e3f7350db05c025ed662d786e49e27a5a5a0c75b1dd813",
+      "bytes": 13919
+    },
+    "manuscripts/coupled-peak-study/generated/coupled-states.tex": {
+      "sha256": "4f67506a461c525c7185f6f0f3f81b073103a732cea524b07a417468c42ab7e9",
+      "bytes": 602
+    },
+    "manuscripts/coupled-peak-study/generated/figure-architecture.tex": {
+      "sha256": "1790d3da5977c2ae737db262e1a60a3a18966efaa8132e6eac0168a43ef3353f",
+      "bytes": 350
+    },
+    "manuscripts/coupled-peak-study/generated/figure-cold-times.tex": {
+      "sha256": "3f8d3b4dc7808561a9dcf05612cde06b667dbfbc41d516f98d0ae004bd641d53",
+      "bytes": 367
+    },
+    "manuscripts/coupled-peak-study/generated/figure-compatibility.tex": {
+      "sha256": "07a87832d7794fcde973e18a572fba1709a660d7aa29ce15b45993d657a466f1",
+      "bytes": 375
+    },
+    "manuscripts/coupled-peak-study/generated/figure-conditioning.tex": {
+      "sha256": "fcf1e58ab3f842a1dc0aa959c221c0579969fdb67716f6ac8e3c66ed3b5a6586",
+      "bytes": 380
+    },
+    "manuscripts/coupled-peak-study/generated/figure-control-stream.tex": {
+      "sha256": "217fd90011d1ce31d1eb49472cd3f0b0296ea85ab1cf7f241cebff9cc85599a8",
+      "bytes": 383
+    },
+    "manuscripts/coupled-peak-study/generated/figure-coupled-formulations.tex": {
+      "sha256": "bd6c189243b04eeecc8bb9c207dd8faf44c75b44c93dd1073498a18c34143420",
+      "bytes": 423
+    },
+    "manuscripts/coupled-peak-study/generated/figure-coupled-population.tex": {
+      "sha256": "e1518689164620c672fb3f631ad95fbe0de900f6051226e12f7e0c7304694d4f",
+      "bytes": 380
+    },
+    "manuscripts/coupled-peak-study/generated/figure-coupled-states.tex": {
+      "sha256": "36d9feb4c5af51b352690ecabfe1e6f343739fc816f67af2e5ce3b7e670f48c0",
+      "bytes": 405
+    },
+    "manuscripts/coupled-peak-study/generated/figure-directional-lesson.tex": {
+      "sha256": "63905bcc06306dd06be1b16c0c089db55d6658a1935b32eb6e5fdfde07c08118",
+      "bytes": 393
+    },
+    "manuscripts/coupled-peak-study/generated/figure-formulation-size.tex": {
+      "sha256": "0c556ded1529c9641f891f4ea2a94cb57c23aa1cf9d708cde22979cd07931c3d",
+      "bytes": 385
+    },
+    "manuscripts/coupled-peak-study/generated/figure-original-effect.tex": {
+      "sha256": "753a8de28692533be9c2348d0c1fa5fb2946fc9485bc6624d6691417436bc3b3",
+      "bytes": 370
+    },
+    "manuscripts/coupled-peak-study/generated/figure-scalar-objective.tex": {
+      "sha256": "14fb9fb27d4f765a2837220f70b563ca11ec4cb2249a706b8c82bba1e78b6bf9",
+      "bytes": 358
+    },
+    "manuscripts/coupled-peak-study/generated/figure-stream-reuse.tex": {
+      "sha256": "650cf115870b5ba3454db8e4ff2438d3f0eb99e50156fe86a53aebf9d3124122",
+      "bytes": 385
+    },
+    "manuscripts/coupled-peak-study/generated/study-results.tex": {
+      "sha256": "4d8f065e0e7a630d38b6e3fc10975a9c5e641f7d2285a8082c10a83273c7fd98",
+      "bytes": 685
+    },
+    "manuscripts/coupled-peak-study/main.tex": {
+      "sha256": "e9330af421c1e7a047cae3a62741efa8f3ecb63971db20e57b9f195b8b113c29",
+      "bytes": 3001
+    },
+    "manuscripts/coupled-peak-study/original-results.tex": {
+      "sha256": "e7bc221c77a9df70d32f0e4262426fb3256454f6a50cbd6bbd60e9f44ed6beb6",
+      "bytes": 222
+    },
+    "manuscripts/coupled-peak-study/references.bib": {
+      "sha256": "b130bbee48eef18a0c96cf39a97e15e4aaf47245415cfc67ec767dc62b3c4f04",
+      "bytes": 12741
+    },
+    "manuscripts/coupled-peak-study/results.tex": {
+      "sha256": "e1489c7968551fd9e2aa6c8e4621b9bf5fe2e24289e87ee3c01f5947a7764c04",
+      "bytes": 941
+    },
+    "manuscripts/coupled-peak-study/results/summary/observation-states.png": {
+      "sha256": "3918ca5e1c429dce8bee9280bf79729d5e598c7a18727b124029392583fac591",
+      "bytes": 70553
+    },
+    "manuscripts/coupled-peak-study/results/summary/observation-states.svg": {
+      "sha256": "43920c87109a3638302c6a2a2c13df676922e9c8e91c45f5890d9bc6c3e9f430",
+      "bytes": 17451
+    },
+    "manuscripts/coupled-peak-study/results/summary/primary-full-population.png": {
+      "sha256": "22bc96366df3b4c78deac6ec5cb3f67a51f091206d3570e9309b99158418411d",
+      "bytes": 111388
+    },
+    "manuscripts/coupled-peak-study/results/summary/primary-full-population.svg": {
+      "sha256": "775c7fc608c41c68d4f6e432e05a3156601951ba472493c3c6369e679b2e41b2",
+      "bytes": 49002
+    },
+    "manuscripts/soft-constraint-study/01-introduction.tex": {
+      "sha256": "5404b68b0252434452b70295caa5a1a8f1775d2505ae2b40eef51e1737bef32a",
+      "bytes": 4505
+    },
+    "manuscripts/soft-constraint-study/02-formulation.tex": {
+      "sha256": "7077c48ece7c698d6a1119eb186f8d654603b68d5c2e60c85d4714314e249930",
+      "bytes": 4445
+    },
+    "manuscripts/soft-constraint-study/03-notation.tex": {
+      "sha256": "f90887a586d07cd53a6b4cce90f6e48785c824a353e0ae46873887badaa2cb40",
+      "bytes": 4133
+    },
+    "manuscripts/soft-constraint-study/04-data.tex": {
+      "sha256": "c69e3b8638852fde829d81f56ddb9ceec7226ed156e4e8e5cf555343353e8dfc",
+      "bytes": 25686
+    },
+    "manuscripts/soft-constraint-study/05-architecture.tex": {
+      "sha256": "5d2b86c618003aa7bacfe3264b4b5f4047a9b39eaf86697fe62c09b70a8b501a",
+      "bytes": 4323
+    },
+    "manuscripts/soft-constraint-study/06-methods.tex": {
+      "sha256": "0543f3a47e8fe30930a94209b79964a7ad3ea961400e56c10c342dc51a06cd35",
+      "bytes": 774
+    },
+    "manuscripts/soft-constraint-study/07-protocol.tex": {
+      "sha256": "d8685ebaebae8316c0ae2a0db0d09c765270dbaf583c9414009e8c79f5fc436b",
+      "bytes": 5065
+    },
+    "manuscripts/soft-constraint-study/08-results.tex": {
+      "sha256": "df4b63bf1085da07de3e78c27ef42882cfcce5dcb8a2d149ebb637df97c00458",
+      "bytes": 7343
+    },
+    "manuscripts/soft-constraint-study/09-validation.tex": {
+      "sha256": "06f567c0c3c86f5410e397fbb1f977969ceafe5277a6c2ea25777260022fc4c4",
+      "bytes": 4701
+    },
+    "manuscripts/soft-constraint-study/10-discussion.tex": {
+      "sha256": "301e9af47780b9d7f593fd197c0ac6a527d7291637aa07f70f333cc8ff2bc203",
+      "bytes": 3566
+    },
+    "manuscripts/soft-constraint-study/11-limitations.tex": {
+      "sha256": "47d35eeed864423d4a25abc370839c31e6c386524372a8ea9c9555a15e8c59b1",
+      "bytes": 3090
+    },
+    "manuscripts/soft-constraint-study/12-reproducibility.tex": {
+      "sha256": "4a35e6dfd5adaaea417737c79007383cd5682153bb4d83b8bb6ab6675893a568",
+      "bytes": 2984
+    },
+    "manuscripts/soft-constraint-study/13-conclusions.tex": {
+      "sha256": "4756b4207012075225bfbb65999f07a7100183113df0ddd0abe36d295e3ce58f",
+      "bytes": 1551
+    },
+    "manuscripts/soft-constraint-study/14-contract-appendix.tex": {
+      "sha256": "70a28bbd3955d7d4150e5bf8558cb92ac27723f005fd8c648dfaf2a699f57f2b",
+      "bytes": 4645
+    },
+    "manuscripts/soft-constraint-study/base.tex": {
+      "sha256": "1bd6177174edbc62e483cac0430aa697ca34f127a3d11dce4813e1bdcc74b3cf",
+      "bytes": 2105
+    },
+    "manuscripts/soft-constraint-study/coverage.json": {
+      "sha256": "93412fc52644459a50a8e4b9957d851cfbb5d1babffe4c9e06c51b994daae945",
+      "bytes": 1378
+    },
+    "manuscripts/soft-constraint-study/figures/architecture.pdf": {
+      "sha256": "525e6e78a950ef43054bedbd64f7c9795b6490690880c5c15bc80fd494cd5746",
+      "bytes": 12262
+    },
+    "manuscripts/soft-constraint-study/figures/cold-times.pdf": {
+      "sha256": "509e076cceae191391fdb91ce5c20bd93fb30eb14b8a7e2983d2a080f3b2a4e8",
+      "bytes": 13826
+    },
+    "manuscripts/soft-constraint-study/figures/cold-times.png": {
+      "sha256": "c8eecb7426101d42128b6309d0f61cd777e6bc85ce53f0c5f94c9f4b9570ae93",
+      "bytes": 55178
+    },
+    "manuscripts/soft-constraint-study/figures/compatibility.pdf": {
+      "sha256": "ef971d03c18adc124a0438ffa32c572c374b5c30b03248662935700ad3e1bbfc",
+      "bytes": 12820
+    },
+    "manuscripts/soft-constraint-study/figures/conditioning.pdf": {
+      "sha256": "55afd780a548bf3bea9a4b1ae7471637e4a1ad62c48feef90f40e830ad268256",
+      "bytes": 15703
+    },
+    "manuscripts/soft-constraint-study/figures/conditioning.png": {
+      "sha256": "19d80630f5fc474a872150081235cfc0caaf33a090f2d8f093f3b729935dc767",
+      "bytes": 37200
+    },
+    "manuscripts/soft-constraint-study/figures/control-stream.pdf": {
+      "sha256": "965aff6372f37776307c6a179b67ebde6676232cbf19b9d89bb04509e2196ca4",
+      "bytes": 12220
+    },
+    "manuscripts/soft-constraint-study/figures/control-stream.png": {
+      "sha256": "28042dd766f098bb230d3ab4255db8735e16201485e7c3fd1da2038d5b259fc2",
+      "bytes": 63978
+    },
+    "manuscripts/soft-constraint-study/figures/coupled-formulations.pdf": {
+      "sha256": "7a8a5f6257bf16aad958a4973189988a960fe0207bf44eba582f0956757b6f35",
+      "bytes": 16812
+    },
+    "manuscripts/soft-constraint-study/figures/coupled-population.pdf": {
+      "sha256": "3e9c5a252e5a3123936910f38f856daecf5d7c1beebe728dc04f56b752e3b067",
+      "bytes": 18318
+    },
+    "manuscripts/soft-constraint-study/figures/coupled-states.pdf": {
+      "sha256": "5b0c440bca04f16bcb9c012de3ae8d8a1c8682394276e5914a6463095067ed9d",
+      "bytes": 25483
+    },
+    "manuscripts/soft-constraint-study/figures/directional-lesson.pdf": {
+      "sha256": "55fd10ca5154bb1d4317a38962da5dc0d4424796843ca8f2a1e8c7e278f8a8c1",
+      "bytes": 14332
+    },
+    "manuscripts/soft-constraint-study/figures/energy-policies.pdf": {
+      "sha256": "46f7bd53c0044393d28c763d6aa33d39b879b7b10c398965d36ad0ef232df481",
+      "bytes": 16998
+    },
+    "manuscripts/soft-constraint-study/figures/energy-policies.png": {
+      "sha256": "5335d31e519914ac1e3a2b988247c045d26345ce1fae3045fd5001b3bcf21f51",
+      "bytes": 55686
+    },
+    "manuscripts/soft-constraint-study/figures/formulation-size.pdf": {
+      "sha256": "634f7b40af98fd6516235734ad1d5d7556af466decdc532afd3e2da562d0db53",
+      "bytes": 15129
+    },
+    "manuscripts/soft-constraint-study/figures/original-effect.pdf": {
+      "sha256": "a1ce8e87c84a3eb4693a6b75946528f3849e31f02b373c791948d910f5277c46",
+      "bytes": 10620
+    },
+    "manuscripts/soft-constraint-study/figures/primary-effect.pdf": {
+      "sha256": "7d3ec8a11cf2185bffc8151cde593d10301b85ede33d1616e8c914daf19d066b",
+      "bytes": 14816
+    },
+    "manuscripts/soft-constraint-study/figures/primary-effect.png": {
+      "sha256": "3b022463790a5a4518512a8b716a6b0547b33dff1210b8fba4473602e73f3884",
+      "bytes": 14674
+    },
+    "manuscripts/soft-constraint-study/figures/scalar-objective.pdf": {
+      "sha256": "2319bab7b27549c28b42afdeec3d137718b5121474f2c8d65ef6db559624257d",
+      "bytes": 13702
+    },
+    "manuscripts/soft-constraint-study/figures/stream-reuse.pdf": {
+      "sha256": "a48de3e4b5ebc0f6a6e3f7350db05c025ed662d786e49e27a5a5a0c75b1dd813",
+      "bytes": 13919
+    },
+    "manuscripts/soft-constraint-study/generated/catalog-results-1.tex": {
+      "sha256": "9fcdf0da86aefa2c98017588f3942850a334fa220b9178a438b4a4671ee57d6f",
+      "bytes": 2915
+    },
+    "manuscripts/soft-constraint-study/generated/catalog-results-2.tex": {
+      "sha256": "1cbd0a0ee617f96c2fb04c32e913abcded9e068ab3f1e4fa66735065a84acdf4",
+      "bytes": 2972
+    },
+    "manuscripts/soft-constraint-study/generated/contract-api.tex": {
+      "sha256": "a88286335c644bab1954a68120e58d630d696cfa4bf3fe7c88ef92d8443976af",
+      "bytes": 703
+    },
+    "manuscripts/soft-constraint-study/generated/contract-case-index.tex": {
+      "sha256": "3e219c520788364083d30e24d5230ea3401e922101a7061b9c47ece5ae68c0ce",
+      "bytes": 1331
+    },
+    "manuscripts/soft-constraint-study/generated/contract-case-manifest.tex": {
+      "sha256": "bd13befa1e24128831d257b429212116296254277d37e0bdee8db1e899ebfd92",
+      "bytes": 1893
+    },
+    "manuscripts/soft-constraint-study/generated/contract-readiness.tex": {
+      "sha256": "776239674d403e5a0d5ae1c5be755250657d5680db122ff5faa8922a172ec141",
+      "bytes": 1254
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-campaign.tex": {
+      "sha256": "cd07967989042d0cbdc0c399d1741154141c305cb138adc323dbb977cb9d650a",
+      "bytes": 2554
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-case-result.tex": {
+      "sha256": "a5cdad99156960642ed3dc713a5e3eb9181450ea843df60487175facd228ef6f",
+      "bytes": 1773
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-case-spec.tex": {
+      "sha256": "1309e5737f16f1f5df977baac34ee4bf5df9ae4579c6318bb8d68f0a4a34edfc",
+      "bytes": 1150
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-coupled-batch.tex": {
+      "sha256": "b40c3d0d2138ed33a28ff5741ac16a7579acbd971fff010b68afa9f16a356990",
+      "bytes": 1399
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-coupled-campaign.tex": {
+      "sha256": "bb204a12f1747d6a8609ff988b4176e42e0dc77778baa21d36002590bbed1056",
+      "bytes": 2713
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-coupled-lesson.tex": {
+      "sha256": "169301ad8979507e403d4ba8bef555466f1278f5250da1626433b67dd0405ab8",
+      "bytes": 1491
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-coupled-observation.tex": {
+      "sha256": "4fbe4b2e31601505562a0461ef1154ff986aeca7a371554928aa6ccde72d186b",
+      "bytes": 4221
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-datasets.tex": {
+      "sha256": "e2c950774bb3c083a2dbdc714880d215b814f3f43127fe6ef77262effdd22aa9",
+      "bytes": 2213
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-experiment-index.tex": {
+      "sha256": "bc95501baaf8ca7aa9a189821bc901cf731678e28387d572cee4316ea5a3493b",
+      "bytes": 1190
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-index.tex": {
+      "sha256": "49b0f76994906336713eae2b3c0b01caa853755ddf2d0a8bf88ebebfbbe894da",
+      "bytes": 1372
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-local-export.tex": {
+      "sha256": "dd48d3ecbde48c12c770115665b8f5490c391d49375c3ed6908a7615fa9bb24d",
+      "bytes": 1134
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-run-request.tex": {
+      "sha256": "8358010d557d93212807c6cbbbcc577311b2d481fd72b6d84952e8e741e5c219",
+      "bytes": 1475
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-stream.tex": {
+      "sha256": "a8d3804f1a7fc9bf196d60cf3e6aae451d4f4135d44b9aa1bb0bd8cefe9b881c",
+      "bytes": 1764
+    },
+    "manuscripts/soft-constraint-study/generated/contract-softqp-trial.tex": {
+      "sha256": "14f0619cabe7dd683c63e734e25dbd0a8640842f9fc85b2bbfec428f64da2d59",
+      "bytes": 4044
+    },
+    "manuscripts/soft-constraint-study/generated/coupled-states.tex": {
+      "sha256": "4f67506a461c525c7185f6f0f3f81b073103a732cea524b07a417468c42ab7e9",
+      "bytes": 602
+    },
+    "manuscripts/soft-constraint-study/generated/figure-architecture.tex": {
+      "sha256": "1790d3da5977c2ae737db262e1a60a3a18966efaa8132e6eac0168a43ef3353f",
+      "bytes": 350
+    },
+    "manuscripts/soft-constraint-study/generated/figure-cold-times.tex": {
+      "sha256": "3f8d3b4dc7808561a9dcf05612cde06b667dbfbc41d516f98d0ae004bd641d53",
+      "bytes": 367
+    },
+    "manuscripts/soft-constraint-study/generated/figure-compatibility.tex": {
+      "sha256": "07a87832d7794fcde973e18a572fba1709a660d7aa29ce15b45993d657a466f1",
+      "bytes": 375
+    },
+    "manuscripts/soft-constraint-study/generated/figure-conditioning.tex": {
+      "sha256": "fcf1e58ab3f842a1dc0aa959c221c0579969fdb67716f6ac8e3c66ed3b5a6586",
+      "bytes": 380
+    },
+    "manuscripts/soft-constraint-study/generated/figure-control-stream.tex": {
+      "sha256": "217fd90011d1ce31d1eb49472cd3f0b0296ea85ab1cf7f241cebff9cc85599a8",
+      "bytes": 383
+    },
+    "manuscripts/soft-constraint-study/generated/figure-coupled-formulations.tex": {
+      "sha256": "bd6c189243b04eeecc8bb9c207dd8faf44c75b44c93dd1073498a18c34143420",
+      "bytes": 423
+    },
+    "manuscripts/soft-constraint-study/generated/figure-coupled-population.tex": {
+      "sha256": "e1518689164620c672fb3f631ad95fbe0de900f6051226e12f7e0c7304694d4f",
+      "bytes": 380
+    },
+    "manuscripts/soft-constraint-study/generated/figure-coupled-states.tex": {
+      "sha256": "36d9feb4c5af51b352690ecabfe1e6f343739fc816f67af2e5ce3b7e670f48c0",
+      "bytes": 405
+    },
+    "manuscripts/soft-constraint-study/generated/figure-directional-lesson.tex": {
+      "sha256": "63905bcc06306dd06be1b16c0c089db55d6658a1935b32eb6e5fdfde07c08118",
+      "bytes": 393
+    },
+    "manuscripts/soft-constraint-study/generated/figure-formulation-size.tex": {
+      "sha256": "0c556ded1529c9641f891f4ea2a94cb57c23aa1cf9d708cde22979cd07931c3d",
+      "bytes": 385
+    },
+    "manuscripts/soft-constraint-study/generated/figure-original-effect.tex": {
+      "sha256": "753a8de28692533be9c2348d0c1fa5fb2946fc9485bc6624d6691417436bc3b3",
+      "bytes": 370
+    },
+    "manuscripts/soft-constraint-study/generated/figure-scalar-objective.tex": {
+      "sha256": "14fb9fb27d4f765a2837220f70b563ca11ec4cb2249a706b8c82bba1e78b6bf9",
+      "bytes": 358
+    },
+    "manuscripts/soft-constraint-study/generated/figure-stream-reuse.tex": {
+      "sha256": "650cf115870b5ba3454db8e4ff2438d3f0eb99e50156fe86a53aebf9d3124122",
+      "bytes": 385
+    },
+    "manuscripts/soft-constraint-study/generated/nested-api.tex": {
+      "sha256": "6c84a36c948c5aee87f97d24eb4350f63de465f32a3bebee425ff384095af525",
+      "bytes": 1389
+    },
+    "manuscripts/soft-constraint-study/generated/nested-case-index.tex": {
+      "sha256": "a75cdebbe988182cd1965c0fb3ddd1ee61de98c52d75b04b42ccdc28c98a5afa",
+      "bytes": 3379
+    },
+    "manuscripts/soft-constraint-study/generated/nested-case-manifest.tex": {
+      "sha256": "d79aef862f12b7be45eb9a271bf358fb71df27a350fdca3bfdf410cbc3b74ccc",
+      "bytes": 4249
+    },
+    "manuscripts/soft-constraint-study/generated/nested-readiness.tex": {
+      "sha256": "e58ad25ba20642d502bcad88f022306a2d6c7b81c702a50fd0875b9bd970379e",
+      "bytes": 9222
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-campaign.tex": {
+      "sha256": "e2839a5cdf8edd76f9bae18006d3e521fb154f6a90f49cb2cb232dc13a074f88",
+      "bytes": 38190
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-case-result.tex": {
+      "sha256": "0cbfd621e1b882da61b20b07b39c5af23a5c0e582d191f405d6cee03062e55dc",
+      "bytes": 26522
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-case-spec.tex": {
+      "sha256": "f4c2d28cbb469739d4162ee800a1ab10e5065425c2ec146e8f978c4dd7dba9d6",
+      "bytes": 5134
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-coupled-batch.tex": {
+      "sha256": "63925d57d2aefa3e4a5a0da37fa3bd005123d9c504e20a0956a4087b17b37f45",
+      "bytes": 8601
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-coupled-campaign.tex": {
+      "sha256": "9ffafa74565728b732b6dbd8e8ed8fe8f0a07f395918c3a2d8d225c840214d44",
+      "bytes": 8174
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-coupled-lesson.tex": {
+      "sha256": "c5be8d334ce8703d860c322cfdf0020c08be6c24600865d244d595143e6aa4d1",
+      "bytes": 12495
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-coupled-observation.tex": {
+      "sha256": "ddd6632cb3c5216505b77fa7f73b43aa6e90e3ee1f1b0a4fe34f18719ce7347a",
+      "bytes": 13305
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-datasets.tex": {
+      "sha256": "958225276d2388c08d00c01b8453449ebc31ec7af5c9f5b6afdaff491ba2b9c3",
+      "bytes": 2830
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-experiment-index.tex": {
+      "sha256": "e722c1429fdf781757e2c53b711ac6ed4e46c3e0e6bd01148eb4a2463e68e709",
+      "bytes": 2314
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-index.tex": {
+      "sha256": "e1b8b4b47a1cdf615089e39251806d975fc44bf5254d3702b781b1282bbb5ae8",
+      "bytes": 4700
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-local-export.tex": {
+      "sha256": "0f1d327e3963545e1a136fd0af0b983613e95a1aa1acb98425813ddc256ce810",
+      "bytes": 32622
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-run-request.tex": {
+      "sha256": "e1a0d6e82e03ea7d0a0fdb745a334fc6dea2e4b48b33c7ea6903858b5d968bad",
+      "bytes": 1574
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-stream.tex": {
+      "sha256": "a0a9993119d340aa8bafc075c4030b6715c3bf2a940fab70afb48df647195b32",
+      "bytes": 25488
+    },
+    "manuscripts/soft-constraint-study/generated/nested-softqp-trial.tex": {
+      "sha256": "1399a61a36c1396b83884fa459ff5ad3356263cf0d9810baa0fd8fb028ae8c5f",
+      "bytes": 15778
+    },
+    "manuscripts/soft-constraint-study/generated/study-results.tex": {
+      "sha256": "4d8f065e0e7a630d38b6e3fc10975a9c5e641f7d2285a8082c10a83273c7fd98",
+      "bytes": 685
+    },
+    "manuscripts/soft-constraint-study/main.tex": {
+      "sha256": "71b693210b52327a62df455f13547e15c7116592db224fbfc41e9ca04c2c456e",
+      "bytes": 3264
+    },
+    "manuscripts/soft-constraint-study/method-asymmetric.tex": {
+      "sha256": "538bf623cc3afce56da5f2eea32265bc036e946fc3d67398a40322aa564810cf",
+      "bytes": 5961
+    },
+    "manuscripts/soft-constraint-study/method-daqp.tex": {
+      "sha256": "c07c72d94fde8681677943262f787f906ffd29359caddeb8a4dd7036ff9e8373",
+      "bytes": 5788
+    },
+    "manuscripts/soft-constraint-study/method-directional.tex": {
+      "sha256": "eb6c2d295a560cd1b2f8ebae686ffb97f3c2a1ac4d8030dddaaa6110611e59fa",
+      "bytes": 6057
+    },
+    "manuscripts/soft-constraint-study/method-elasti.tex": {
+      "sha256": "95504cad8454f5db5c29fabcc5095d687cbb7b8e1b803e1faabe1fbd08f03058",
+      "bytes": 5843
+    },
+    "manuscripts/soft-constraint-study/method-flex.tex": {
+      "sha256": "5b2b02e1c3488af7e1979fb75a6e0ad0d4d3a09e3a45cdfc9a52375ac588a972",
+      "bytes": 5766
+    },
+    "manuscripts/soft-constraint-study/method-generalized.tex": {
+      "sha256": "9f78d838c23ab455cde70f80cde3e38506b9a59f1352c5dbd12dece28cec474a",
+      "bytes": 5870
+    },
+    "manuscripts/soft-constraint-study/method-lifting.tex": {
+      "sha256": "52a9f6206855cbb6cf8cbf0db0f4834b0a9d075405fd848b7d9c4197f70f993c",
+      "bytes": 5676
+    },
+    "manuscripts/soft-constraint-study/original-results.tex": {
+      "sha256": "e7bc221c77a9df70d32f0e4262426fb3256454f6a50cbd6bbd60e9f44ed6beb6",
+      "bytes": 222
+    },
+    "manuscripts/soft-constraint-study/references.bib": {
+      "sha256": "b130bbee48eef18a0c96cf39a97e15e4aaf47245415cfc67ec767dc62b3c4f04",
+      "bytes": 12741
+    },
+    "manuscripts/soft-constraint-study/results.tex": {
+      "sha256": "e1489c7968551fd9e2aa6c8e4621b9bf5fe2e24289e87ee3c01f5947a7764c04",
+      "bytes": 941
+    },
+    "product.json": {
+      "sha256": "bc9c566d072c815d997dc2ffc8916bbf408b208ef9da439358e40a829cf3aaa8",
+      "bytes": 1412
+    }
+  },
+  "storage_note": "The two historical Markdown authority files retain exact bytes under .md.fixture storage names, because their source-repository links are not active template wiki links. The real-source control materializes original names into an external sandbox before checking the actual content guard. No link rule is waived and no historical source byte is rewritten."
+}

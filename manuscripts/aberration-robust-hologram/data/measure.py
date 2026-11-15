@@ -52,6 +52,7 @@ from pipeline.model.holo.core.rng import Rng  # noqa: E402
 from pipeline.model.holo.core.traps import TrapSet, square_grid  # noqa: E402
 from pipeline.model.holo.core.types import Budget, Target  # noqa: E402
 from pipeline.model.holo.core.zernike import wavefront_waves  # noqa: E402
+from pipeline.model.holo.methods.baseline import m07_phase_fixed_wgs  # noqa: E402
 from pipeline.model.holo.methods.beyond import b4_robust as B4  # noqa: E402
 from pipeline.model.holo.methods.optim import _common as C  # noqa: E402
 from pipeline.model.holo.methods.optim import _gs_family as G  # noqa: E402
@@ -506,7 +507,8 @@ def bake_rows() -> dict:
     for case, vals in d["measured"].items():
         if "B4.rel_std_pct" not in vals:
             continue
-        rows[case] = {k: vals[k] for k in ("B4.rel_std_pct", "B4.efficiency", "M07.rel_std_pct", "M07.efficiency")
+        pf = m07_phase_fixed_wgs.SPEC.id  # the engine key of phase-fixed weighted GS in the measured ranges
+        rows[case] = {k: vals[k] for k in ("B4.rel_std_pct", "B4.efficiency", f"{pf}.rel_std_pct", f"{pf}.efficiency")
                       if k in vals}
     return {"seeds": d["seeds"], "cases": rows}
 

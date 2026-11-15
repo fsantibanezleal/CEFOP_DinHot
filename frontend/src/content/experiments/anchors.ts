@@ -6,6 +6,7 @@
 // the papers themselves were read only as far as those cards record (the section and figure numbers are the cards'), so a value not
 // marked otherwise is quoted as the card states it and was not re-read against the paper's full text in this unit.
 import type { Text } from '../../lib/contract.types';
+import { ID } from '../../lib/methodIds';
 
 export interface Published {
   /** Reference id in `citations/methodology.ts` or `citations/experiments.ts`. */
@@ -89,10 +90,10 @@ export const POLIN_ARRAY = {
 
 /** Di Leonardo et al. 2007 Table 1 at 8 Fourier units: efficiency and uniformity of four baselines (case card of C12). */
 export const DILEONARDO_TABLE: { method: string; name: Text; efficiency: number; uniformity: number }[] = [
-  { method: 'M01', name: { en: 'superposition', es: 'superposición' }, efficiency: 0.29, uniformity: 0.01 },
-  { method: 'M02', name: { en: 'random superposition', es: 'superposición aleatoria' }, efficiency: 0.69, uniformity: 0.01 },
-  { method: 'M04', name: { en: 'Gerchberg-Saxton', es: 'Gerchberg-Saxton' }, efficiency: 0.94, uniformity: 0.6 },
-  { method: 'M06', name: { en: 'weighted GS', es: 'GS ponderado' }, efficiency: 0.93, uniformity: 0.99 },
+  { method: ID.M01, name: { en: 'superposition', es: 'superposición' }, efficiency: 0.29, uniformity: 0.01 },
+  { method: ID.M02, name: { en: 'random superposition', es: 'superposición aleatoria' }, efficiency: 0.69, uniformity: 0.01 },
+  { method: ID.M04, name: { en: 'Gerchberg-Saxton', es: 'Gerchberg-Saxton' }, efficiency: 0.94, uniformity: 0.6 },
+  { method: ID.M06, name: { en: 'weighted GS', es: 'GS ponderado' }, efficiency: 0.93, uniformity: 0.99 },
 ];
 
 export const DILEONARDO = {

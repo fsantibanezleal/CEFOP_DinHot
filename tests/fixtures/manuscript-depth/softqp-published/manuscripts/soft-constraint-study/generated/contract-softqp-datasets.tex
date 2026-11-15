@@ -1,0 +1,18 @@
+\begin{table}[htbp]\centering\footnotesize
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-datasets schema 1.0.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-datasets}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule
+Field & Type & Constraint & Unit / role\\\midrule
+id & string & pattern=\allowbreak{}\textasciicircum{}(development\textbar{}\allowbreak{}heldout\textbar{}\allowbreak{}robustness)-[0-9]\{4\}\$ & structural metadata /\allowbreak{} nested units\\
+split & enumerated value & enum=\allowbreak{}['development', 'heldout', 'robustness'] & structural metadata /\allowbreak{} nested units\\
+n & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+density & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+condition & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+family & enumerated value & enum=\allowbreak{}['symmetric-\allowbreak{}elastic', 'asymmetric-\allowbreak{}elastic', 'asymmetric-\allowbreak{}l1'] & structural metadata /\allowbreak{} nested units\\
+seed & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+generation\_\allowbreak{}seconds & number & minimum=\allowbreak{}0 & s\\
+problem\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+oracle\_\allowbreak{}state & enumerated value & enum=\allowbreak{}['accepted', 'oracle-\allowbreak{}failed'] & structural metadata /\allowbreak{} nested units\\
+oracle\_\allowbreak{}reason & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+oracle\_\allowbreak{}objective & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & model cost unit\\
+\bottomrule\end{tabularx}
+\end{table}

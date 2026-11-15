@@ -1,0 +1,64 @@
+\documentclass[11pt]{article}
+\newcommand{\doctype}{Technical report}
+\newcommand{\docversion}{v0.01.002}
+\newcommand{\docdate}{2 November 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.23899079}
+\newcommand{\conceptdoi}{10.5281/zenodo.23851659}
+\newcommand{\docrepo}{github.com/fsantibanezleal/CAOS\_SoftQP}
+\newcommand{\docscope}{soft-constraint quadratic programming}
+\newcommand{\shorttitle}{Soft-constraint QP methods}
+\input{base.tex}
+\input{results.tex}
+\input{original-results.tex}
+\title{Soft-Constraint Quadratic Programming: Methods, Contracts, and Negative Timing Results}
+\author{Felipe Santib\'a\~nez-Leal\,\orcidlink{0000-0002-0150-3246}\\
+\small CAOS Research program, \texttt{github.com/fsantibanezleal/CAOS\_SoftQP}}
+\date{\docdate}
+\hypersetup{pdftitle={Soft-Constraint Quadratic Programming: Methods, Contracts, and Negative Timing Results},pdfauthor={Felipe Santibáñez-Leal}}
+\begin{document}
+\maketitle
+\thispagestyle{plain}
+\headerblock
+\begin{abstract}
+Soft constraints price departures from selected operating preferences while
+preserving immutable physical limits. We describe a reproducible convex quadratic
+optimization system that makes the original objective, physical units, method
+compatibility and numerical evidence inspectable. Seven implemented paths cover
+explicit slack lifting, published generalized projection, side-specific DAQP
+weights, a fixed FlexQP reconstruction, ElastiQP, a side-specific interval
+proximal update and a directional disjoint group-peak update. Eighteen versioned
+contracts connect synthetic input generation, native execution, independent
+original-space evaluation, local request/result exchange and verified static
+presentation. Fifteen authored or source-faithful model cases exercise scalar
+semantics, mixed hard/soft policy, sparse structure, predictive control and
+building energy. A separate registered computation contains 456 seeded instances,
+retaining 11592 accepted and 7560 incompatible measured observations. Its
+168-pair held-out median relative cold end-to-end reduction is
+\OriginalEstimate\%, with a 95\% seed-cluster interval from \OriginalLower\%
+to \OriginalUpper\%. A second computation retains all 210 grouped repeated-
+forecast inputs and 7770 raw observations. Its complete 144-member held-out
+primary score is \PrimaryEstimate\%, with interval limits \PrimaryLower\%
+and \PrimaryUpper\%, including \PrimaryFailed{} failed pairs. Neither
+registered ten-percent improvement criterion is established. Equivalent
+formulations, physical covariance, objective/dual checks and retained failure
+states distinguish mathematical agreement from elapsed-time advantage. The
+system supports transparent research and development; the synthetic evidence
+does not establish operational safety, measured field benefit or algorithmic priority.
+\end{abstract}
+\input{01-introduction.tex}
+\input{02-formulation.tex}
+\input{03-notation.tex}
+\input{04-data.tex}
+\input{05-architecture.tex}
+\input{06-methods.tex}
+\input{07-protocol.tex}
+\input{08-results.tex}
+\input{09-validation.tex}
+\input{10-discussion.tex}
+\input{11-limitations.tex}
+\input{12-reproducibility.tex}
+\input{13-conclusions.tex}
+\input{14-contract-appendix.tex}
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

@@ -5,6 +5,7 @@
 // section Question, Why this case exists, Expected results, Validation anchor and Notes) and from the manifests' anchor lines; the
 // published numbers are in `anchors.ts` with their sources and conditions.
 import type { Text } from '../../lib/contract.types';
+import { methodName } from '../../workbench/model';
 import {
   DILEONARDO,
   DILEONARDO_TABLE,
@@ -33,6 +34,7 @@ import {
   type CaseView,
   type Metric,
 } from './data';
+import { ID } from '../../lib/methodIds';
 
 export type Lang = 'en' | 'es';
 
@@ -90,12 +92,12 @@ export function common(v: CaseView, f: Fmt): Record<string, string> {
     fu: f.n(latticeUm(m) !== null ? (latticeUm(m) as number) / (s.pad * v.trace.grid.bin_um) : undefined, { digits: 3 }),
     seed: f.n(m.seed, { decimals: 0, grouping: false }),
     nm: f.n(ids.length, { decimals: 0 }),
-    ref: m.params.reference_method,
+    ref: methodName(m.params.reference_method)[f.lang],
     iters: f.n(m.params.budget.iterations, { decimals: 0 }),
     refEff: f.n(ref?.efficiency, { decimals: 3 }),
     refU: f.n(ref?.uniformity, { decimals: 3 }),
     refSd: f.n(ref?.rel_std_pct, { digits: 3 }),
-    best: v.trace.summary.best_method,
+    best: methodName(v.trace.summary.best_method)[f.lang],
     okAll: f.n(scored.filter((x) => x.ok === x.of).length, { decimals: 0 }),
     ofAll: f.n(scored.length, { decimals: 0 }),
   };
@@ -155,8 +157,8 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Puede hacerse una matriz cuadrada pequeña de trampas iguales, y se comporta una esfera en la trampa central como dice la rigidez calculada?',
     },
     setup: {
-      en: 'The case places {n} equal traps on a square lattice with {lat} um spacing, made with a beam of {wl} nm through a lens of {focal} mm focal length and numerical aperture {na}, on an SLM of {npix} by {npix} pixels. {nm} methods run on it with the seed {seed} and a budget of {iters} iterations, and the reference method is {ref}. A bead of {beadR} um radius and refractive index {nBead} in the central trap, driven at {power} mW, tests the hologram through the particle it holds, and an emulated camera with a gain error of {gainRms} rms closes a loop of {fbGain} gain over {steps} steps.',
-      es: 'El caso coloca {n} trampas iguales en una red cuadrada con {lat} um de separación, hechas con un haz de {wl} nm a través de un lente de {focal} mm de distancia focal y apertura numérica {na}, sobre un SLM de {npix} por {npix} píxeles. Corren {nm} métodos con la semilla {seed} y un presupuesto de {iters} iteraciones, y el método de referencia es {ref}. Una esfera de {beadR} um de radio e índice de refracción {nBead} en la trampa central, impulsada a {power} mW, pone a prueba el holograma por la partícula que sostiene, y una cámara emulada con un error de ganancia de {gainRms} rms cierra un lazo de ganancia {fbGain} durante {steps} pasos.',
+      en: 'The case places {n} equal traps on a square lattice with {lat} µm spacing, made with a beam of {wl} nm through a lens of {focal} mm focal length and numerical aperture {na}, on an SLM of {npix} by {npix} pixels. {nm} methods run on it with the seed {seed} and a budget of {iters} iterations, and the reference method is {ref}. A bead of {beadR} µm radius and refractive index {nBead} in the central trap, driven at {power} mW, tests the hologram through the particle it holds, and an emulated camera with a gain error of {gainRms} rms closes a loop of {fbGain} gain over {steps} steps.',
+      es: 'El caso coloca {n} trampas iguales en una red cuadrada con {lat} µm de separación, hechas con un haz de {wl} nm a través de un lente de {focal} mm de distancia focal y apertura numérica {na}, sobre un SLM de {npix} por {npix} píxeles. Corren {nm} métodos con la semilla {seed} y un presupuesto de {iters} iteraciones, y el método de referencia es {ref}. Una esfera de {beadR} µm de radio e índice de refracción {nBead} en la trampa central, impulsada a {power} mW, pone a prueba el holograma por la partícula que sostiene, y una cámara emulada con un error de ganancia de {gainRms} rms cierra un lazo de ganancia {fbGain} durante {steps} pasos.',
     },
     result: {
       en: 'The reference method {ref} reaches an efficiency of {refEff} and a uniformity of {refU}, a relative standard deviation of {refSd} percent, and the bake names {best} as the most uniform method among those that keep at least half the best efficiency. The camera loop takes the measured spread from {fb0} percent to {fb1} percent after one step and {fbN} percent after {steps} steps. The bead\'s spectrum has a corner frequency of {fcM} Hz against {fcE} Hz expected from the stiffness, a ratio of {fcR}. {okAll} of {ofAll} methods with checked ranges sit inside all of them. The published anchor of this case is an occupancy of about one half per trap, which this build does not simulate, so no published number is compared here.',
@@ -190,8 +192,8 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Hasta dónde puede un lazo de realimentación de cámara bajar la dispersión de profundidad de una matriz cuadrada grande, y con qué rapidez?',
     },
     setup: {
-      en: 'The case places {n} equal traps on a square lattice with {lat} um spacing, with the optics of the atom setup: {wl} nm, a lens of {focal} mm and numerical aperture {na}, an SLM of {npix} by {npix} pixels. The emulated camera has a gain error of {gainRms} rms and a readout noise of {noise}, the loop has a gain of {fbGain} and {steps} steps, and {nm} methods run with the seed {seed}. The reference method is {ref}, whose hologram starts the loop; the closed-loop weighted method of the ladder is run on the same camera as a method of its own.',
-      es: 'El caso coloca {n} trampas iguales en una red cuadrada con {lat} um de separación, con la óptica del montaje de átomos: {wl} nm, un lente de {focal} mm y apertura numérica {na}, un SLM de {npix} por {npix} píxeles. La cámara emulada tiene un error de ganancia de {gainRms} rms y un ruido de lectura de {noise}, el lazo tiene una ganancia de {fbGain} y {steps} pasos, y corren {nm} métodos con la semilla {seed}. El método de referencia es {ref}, cuyo holograma inicia el lazo; el método ponderado de lazo cerrado de la escalera corre sobre la misma cámara como un método propio.',
+      en: 'The case places {n} equal traps on a square lattice with {lat} µm spacing, with the optics of the atom setup: {wl} nm, a lens of {focal} mm and numerical aperture {na}, an SLM of {npix} by {npix} pixels. The emulated camera has a gain error of {gainRms} rms and a readout noise of {noise}, the loop has a gain of {fbGain} and {steps} steps, and {nm} methods run with the seed {seed}. The reference method is {ref}, whose hologram starts the loop; the closed-loop weighted method of the ladder is run on the same camera as a method of its own.',
+      es: 'El caso coloca {n} trampas iguales en una red cuadrada con {lat} µm de separación, con la óptica del montaje de átomos: {wl} nm, un lente de {focal} mm y apertura numérica {na}, un SLM de {npix} por {npix} píxeles. La cámara emulada tiene un error de ganancia de {gainRms} rms y un ruido de lectura de {noise}, el lazo tiene una ganancia de {fbGain} y {steps} pasos, y corren {nm} métodos con la semilla {seed}. El método de referencia es {ref}, cuyo holograma inicia el lazo; el método ponderado de lazo cerrado de la escalera corre sobre la misma cámara como un método propio.',
     },
     result: {
       en: 'The measured spread of the traps falls from {fb0} percent before the loop to {fbN} percent after {steps} steps, a reduction of {fold} times, and the first step alone reaches {fb1} percent. The reference method {ref} has an efficiency of {refEff} and a uniformity of {refU} at the end of the loop, and the bake names {best} as the most uniform method. The published result is {pubInit} percent rms falling to {pubFinal} percent in {pubSteps} iterations at gain {pubGain}, so the loop here ends {below} the published value. The emulated camera has a readout noise of {noise} and a blur of {blur} bins, and these are the errors that set the floor of a real loop when they are not zero, so this result shows that the loop works against the stated errors and is not a prediction for an instrument.',
@@ -235,8 +237,8 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Se sostiene en una matriz grande el GS ponderado de fase fija que usan los experimentos de matrices grandes, más unos pocos pasos de cámara, y qué siente un átomo en una trampa?',
     },
     setup: {
-      en: 'The case places {n} equal traps on a square lattice with {lat} um spacing, with the optics of the atom setup ({wl} nm, {focal} mm, numerical aperture {na}, an SLM of {npix} by {npix} pixels). {nm} methods run on it, and the reference method is {ref}. The emulated camera has a gain error of {gainRms} rms, and the loop has a gain of {fbGain} and {steps} steps. A rubidium atom of {mass} mass units in one trap, at {power} mW, is integrated with a step of {dt} s to test the hologram through the frequency of its oscillation.',
-      es: 'El caso coloca {n} trampas iguales en una red cuadrada con {lat} um de separación, con la óptica del montaje de átomos ({wl} nm, {focal} mm, apertura numérica {na}, un SLM de {npix} por {npix} píxeles). Corren {nm} métodos sobre ella, y el método de referencia es {ref}. La cámara emulada tiene un error de ganancia de {gainRms} rms, y el lazo tiene una ganancia de {fbGain} y {steps} pasos. Un átomo de rubidio de {mass} unidades de masa en una trampa, a {power} mW, se integra con un paso de {dt} s para probar el holograma por la frecuencia de su oscilación.',
+      en: 'The case places {n} equal traps on a square lattice with {lat} µm spacing, with the optics of the atom setup ({wl} nm, {focal} mm, numerical aperture {na}, an SLM of {npix} by {npix} pixels). {nm} methods run on it, and the reference method is {ref}. The emulated camera has a gain error of {gainRms} rms, and the loop has a gain of {fbGain} and {steps} steps. A rubidium atom of {mass} mass units in one trap, at {power} mW, is integrated with a step of {dt} s to test the hologram through the frequency of its oscillation.',
+      es: 'El caso coloca {n} trampas iguales en una red cuadrada con {lat} µm de separación, con la óptica del montaje de átomos ({wl} nm, {focal} mm, apertura numérica {na}, un SLM de {npix} por {npix} píxeles). Corren {nm} métodos sobre ella, y el método de referencia es {ref}. La cámara emulada tiene un error de ganancia de {gainRms} rms, y el lazo tiene una ganancia de {fbGain} y {steps} pasos. Un átomo de rubidio de {mass} unidades de masa en una trampa, a {power} mW, se integra con un paso de {dt} s para probar el holograma por la frecuencia de su oscilación.',
     },
     result: {
       en: 'The measured spread falls from {fb0} percent to {fbN} percent in {steps} steps, against the published {pubInit} percent to {pubFinal} percent in {pubSteps} steps, so the ratio of the final spread to the published one is {fbRatio}. The reference method {ref} has an efficiency of {refEff} and a relative standard deviation of {refSd} percent before the loop. The atom oscillates at {fcM} Hz against {fcE} Hz expected from the curvature of the intensity, a ratio of {fcR}, in a trap {depth} uK deep. The lattice is regular; the disordered set of the anchor paper {disordered}.',
@@ -284,8 +286,8 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Se sostiene la uniformidad corregida por realimentación de una red cuando una matriz del mismo tipo está en posiciones al azar con distancias desiguales entre vecinas, y qué métodos la conservan?',
     },
     setup: {
-      en: 'The case places {n} equal traps at random on integer bins of the Fourier plane, no two closer than {minSep} um and none farther than {half} um from the axis along either direction, with the optics of the atom setup ({wl} nm, {focal} mm, numerical aperture {na}, an SLM of {npix} by {npix} pixels) and a Gaussian input beam. The coordinates of the source are not published, so the draw is the product\'s own, made with a fixed seed, and the case is set against that paper as context and not as a reproduction. Every trap sits on a bin, so the same {nm} methods as the large lattice run on it, with the seed {seed} and a budget of {iters} iterations; the reference method is {ref}. The emulated camera has a gain error of {gainRms} rms and a readout noise of {noise}, and the loop has a gain of {fbGain} and {steps} steps.',
-      es: 'El caso coloca {n} trampas iguales al azar sobre bins enteros del plano de Fourier, sin que dos estén más cerca que {minSep} um ni ninguna más lejos que {half} um del eje en cada dirección, con la óptica del montaje de átomos ({wl} nm, {focal} mm, apertura numérica {na}, un SLM de {npix} por {npix} píxeles) y un haz de entrada gaussiano. Las coordenadas de la fuente no están publicadas, así que el sorteo es propio del producto, hecho con una semilla fija, y el caso se contrasta con ese artículo como contexto y no como reproducción. Toda trampa cae sobre un bin, así que corren sobre él los mismos {nm} métodos que en la red grande, con la semilla {seed} y un presupuesto de {iters} iteraciones; el método de referencia es {ref}. La cámara emulada tiene un error de ganancia de {gainRms} rms y un ruido de lectura de {noise}, y el lazo tiene una ganancia de {fbGain} y {steps} pasos.',
+      en: 'The case places {n} equal traps at random on integer bins of the Fourier plane, no two closer than {minSep} µm and none farther than {half} µm from the axis along either direction, with the optics of the atom setup ({wl} nm, {focal} mm, numerical aperture {na}, an SLM of {npix} by {npix} pixels) and a Gaussian input beam. The coordinates of the source are not published, so the draw is the product\'s own, made with a fixed seed, and the case is set against that paper as context and not as a reproduction. Every trap sits on a bin, so the same {nm} methods as the large lattice run on it, with the seed {seed} and a budget of {iters} iterations; the reference method is {ref}. The emulated camera has a gain error of {gainRms} rms and a readout noise of {noise}, and the loop has a gain of {fbGain} and {steps} steps.',
+      es: 'El caso coloca {n} trampas iguales al azar sobre bins enteros del plano de Fourier, sin que dos estén más cerca que {minSep} µm ni ninguna más lejos que {half} µm del eje en cada dirección, con la óptica del montaje de átomos ({wl} nm, {focal} mm, apertura numérica {na}, un SLM de {npix} por {npix} píxeles) y un haz de entrada gaussiano. Las coordenadas de la fuente no están publicadas, así que el sorteo es propio del producto, hecho con una semilla fija, y el caso se contrasta con ese artículo como contexto y no como reproducción. Toda trampa cae sobre un bin, así que corren sobre él los mismos {nm} métodos que en la red grande, con la semilla {seed} y un presupuesto de {iters} iteraciones; el método de referencia es {ref}. La cámara emulada tiene un error de ganancia de {gainRms} rms y un ruido de lectura de {noise}, y el lazo tiene una ganancia de {fbGain} y {steps} pasos.',
     },
     result: {
       en: 'The reference method {ref} reaches an efficiency of {refEff} and a relative standard deviation of {refSd} percent in the ideal model, while weighted GS gives {sd06} percent and Gerchberg-Saxton {sd04} percent. The camera loop takes the measured spread from {fb0} percent to {fbN} percent in {steps} steps. Kim et al. 2019 report {pubFinal} percent after {pubSteps} adaptive steps on {pubFoci} disordered foci; the spread here is {below} that value, a ratio of {fbRatio}, and the two are not comparable: the emulated camera has a readout noise of {noise}, the beam here is Gaussian where the source used a flat one on a device of {pubPix} pixels, and the traps are the product\'s own draw. The published figure is context and no range of the case is built on it. {okAll} of {ofAll} methods with checked ranges sit inside all of them.',
@@ -309,8 +311,8 @@ export const CASES: Record<string, CaseText> = {
         steps: f.n(L.steps, { decimals: 0 }),
         fb0: f.n(L.first, { digits: 3 }),
         fbN: f.n(L.last, { digits: 3 }),
-        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
-        sd04: nfmt(f, metricOf(v, 'M04', 'rel_std_pct'), { digits: 3 }),
+        sd06: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
+        sd04: nfmt(f, metricOf(v, ID.M04, 'rel_std_pct'), { digits: 3 }),
         pubFinal: f.n(KIM_DISORDERED.finalPct, { digits: 3 }),
         pubSteps: f.n(KIM_DISORDERED.steps, { decimals: 0 }),
         pubFoci: f.n(KIM_DISORDERED.foci, { decimals: 0 }),
@@ -334,8 +336,8 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Reproduce el motor la comparación publicada de las líneas base analíticas y de Gerchberg-Saxton en una tarea de matriz cuadrada?',
     },
     setup: {
-      en: 'The calibration case sets the same task as the published comparison: {n} equal traps on a square lattice, at {lat} um spacing, which is {fu} Fourier units of the focal plane. It runs {nm} methods of the ladder, including the four of the published table (superposition, random superposition, Gerchberg-Saxton and weighted GS), with the seed {seed}, a budget of {iters} iterations and the product\'s Gaussian input beam on an SLM of {npix} by {npix} pixels. Its expected ranges for the four published methods are anchored to the published ordering with a margin, and the others are measured.',
-      es: 'El caso de calibración fija la misma tarea que la comparación publicada: {n} trampas iguales en una red cuadrada, a {lat} um de separación, que son {fu} unidades de Fourier del plano focal. Corre {nm} métodos de la escalera, entre ellos los cuatro de la tabla publicada (superposición, superposición aleatoria, Gerchberg-Saxton y GS ponderado), con la semilla {seed}, un presupuesto de {iters} iteraciones y el haz de entrada gaussiano del producto sobre un SLM de {npix} por {npix} píxeles. Sus rangos esperados para los cuatro métodos publicados están anclados al orden publicado con un margen, y los demás son medidos.',
+      en: 'The calibration case sets the same task as the published comparison: {n} equal traps on a square lattice, at {lat} µm spacing, which is {fu} Fourier units of the focal plane. It runs {nm} methods of the ladder, including the four of the published table (superposition, random superposition, Gerchberg-Saxton and weighted GS), with the seed {seed}, a budget of {iters} iterations and the product\'s Gaussian input beam on an SLM of {npix} by {npix} pixels. Its expected ranges for the four published methods are anchored to the published ordering with a margin, and the others are measured.',
+      es: 'El caso de calibración fija la misma tarea que la comparación publicada: {n} trampas iguales en una red cuadrada, a {lat} µm de separación, que son {fu} unidades de Fourier del plano focal. Corre {nm} métodos de la escalera, entre ellos los cuatro de la tabla publicada (superposición, superposición aleatoria, Gerchberg-Saxton y GS ponderado), con la semilla {seed}, un presupuesto de {iters} iteraciones y el haz de entrada gaussiano del producto sobre un SLM de {npix} por {npix} píxeles. Sus rangos esperados para los cuatro métodos publicados están anclados al orden publicado con un margen, y los demás son medidos.',
     },
     result: {
       en: 'The ordering of uniformity {kept}: weighted GS ({u06}) is above Gerchberg-Saxton ({u04}), which is above random superposition ({u02}) and plain superposition ({u01}). The efficiencies of the two iterative methods are {e04} and {e06} against the published {p04} and {p06}, so they {effCmp} the published values; the published table is for a flat beam on {pubPix} by {pubPix} pixels and the case uses a Gaussian beam on {npix} by {npix}, which lowers the efficiency ceiling. For random superposition the published uniformity is {pu02} and here it is {u02}. {okAll} of {ofAll} methods with checked ranges sit inside all of them.',
@@ -346,19 +348,22 @@ export const CASES: Record<string, CaseText> = {
       const pub = (id: string, k: 'efficiency' | 'uniformity') => f.n(DILEONARDO_TABLE.find((r) => r.method === id)?.[k], { digits: 2 });
       const pubV = (id: string, k: 'efficiency' | 'uniformity') => DILEONARDO_TABLE.find((r) => r.method === id)?.[k] ?? 0;
       const mv = (id: string, k: Metric) => metricOf(v, id, k) ?? 0;
-      const orderKept = mv('M06', 'uniformity') > mv('M04', 'uniformity') && mv('M04', 'uniformity') > mv('M02', 'uniformity') && mv('M02', 'uniformity') >= mv('M01', 'uniformity');
-      const effBelow = mv('M04', 'efficiency') < pubV('M04', 'efficiency') && mv('M06', 'efficiency') < pubV('M06', 'efficiency');
+      const uni = { m01: mv(ID.M01, 'uniformity'), m02: mv(ID.M02, 'uniformity'), m04: mv(ID.M04, 'uniformity'), m06: mv(ID.M06, 'uniformity') };
+      const eff = { m04: mv(ID.M04, 'efficiency'), m06: mv(ID.M06, 'efficiency') };
+      const pubEff = { m04: pubV(ID.M04, 'efficiency'), m06: pubV(ID.M06, 'efficiency') };
+      const orderKept = uni.m06 > uni.m04 && uni.m04 > uni.m02 && uni.m02 >= uni.m01;
+      const effBelow = eff.m04 < pubEff.m04 && eff.m06 < pubEff.m06;
       return {
         ...common(v, f),
-        u01: g('M01', 'uniformity'),
-        u02: g('M02', 'uniformity'),
-        u04: g('M04', 'uniformity'),
-        u06: g('M06', 'uniformity'),
-        e04: g('M04', 'efficiency'),
-        e06: g('M06', 'efficiency'),
-        p04: pub('M04', 'efficiency'),
-        p06: pub('M06', 'efficiency'),
-        pu02: pub('M02', 'uniformity'),
+        u01: g(ID.M01, 'uniformity'),
+        u02: g(ID.M02, 'uniformity'),
+        u04: g(ID.M04, 'uniformity'),
+        u06: g(ID.M06, 'uniformity'),
+        e04: g(ID.M04, 'efficiency'),
+        e06: g(ID.M06, 'efficiency'),
+        p04: pub(ID.M04, 'efficiency'),
+        p06: pub(ID.M06, 'efficiency'),
+        pu02: pub(ID.M02, 'uniformity'),
         pubPix: f.n(DILEONARDO.pixels, { decimals: 0 }),
         kept: orderKept ? (f.lang === 'es' ? 'se conserva' : 'is kept') : f.lang === 'es' ? 'NO se conserva' : 'is NOT kept',
         effCmp: effBelow ? (f.lang === 'es' ? 'quedan bajo' : 'fall below') : f.lang === 'es' ? 'no quedan bajo' : 'do not fall below',
@@ -368,7 +373,7 @@ export const CASES: Record<string, CaseText> = {
       DILEONARDO_TABLE.flatMap((r) =>
         (['efficiency', 'uniformity'] as const).map((k) => {
           const here = metricOf(v, r.method, k);
-          const lab = `${r.method} ${pick(r.name, f.lang)}: ${k === 'efficiency' ? (f.lang === 'es' ? 'eficiencia' : 'efficiency') : f.lang === 'es' ? 'uniformidad' : 'uniformity'}`;
+          const lab = `${pick(r.name, f.lang)}: ${k === 'efficiency' ? (f.lang === 'es' ? 'eficiencia' : 'efficiency') : f.lang === 'es' ? 'uniformidad' : 'uniformity'}`;
           return {
             label: lab,
             published: `${f.n(r[k], { digits: 2 })} (${pick(DILEONARDO.conditions, f.lang)})`,
@@ -386,20 +391,20 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Qué cuesta un potencial de disco uniforme en un dispositivo con diafonía entre píxeles, y cuánto recupera un método que la modela?',
     },
     setup: {
-      en: 'The target is a uniform disc of {radius} um radius, judged by the error of its signal region and not by trap metrics. The device has {bits} bits of phase and a pixel crosstalk kernel of width {sigma} pixels and exponent {q}, upsampled {up} times, and the optics are those of the atom setup ({wl} nm, {focal} mm, numerical aperture {na}). {nm} methods run with the seed {seed}; the point-trap methods do not apply to a shape, and the learned model of the ladder is not registered in this build.',
-      es: 'El objetivo es un disco uniforme de {radius} um de radio, juzgado por el error de su región de señal y no por métricas de trampas. El dispositivo tiene {bits} bits de fase y un núcleo de diafonía entre píxeles de ancho {sigma} píxeles y exponente {q}, sobremuestreado {up} veces, y la óptica es la del montaje de átomos ({wl} nm, {focal} mm, apertura numérica {na}). Corren {nm} métodos con la semilla {seed}; los métodos de trampas puntuales no se aplican a una forma, y el modelo aprendido de la escalera no está registrado en esta versión.',
+      en: 'The target is a uniform disc of {radius} µm radius, judged by the error of its signal region and not by trap metrics. The device has {bits} bits of phase and a pixel crosstalk kernel of width {sigma} pixels and exponent {q}, upsampled {up} times, and the optics are those of the atom setup ({wl} nm, {focal} mm, numerical aperture {na}). {nm} methods run with the seed {seed}; the point-trap methods do not apply to a shape, and the learned model of the ladder is not registered in this build.',
+      es: 'El objetivo es un disco uniforme de {radius} µm de radio, juzgado por el error de su región de señal y no por métricas de trampas. El dispositivo tiene {bits} bits de fase y un núcleo de diafonía entre píxeles de ancho {sigma} píxeles y exponente {q}, sobremuestreado {up} veces, y la óptica es la del montaje de átomos ({wl} nm, {focal} mm, apertura numérica {na}). Corren {nm} métodos con la semilla {seed}; los métodos de trampas puntuales no se aplican a una forma, y el modelo aprendido de la escalera no está registrado en esta versión.',
     },
     result: {
-      en: 'The lowest signal error of the {nm} methods is {minErr} percent, reached by {minId} with an efficiency of {minEff}. The crosstalk-aware conjugate-gradient method M13 ends at {e13} percent against {e10} percent for the same optimizer without the crosstalk model, M10, so the model removes {gain} of the error at an efficiency of {eff13}. The published result is an error below {pub} percent with efficiency {pubLo} to {pubHi} percent, measured on their device: the error here is {ratio} times that bound, so {reproduced}, while M13 {bandVerb} the published efficiency band. A gap, when there is one, is a finding of this case and not a rounding of it.',
-      es: 'El menor error de señal de los {nm} métodos es {minErr} por ciento, logrado por {minId} con una eficiencia de {minEff}. El método de gradiente conjugado con diafonía M13 termina en {e13} por ciento frente a {e10} por ciento del mismo optimizador sin el modelo de diafonía, M10, de modo que el modelo quita {gain} del error con una eficiencia de {eff13}. El resultado publicado es un error bajo {pub} por ciento con eficiencia de {pubLo} a {pubHi} por ciento, medido en su dispositivo: el error aquí es {ratio} veces esa cota, así que {reproduced}, mientras que M13 {bandVerb} la banda publicada de eficiencia. Una brecha, si la hay, es un hallazgo de este caso y no un redondeo.',
+      en: 'The lowest signal error of the {nm} methods is {minErr} percent, reached by {minId} with an efficiency of {minEff}. The crosstalk-aware conjugate-gradient method ends at {e13} percent against {e10} percent for the same optimizer without the crosstalk model, conjugate gradient, so the model removes {gain} of the error at an efficiency of {eff13}. The published result is an error below {pub} percent with efficiency {pubLo} to {pubHi} percent, measured on their device: the error here is {ratio} times that bound, so {reproduced}, while device-aware CG {bandVerb} the published efficiency band. A gap, when there is one, is a finding of this case and not a rounding of it.',
+      es: 'El menor error de señal de los {nm} métodos es {minErr} por ciento, logrado por {minId} con una eficiencia de {minEff}. El método de CG con modelo del dispositivo termina en {e13} por ciento frente a {e10} por ciento del mismo optimizador sin el modelo de diafonía, gradiente conjugado, de modo que el modelo quita {gain} del error con una eficiencia de {eff13}. El resultado publicado es un error bajo {pub} por ciento con eficiencia de {pubLo} a {pubHi} por ciento, medido en su dispositivo: el error aquí es {ratio} veces esa cota, así que {reproduced}, mientras que CG con modelo del dispositivo {bandVerb} la banda publicada de eficiencia. Una brecha, si la hay, es un hallazgo de este caso y no un redondeo.',
     },
     vals: (v, f) => {
       const t = v.manifest.params.target as { radius_um?: number };
       const d = v.manifest.params.device;
       const low = lowest(v, 'rel_std_pct');
-      const e13 = metricOf(v, 'M13', 'rel_std_pct');
-      const e10 = metricOf(v, 'M10', 'rel_std_pct');
-      const eff13 = metricOf(v, 'M13', 'efficiency');
+      const e13 = metricOf(v, ID.M13, 'rel_std_pct');
+      const e10 = metricOf(v, ID.M10, 'rel_std_pct');
+      const eff13 = metricOf(v, ID.M13, 'efficiency');
       const removed = e13 !== undefined && e10 !== undefined && e10 > 0 ? 1 - e13 / e10 : undefined;
       return {
         ...common(v, f),
@@ -409,7 +414,7 @@ export const CASES: Record<string, CaseText> = {
         q: f.n(d?.crosstalk?.q, { digits: 3 }),
         up: f.n(d?.upsample, { decimals: 0 }),
         minErr: f.n(low?.value, { digits: 4 }),
-        minId: low?.id ?? DASH,
+        minId: low ? methodName(low.id)[f.lang] : DASH,
         minEff: f.n(low ? metricOf(v, low.id, 'efficiency') : undefined, { decimals: 3 }),
         e13: nfmt(f, e13, { digits: 4 }),
         e10: nfmt(f, e10, { digits: 4 }),
@@ -426,10 +431,10 @@ export const CASES: Record<string, CaseText> = {
     extra: (v, f) => {
       const low = lowest(v, 'rel_std_pct');
       const cond = pick(SCHROFF_DISC.conditions, f.lang);
-      const e13 = metricOf(v, 'M13', 'efficiency');
+      const e13 = metricOf(v, ID.M13, 'efficiency');
       return [
         { label: f.lang === 'es' ? `Error de señal mínimo (porcentaje, ${low?.id ?? DASH})` : `Lowest signal error (percent, ${low?.id ?? DASH})`, published: `< ${f.n(SCHROFF_DISC.errorBelowPct, { digits: 2 })} (${cond})`, range: null, here: nfmt(f, low?.value, { digits: 4 }), reading: ratioText(f, low?.value, SCHROFF_DISC.errorBelowPct) },
-        { label: f.lang === 'es' ? `Eficiencia de M13 (porcentaje)` : `Efficiency of M13 (percent)`, published: `${f.n(SCHROFF_DISC.effLowPct, { digits: 2 })} - ${f.n(SCHROFF_DISC.effHighPct, { digits: 2 })} (${cond})`, range: null, here: e13 === undefined ? DASH : f.n(e13 * 100, { digits: 3 }), reading: e13 === undefined ? null : e13 * 100 >= SCHROFF_DISC.effLowPct && e13 * 100 <= SCHROFF_DISC.effHighPct ? (f.lang === 'es' ? 'dentro de la banda publicada' : 'inside the published band') : f.lang === 'es' ? 'fuera de la banda publicada' : 'outside the published band' },
+        { label: f.lang === 'es' ? `Eficiencia de CG con modelo del dispositivo (porcentaje)` : `Efficiency of device-aware CG (percent)`, published: `${f.n(SCHROFF_DISC.effLowPct, { digits: 2 })} - ${f.n(SCHROFF_DISC.effHighPct, { digits: 2 })} (${cond})`, range: null, here: e13 === undefined ? DASH : f.n(e13 * 100, { digits: 3 }), reading: e13 === undefined ? null : e13 * 100 >= SCHROFF_DISC.effLowPct && e13 * 100 <= SCHROFF_DISC.effHighPct ? (f.lang === 'es' ? 'dentro de la banda publicada' : 'inside the published band') : f.lang === 'es' ? 'fuera de la banda publicada' : 'outside the published band' },
       ];
     },
   },
@@ -440,12 +445,12 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Pueden hacerse iguales, desde un solo holograma, trampas a varias profundidades, algunas de ellas vórtices ópticos?',
     },
     setup: {
-      en: 'The case holds {n} traps on {planes} planes spaced {dz} um apart, of which {nVort} are optical vortices of charge {charge}, with the optics of the bead setup: {wl} nm, a lens of {focal} mm, a nominal numerical aperture of {na} and an SLM of {npix} by {npix} pixels at {pitch} um pitch. The pupil defines a numerical aperture of {naPupil}, which puts the depth-of-field estimate, twice the wavelength over the square of that aperture, at {dof} um, so planes {dz} um apart are barely separable by any hologram; this is the stress of the case. {nm} methods run with the seed {seed}, and the reference method is {ref}.',
-      es: 'El caso tiene {n} trampas en {planes} planos separados {dz} um entre sí, de las cuales {nVort} son vórtices ópticos de carga {charge}, con la óptica del montaje de esferas: {wl} nm, un lente de {focal} mm, una apertura numérica nominal de {na} y un SLM de {npix} por {npix} píxeles con paso de {pitch} um. La pupila define una apertura numérica de {naPupil}, que pone la estimación de la profundidad de campo, el doble de la longitud de onda sobre el cuadrado de esa apertura, en {dof} um, así que planos separados {dz} um son apenas separables por cualquier holograma; ésa es la tensión del caso. Corren {nm} métodos con la semilla {seed}, y el método de referencia es {ref}.',
+      en: 'The case holds {n} traps on {planes} planes spaced {dz} µm apart, of which {nVort} are optical vortices of charge {charge}, with the optics of the bead setup: {wl} nm, a lens of {focal} mm, a nominal numerical aperture of {na} and an SLM of {npix} by {npix} pixels at {pitch} µm pitch. The pupil defines a numerical aperture of {naPupil}, which puts the depth-of-field estimate, twice the wavelength over the square of that aperture, at {dof} µm, so planes {dz} µm apart are barely separable by any hologram; this is the stress of the case. {nm} methods run with the seed {seed}, and the reference method is {ref}.',
+      es: 'El caso tiene {n} trampas en {planes} planos separados {dz} µm entre sí, de las cuales {nVort} son vórtices ópticos de carga {charge}, con la óptica del montaje de esferas: {wl} nm, un lente de {focal} mm, una apertura numérica nominal de {na} y un SLM de {npix} por {npix} píxeles con paso de {pitch} µm. La pupila define una apertura numérica de {naPupil}, que pone la estimación de la profundidad de campo, el doble de la longitud de onda sobre el cuadrado de esa apertura, en {dof} µm, así que planos separados {dz} µm son apenas separables por cualquier holograma; ésa es la tensión del caso. Corren {nm} métodos con la semilla {seed}, y el método de referencia es {ref}.',
     },
     result: {
-      en: 'Direct search, the reference method {ref}, makes the traps equal to a relative standard deviation of {refSd} percent and a uniformity of {refU}, at an efficiency of {refEff}; weighted GS and the vortex rule reach {sdGs} percent at an efficiency of {effGs}, and the volumetric method M19 gives {sd19} percent. The published statement is that the traps are within {pub} percent after direct search; it does not say which spread statistic it uses, so the comparison is the relative standard deviation of {refSd} percent against {pub} percent and is only indicative. {validity}',
-      es: 'La búsqueda directa, el método de referencia {ref}, iguala las trampas con una desviación estándar relativa de {refSd} por ciento y una uniformidad de {refU}, con una eficiencia de {refEff}; el GS ponderado y la regla de vórtices llegan a {sdGs} por ciento con una eficiencia de {effGs}, y el método volumétrico M19 da {sd19} por ciento. El enunciado publicado es que las trampas quedan dentro de {pub} por ciento tras la búsqueda directa; no dice qué estadístico de dispersión usa, así que la comparación es la desviación estándar relativa de {refSd} por ciento contra {pub} por ciento y es solo indicativa. {validity}',
+      en: 'Direct search, the reference method {ref}, makes the traps equal to a relative standard deviation of {refSd} percent and a uniformity of {refU}, at an efficiency of {refEff}; weighted GS and the vortex rule reach {sdGs} percent at an efficiency of {effGs}, and the volumetric method gives {sd19} percent. The published statement is that the traps are within {pub} percent after direct search; it does not say which spread statistic it uses, so the comparison is the relative standard deviation of {refSd} percent against {pub} percent and is only indicative. {validity}',
+      es: 'La búsqueda directa, el método de referencia {ref}, iguala las trampas con una desviación estándar relativa de {refSd} por ciento y una uniformidad de {refU}, con una eficiencia de {refEff}; el GS ponderado y la regla de vórtices llegan a {sdGs} por ciento con una eficiencia de {effGs}, y el método de GS multiplano da {sd19} por ciento. El enunciado publicado es que las trampas quedan dentro de {pub} por ciento tras la búsqueda directa; no dice qué estadístico de dispersión usa, así que la comparación es la desviación estándar relativa de {refSd} por ciento contra {pub} por ciento y es solo indicativa. {validity}',
     },
     vals: (v, f) => {
       const pl = planesUm(v.manifest);
@@ -459,16 +464,16 @@ export const CASES: Record<string, CaseText> = {
         dz: f.n(dz, { digits: 3 }),
         naPupil: f.n(geo.naPupil, { digits: 3 }),
         dof: f.n(geo.dofUm, { digits: 3 }),
-        sdGs: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
-        effGs: nfmt(f, metricOf(v, 'M06', 'efficiency'), { decimals: 3 }),
-        sd19: nfmt(f, metricOf(v, 'M19', 'rel_std_pct'), { digits: 3 }),
+        sdGs: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
+        effGs: nfmt(f, metricOf(v, ID.M06, 'efficiency'), { decimals: 3 }),
+        sd19: nfmt(f, metricOf(v, ID.M19, 'rel_std_pct'), { digits: 3 }),
         pub: f.n(POLIN_ARRAY.withinPct, { decimals: 0 }),
       };
     },
     extra: (v, f) => {
       const r = refOf(v.manifest);
       return [
-        { label: f.lang === 'es' ? `Dispersión relativa de las trampas (porcentaje, ${v.manifest.params.reference_method})` : `Relative spread of the traps (percent, ${v.manifest.params.reference_method})`, published: `${f.n(POLIN_ARRAY.withinPct, { decimals: 0 })} (${pick(POLIN_ARRAY.conditions, f.lang)})`, range: null, here: nfmt(f, r?.rel_std_pct, { digits: 3 }), reading: ratioText(f, r?.rel_std_pct, POLIN_ARRAY.withinPct) },
+        { label: f.lang === 'es' ? `Dispersión relativa de las trampas (porcentaje, ${methodName(v.manifest.params.reference_method).es})` : `Relative spread of the traps (percent, ${methodName(v.manifest.params.reference_method).en})`, published: `${f.n(POLIN_ARRAY.withinPct, { decimals: 0 })} (${pick(POLIN_ARRAY.conditions, f.lang)})`, range: null, here: nfmt(f, r?.rel_std_pct, { digits: 3 }), reading: ratioText(f, r?.rel_std_pct, POLIN_ARRAY.withinPct) },
       ];
     },
   },
@@ -479,12 +484,12 @@ export const CASES: Record<string, CaseText> = {
       es: '¿En un volumen de vóxeles puntuales con la geometría para la que se entrenó la red multiplano publicada, compite la fase de la red con el GS volumétrico, y qué agrega el híbrido?',
     },
     setup: {
-      en: 'The case holds {n} point voxels, {perPlane} on each of {planes} planes at {zList} um, with {wl} nm light, a lens of {focal} mm, a numerical aperture of {na} and an SLM of {npix} by {npix} pixels at {pitch} um pitch and padding {pad}: the SLM, the padding and the plane depths of the model card of the slot cgh-net, so the network answers here and on no other case. Every voxel sits on an integer bin with equal weight, the form the network and the volumetric GS M19 take. {nm} methods run with the seed {seed} and a budget of {iters} iterations, and the reference method is {ref}, the network followed by M19 for what is left of the budget when that raises the volume accuracy of the network\'s mask.',
-      es: 'El caso tiene {n} vóxeles puntuales, {perPlane} en cada uno de {planes} planos a {zList} um, con luz de {wl} nm, un lente de {focal} mm, una apertura numérica de {na} y un SLM de {npix} por {npix} píxeles con paso de {pitch} um y relleno {pad}: el SLM, el relleno y las profundidades de los planos de la ficha del modelo del espacio cgh-net, de modo que la red responde aquí y en ningún otro caso. Cada vóxel está en un bin entero con igual peso, la forma que toman la red y el GS volumétrico M19. Corren {nm} métodos con la semilla {seed} y un presupuesto de {iters} iteraciones, y el método de referencia es {ref}, la red seguida de M19 durante lo que queda del presupuesto cuando eso sube la exactitud de volumen de la máscara de la red.',
+      en: 'The case holds {n} point voxels, {perPlane} on each of {planes} planes at {zList} µm, with {wl} nm light, a lens of {focal} mm, a numerical aperture of {na} and an SLM of {npix} by {npix} pixels at {pitch} µm pitch and padding {pad}: the SLM, the padding and the plane depths of the model card of the slot cgh-net, so the network answers here and on no other case. Every voxel sits on an integer bin with equal weight, the form the network and the volumetric GS take. {nm} methods run with the seed {seed} and a budget of {iters} iterations, and the reference method is {ref}, the network followed by multi-plane GS for what is left of the budget when that raises the volume accuracy of the network\'s mask.',
+      es: 'El caso tiene {n} vóxeles puntuales, {perPlane} en cada uno de {planes} planos a {zList} µm, con luz de {wl} nm, un lente de {focal} mm, una apertura numérica de {na} y un SLM de {npix} por {npix} píxeles con paso de {pitch} µm y relleno {pad}: el SLM, el relleno y las profundidades de los planos de la ficha del modelo del espacio cgh-net, de modo que la red responde aquí y en ningún otro caso. Cada vóxel está en un bin entero con igual peso, la forma que toman la red y el GS volumétrico GS multiplano. Corren {nm} métodos con la semilla {seed} y un presupuesto de {iters} iteraciones, y el método de referencia es {ref}, la red seguida de GS multiplano durante lo que queda del presupuesto cuando eso sube la exactitud de volumen de la máscara de la red.',
     },
     result: {
-      en: 'The phase of {ref} comes from {prov}. On the trap metrics of this case it puts {refEff} of the power in the voxels with a relative standard deviation of {refSd} percent, while the volumetric GS M19 reaches {eff19} with {sd19} percent and weighted GS M06 {eff06} with {sd06} percent. The network was trained on the plane images, its loss being one minus the plane accuracy, and not on the voxel intensities, so these are numbers its training did not optimise; the measure it did optimise, against M19 at the same wall clock on held-out volumes, is on the Benchmark page. DeepCGH reports its advantage on volume targets with its own SLM and accuracy measure, so the paper is context and no range of the case is built on it. {okAll} of {ofAll} methods with checked ranges sit inside all of them.',
-      es: 'La fase de {ref} viene de {prov}. Con las métricas de trampas de este caso pone {refEff} de la potencia en los vóxeles con una desviación estándar relativa de {refSd} por ciento, mientras que el GS volumétrico M19 llega a {eff19} con {sd19} por ciento y el GS ponderado M06 a {eff06} con {sd06} por ciento. La red se entrenó sobre las imágenes de los planos, con una pérdida de uno menos la exactitud de los planos, y no sobre las intensidades de los vóxeles, así que estos son números que su entrenamiento no optimizó; la medida que sí optimizó, contra M19 con el mismo tiempo de reloj sobre volúmenes reservados, está en la página Benchmark. DeepCGH informa su ventaja sobre objetivos de volumen con su propio SLM y su propia medida de exactitud, así que el artículo es contexto y ningún rango del caso se apoya en él. {okAll} de {ofAll} métodos con rangos verificados caen dentro de todos ellos.',
+      en: 'The phase of {ref} comes from {prov}. On the trap metrics of this case it puts {refEff} of the power in the voxels with a relative standard deviation of {refSd} percent, while the volumetric GS reaches {eff19} with {sd19} percent and weighted GS {eff06} with {sd06} percent. The network was trained on the plane images, its loss being one minus the plane accuracy, and not on the voxel intensities, so these are numbers its training did not optimise; the measure it did optimise, against multi-plane GS at the same wall clock on held-out volumes, is on the Benchmark page. DeepCGH reports its advantage on volume targets with its own SLM and accuracy measure, so the paper is context and no range of the case is built on it. {okAll} of {ofAll} methods with checked ranges sit inside all of them.',
+      es: 'La fase de {ref} viene de {prov}. Con las métricas de trampas de este caso pone {refEff} de la potencia en los vóxeles con una desviación estándar relativa de {refSd} por ciento, mientras que el GS multiplano llega a {eff19} con {sd19} por ciento y el GS ponderado a {eff06} con {sd06} por ciento. La red se entrenó sobre las imágenes de los planos, con una pérdida de uno menos la exactitud de los planos, y no sobre las intensidades de los vóxeles, así que estos son números que su entrenamiento no optimizó; la medida que sí optimizó, contra el método de GS multiplano con el mismo tiempo de reloj sobre volúmenes reservados, está en la página Benchmark. DeepCGH informa su ventaja sobre objetivos de volumen con su propio SLM y su propia medida de exactitud, así que el artículo es contexto y ningún rango del caso se apoya en él. {okAll} de {ofAll} métodos con rangos verificados caen dentro de todos ellos.',
     },
     vals: (v, f) => {
       const pl = planesUm(v.manifest);
@@ -499,11 +504,11 @@ export const CASES: Record<string, CaseText> = {
         pad: f.n(v.manifest.params.setup.pad, { decimals: 0 }),
         prov: real
           ? es ? 'el modelo publicado, ejecutado por onnxruntime en el precálculo' : 'the released model, run by onnxruntime in the bake'
-          : es ? 'la línea base del espacio, M19 a treinta iteraciones, porque no hay un modelo publicado' : 'the baseline of the slot, M19 at thirty iterations, because no model is released',
-        eff19: nfmt(f, metricOf(v, 'M19', 'efficiency'), { decimals: 3 }),
-        sd19: nfmt(f, metricOf(v, 'M19', 'rel_std_pct'), { digits: 3 }),
-        eff06: nfmt(f, metricOf(v, 'M06', 'efficiency'), { decimals: 3 }),
-        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
+          : es ? 'la línea base del espacio, el método de GS multiplano a treinta iteraciones, porque no hay un modelo publicado' : 'the baseline of the slot, multi-plane GS at thirty iterations, because no model is released',
+        eff19: nfmt(f, metricOf(v, ID.M19, 'efficiency'), { decimals: 3 }),
+        sd19: nfmt(f, metricOf(v, ID.M19, 'rel_std_pct'), { digits: 3 }),
+        eff06: nfmt(f, metricOf(v, ID.M06, 'efficiency'), { decimals: 3 }),
+        sd06: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
       };
     },
   },
@@ -525,9 +530,9 @@ export const CASES: Record<string, CaseText> = {
       ...common(v, f),
       ...vortices(v, f),
       validity: validity(v, f),
-      sdGs: nfmt(f, metricOf(v, 'M15', 'rel_std_pct'), { digits: 3 }),
-      sd09: nfmt(f, metricOf(v, 'M09', 'rel_std_pct'), { digits: 3 }),
-      eff09: nfmt(f, metricOf(v, 'M09', 'efficiency'), { decimals: 3 }),
+      sdGs: nfmt(f, metricOf(v, ID.M15, 'rel_std_pct'), { digits: 3 }),
+      sd09: nfmt(f, metricOf(v, ID.M09, 'rel_std_pct'), { digits: 3 }),
+      eff09: nfmt(f, metricOf(v, ID.M09, 'efficiency'), { decimals: 3 }),
     }),
   },
 
@@ -537,8 +542,8 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Qué cambia cuando la apertura numérica es alta, y dónde deja de ser válido el modelo escalar?',
     },
     setup: {
-      en: 'The case runs a square array of {n} traps with {lat} um spacing at a numerical aperture of {na} in water ({nimm}), with a beam of {wl} nm through a lens of {focal} mm, on an SLM of {npix} by {npix} pixels. It is the honesty case: the engine is scalar (Fraunhofer and angular spectrum), whereas the real focus at this aperture is vectorial, so the manifest carries the flag that says so. {nm} methods run with the seed {seed}, and the reference method is {ref}.',
-      es: 'El caso corre una matriz cuadrada de {n} trampas con {lat} um de separación a una apertura numérica de {na} en agua ({nimm}), con un haz de {wl} nm a través de un lente de {focal} mm, sobre un SLM de {npix} por {npix} píxeles. Es el caso de la honestidad: el motor es escalar (Fraunhofer y espectro angular), mientras que el foco real a esta apertura es vectorial, de modo que el manifiesto lleva la bandera que lo dice. Corren {nm} métodos con la semilla {seed}, y el método de referencia es {ref}.',
+      en: 'The case runs a square array of {n} traps with {lat} µm spacing at a numerical aperture of {na} in water ({nimm}), with a beam of {wl} nm through a lens of {focal} mm, on an SLM of {npix} by {npix} pixels. It is the honesty case: the engine is scalar (Fraunhofer and angular spectrum), whereas the real focus at this aperture is vectorial, so the manifest carries the flag that says so. {nm} methods run with the seed {seed}, and the reference method is {ref}.',
+      es: 'El caso corre una matriz cuadrada de {n} trampas con {lat} µm de separación a una apertura numérica de {na} en agua ({nimm}), con un haz de {wl} nm a través de un lente de {focal} mm, sobre un SLM de {npix} por {npix} píxeles. Es el caso de la honestidad: el motor es escalar (Fraunhofer y espectro angular), mientras que el foco real a esta apertura es vectorial, de modo que el manifiesto lleva la bandera que lo dice. Corren {nm} métodos con la semilla {seed}, y el método de referencia es {ref}.',
     },
     result: {
       en: 'Inside the scalar model the case behaves like the other square arrays: the reference method {ref} reaches an efficiency of {refEff}, a uniformity of {refU} and a relative standard deviation of {refSd} percent, and the bake names {best} as the most uniform method. Those numbers describe the scalar hologram only. No vectorial lane exists in this build and no numeric threshold of scalar failure was found in the sources read (the vectorial focusing equations of Leutenegger et al. 2006 were not available in full), so the size of the error at this aperture is not estimated here; the flag of the manifest, shown beside the table, is the whole claim. {okAll} of {ofAll} methods with checked ranges sit inside all of them.',
@@ -553,16 +558,16 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Qué le cuesta un dispositivo real a una matriz de trampas, y qué recupera un método que lo conoce?',
     },
     setup: {
-      en: 'The case makes {n} traps with {lat} um spacing on a small SLM of {npix} by {npix} pixels, with a beam of {wl} nm and a lens of {focal} mm. The device has {bits} bits of phase, a pixel crosstalk kernel of width {sigma} pixels and exponent {q}, a fill factor of {fill} and a phase flicker of {flicker} rad rms, all together. {nm} methods run with the seed {seed}; the reference method is the device-aware weighted GS, {ref}, which the others are read against.',
-      es: 'El caso hace {n} trampas con {lat} um de separación en un SLM pequeño de {npix} por {npix} píxeles, con un haz de {wl} nm y un lente de {focal} mm. El dispositivo tiene {bits} bits de fase, un núcleo de diafonía de ancho {sigma} píxeles y exponente {q}, un factor de llenado de {fill} y un parpadeo de fase de {flicker} rad rms, todo junto. Corren {nm} métodos con la semilla {seed}; el método de referencia es el GS ponderado que conoce el dispositivo, {ref}, contra el cual se leen los demás.',
+      en: 'The case makes {n} traps with {lat} µm spacing on a small SLM of {npix} by {npix} pixels, with a beam of {wl} nm and a lens of {focal} mm. The device has {bits} bits of phase, a pixel crosstalk kernel of width {sigma} pixels and exponent {q}, a fill factor of {fill} and a phase flicker of {flicker} rad rms, all together. {nm} methods run with the seed {seed}; the reference method is the device-aware weighted GS, {ref}, which the others are read against.',
+      es: 'El caso hace {n} trampas con {lat} µm de separación en un SLM pequeño de {npix} por {npix} píxeles, con un haz de {wl} nm y un lente de {focal} mm. El dispositivo tiene {bits} bits de fase, un núcleo de diafonía de ancho {sigma} píxeles y exponente {q}, un factor de llenado de {fill} y un parpadeo de fase de {flicker} rad rms, todo junto. Corren {nm} métodos con la semilla {seed}; el método de referencia es el GS ponderado que conoce el dispositivo, {ref}, contra el cual se leen los demás.',
     },
     result: {
-      en: 'The device-aware method {ref} reaches a relative standard deviation of {refSd} percent and a uniformity of {refU} at an efficiency of {refEff}, whereas the phase-fixed weighted GS M07, which does not know the device, ends at {sd07} percent, a uniformity of {u07} and an efficiency of {eff07}. The device-aware method {recovers}, with an efficiency of {refEff} against {eff07} for M07. Only the crosstalk parameters have a published source (Schroff et al. 2023); the phase quantisation, the fill factor and the flicker have none in this build and are computed only, so no published value is compared and the absolute numbers belong to the stated device and not to an instrument. {okAll} of {ofAll} methods with checked ranges sit inside all of them.',
-      es: 'El método que conoce el dispositivo, {ref}, alcanza una desviación estándar relativa de {refSd} por ciento y una uniformidad de {refU} con una eficiencia de {refEff}, mientras que el GS ponderado de fase fija M07, que no conoce el dispositivo, termina en {sd07} por ciento, una uniformidad de {u07} y una eficiencia de {eff07}. El método que conoce el dispositivo {recovers}, con una eficiencia de {refEff} frente a {eff07} de M07. Solo los parámetros de diafonía tienen fuente publicada (Schroff et al. 2023); la cuantización de la fase, el factor de llenado y el parpadeo no la tienen en esta versión y son solo calculados, así que no se compara ningún valor publicado y los números absolutos pertenecen al dispositivo declarado y no a un instrumento. {okAll} de {ofAll} métodos con rangos verificados caen dentro de todos ellos.',
+      en: 'The device-aware method {ref} reaches a relative standard deviation of {refSd} percent and a uniformity of {refU} at an efficiency of {refEff}, whereas the phase-fixed weighted GS which does not know the device ends at {sd07} percent, a uniformity of {u07} and an efficiency of {eff07}. The device-aware method {recovers}, with an efficiency of {refEff} against {eff07} for phase-fixed weighted GS. Only the crosstalk parameters have a published source (Schroff et al. 2023); the phase quantisation, the fill factor and the flicker have none in this build and are computed only, so no published value is compared and the absolute numbers belong to the stated device and not to an instrument. {okAll} of {ofAll} methods with checked ranges sit inside all of them.',
+      es: 'El método que conoce el dispositivo, {ref}, alcanza una desviación estándar relativa de {refSd} por ciento y una uniformidad de {refU} con una eficiencia de {refEff}, mientras que el GS ponderado de fase fija que no conoce el dispositivo termina en {sd07} por ciento, una uniformidad de {u07} y una eficiencia de {eff07}. El método que conoce el dispositivo {recovers}, con una eficiencia de {refEff} frente a {eff07} de GS ponderado con fase fija. Solo los parámetros de diafonía tienen fuente publicada (Schroff et al. 2023); la cuantización de la fase, el factor de llenado y el parpadeo no la tienen en esta versión y son solo calculados, así que no se compara ningún valor publicado y los números absolutos pertenecen al dispositivo declarado y no a un instrumento. {okAll} de {ofAll} métodos con rangos verificados caen dentro de todos ellos.',
     },
     vals: (v, f) => {
       const d = v.manifest.params.device;
-      const e07 = metricOf(v, 'M07', 'efficiency');
+      const e07 = metricOf(v, ID.M07, 'efficiency');
       return {
         ...common(v, f),
         bits: f.n(d?.bit_depth, { decimals: 0 }),
@@ -570,10 +575,10 @@ export const CASES: Record<string, CaseText> = {
         q: f.n(d?.crosstalk?.q, { digits: 3 }),
         fill: f.n(d?.fill_factor, { digits: 3 }),
         flicker: f.n(d?.flicker_rad, { digits: 2 }),
-        sd07: nfmt(f, metricOf(v, 'M07', 'rel_std_pct'), { digits: 3 }),
-        u07: nfmt(f, metricOf(v, 'M07', 'uniformity'), { decimals: 3 }),
+        sd07: nfmt(f, metricOf(v, ID.M07, 'rel_std_pct'), { digits: 3 }),
+        u07: nfmt(f, metricOf(v, ID.M07, 'uniformity'), { decimals: 3 }),
         eff07: nfmt(f, e07, { decimals: 3 }),
-        recovers: (refOf(v.manifest)?.uniformity ?? 0) > (metricOf(v, 'M07', 'uniformity') ?? 1) ? (f.lang === 'es' ? 'recupera uniformidad' : 'wins back uniformity') : f.lang === 'es' ? 'no recupera uniformidad' : 'does not win back uniformity',
+        recovers: (refOf(v.manifest)?.uniformity ?? 0) > (metricOf(v, ID.M07, 'uniformity') ?? 1) ? (f.lang === 'es' ? 'recupera uniformidad' : 'wins back uniformity') : f.lang === 'es' ? 'no recupera uniformidad' : 'does not win back uniformity',
       };
     },
   },
@@ -584,16 +589,16 @@ export const CASES: Record<string, CaseText> = {
       es: '¿Qué le cuestan las aberraciones del frente de onda a una matriz, y la corrige una corrección de Zernike?',
     },
     setup: {
-      en: 'The case makes {n} traps with {lat} um spacing under a system wavefront of {nModes} Zernike modes whose root-sum-square is {rms} waves, with a beam of {wl} nm through a lens of {focal} mm on an SLM of {npix} by {npix} pixels. {nm} methods run with the seed {seed}. Most methods ignore the aberration; the sensorless modal correction {ref} is the reference method and searches the modes to cancel them, and the aberration-robust hologram B4 designs for them without measuring.',
-      es: 'El caso hace {n} trampas con {lat} um de separación bajo un frente de onda del sistema de {nModes} modos de Zernike cuya raíz de la suma de cuadrados es {rms} ondas, con un haz de {wl} nm a través de un lente de {focal} mm sobre un SLM de {npix} por {npix} píxeles. Corren {nm} métodos con la semilla {seed}. La mayoría de los métodos ignora la aberración; la corrección modal sin sensor {ref} es el método de referencia y busca los modos para cancelarlos, y el holograma robusto a aberraciones B4 se diseña para ellos sin medirlos.',
+      en: 'The case makes {n} traps with {lat} µm spacing under a system wavefront of {nModes} Zernike modes whose root-sum-square is {rms} waves, with a beam of {wl} nm through a lens of {focal} mm on an SLM of {npix} by {npix} pixels. {nm} methods run with the seed {seed}. Most methods ignore the aberration; the sensorless modal correction {ref} is the reference method and searches the modes to cancel them, and the aberration-robust hologram designs for them without measuring.',
+      es: 'El caso hace {n} trampas con {lat} µm de separación bajo un frente de onda del sistema de {nModes} modos de Zernike cuya raíz de la suma de cuadrados es {rms} ondas, con un haz de {wl} nm a través de un lente de {focal} mm sobre un SLM de {npix} por {npix} píxeles. Corren {nm} métodos con la semilla {seed}. La mayoría de los métodos ignora la aberración; la corrección modal sin sensor {ref} es el método de referencia y busca los modos para cancelarlos, y el holograma robusto a aberraciones se diseña para ellos sin medirlos.',
     },
     result: {
-      en: 'Without the correction, weighted GS M06 holds {eff06} of the power in the traps with a relative standard deviation of {sd06} percent; with it, {ref} holds {refEff} with {refSd} percent, so the corrected efficiency is {gain} times the uncorrected one. The published result is a wavefront of {pubBefore} falling to {pubAfter} waves rms with the trap depth up by about {pubDepth} percent; the aberration injected here is {rms} waves and the efficiency of an equal-trap array is proportional to its trap depth, so the gain of {gainPct} percent is the comparable figure and it is {cmpWord} than the published one, whose conditions differ. The artifact does not carry the recovered wavefront, so the residual after the correction is not compared. The aberration-robust hologram B4 holds {eff04} of the power.',
-      es: 'Sin la corrección, el GS ponderado M06 retiene {eff06} de la potencia en las trampas con una desviación estándar relativa de {sd06} por ciento; con ella, {ref} retiene {refEff} con {refSd} por ciento, de modo que la eficiencia corregida es {gain} veces la sin corregir. El resultado publicado es un frente de onda de {pubBefore} que baja a {pubAfter} ondas rms con la profundidad de trampa mayor en cerca de {pubDepth} por ciento; la aberración inyectada aquí es de {rms} ondas y la eficiencia de una matriz de trampas iguales es proporcional a su profundidad, así que la ganancia de {gainPct} por ciento es la cifra comparable y es {cmpWord} que la publicada, cuyas condiciones difieren. El artefacto no lleva el frente de onda recuperado, así que el residuo tras la corrección no se compara. El holograma robusto a aberraciones B4 retiene {eff04} de la potencia.',
+      en: 'Without the correction, weighted GS holds {eff06} of the power in the traps with a relative standard deviation of {sd06} percent; with it, {ref} holds {refEff} with {refSd} percent, so the corrected efficiency is {gain} times the uncorrected one. The published result is a wavefront of {pubBefore} falling to {pubAfter} waves rms with the trap depth up by about {pubDepth} percent; the aberration injected here is {rms} waves and the efficiency of an equal-trap array is proportional to its trap depth, so the gain of {gainPct} percent is the comparable figure and it is {cmpWord} than the published one, whose conditions differ. The artifact does not carry the recovered wavefront, so the residual after the correction is not compared. The aberration-robust hologram holds {eff04} of the power.',
+      es: 'Sin la corrección, el GS ponderado retiene {eff06} de la potencia en las trampas con una desviación estándar relativa de {sd06} por ciento; con ella, {ref} retiene {refEff} con {refSd} por ciento, de modo que la eficiencia corregida es {gain} veces la sin corregir. El resultado publicado es un frente de onda de {pubBefore} que baja a {pubAfter} ondas rms con la profundidad de trampa mayor en cerca de {pubDepth} por ciento; la aberración inyectada aquí es de {rms} ondas y la eficiencia de una matriz de trampas iguales es proporcional a su profundidad, así que la ganancia de {gainPct} por ciento es la cifra comparable y es {cmpWord} que la publicada, cuyas condiciones difieren. El artefacto no lleva el frente de onda recuperado, así que el residuo tras la corrección no se compara. El holograma robusto a aberraciones retiene {eff04} de la potencia.',
     },
     vals: (v, f) => {
       const ab = v.manifest.params.aberration;
-      const e06 = metricOf(v, 'M06', 'efficiency');
+      const e06 = metricOf(v, ID.M06, 'efficiency');
       const eRef = refOf(v.manifest)?.efficiency;
       const g = e06 && eRef !== undefined ? eRef / e06 : undefined;
       return {
@@ -601,8 +606,8 @@ export const CASES: Record<string, CaseText> = {
         nModes: f.n(ab ? Object.keys(ab.noll).length : 0, { decimals: 0 }),
         rms: f.n(aberrationRmsWaves(v.manifest), { digits: 3 }),
         eff06: nfmt(f, e06, { decimals: 3 }),
-        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
-        eff04: nfmt(f, metricOf(v, 'B4', 'efficiency'), { decimals: 3 }),
+        sd06: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
+        eff04: nfmt(f, metricOf(v, ID.B4, 'efficiency'), { decimals: 3 }),
         gain: f.n(g, { digits: 3 }),
         gainPct: g === undefined ? DASH : f.n((g - 1) * 100, { digits: 3 }),
         cmpWord: g !== undefined && (g - 1) * 100 > NOGRETTE_ABERRATION.depthGainPct ? (f.lang === 'es' ? 'mayor' : 'larger') : f.lang === 'es' ? 'menor o igual' : 'smaller or equal',
@@ -612,7 +617,7 @@ export const CASES: Record<string, CaseText> = {
       };
     },
     extra: (v, f) => {
-      const e06 = metricOf(v, 'M06', 'efficiency');
+      const e06 = metricOf(v, ID.M06, 'efficiency');
       const eRef = refOf(v.manifest)?.efficiency;
       const g = e06 && eRef !== undefined ? (eRef / e06 - 1) * 100 : undefined;
       const rms = aberrationRmsWaves(v.manifest);
@@ -634,8 +639,8 @@ export const CASES: Record<string, CaseText> = {
       es: 'La matriz tiene {n} sitios cargados con una probabilidad de {loading}; con la semilla del caso {loaded} sitios tienen un átomo, y el objetivo es un bloque de {target} sitios. Una asignación húngara con el costo distancia elevada a {alpha} empareja átomos con sitios objetivo, cada movimiento toma {perMove} pasos, y el holograma de cada uno de los {frames} cuadros de la secuencia lo hace el método registrado con un arranque de fase del cuadro anterior. Corren {nm} métodos con la semilla {seed}; el método de referencia es el método de ordenamiento {ref}, cuyas métricas de trampas sobre todos los sitios no son un resultado, porque ilumina solo los sitios objetivo.',
     },
     result: {
-      en: 'The filling of the target rises from {fill0} to {fillN} over the {frames} frames, and the lowest intensity a moving trap reaches relative to the mean is {minT} (a value of one is a trap as bright as the average, a value near zero a trap that went dark). The sorting method {ref} has an efficiency of {refEff}, and the uniform methods M06, M07 and B2 give {sd06}, {sd07} and {sd02} percent of relative spread on the frames they make. The anchors (Barredo et al. 2016, Endres et al. 2016, Lee et al. 2017) describe the sorting scheme, not a numeric result the bake can be set against, so no published number is compared. The frame interval of {dt} s is an assumed value of the driver, not a measurement of a device.',
-      es: 'El llenado del objetivo sube de {fill0} a {fillN} a lo largo de los {frames} cuadros, y la menor intensidad que alcanza una trampa en movimiento respecto del promedio es {minT} (un valor de uno es una trampa tan brillante como el promedio, un valor cercano a cero una trampa que se apagó). El método de ordenamiento {ref} tiene una eficiencia de {refEff}, y los métodos uniformes M06, M07 y B2 dan {sd06}, {sd07} y {sd02} por ciento de dispersión relativa en los cuadros que hacen. Las anclas (Barredo et al. 2016, Endres et al. 2016, Lee et al. 2017) describen el esquema de ordenamiento, no un resultado numérico contra el que se pueda fijar la generación, así que no se compara ningún número publicado. El intervalo entre cuadros de {dt} s es un valor supuesto del controlador, no la medición de un dispositivo.',
+      en: 'The filling of the target rises from {fill0} to {fillN} over the {frames} frames, and the lowest intensity a moving trap reaches relative to the mean is {minT} (a value of one is a trap as bright as the average, a value near zero a trap that went dark). The sorting method {ref} has an efficiency of {refEff}, and the uniform methods, the phase-fixed weighted GS method and flicker-bounded sequence give {sd06}, {sd07} and {sd02} percent of relative spread on the frames they make. The anchors (Barredo et al. 2016, Endres et al. 2016, Lee et al. 2017) describe the sorting scheme, not a numeric result the bake can be set against, so no published number is compared. The frame interval of {dt} s is an assumed value of the driver, not a measurement of a device.',
+      es: 'El llenado del objetivo sube de {fill0} a {fillN} a lo largo de los {frames} cuadros, y la menor intensidad que alcanza una trampa en movimiento respecto del promedio es {minT} (un valor de uno es una trampa tan brillante como el promedio, un valor cercano a cero una trampa que se apagó). El método de ordenamiento {ref} tiene una eficiencia de {refEff}, y los métodos uniformes GS ponderado, el método de GS ponderado con fase fija y secuencia acotada por parpadeo dan {sd06}, {sd07} y {sd02} por ciento de dispersión relativa en los cuadros que hacen. Las anclas (Barredo et al. 2016, Endres et al. 2016, Lee et al. 2017) describen el esquema de ordenamiento, no un resultado numérico contra el que se pueda fijar la generación, así que no se compara ningún número publicado. El intervalo entre cuadros de {dt} s es un valor supuesto del controlador, no la medición de un dispositivo.',
     },
     vals: (v, f) => {
       const r = v.manifest.params.rearrangement;
@@ -655,9 +660,9 @@ export const CASES: Record<string, CaseText> = {
         fill0: f.n(fr?.filling[0], { decimals: 3 }),
         fillN: f.n(fr?.filling[fr.filling.length - 1], { decimals: 3 }),
         minT: f.n(fr?.min_transient, { decimals: 3 }),
-        sd06: nfmt(f, metricOf(v, 'M06', 'rel_std_pct'), { digits: 3 }),
-        sd07: nfmt(f, metricOf(v, 'M07', 'rel_std_pct'), { digits: 3 }),
-        sd02: nfmt(f, metricOf(v, 'B2', 'rel_std_pct'), { digits: 3 }),
+        sd06: nfmt(f, metricOf(v, ID.M06, 'rel_std_pct'), { digits: 3 }),
+        sd07: nfmt(f, metricOf(v, ID.M07, 'rel_std_pct'), { digits: 3 }),
+        sd02: nfmt(f, metricOf(v, ID.B2, 'rel_std_pct'), { digits: 3 }),
         dt: f.n(dt, { digits: 3 }),
       };
     },
@@ -674,17 +679,19 @@ export function bakeRows(v: CaseView, f: Fmt): Row[] {
   const shaped = isShaped(m);
   const verdict = (x: number | undefined, rg: [number, number] | null): string | null =>
     x === undefined || rg === null ? null : inside(x, rg) ? (es ? 'dentro' : 'inside') : es ? 'fuera' : 'outside';
+  const refEs = methodName(m.params.reference_method).es;
+  const refEn = methodName(m.params.reference_method).en;
   const rangeText = (rg: [number, number] | null, o: { digits?: number; decimals?: number }) => (rg === null ? null : `${f.n(rg[0], o)} - ${f.n(rg[1], o)}`);
   if (r) {
     const defs: [Metric, string, string, { digits?: number; decimals?: number }][] = shaped
       ? [
-          ['efficiency', `Eficiencia de ${ref}`, `Efficiency of ${ref}`, { decimals: 3 }],
-          ['rel_std_pct', `Error de señal de ${ref} (porcentaje)`, `Signal error of ${ref} (percent)`, { digits: 3 }],
+          ['efficiency', `Eficiencia de ${refEs}`, `Efficiency of ${refEn}`, { decimals: 3 }],
+          ['rel_std_pct', `Error de señal de ${refEs} (porcentaje)`, `Signal error of ${refEn} (percent)`, { digits: 3 }],
         ]
       : [
-          ['efficiency', `Eficiencia de ${ref}`, `Efficiency of ${ref}`, { decimals: 3 }],
-          ['uniformity', `Uniformidad de ${ref}`, `Uniformity of ${ref}`, { decimals: 3 }],
-          ['rel_std_pct', `Desviación estándar relativa de ${ref} (porcentaje)`, `Relative standard deviation of ${ref} (percent)`, { digits: 3 }],
+          ['efficiency', `Eficiencia de ${refEs}`, `Efficiency of ${refEn}`, { decimals: 3 }],
+          ['uniformity', `Uniformidad de ${refEs}`, `Uniformity of ${refEn}`, { decimals: 3 }],
+          ['rel_std_pct', `Desviación estándar relativa de ${refEs} (porcentaje)`, `Relative standard deviation of ${refEn} (percent)`, { digits: 3 }],
         ];
     for (const [k, lab_es, lab_en, o] of defs) {
       const rg = rangeOf(m, ref, k);

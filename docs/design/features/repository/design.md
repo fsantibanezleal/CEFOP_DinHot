@@ -27,10 +27,18 @@ control server. A taskkill-only red probe and console-group green probe document
 neither probe installs or migrates a runtime.
 
 Authored stage_inputs are copied byte-for-byte, bound into source receipt identity and compared again before
-admission. The template declares only params-record=partial and api=missing as exceptions to available states,
+admission. They are authored inputs only (source tables, configuration): a version-stamped document, a JSON file whose
+top-level object carries engine_version or product_version (trained models' metrics, a manifest, readiness), is produced by the
+generation and never carried, so `authored_inputs` refuses it by name before any stage or generation command exists (on
+generation and on the --from-stage admission alike; RP-030). Without it a product finds the stale stamp only when
+validate_stage ends a full bake (CAOS_ChancaDEM 0.13.000, 97 minutes, #120). The template declares only params-record=partial and api=missing as exceptions to available states,
 and requires scripts/check_readiness.py to recompute the actual producer document. Both validate_stage and
 check_shipped use that same state admission and the template's real validator plan. Only read-only inventory
 validation may target the bridge's own checkout; write modes retain external-stage containment.
+
+Staged `product_version` values always match `VERSION`. Staged `engine_version` values do too unless one exact promoted
+JSON path is listed in `stage_engine_versions`; that mapping binds the field to the package's exact version, and the
+declared file must carry that stamp. The package-specific contract validator remains responsible for its other fields.
 The original four-row params CSV and its two deliberate rejected
 IDs remain intact; the five engine cases remain registry-derived. Missing manifests, artifacts or models cannot
 use those exceptions. OreFlow declares no stage_inputs/readiness exceptions and retains strict17-row admission.
@@ -42,3 +50,9 @@ API/generation and the caller retain the global raw/model/temp roots; no storage
 declaration the environment values stay identical. The regression executes the actual Node copy-data consumer
 and compares frontend, real HTTP child and generation environments in external fixtures. Product adoption of
 this template-only follow-up waits for the owner's active smoke gate; no product file is changed here.
+
+When `readiness_provider` is declared, shipped and staged admission delegates the product-specific readiness shape to
+the guarded `readiness_check` in the product checkout. The provider receives the checkout or external stage being
+judged. Template-only manifest-index, `contracts` inventory and catalog-hash assumptions are skipped for that lane;
+required-path, source-identity, payload-hash, contract-metadata and configured validator checks remain active. The
+default template lane retains its strict manifest and contract inventory checks. RP-032 covers the integration.

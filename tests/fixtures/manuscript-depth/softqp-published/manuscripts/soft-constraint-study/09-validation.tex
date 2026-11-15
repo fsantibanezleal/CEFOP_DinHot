@@ -1,0 +1,80 @@
+\section{Validation}\label{sec:validation}
+Validation starts in original coordinates. For a returned decision $x$, the
+evaluator computes $Ax$, both departure arrays, the original base objective
+and the exact requested penalty. Hard rows are tested without borrowing
+the backend's internally scaled residual. The original timing criterion uses
+\begin{equation}\label{eq:objective-discrepancy}
+ \delta_F=\frac{|F(x)-F(x_\star)|}{\max\{1,|F(x_\star)|\}},\qquad
+ h(x)=\max_{i\in\mathcal H}\max\{(\ell_i-A_ix)_+,(A_ix-u_i)_+\}.
+\end{equation}
+The independent lifted value $x_\star$ uses the matching objective, not a
+solution of a symmetric or regularized surrogate. Both quantities must
+satisfy their registered limits. The denominator in $\delta_F$ is a numerical
+normalization, not a claim that objective scales from unrelated physical
+models are interchangeable.
+If the hard-row set is empty, its aggregate violation is defined as $h(x)=0$.
+This global acceptance convention is distinct from a reader's unit-filtered
+display, where no hard rows in the selected unit means that field is unavailable.
+
+Primal--dual conditions add information beyond objective agreement. With
+original multiplier $y$, stationarity and the soft subgradient condition are
+\begin{equation}\label{eq:stationarity}
+ Px+q+A^\top y=0,\qquad y\in\partial g(Ax).
+\end{equation}
+For separable costs, a proximal fixed-point check evaluates the second relation
+without choosing an arbitrary derivative at a kink. The grouped study uses
+the interval support and joint directional conjugate. For one group define
+\begin{equation}\label{eq:group-dual-size}
+ L_g(y)=\sum_{i\in I_g}\left(\frac{(y_i)_+}{c_{U,i}}+
+                                  \frac{(-y_i)_+}{c_{L,i}}\right).
+\end{equation}
+Its residual-penalty conjugate is
+\begin{equation}\label{eq:group-conjugate}
+ \Psi_g^*(y)=\begin{cases}
+ (L_g(y)-a_g)_+^2/(2b_g),&b_g>0,\\
+ 0,&b_g=0,\ L_g(y)\leq a_g,\\
+ +\infty,&b_g=0,\ L_g(y)>a_g.
+ \end{cases}
+\end{equation}
+The complete interval conjugate also contains the box support. Thus the
+grouped dual condition is a joint price budget, not independent per-coordinate
+caps. Every soft group's absolute normalized Fenchel gap and every hard
+row's complementarity are checked separately. A signed aggregate gap is
+retained diagnostically and cannot permit cross-row cancellation.
+
+Raw and repaired dual quantities are distinguished. A bounded repair can
+project small numerical defects onto an admissible dual domain, but its size
+and effect on stationarity remain visible. An arbitrarily large repair would
+erase the evidence that the returned dual was wrong. Candidate vectors are
+checked frame by frame; backend-limit observations without vectors remain
+noncandidates rather than acquiring synthetic coordinates. The 163390 returned
+candidate frames and 44 noncandidate limit frames consequently have different
+roles in the grouped validation record.
+
+Physical covariance tests transform rows, bounds, prices, directions and
+duals consistently. They exercise metre-to-centimetre and second-to-millisecond
+maps in the predictive-control model and reciprocal directional row scaling
+in the grouped teaching example. Negative controls omit or mismatch units,
+change hard policy, reverse side signs and alter imported objectives. These
+checks establish concrete semantic invariants; they do not prove every
+floating-point computation invariant under arbitrary scaling. General
+floating-point error and equilibration considerations remain relevant
+background~\cite{higham,knight}.
+
+The data boundaries have separate producer and consumer tests, including
+fixture substitution, malformed arrays, unknown fields, cross-field mismatch,
+stale source identity and rehashed tampering. Exact artifact hashes prove
+identity only relative to a trusted inventory. They do not by themselves
+prove numerical correctness, so source-bound independent acceptance is
+retained separately. The same principle applies to a notebook execution
+or a web screenshot: successful execution/rendering does not substitute
+for inspecting what the method solved.
+
+Additional solver literature informs the numerical reference choices without
+becoming unexecuted performance evidence. Interior-point linear programming
+and conic/QP implementations illustrate alternative handling of structure
+and regularization~\cite{vanderbei,piqp}; those citations are not extra timed
+competitors in the registered populations. Reproducible test infrastructure
+and benchmark definitions are useful for future experiments~\cite{cutest},
+but the present conclusions remain restricted to the exact synthetic inputs,
+adapters, tolerances and complete operations actually recorded here.

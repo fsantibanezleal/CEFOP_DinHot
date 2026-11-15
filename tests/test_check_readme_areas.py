@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import re
 import shutil
 import subprocess
@@ -151,6 +152,9 @@ def test_instantiate_leaves_a_passing_readme_and_the_notebooks(tmp_path: Path) -
                         "--deploy", "pages", "--domain", "demo.example.org", "--visibility", "public", "--tagline-en", "One line.",
                         "--tagline-es", "Una linea.", "--no-run"], capture_output=True, text=True, cwd=product)
     assert r.returncode == 0, r.stdout + r.stderr
+    config = json.loads((product / "scripts/local/workflow.json").read_text())
+    assert config["external_environments_required"] is True
+    assert config["environment_namespace"] == "demo"
     check = subprocess.run([sys.executable, str(product / "scripts" / "check_readme_areas.py"), str(product)], capture_output=True, text=True, cwd=product)
     assert check.returncode == 0, check.stdout
     assert (product / "notebooks" / "en" / "README.md").is_file() and not (product / ".template-source").exists()

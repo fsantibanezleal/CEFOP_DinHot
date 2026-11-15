@@ -19,7 +19,6 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-NOTEBOOK_PYTHON = next((p for p in (ROOT / ".venv-notebooks" / "Scripts" / "python.exe", ROOT / ".venv-notebooks" / "bin" / "python") if p.is_file()), None)
 
 
 def load(name: str):
@@ -31,6 +30,10 @@ def load(name: str):
 
 CHECK = load("check_notebooks")
 RUNNER = load("run_notebooks")
+try:
+    NOTEBOOK_PYTHON = RUNNER.venv_python()
+except (OSError, ValueError, KeyError, TypeError):
+    NOTEBOOK_PYTHON = None
 
 
 HEADINGS = {
@@ -407,6 +410,16 @@ def runner_repo(tmp_path: Path, body: str) -> tuple[Path, Path]:
     base = make_repo(tmp_path / "r")
     (base / "scripts").mkdir()
     shutil.copy2(ROOT / "scripts" / "run_notebooks.py", base / "scripts" / "run_notebooks.py")
+    if NOTEBOOK_PYTHON is not None:
+        directory = NOTEBOOK_PYTHON.parent.parent.resolve()
+        local = base / "scripts/local"
+        local.mkdir()
+        shutil.copy2(ROOT / "scripts/local/workflow.py", local / "workflow.py")
+        write_json(local / "workflow.json", {
+            "external_environments_required": True,
+            "environment_namespace": directory.parent.name,
+            "environments": [{"path": directory.name, "when": "notebooks", "requirements": []}],
+        })
     (base / "VERSION").write_text("0.0.0\n", encoding="utf-8")
     path = base / "notebooks" / "en" / "01-basics" / "01-note.ipynb"
     doc = json.loads(path.read_text(encoding="utf-8"))
@@ -418,7 +431,8 @@ def runner_repo(tmp_path: Path, body: str) -> tuple[Path, Path]:
 
 def run_runner(base: Path, *args: str) -> subprocess.CompletedProcess:
     """The runner on ``base``; ``--check`` needs a temp root, given as the test's own folder next to the repository."""
-    env = dict(os.environ, CAOS_TEMP_ROOT=str(base.parent / "temp-root"))
+    env = {**os.environ, "CAOS_TEMP_ROOT": str(base.parent / "temp-root"),
+           "CAOS_VENVS_ROOT": str(NOTEBOOK_PYTHON.parent.parent.resolve().parent.parent)}
     return subprocess.run([str(NOTEBOOK_PYTHON), str(base / "scripts" / "run_notebooks.py"), *args], capture_output=True, encoding="utf-8",
                           errors="replace", cwd=base, timeout=300, env=env)
 
@@ -876,8 +890,8 @@ def bar_doc(lang: str = "en", level: int = 2, salt: str = "a", *, methods: int |
             beyond: str = "figure", metadata_level: int | None = None, first_code: str | None = None) -> dict:
     """A notebook at ``level`` that meets every floor of the bar unless a knob is turned."""
     methods = (3 if level == 1 else 5) if methods is None else methods
-    figures = (1 if level == 1 else 2) if figures is None else figures
-    prose = (560 if level == 1 else 860) if prose is None else prose
+    figures = CHECK.floor_at(BAR, "figures", level) if figures is None else figures
+    prose = CHECK.floor_at(BAR, "prose_words", level) + 60 if prose is None else prose
     h = dict(zip(HEADINGS["en"], HEADINGS[lang]))
     q, a = ("**Question:**", "**Answer:**") if lang == "en" else ("**Pregunta:**", "**Respuesta:**")
     b = Builder(lang, level, salt)
@@ -957,8 +971,8 @@ def test_the_bar_file_holds_the_conventions_floors() -> None:
     """The produced contract: keys tooling, filler and floors, with the thresholds of convention section 1."""
     assert {"tooling", "filler", "floors"} <= set(BAR)
     f = BAR["floors"]
-    assert f["method_cells"] == {"1": 3, "2": 5, "3": 5, "4": 5} and f["figures"] == {"1": 1, "2": 2, "3": 2, "4": 2}
-    assert f["prose_words"] == {"1": 500, "2": 800, "3": 800, "4": 800} and f["words_after_figure"] == 40
+    assert f["method_cells"] == {"1": 3, "2": 5, "3": 5, "4": 5} and f["figures"] == {"1": 2, "2": 3, "3": 3, "4": 3}
+    assert f["prose_words"] == {"1": 1000, "2": 1500, "3": 1500, "4": 1500} and f["words_after_figure"] == 40
     assert (f["setup_cells_max"], f["reproduction_checks_max"], f["repeated_sentences_max"]) == (2, 1, 2)
     assert (f["long_sentence_chars"], f["logic_lines_max"], f["line_chars_max"]) == (50, 30, 120)
     assert {"numpy", "pandas", "matplotlib", "seaborn", "plotly", "IPython", "PIL"} <= set(BAR["tooling"])
@@ -1008,14 +1022,15 @@ def test_nb048_a_pinned_reference_implementation_counts_at_level_three_only(bar_
 
 
 def test_nb049_figures(bar_root: Path) -> None:
-    assert bar_of(bar_root, bar_doc("en", 1, figures=1)) == []
-    only(bar_of(bar_root, bar_doc("en", 1, figures=0)), "figures 0", "the floor at level 1 is 1")
-    only(bar_of(bar_root, bar_doc("en", 2, figures=1)), "figures 1", "the floor at level 2 is 2")
+    assert bar_of(bar_root, bar_doc("en", 1, figures=2)) == []
+    only(bar_of(bar_root, bar_doc("en", 1, figures=0)), "figures 0", "the floor at level 1 is 2")
+    only(bar_of(bar_root, bar_doc("en", 2, figures=1)), "figures 1", "the floor at level 2 is 3")
 
 
 def test_nb050_words_after_each_figure(bar_root: Path) -> None:
     assert bar_of(bar_root, bar_doc("en", 1, after=40)) == []
-    only(bar_of(bar_root, bar_doc("en", 1, after=39)), "followed by 39 words", "the floor is 40")
+    findings = bar_of(bar_root, bar_doc("en", 1, after=39))
+    assert len(findings) == 2 and all("followed by 39 words" in finding and "the floor is 40" in finding for finding in findings)
     # a figure that is the last cell, and a figure followed by a code cell, are not read
     doc = bar_doc("en", 1)
     last_figure = max(i for i, c in enumerate(doc["cells"]) if c["cell_type"] == "code" and c["outputs"] and "data" in c["outputs"][-1])
@@ -1028,12 +1043,12 @@ def test_nb050_words_after_each_figure(bar_root: Path) -> None:
 
 
 def test_nb051_explanatory_prose_words(bar_root: Path) -> None:
-    """The words outside Setup, Data and References: the floor is 500 at level 1 and 800 from level 2."""
-    ok = bar_doc("en", 2, prose=800)
+    """The words outside Setup, Data and References: the floor is 1000 at level 1 and 1500 from level 2."""
+    ok = bar_doc("en", 2, prose=1500)
     assert bar_of(bar_root, ok) == []
     thin = bar_doc("en", 2, prose=200)
-    only(bar_of(bar_root, thin), "explanatory prose words", "the floor at level 2 is 800")
-    only(bar_of(bar_root, bar_doc("en", 1, prose=100)), "explanatory prose words", "the floor at level 1 is 500")
+    only(bar_of(bar_root, thin), "explanatory prose words", "the floor at level 2 is 1500")
+    only(bar_of(bar_root, bar_doc("en", 1, prose=100)), "explanatory prose words", "the floor at level 1 is 1000")
 
 
 def test_nb051_words_in_setup_data_and_references_do_not_count(bar_root: Path) -> None:

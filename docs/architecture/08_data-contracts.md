@@ -96,7 +96,9 @@ and every contract test runs against it and against the bake with the same asser
   `scripts/check_skeleton.py` lists the rows still served by a provider (allowed while a product is built, never at a
   release).
 - `frontend/scripts/copy-data.mjs` copies exactly the declared files into the site, the readiness document included,
-  and fails on a missing one; the web fetches them with the version in the address and refuses an answer that is not
+  and fails on a missing one, then calls the product's optional `copy-data.product.mjs` (next to it) hook for the further
+  files its index does not declare (it reports what it copied, what it leaves out as absent and its problems; a path outside the
+  overlay stops the build); the web fetches them with the version in the address and refuses an answer that is not
   JSON.
 
 ### Pinned codegenerator compatibility

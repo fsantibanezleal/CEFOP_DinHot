@@ -73,7 +73,7 @@ fewer iterations than a random start on geometries held out from training, with 
 the final efficiency differs by \effdNThree{} percent, above the 1 percent allowed. A control with no network (a random start with the same early freeze of the phase)
 needs \itRThree{} iterations (factor \ratioRoverRThree{}, interval \ratioRoverRThreeLo{} to \ratioRoverRThreeHi), so the gain belongs to the freeze index and not to the network; the network
 with the engine's own freeze index needs \itNTwelve{} iterations, as the random start does. The shorter freeze has a price: \neverRThree{} percent of its runs
-never reach 1 percent within $\budget$ iterations, against \neverRTwelve{} percent for the default. In a sweep of the freeze index the median iterations to 1 percent lie \swTwelveEx{} to \swFourEx{} above the freeze index; the phases of a converged
+never reach 1 percent within $\budget$ iterations, against \neverRTwelve{} percent for the default. In a sweep of the freeze index the median iterations to 1 percent lie \swTwelveEx{} to \swFourEx{} above the freeze index for freeze indices 4 to 12 and \swThreeEx{} above at 3, where \swThreeNever{} percent of the runs never converge; at 1 and 2 the median is the cap of \swOne{} iterations (\swOneNever{} and \swTwoNever{} percent of the runs never converge); the phases of a converged
 run save \OTwelveGain{} iteration at the default freeze and lower the median from \ORThreeMed{} to \OThreeMed{} at a freeze of three (ten geometries, one seed). The model is not released. The results hold on a scalar Fourier model and one trained network, not on hardware.
 \end{abstract}
 

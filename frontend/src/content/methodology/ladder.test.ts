@@ -65,7 +65,7 @@ describe('the ladder on the Methodology page', () => {
     };
     for (const [file, topics] of Object.entries(files)) {
       const source = readFileSync(new URL(file, import.meta.url), 'utf8');
-      const shown = [...source.matchAll(/<MethodTable ids=\{\[([^\]]*)\]\} \/>/g)].flatMap((m) => [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]));
+      const shown = [...source.matchAll(/<MethodTable ids=\{\[([^\]]*)\]\} \/>/g)].flatMap((m) => [...m[1].matchAll(/ID\.(\w+)/g)].map((x) => x[1]));
       const planned = PLAN.filter((topic) => topics.includes(topic.id)).flatMap((topic) => topic.ids);
       expect(shown.sort(), file).toEqual(planned.sort());
     }
@@ -75,6 +75,6 @@ describe('the ladder on the Methodology page', () => {
 
   it('keeps the page within six groups and names a design record file for every row', () => {
     expect(new Set(PLAN.map((t) => t.group)).size).toBeLessThanOrEqual(6);
-    for (const row of LADDER) expect(row.record, row.id).toMatch(/^(M|B)\d+-.+\.md$/);
+    for (const row of LADDER) expect(row.slug, row.id).toMatch(/^.+\.md$/);
   });
 });

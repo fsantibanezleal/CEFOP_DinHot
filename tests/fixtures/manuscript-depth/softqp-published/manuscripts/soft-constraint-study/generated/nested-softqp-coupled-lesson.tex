@@ -1,0 +1,88 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for softqp-coupled-lesson. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-softqp-coupled-lesson}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}coupled-\allowbreak{}lesson/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+sdk\_\allowbreak{}version & string & const=\allowbreak{}0.\allowbreak{}2.\allowbreak{}0 & structural metadata /\allowbreak{} nested units\\
+worker\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+input\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+input & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['linear', 'quadratic', 'upper\_\allowbreak{}scale', 'row\_\allowbreak{}scale'] & structural metadata /\allowbreak{} nested units\\
+input.\allowbreak{}linear & number & minimum=\allowbreak{}0; maximum=\allowbreak{}10 & cost /\allowbreak{} peak unit\\
+input.\allowbreak{}quadratic & number & minimum=\allowbreak{}0; maximum=\allowbreak{}10 & cost /\allowbreak{} peak unit squared\\
+input.\allowbreak{}upper\_\allowbreak{}scale & number & minimum=\allowbreak{}0.\allowbreak{}25; maximum=\allowbreak{}4 & dimensionless policy multiplier\\
+input.\allowbreak{}row\_\allowbreak{}scale & number & minimum=\allowbreak{}0.\allowbreak{}01; maximum=\allowbreak{}100 & dimensionless factor\\
+records & array & minItems=\allowbreak{}3; maxItems=\allowbreak{}3 & structural metadata /\allowbreak{} nested units\\
+records[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['method', 'state', 'reason', 'objective', 'x', 'peak', 'hard\_\allowbreak{}violation', 'kkt\_\allowbreak{}max', 'dimensions'] & structural metadata /\allowbreak{} nested units\\
+records[].\allowbreak{}method & enumerated value & enum=\allowbreak{}['native', 'epigraph', 'row-\allowbreak{}split-\allowbreak{}gsp'] & structural metadata /\allowbreak{} nested units\\
+records[].\allowbreak{}state & enumerated value & enum=\allowbreak{}['accepted', 'incompatible', 'failed', 'accuracy-\allowbreak{}rejected'] & structural metadata /\allowbreak{} nested units\\
+records[].\allowbreak{}reason & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[].\allowbreak{}reason (anyOf1) & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+records[].\allowbreak{}reason (anyOf2) & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[].\allowbreak{}objective & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & model cost unit\\
+records[].\allowbreak{}objective (anyOf1) & number & See defined object /\allowbreak{} value type & model cost unit\\
+records[].\allowbreak{}objective (anyOf2) & null & See defined object /\allowbreak{} value type & model cost unit\\
+records[].\allowbreak{}x & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & decision unit\\
+records[].\allowbreak{}x (anyOf1) & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & decision unit\\
+records[].\allowbreak{}x (anyOf1)[] & number & See defined object /\allowbreak{} value type & decision unit\\
+records[].\allowbreak{}x (anyOf2) & null & See defined object /\allowbreak{} value type & decision unit\\
+records[].\allowbreak{}peak & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & group peak unit; model map\\
+records[].\allowbreak{}peak (anyOf1) & number & minimum=\allowbreak{}0 & group peak unit; model map\\
+records[].\allowbreak{}peak (anyOf2) & null & See defined object /\allowbreak{} value type & group peak unit; model map\\
+records[].\allowbreak{}hard\_\allowbreak{}violation & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & original row units; see unit map\\
+records[].\allowbreak{}hard\_\allowbreak{}violation (anyOf1) & number & minimum=\allowbreak{}0 & original row units; see unit map\\
+records[].\allowbreak{}hard\_\allowbreak{}violation (anyOf2) & null & See defined object /\allowbreak{} value type & original row units; see unit map\\
+records[].\allowbreak{}kkt\_\allowbreak{}max & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+records[].\allowbreak{}kkt\_\allowbreak{}max (anyOf1) & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+records[].\allowbreak{}kkt\_\allowbreak{}max (anyOf2) & null & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+records[].\allowbreak{}dimensions & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[].\allowbreak{}dimensions (anyOf1) & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['variables', 'rows', 'nnz'] & structural metadata /\allowbreak{} nested units\\
+records[].\allowbreak{}dimensions (anyOf1).\allowbreak{}variables & integer & minimum=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+records[].\allowbreak{}dimensions (anyOf1).\allowbreak{}rows & integer & minimum=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+records[].\allowbreak{}dimensions (anyOf1).\allowbreak{}nnz & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+records[].\allowbreak{}dimensions (anyOf2) & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf1) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf1) (if) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf1) (if).\allowbreak{}state & enumerated value & enum=\allowbreak{}['accepted', 'accuracy-\allowbreak{}rejected'] & structural metadata /\allowbreak{} nested units\\
+records[] (allOf1) (then) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf1) (then).\allowbreak{}objective & number & See defined object /\allowbreak{} value type & model cost unit\\
+records[] (allOf1) (then).\allowbreak{}x & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & decision unit\\
+records[] (allOf1) (then).\allowbreak{}x[] & number & See defined object /\allowbreak{} value type & decision unit\\
+records[] (allOf1) (then).\allowbreak{}peak & number & minimum=\allowbreak{}0 & group peak unit; model map\\
+records[] (allOf1) (then).\allowbreak{}hard\_\allowbreak{}violation & number & minimum=\allowbreak{}0 & original row units; see unit map\\
+records[] (allOf1) (then).\allowbreak{}kkt\_\allowbreak{}max & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+records[] (allOf1) (then).\allowbreak{}dimensions & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['variables', 'rows', 'nnz'] & structural metadata /\allowbreak{} nested units\\
+records[] (allOf1) (then).\allowbreak{}dimensions.\allowbreak{}variables & integer & minimum=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+records[] (allOf1) (then).\allowbreak{}dimensions.\allowbreak{}rows & integer & minimum=\allowbreak{}1 & count /\allowbreak{} integer identifier\\
+records[] (allOf1) (then).\allowbreak{}dimensions.\allowbreak{}nnz & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+records[] (allOf2) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf2) (if) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf2) (if).\allowbreak{}state & string & const=\allowbreak{}accepted & structural metadata /\allowbreak{} nested units\\
+records[] (allOf2) (then) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf2) (then).\allowbreak{}reason & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf2) (else) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf2) (else).\allowbreak{}reason & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+records[] (allOf3) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf3) (if) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf3) (if).\allowbreak{}state & enumerated value & enum=\allowbreak{}['incompatible', 'failed'] & structural metadata /\allowbreak{} nested units\\
+records[] (allOf3) (then) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+records[] (allOf3) (then).\allowbreak{}objective & null & See defined object /\allowbreak{} value type & model cost unit\\
+records[] (allOf3) (then).\allowbreak{}x & null & See defined object /\allowbreak{} value type & decision unit\\
+records[] (allOf3) (then).\allowbreak{}peak & null & See defined object /\allowbreak{} value type & group peak unit; model map\\
+records[] (allOf3) (then).\allowbreak{}hard\_\allowbreak{}violation & null & See defined object /\allowbreak{} value type & original row units; see unit map\\
+records[] (allOf3) (then).\allowbreak{}kkt\_\allowbreak{}max & null & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+records[] (allOf3) (then).\allowbreak{}dimensions & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+ (allOf1) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+ (allOf1).\allowbreak{}records & object & minContains=\allowbreak{}1; maxContains=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+ (allOf1).\allowbreak{}records (contains) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+ (allOf1).\allowbreak{}records (contains).\allowbreak{}method & string & const=\allowbreak{}native & structural metadata /\allowbreak{} nested units\\
+ (allOf2) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+ (allOf2).\allowbreak{}records & object & minContains=\allowbreak{}1; maxContains=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+ (allOf2).\allowbreak{}records (contains) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+ (allOf2).\allowbreak{}records (contains).\allowbreak{}method & string & const=\allowbreak{}epigraph & structural metadata /\allowbreak{} nested units\\
+ (allOf3) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+ (allOf3).\allowbreak{}records & object & minContains=\allowbreak{}1; maxContains=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+ (allOf3).\allowbreak{}records (contains) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+ (allOf3).\allowbreak{}records (contains).\allowbreak{}method & string & const=\allowbreak{}row-\allowbreak{}split-\allowbreak{}gsp & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

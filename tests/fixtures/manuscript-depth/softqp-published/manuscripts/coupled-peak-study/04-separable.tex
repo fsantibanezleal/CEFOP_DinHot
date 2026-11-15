@@ -1,0 +1,251 @@
+\section{Proposed method: side-specific interval updates}\label{sec:separable}
+The first construction is a scalar interval proximal operation inserted
+into an original-row quadratic-programming split. Its input is not a
+single generic softness number. Each finite lower and upper side has its
+own nonnegative linear price and quadratic curvature. This permits a
+preferred lower departure to have a different economic or engineering
+meaning from an upper departure. Physical hard rows remain a separate
+indicator constraint. The construction is related to generalized slack
+projection, but its lower and upper branches are derived directly rather
+than justified by assuming a sign-symmetric penalty~\cite{gsp,lew}.
+
+For one nonempty interval $[\ell,u]$, write
+\begin{equation}\label{eq:paper-side-cost}
+ g(z)=a_L(\ell-z)_++a_U(z-u)_+
+       +\tfrac12b_L(\ell-z)_+^2+\tfrac12b_U(z-u)_+^2,
+ \quad a_L,a_U,b_L,b_U\geq0.
+\end{equation}
+If a side is absent its term is omitted. A zero linear or quadratic
+coefficient is admissible; a negative quadratic coefficient is not. On a
+hard row $g$ is replaced by the interval indicator rather than approximated
+by a very large finite price. The distinction avoids confusing an elastic
+optimum with physical hard feasibility. It also keeps the mathematical
+domain unchanged when a local cost multiplier is varied.
+
+For a temporary scalar $v$ and fixed positive metric $h$, define
+\begin{equation}\label{eq:paper-scalar-prox}
+ p_h(v)=\argmin_z\left\{g(z)+\tfrac h2(z-v)^2\right\}.
+\end{equation}
+The displacement term is strongly convex even if both quadratic side
+prices vanish, so the proximal minimizer is unique. The penalty is zero
+on the preferred interval and nondecreasing in each exterior departure.
+Consequently an optimizer need not be sought beyond the segment joining
+$v$ to its nearest interval endpoint. This geometric restriction is a
+consequence of convex monotone exterior prices, not a numerical clipping
+heuristic that changes an already computed solution.
+
+If $v$ lies inside the interval, $z=v$ simultaneously minimizes the zero
+penalty and the squared displacement. If $v>u$, write $d=z-u\geq0$.
+The derivative on the positive exterior branch is
+\begin{equation}\label{eq:paper-upper-derivative}
+ (h+b_U)d+a_U-h(v-u).
+\end{equation}
+If this derivative is nonnegative at zero, the endpoint satisfies the
+subgradient condition. Otherwise its unique positive root gives the
+exterior solution. Reflecting the displacement produces the corresponding
+lower-side equation with $a_L,b_L$. The complete map is
+\begin{equation}\label{eq:paper-side-prox}
+p_h(v)=\begin{cases}
+\ell-\dfrac{[h(\ell-v)-a_L]_+}{h+b_L},&v<\ell,\\[6pt]
+v,&\ell\leq v\leq u,\\[3pt]
+u+\dfrac{[h(v-u)-a_U]_+}{h+b_U},&v>u.
+\end{cases}
+\end{equation}
+All denominators remain positive. A hard row uses interval projection,
+and a free soft side returns the unconstrained temporary value on that
+side. At an equality preference the lower and upper formulas meet at the
+same endpoint with their respective subgradient intervals. No auxiliary
+departure variable is needed to evaluate this row operation.
+
+The derivation is a standard convex proximal calculation, consistent with
+the framework of Moreau and subsequent proximal methods~\cite{moreau,prox}.
+It does not establish that unequal side prices were previously
+inexpressible. DAQP's existing side-weight interface and an explicit
+finite-side lift already represent this objective~\cite{daqp}. The proposed
+computational property is the placement of the admitted update in the
+original-row native path and its potential effect on complete-operation
+cost. A claim of global priority would require stronger historical
+evidence than the construction or its numerical agreement supplies.
+
+An equivalent residual description clarifies sign conventions. Let
+$C=[\ell,u]$, $r=z-\Pi_C(z)$ and
+\begin{equation}\label{eq:paper-asym-residual}
+ \Psi(r)=a_U(r)_++a_L(-r)_+
+             +\tfrac12b_U(r)_+^2+\tfrac12b_L(-r)_+^2.
+\end{equation}
+Then $g(z)=\Psi(z-\Pi_C(z))$. A corrective slack $s$ used in
+$z+s\in C$ has the opposite sign and cost $\Psi(-s)$. Forgetting
+that reflection exchanges lower and upper prices while preserving an
+apparently convex objective. Such a solver can converge successfully to
+the wrong policy. The independent evaluator therefore reconstructs
+departure from the original row value and evaluates the original
+coefficients directly.
+
+Dual consistency supplies another independent check. For finite endpoints
+and positive quadratic coefficients, the conjugate is
+\begin{equation}\label{eq:paper-side-conjugate}
+g^*(y)=\begin{cases}
+ uy+[(y-a_U)_+]^2/(2b_U),&y\geq0,\\
+ \ell y+[(-y-a_L)_+]^2/(2b_L),&y<0.
+\end{cases}
+\end{equation}
+When the corresponding $b$ is zero, its quadratic conjugate term is
+replaced by the appropriate price-cap indicator. An absent endpoint
+restricts the corresponding multiplier sign rather than introducing
+infinite-times-zero arithmetic. These cases follow by maximizing the
+linear dual pairing over each exterior ray~\cite{rockafellar}. The
+relationship tests price scaling and sign recovery independently of the
+primal proximal formula.
+
+For the full problem, original stationarity and subgradient consistency
+require
+\begin{equation}\label{eq:paper-side-kkt}
+ Px+q+A^\top y=0,\qquad
+ Ax=\prox_g^{H_0}(Ax+H_0^{-1}y),
+\end{equation}
+where $H_0$ is an explicitly selected positive diagonal diagnostic metric
+with cost per squared row-unit entries, not the iteration's numerical
+penalty. A numeric identity is used only in canonical diagnostic coordinates.
+This diagnostic remains well
+defined at kinks. A small stationarity residual alone is insufficient:
+an unconstrained stationary decision outside a priced interval can have
+a wrong row multiplier. Conversely, a nonunique dual need not match an
+oracle componentwise when it satisfies the correct original conditions.
+The comparison therefore retains objective, hard feasibility and method-
+appropriate dual diagnostics as distinct quantities.
+
+The native split retains the original variables and row system. With
+positive primal regularization $S$ and positive diagonal row metric $H$,
+the graph-proximal calculation involves
+\begin{equation}\label{eq:paper-original-system}
+ P+S+A^\top H A\succ0.
+\end{equation}
+Changing side prices changes the proximal map, while changing a numerical
+metric can change preparation or factorization. Unchanged dimensions do
+not imply that every update is free. The tested prepared workspace admits
+only fixed matrices, coefficient structures, hard mask and finite-side
+patterns, with the permitted vector updates. It refuses a changed model
+structure rather than reusing a factor that belongs to another problem.
+
+Algorithm~\ref{alg:paper-separable} states the executable procedure. It
+separates semantic admission, numerical iteration and original recovery.
+The separate engine owns the native update and its binding; the product
+does not emulate a solver in the browser. The original registered
+computation uses its exact recorded source rather than silently replacing
+it with a later public wheel. That source distinction is necessary for
+reproducible timing even when both installations implement the same
+mathematical penalty family.
+
+\begin{algorithm}[htbp]
+\caption{Execute side-specific interval updates on the original row system, preserve hard policy, and return original-space quantities for independent objective and feasibility evaluation.}\label{alg:paper-separable}
+\begin{algorithmic}[1]
+\Require Original convex QP, nonnegative side prices, positive metric
+\State Refuse unsupported grouped/Huber prices and invalid row metadata
+\State Prepare the original-row native linear system
+\While{the numerical termination criterion is not reached}
+\State Apply interval projection on hard rows
+\State Apply \eqref{eq:paper-side-prox} on admitted soft rows
+\State Continue the native primal/dual splitting calculation
+\EndWhile
+\State Recover $x,y$ and original lower/upper departures
+\State Recompute objective, hard error and available dual diagnostics
+\end{algorithmic}
+\end{algorithm}
+
+Physical covariance is an additional semantic restriction. Under a
+positive row conversion $z'=dz$, equivalent prices and duals satisfy
+\begin{equation}\label{eq:paper-side-covariance}
+ a_L'=a_L/d,\quad a_U'=a_U/d,\quad
+ b_L'=b_L/d^2,\quad b_U'=b_U/d^2,\quad y'=y/d.
+\end{equation}
+The bounds and row matrix must also scale. Changing only the numerical
+coefficient or the unit label is not an equivalent problem. The concrete
+tests exercise original-space covariance and deliberately wrong units;
+they do not establish every floating-point quantity invariant under
+arbitrarily extreme scaling. Floating-point conditioning remains a
+separate numerical issue~\cite{higham,knight}.
+
+The main implementation advantage sought was reduced setup and solve
+work against equivalent lifting. The original evaluation does not
+establish that advantage: its complete primary interval crosses zero.
+That outcome is consistent with a scalar operation being exact yet
+contributing little to total validated-call cost. Formulation construction,
+factorization, backend maturity, input checks and recovery can dominate
+the saved auxiliaries. The implementation and its derivation remain
+useful for explaining side-specific semantics, but the failed prediction
+cannot be replaced with a favorable case, a selected dimension or a warm
+workspace example after the held-out results are known.
+
+Finally, the convergence interpretation remains bounded. Fixed-parameter
+convex splitting under an attained saddle point supports convergence in
+its stated domain~\cite{eckstein,admm}. The original solver may use
+documented adaptive numerical settings, whose observed successful outputs
+are tested directly. The scalar formula does not by itself prove every
+adaptive schedule, every numerical infeasibility certificate or a
+finite-precision error bound. Keeping that distinction explicit avoids
+turning a correct local minimization into a claim about all behavior of
+a large native optimization implementation.
+
+The distinction between a finite linear price and exact hard feasibility
+can be stated more precisely. Suppose the corresponding hard-constrained
+convex problem has an attained primal and dual optimum. A linear price that
+dominates an appropriate optimal multiplier can support an exact penalty
+representation of its optimum~\cite{kerrigan}. Equality at the threshold
+can still allow additional elastic minimizers, so a finite user-selected
+coefficient cannot be interpreted as an unconditional physical guarantee.
+The product instead treats the hard mask as an independent invariant.
+This is why changing a cost factor never changes which original rows
+are immutable.
+
+Proximal covariance also requires transforming the numerical metric when
+comparing individual row operations. Under the positive row conversion
+in\eqref{eq:paper-side-covariance}, the temporary value and bounds scale
+with the row, and the equivalent metric scales inversely with its squared
+unit factor. Holding that metric fixed instead can change the numerical
+trajectory while preserving the original optimization target after full
+model conversion. Therefore equality of a single proximal iterate and
+equality of the final physical optimum are different claims. The tests
+state which object is being compared rather than using a relabelled axis
+as evidence of dimensional invariance.
+
+Sparse validation similarly has several layers. A compressed-column
+object must have consistent pointers, row indices, shape and vector
+lengths. That structural admission does not prove that arbitrary supplied
+curvature is positive semidefinite. The mathematical method assumes a
+convex model, generated comparison cases have the documented curvature,
+and backend/independent numerical failures remain observable. Adding a
+small permanent diagonal shift to make another model easier would change
+its objective. The original profile therefore records numerical settings
+and scientific coefficients separately instead of treating both as
+interchangeable solver options.
+
+The implementation comparison also separates timed and independent
+lifting. The timed lifted path uses the same pinned native backend
+family as the candidate, reducing one obvious implementation mismatch.
+The accuracy oracle uses stock OSQP with its own tighter settings.
+Substituting that oracle's measured time after seeing a result would
+alter the comparator. Likewise, comparing an already prepared candidate
+to a reference reconstructed on every repetition would answer a reuse
+question different from the registered cold-call hypothesis. All those
+boundaries remain explicit in the stored observation fields.
+
+The scalar update's arithmetic is only one part of the full operation.
+Original objective evaluation requires recovering row values and pricing
+their actual departures. Imported or exported results must also preserve
+the base model, side coefficients and hard policy. A smaller sparse
+system may coexist with similar validation cost or additional conversion
+work. The numerical experiment measures the declared whole call; it
+does not time each arithmetic primitive independently. A proposed
+explanation that thresholding, validation or sparse ordering dominates
+would consequently require additional instrumentation before becoming
+a measured causal conclusion.
+
+Finally, the original primary sample has a specific dependence structure.
+Seven repetitions on each of twenty-four problems generate the reported
+paired observations. Several problems share one evaluation seed, which
+is why the confidence procedure resamples seed clusters. Treating every
+repeated time as a new independent problem would exaggerate information
+and answer a different statistical question. The native implementation's
+mathematical admission and the primary experimental denominator are both
+preserved, even though they constrain different parts of the resulting
+claim.

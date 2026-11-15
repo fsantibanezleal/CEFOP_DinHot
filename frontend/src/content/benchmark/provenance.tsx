@@ -5,7 +5,7 @@ import { Cite, DocSection, useShellLang } from '@fasl-work/caos-app-shell';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
 import { LADDER, MethodTable } from '../methodology/ladder';
-import { nameOf, shownId, skippedIn, kindOf, KIND_TEXT, type Lang } from './data';
+import { nameIds, nameOf, skippedIn, kindOf, KIND_TEXT, type Lang } from './data';
 import { Note, Ready, TableWrap, useBench, WRAP } from './shared';
 
 /** The difficulty of each geometry and the published task it is set against, from the benchmark protocol (the algorithms dossier D4.3 and D4.2). */
@@ -81,10 +81,10 @@ function Tables({ res }: { res: BenchmarkResults }) {
             ) : (
               skipped.map((s) => (
                 <tr key={`${s.method}-${s.geometry}`}>
-                  <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>{shownId(s.method)} {nameOf(s.method, lang)}</td>
+                  <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>{nameOf(s.method, lang)}</td>
                   <td className="caos-col-text">{kindOf(s.method) ? KIND_TEXT[kindOf(s.method)!][lang] : '-'}</td>
                   <td className="caos-col-text">{s.geometry}</td>
-                  <td className="caos-col-text" style={{ ...WRAP, whiteSpace: 'normal' }}>{s.reason[lang]}</td>
+                  <td className="caos-col-text" style={{ ...WRAP, whiteSpace: 'normal' }}>{nameIds(s.reason[lang], lang)}</td>
                 </tr>
               ))
             )}

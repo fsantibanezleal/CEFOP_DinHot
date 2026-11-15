@@ -20,7 +20,7 @@ export function createGpuBackend(): GpuBackend {
     },
     start(p: ParamsLike, method: string, o: RunOptions, init: Float64Array | null) {
       const mode = MODES[method];
-      if (!mode) return { reason: `method ${method} has no WebGPU path (the FFT-form iterations M04, M06 and M07 do)` };
+      if (!mode) return { reason: `this method has no WebGPU path (only the FFT-form iterations of Gerchberg-Saxton, weighted GS and phase-fixed weighted GS do)` };
       if (p.target.kind !== 'traps' && !o.traps) return { reason: 'a shaped-field target has no WebGPU path' };
       if ((o.device ?? 'case') === 'case' && p.device) return { reason: 'the case device model (quantization, crosstalk) is evaluated on the CPU path only' };
       const setup = setupOf(p);

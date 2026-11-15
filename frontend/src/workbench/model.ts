@@ -39,8 +39,10 @@ export const METHOD_NAMES: Record<string, Text> = {
   B5: { en: 'Efficiency-uniformity front', es: 'Frente eficiencia-uniformidad' },
 };
 
-export const methodName = (id: string): Text => METHOD_NAMES[id] ?? { en: id, es: id };
-export const methodLabel = (id: string): Text => ({ en: `${id} ${methodName(id).en}`, es: `${id} ${methodName(id).es}` });
+/** A method by its name, never by its id (CAOS_MANAGE method-tiers rule, section 0); an id the ladder does not hold is shown as given. */
+export const methodName = (id: string | null | undefined): Text => (id ? METHOD_NAMES[id] ?? { en: id, es: id } : { en: '-', es: '-' });
+/** The label of a method on a chip, a chart, a legend or a caption: its name. */
+export const methodLabel = (id: string): Text => methodName(id);
 
 export interface Metrics {
   efficiency: number;
@@ -136,6 +138,9 @@ export interface Selection {
   coeffKey: string;
   /** The plane of the axial cut and the threshold of the 3D view (fraction of the peak). */
   plane: 'xz' | 'yz';
+  /** The Pareto view's benchmark cell (`geometry|device|kind|value`; null or absent: the cell closest to the case) and its scope. */
+  paretoCell?: string | null;
+  paretoScope?: 'top' | 'all';
   volThreshold: number;
   /** Which model answered the learned slot this method uses, for the label. */
   slot: { slot: 'cgh-net' | 'warmstart-model'; answered: 'model' | 'baseline' } | null;

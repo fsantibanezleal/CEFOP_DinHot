@@ -58,8 +58,12 @@ export interface HeatmapProps {
   onDelete?: (id: number) => void;
   /** Called with the cell under the crosshair (or null): a linked view follows it. */
   onCursor?: (cell: { col: number; row: number } | null) => void;
-  /** A trajectory drawn over the map (cell coordinates), up to index `upto`; the head is marked. */
-  trail?: { col: ArrayLike<number>; row: ArrayLike<number>; upto: number } | null;
+  /** A trajectory drawn over the map (cell coordinates), up to index `upto`; the head is marked, and drawn as a disc of `beadCells` radius (the particle's own size) when given. */
+  trail?: { col: ArrayLike<number>; row: ArrayLike<number>; upto: number; beadCells?: number } | null;
+  /** Axes in micrometres along the bottom and the left edge (ticks and values, from the field centre); `umPerCell` is the cell size. */
+  axes?: { umPerCell: number } | null;
+  /** The map opens zoomed on this cell, showing `half` cells either side of it (the zoom stays the reader's afterwards; Reset zoom returns to the whole map). */
+  focus?: { col: number; row: number; half: number } | null;
   /** A cell is a square when rows and cols are equal in micrometres; false stretches to the stage (an xz cut). */
   square?: boolean;
   /** Reset zoom label in both languages is the shell's wording for charts; the same words here. */
@@ -67,12 +71,91 @@ export interface HeatmapProps {
 }
 
 const RESET: BiText = { en: 'Reset zoom', es: 'Restablecer zoom' };
+/** The strip under the drawing that holds the readout and the Reset zoom control, so neither covers the map (the second reading's N3); as tall as the
+ * control (36 px), so the scene that clips its overflow never cuts it (gate G5). */
+export const READOUT_STRIP = 40;
 const HIT = 9;
 
 interface View {
   scale: number;
   tx: number;
   ty: number;
+}
+
+/** The tick step of an axis, 1, 2 or 5 times a power of ten, the smallest that leaves at least `minPx` between two ticks. */
+export function niceStep(umPerPx: number, minPx: number): number {
+  const raw = Math.max(umPerPx * minPx, 1e-9);
+  const k = Math.floor(Math.log10(raw));
+  for (const m of [1, 2, 5, 10]) if (m * 10 ** k >= raw) return m * 10 ** k;
+  return 10 ** (k + 1);
+}
+
+/** The ticks of an axis in micrometres from the field centre that fall in [lo, hi] (micrometres), each a multiple of `step`. */
+export function axisTicks(lo: number, hi: number, step: number): number[] {
+  const out: number[] = [];
+  for (let k = Math.ceil(lo / step - 1e-9); k * step <= hi + 1e-9; k++) out.push(Math.round(k * step * 1e9) / 1e9);
+  return out;
+}
+
+function drawAxes(
+  ctx: CanvasRenderingContext2D,
+  umPerCell: number,
+  g: { fit: { sx: number; sy: number; ox: number; oy: number }; view: View; cols: number; rows: number },
+  lang: 'en' | 'es',
+) {
+  const { fit, view, cols, rows } = g;
+  const pxPerUm = (fit.sx * view.scale) / umPerCell;
+  const step = niceStep(1 / pxPerUm, 64);
+  const decimals = step >= 1 ? 0 : Math.min(3, Math.ceil(-Math.log10(step) - 1e-9));
+  const x0 = fit.ox + view.tx;
+  const y0 = fit.oy + view.ty;
+  const left = fit.ox;
+  const right = fit.ox + fit.sx * cols;
+  const top = fit.oy;
+  const bottom = fit.oy + fit.sy * rows;
+  const umAtX = (px: number) => ((px - x0) / (fit.sx * view.scale)) * umPerCell - (cols * umPerCell) / 2;
+  const umAtY = (py: number) => ((py - y0) / (fit.sy * view.scale)) * umPerCell - (rows * umPerCell) / 2;
+  const pxOfX = (um: number) => x0 + ((um + (cols * umPerCell) / 2) / umPerCell) * fit.sx * view.scale;
+  const pxOfY = (um: number) => y0 + ((um + (rows * umPerCell) / 2) / umPerCell) * fit.sy * view.scale;
+  ctx.save();
+  ctx.font = '11px sans-serif';
+  ctx.lineWidth = 3;
+  const halo = token('--color-bg');
+  const ink = token('--color-fg');
+  const text = (s: string, x: number, y: number, align: CanvasTextAlign) => {
+    ctx.textAlign = align;
+    ctx.strokeStyle = halo;
+    ctx.strokeText(s, x, y);
+    ctx.fillStyle = ink;
+    ctx.fillText(s, x, y);
+  };
+  const fmtTick = (v: number) => formatNumber(Math.abs(v) < 1e-9 ? 0 : v, lang, { decimals });
+  ctx.strokeStyle = ink;
+  for (const v of axisTicks(umAtX(left + 18), umAtX(right - 18), step)) {
+    const px = pxOfX(v);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(px, bottom);
+    ctx.lineTo(px, bottom - 5);
+    ctx.stroke();
+    ctx.lineWidth = 3;
+    text(fmtTick(v), px, bottom - 8, 'center');
+  }
+  // the y ticks start under the axis title, which sits at the top left beside its axis (the Reset zoom control holds the top right)
+  for (const v of axisTicks(umAtY(top + 30), umAtY(bottom - 24), step)) {
+    const py = pxOfY(v);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(left, py);
+    ctx.lineTo(left + 5, py);
+    ctx.stroke();
+    ctx.lineWidth = 3;
+    text(fmtTick(v), left + 8, py + 4, 'left');
+  }
+  ctx.lineWidth = 3;
+  text('x (µm)', right - 4, bottom - 22, 'right');
+  text('y (µm)', left + 8, top + 14, 'left');
+  ctx.restore();
 }
 
 const token = (name: string): string => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#888';
@@ -111,7 +194,9 @@ export function thinned(data: ArrayLike<number>, cols: number, rows: number, cap
 }
 
 function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
-  const { data, cols, rows, lut, range, describe, marks = [], rects = [], region = null, mode = 'inspect', width, height, square = true } = props;
+  const { data, cols, rows, lut, range, describe, marks = [], rects = [], region = null, mode = 'inspect', width, height: boxHeight, square = true } = props;
+  // the drawing takes the box less the strip that holds the readout and the reset control
+  const height = Math.max(0, boxHeight - READOUT_STRIP);
   const lang = useShellLang();
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const texture = useRef<HTMLCanvasElement | null>(null);
@@ -207,7 +292,11 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
         ctx.setLineDash([]);
         ctx.font = '11px sans-serif';
         ctx.fillStyle = token(TONE[r.tone]);
-        ctx.fillText(r.label, Math.max(a.x, fit.ox) + 4, Math.max(a.y, fit.oy) + 13);
+        // at the top centre of the visible part of the box: the axis title holds the top left and the Reset zoom control the top right
+        const x0 = Math.max(a.x, fit.ox), x1 = Math.min(b.x, fit.ox + fit.sx * cols);
+        ctx.textAlign = 'center';
+        ctx.fillText(r.label, (x0 + x1) / 2, Math.max(a.y, fit.oy) + 13);
+        ctx.textAlign = 'start';
       }
     }
     ctx.setLineDash([]);
@@ -250,7 +339,7 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
       }
     }
     const trail = props.trail;
-    if (trail && trail.upto > 0) {
+    if (trail && trail.col.length > 0) {
       const from = Math.max(0, trail.upto - 400);
       ctx.strokeStyle = token('--color-warn');
       ctx.lineWidth = 1.5;
@@ -266,9 +355,24 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
       const h = toPx(trail.col[Math.min(trail.upto, trail.col.length - 1)] + 0.5, trail.row[Math.min(trail.upto, trail.row.length - 1)] + 0.5);
       ctx.fillStyle = token('--color-warn');
       ctx.beginPath();
-      ctx.arc(h.x, h.y, 4, 0, Math.PI * 2);
-      ctx.fill();
+      if (trail.beadCells && trail.beadCells > 0) {
+        const r = Math.max(5, trail.beadCells * fit.sx * view.scale);
+        ctx.globalAlpha = 0.35;
+        ctx.arc(h.x, h.y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = token('--color-warn');
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(h.x, h.y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.arc(h.x, h.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
+    if (props.axes) drawAxes(ctx, props.axes.umPerCell, { fit, view, cols, rows }, lang);
     if (cursor) {
       const p = toPx(cursor.col + 0.5, cursor.row + 0.5);
       ctx.strokeStyle = token('--color-fg');
@@ -292,7 +396,7 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
     }
     ctx.restore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width, height, view, cursor, marks, rects, region, drag, theme, fit, toPx, cols, rows, props.trail]);
+  }, [width, height, view, cursor, marks, rects, region, drag, theme, fit, toPx, cols, rows, props.trail, props.axes?.umPerCell, lang]);
 
   const cellAt = (e: { clientX: number; clientY: number }) => {
     const box = canvas.current!.getBoundingClientRect();
@@ -349,9 +453,22 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
     return () => c.removeEventListener('wheel', onWheel);
   }, [focused, zoomAt]);
 
+  const focusKey = props.focus ? `${props.focus.col}|${props.focus.row}|${props.focus.half}` : '';
   useEffect(() => {
-    setView({ scale: 1, tx: 0, ty: 0 });
-  }, [cols, rows]);
+    const f = props.focus;
+    if (!f || !(width > 0) || !(height > 0)) {
+      setView({ scale: 1, tx: 0, ty: 0 });
+      return;
+    }
+    const scale = Math.max(1, Math.min(64, Math.min(cols, rows) / (2 * f.half)));
+    const w = fit.sx * cols;
+    const h = fit.sy * rows;
+    const tx = Math.min(0, Math.max(w * (1 - scale), w / 2 - (f.col + 0.5) * fit.sx * scale));
+    const ty = Math.min(0, Math.max(h * (1 - scale), h / 2 - (f.row + 0.5) * fit.sy * scale));
+    setView(scale === 1 ? { scale: 1, tx: 0, ty: 0 } : { scale, tx, ty });
+    // the window is set when the map, its size or the focus changes; the reader's zoom afterwards is left alone
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cols, rows, focusKey, fit.sx, fit.sy, fit.ox, fit.oy]);
 
   const publish = useCallback(
     (cell: { col: number; row: number } | null) => {
@@ -453,8 +570,29 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
   const value = cursor ? data[cursor.row * cols + cursor.col] : null;
   const reading = cursor && value !== null && !Number.isNaN(value) ? describe(cursor.col, cursor.row, value) : null;
   const table = useMemo(() => thinned(data, cols, rows), [data, cols, rows]);
+  // The hidden table is built once per map and language, not on every render: a pointer move re-renders the canvas, and its up to 256
+  // formatted cells would be rebuilt and reconciled each time.
+  const caption = pick(props.tableLabel ?? props.label, lang);
+  const srTable = useMemo(
+    () => (
+      <table id={tableId} className="sr-only">
+        <caption>{caption}</caption>
+        <tbody>
+          {table.values.map((line, i) => (
+            <tr key={i}>
+              <th scope="row">{i * table.br}</th>
+              {line.map((v, j) => (
+                <td key={j}>{Number.isNaN(v) ? '' : formatNumber(v, lang, { digits: 4 })}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ),
+    [table, lang, tableId, caption],
+  );
   return (
-    <div style={{ position: 'relative', width, height }}>
+    <div style={{ position: 'relative', width, height: boxHeight }}>
       <canvas
         ref={canvas}
         tabIndex={0}
@@ -474,30 +612,20 @@ function HeatCanvas(props: HeatmapProps & { width: number; height: number }) {
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
-      <p className="dh-readout" role="status" aria-live="polite" data-heatmap-readout="">
-        {reading ?? (lang === 'es' ? 'Pase el puntero o use las flechas para leer valores.' : 'Hover or use the arrow keys to read values.')}
-      </p>
-      {zoomed && (
-        <button type="button" className="btn dh-reset" onClick={() => setView({ scale: 1, tx: 0, ty: 0 })}>
-          {pick(RESET, lang)}
-        </button>
-      )}
+      <div className="dh-readout-strip" style={{ height: READOUT_STRIP }}>
+        <p className="dh-readout" role="status" aria-live="polite" data-heatmap-readout="">
+          {reading ?? (lang === 'es' ? 'Pase el puntero o use las flechas para leer valores.' : 'Hover or use the arrow keys to read values.')}
+        </p>
+        {zoomed && (
+          <button type="button" className="btn dh-reset" onClick={() => setView({ scale: 1, tx: 0, ty: 0 })}>
+            {pick(RESET, lang)}
+          </button>
+        )}
+      </div>
       <p id={summaryId} className="sr-only">
         {props.summary}
       </p>
-      <table id={tableId} className="sr-only">
-        <caption>{pick(props.tableLabel ?? props.label, lang)}</caption>
-        <tbody>
-          {table.values.map((line, i) => (
-            <tr key={i}>
-              <th scope="row">{i * table.br}</th>
-              {line.map((v, j) => (
-                <td key={j}>{Number.isNaN(v) ? '' : formatNumber(v, lang, { digits: 4 })}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {srTable}
     </div>
   );
 }

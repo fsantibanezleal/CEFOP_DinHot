@@ -1,0 +1,63 @@
+\section{Introduction}\label{sec:introduction}
+Soft interval constraints specify a price for violating a preference while
+leaving selected physical limits immutable. In predictive control, a preferred
+state range and an actuator capacity are not interchangeable constraints.
+In energy scheduling, an upper grid departure and a lower comfort departure
+can have different units and consequences. The numerical problem must state
+which rows may yield and which objective measures that choice before a solver
+comparison has a definite meaning. Convex quadratic objectives with such
+interval penalties provide a useful, transparent setting for that analysis.
+
+An ordinary slack lift expresses many of these prices exactly, but enlarges
+the mathematical system. Generalized slack projections replace selected slack
+variables with proximal row operations and can preserve the original principal
+dimensions~\cite{gsp,lew}. That observation motivates a computational hypothesis:
+an original-row implementation might reduce the cost of a complete optimization
+operation. It does not prove the hypothesis. A proximal operation can itself
+be expensive, sparse fill depends on more than dimension, and preparation,
+validation and recovery contribute to the measured operation.
+
+We study two related original-row updates. The first applies separate
+nonnegative linear--quadratic prices to lower and upper interval departures.
+Its scalar proximal minimizer follows from exterior quadratic stationarity
+and endpoint subgradient conditions. The second prices directional disjoint
+group peaks. A box-residual identity under coordinate contractions reduces
+its positive diagonal-metric proximal operation to a weighted scalar threshold.
+We state the precise fixed-metric and relaxation scope, preserve hard rows
+separately, and test outputs in original physical coordinates. Existing
+side-weighted active-set formulations, directional row splitting and compact
+epigraphs already express the same objectives~\cite{daqp,gsp}. Consequently,
+neither unequal side costs nor directional expressibility is a priority claim.
+
+The two computational evaluations are separately registered synthetic studies.
+The original study contains 456 instances, with 168 primary paired observations
+from 24 distinct held-out problems and seven repetitions across six seed clusters.
+Its median cold end-to-end reduction is \OriginalEstimate\%, with 95\% limits
+\OriginalLower\% and \OriginalUpper\%. The grouped study contains 210 instances
+and a complete 144-instance held-out population. Its primary score is
+\PrimaryEstimate\%, with limits \PrimaryLower\% and \PrimaryUpper\%, including
+\PrimaryFailed{} failed pairs. Both predicted 10\% improvements are unestablished.
+These findings concern different measurement boundaries and cannot be pooled
+into a new favorable estimator.
+
+The contribution is a derivation and implementation analysis with explicit
+negative computational evidence. We provide the side-specific proximal formula,
+the contraction-based box reduction, the directional threshold and conjugate,
+and the fixed-metric splitting conditions. We compare exact objective-matched
+references and retain compatibility limits, unsuccessful observations and
+original-space acceptance. Component comparisons examine formulation choice,
+conditioning and workspace reuse while stating where no causal intervention
+was performed. The results establish mathematical equivalence and tested
+implementation behavior within their stated domains, not a uniform runtime
+advantage, operational safety or a new expressibility theorem beyond the
+identified prior art.
+
+The following sections position the methods within convex proximal and
+quadratic-programming literature, define the model, derive each proposed
+update separately and state the theory's limits. Experimental design and
+results keep the two populations and confidence procedures distinct. The
+ablation analysis is explicitly limited to retained component comparisons;
+discussion and limitations explain why correct original-row updates need
+not improve complete-operation time. Reproducibility relies on the exact
+archived inputs and outputs rather than on post-hoc reconstruction of a
+successful subset.

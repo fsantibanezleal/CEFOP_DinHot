@@ -1,0 +1,31 @@
+\begingroup\footnotesize
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}p{.32\textwidth}>{\raggedright\arraybackslash}p{.25\textwidth}@{}}
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-trial schema 1.0.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-trial}\\
+\toprule Field & Type & Constraint & Unit / role\\\midrule\endfirsthead
+\toprule Field & Type & Constraint & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+id & string & pattern=\allowbreak{}\textasciicircum{}(development\textbar{}\allowbreak{}heldout\textbar{}\allowbreak{}robustness)-[0-9]\{4\}\$ & structural metadata /\allowbreak{} nested units\\
+split & enumerated value & enum=\allowbreak{}['development', 'heldout', 'robustness'] & structural metadata /\allowbreak{} nested units\\
+n & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+density & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+condition & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+family & enumerated value & enum=\allowbreak{}['symmetric-\allowbreak{}elastic', 'asymmetric-\allowbreak{}elastic', 'asymmetric-\allowbreak{}l1'] & structural metadata /\allowbreak{} nested units\\
+seed & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+method & enumerated value & enum=\allowbreak{}['lifted', 'generalized', 'asymmetric', 'daqp', 'flex', 'elastiqp'] & structural metadata /\allowbreak{} nested units\\
+repetition & integer & minimum=\allowbreak{}-1 & count /\allowbreak{} integer identifier\\
+warmup & boolean & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+state & enumerated value & enum=\allowbreak{}['accepted', 'incompatible', 'failed', 'accuracy-\allowbreak{}rejected', 'timeout', 'resource-\allowbreak{}limit', 'oracle-\allowbreak{}failed'] & structural metadata /\allowbreak{} nested units\\
+reason & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+metrics & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+normalized\_\allowbreak{}gap & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+elapsed\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+update\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+workspace\_\allowbreak{}setup\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+result & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+iterations & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & count /\allowbreak{} integer identifier\\
+dimensions & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+native\_\allowbreak{}setup\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+native\_\allowbreak{}solve\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+status & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+status\_\allowbreak{}code & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & count /\allowbreak{} integer identifier\\
+\end{longtable}\endgroup

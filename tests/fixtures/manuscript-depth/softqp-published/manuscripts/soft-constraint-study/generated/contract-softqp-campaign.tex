@@ -1,0 +1,20 @@
+\begin{table}[htbp]\centering\footnotesize
+\caption{Schema-derived top-level fields, dimensions and literal structural restrictions for softqp-campaign schema 1.0.0. Complete nested numerical definitions are expanded in the contract appendix; physical maps remain those of the original model.}\label{tab:contract-softqp-campaign} % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}\toprule
+Field & Type & Constraint & Unit / role\\\midrule
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}campaign/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\ % voice-ok: literal schema identifier or archived schema value, not manuscript narrative
+protocol & object & additionalProperties=\allowbreak{}False & structural metadata /\allowbreak{} nested units\\
+environment & object & additionalProperties=\allowbreak{}False & structural metadata /\allowbreak{} nested units\\
+protocol\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+source\_\allowbreak{}sha256 & object & additionalProperties=\allowbreak{}\{'type': 'string', 'pattern': '\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$'\} & structural metadata /\allowbreak{} nested units\\
+observed\_\allowbreak{}wall\_\allowbreak{}seconds & number & minimum=\allowbreak{}0 & s\\
+worker\_\allowbreak{}peak\_\allowbreak{}rss\_\allowbreak{}bytes & integer & minimum=\allowbreak{}0 & bytes\\
+worker\_\allowbreak{}restarts & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+planned\_\allowbreak{}instances & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+completed\_\allowbreak{}instances & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+cells & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+primary\_\allowbreak{}endpoint & object & additionalProperties=\allowbreak{}False & structural metadata /\allowbreak{} nested units\\
+counts & object & additionalProperties=\allowbreak{}False & structural metadata /\allowbreak{} nested units\\
+artifacts & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+\bottomrule\end{tabularx}
+\end{table}

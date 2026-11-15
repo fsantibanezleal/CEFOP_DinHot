@@ -1,0 +1,37 @@
+{
+  "kind": "technical-report",
+  "title_support": [
+    "tab:main-results",
+    "fig:original-effect",
+    "fig:coupled-population"
+  ],
+  "methods": {
+    "M-1": "sec:lift",
+    "M-2": "sec:gsp",
+    "M-3": "sec:daqp",
+    "M-4": "sec:flex",
+    "M-6": "sec:elasti",
+    "BS-1": "sec:asymmetric",
+    "BS-2": "sec:directional"
+  },
+  "contracts": {
+    "case-index": "sec:contract-case-index",
+    "case-manifest": "sec:contract-case-manifest",
+    "readiness": "sec:contract-readiness",
+    "api": "sec:contract-api",
+    "softqp-index": "sec:contract-softqp-index",
+    "softqp-case-result": "sec:contract-softqp-case-result",
+    "softqp-case-spec": "sec:contract-softqp-case-spec",
+    "softqp-run-request": "sec:contract-softqp-run-request",
+    "softqp-local-export": "sec:contract-softqp-local-export",
+    "softqp-stream": "sec:contract-softqp-stream",
+    "softqp-campaign": "sec:contract-softqp-campaign",
+    "softqp-datasets": "sec:contract-softqp-datasets",
+    "softqp-trial": "sec:contract-softqp-trial",
+    "softqp-experiment-index": "sec:contract-softqp-experiment-index",
+    "softqp-coupled-batch": "sec:contract-softqp-coupled-batch",
+    "softqp-coupled-observation": "sec:contract-softqp-coupled-observation",
+    "softqp-coupled-campaign": "sec:contract-softqp-coupled-campaign",
+    "softqp-coupled-lesson": "sec:contract-softqp-coupled-lesson"
+  }
+}

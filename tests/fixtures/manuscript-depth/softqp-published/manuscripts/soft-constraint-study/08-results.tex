@@ -1,0 +1,116 @@
+\section{Results}\label{sec:results}
+The results distinguish exact formulation agreement, availability, numerical
+acceptance and elapsed-time inference. Tables~\ref{tab:catalog-1} and
+\ref{tab:catalog-2} report every stored case/method outcome, including
+incompatible cells. Objectives are compared within one unchanged model;
+their numerical values are not ranked across different physical objectives.
+Hard errors are evaluated on original rows, and N/A denotes the absence
+of a compatible returned objective. The complete six-path timing comparison
+and separate nine-policy grouped study have their own larger inventories.
+\input{generated/catalog-results-1.tex}
+\input{generated/catalog-results-2.tex}
+
+Figure~\ref{fig:scalar-objective} isolates the scalar lower-side example.
+The actual exported optima agree on a purchased lower departure rather than
+on the preferred interval itself. Its piecewise-quadratic objective curve is an evaluation
+of the stored mathematical objective, not an extra numerical experiment.
+The shaded interval identifies preference, not a physical hard bound. This
+small example illustrates why an elastic optimum can be correct while
+violating the preferred row. Figure~\ref{fig:formulation-size} shows the
+exported variable counts across all fifteen cases. Larger or smaller principal
+formulations do not directly measure factorization fill, cache behavior or
+complete-operation cost.
+\input{generated/figure-scalar-objective.tex}
+\input{generated/figure-formulation-size.tex}
+
+Figure~\ref{fig:compatibility} makes the catalog's semantic exclusions explicit.
+The source-faithful building objective admits lifting and published generalized
+projection while refusing unsupported separable substitutions. The asymmetric
+energy variants instead define different prices, so their stored objectives
+cannot be read as algorithmic improvements over the mixed-policy optimum.
+Likewise, an incompatible symmetric projection on the asymmetric C12 stream
+is not a failed numerical solve of the same admitted objective. The matrix
+distinguishes these states before any runtime reading is attempted.
+\input{generated/figure-compatibility.tex}
+
+The original computation completed all 456 planned instances with 11592 accepted
+and 7560 incompatible measured observations and no numerical or external-accuracy
+rejection. Table~\ref{tab:main-results} preserves its primary 168 paired
+observations and the separate grouped endpoint. The original reduction
+\OriginalEstimate\% has a 95\% interval crossing zero. Figure~\ref{fig:original-effect}
+therefore does not establish the predicted 10\% gain. The plotted zero and
+ten-percent reference lines are inferential context, not replacement cutoffs
+chosen after observing the estimate. Figure~\ref{fig:cold-times} shows stored
+cell medians and interquartile ranges for one prespecified family/density
+slice; that descriptive slice does not replace the full primary analysis.
+\input{generated/study-results.tex}
+\input{generated/figure-original-effect.tex}
+\input{generated/figure-cold-times.tex}
+
+The controlled conditioning results in Figure~\ref{fig:conditioning} retain
+maximum objective discrepancy for each compatible robustness cell. The
+finite grid extends to diagonal condition$10^6$, and its accepted observations
+remain within the original objective and hard-row limits. The plot does not
+establish stability for arbitrary nearly dependent rows, every semidefinite
+problem, or an untested physical scaling. A missing method remains absent,
+not an invented zero-error point. Relative objective agreement also does
+not prove an identical dual vector when the mathematical dual is nonunique.
+\input{generated/figure-conditioning.tex}
+
+The common trajectory in Figure~\ref{fig:control-stream} shows the actual
+stored position, velocity and bounded applied acceleration. It is driven
+once by the independent oracle. Figure~\ref{fig:stream-reuse} compares stored
+cold and warm operation durations along those same inputs. Workspace reuse
+can reduce preparation work, but the stream alone cannot attribute every
+timing difference solely to an active set, initial iterate or cached factor.
+The plotted box summaries describe the retained observations; they are not
+a new cluster-bootstrap experiment. Overlapping predicted horizon costs
+remain distinct from realized plant cost.
+\input{generated/figure-control-stream.tex}
+\input{generated/figure-stream-reuse.tex}
+
+The grouped computation retains all 210 inputs. Table~\ref{tab:coupled-states}
+and Figure~\ref{fig:coupled-states} account for all 5670 measured method
+observations:3667 accepted,12 accuracy-rejected,1719 incompatible,270 dependent
+oracle-failed and two timeouts. The larger raw inventory additionally retains
+warm-ups and oracle observations. All 163390 returned candidate frames pass
+their applicable original-space checks;44 noncandidate backend-limit frames
+remain distinct. Those frame checks do not turn an iteration-limited batch
+into an accepted primary operation.
+
+The accuracy-rejected category must not be read as twelve returned
+vectors violating the independent KKT calculation. The retained batches
+include backend/iteration-limit or absent-vector outcomes; in particular,
+six held-out row-split batches returned status seven without a candidate
+vector. The two timeouts occurred in native and forced-proximal DAQP
+operations. Six robustness oracle limits account for the dependent
+144 measured oracle-failed rows in that split. These are operation and
+dependency states, not additional independent KKT violations. Every
+returned candidate frame still passed the applicable original-space checks.
+\input{generated/coupled-states.tex}
+\input{generated/figure-coupled-states.tex}
+
+Figure~\ref{fig:coupled-population} retains all 144 primary members in their
+stored order. Nine failed pairs keep their fixed score, and six missing
+native medians remain gaps. No selected baseline is imputed where the
+registered rule selected none. The primary median reduction is
+\PrimaryEstimate\%, with 95\% limits \PrimaryLower\% and \PrimaryUpper\%.
+These values do not define a uniform per-instance slowdown multiplier.
+Figure~\ref{fig:coupled-formulations} displays returned method medians with
+their unequal sample counts. It is a descriptive formulation comparison,
+not an alternative matched estimator that removes failures or compatibility
+differences. The original primary prediction is not rescued by those plots.
+\input{generated/figure-coupled-population.tex}
+\input{generated/figure-coupled-formulations.tex}
+
+Finally, Figure~\ref{fig:directional-lesson} gives the stored native, epigraph
+and directional row-split answers for the same two-variable physical teaching
+input. Their objective and decision agreement illustrates representation
+equivalence on a transparent example. It contributes no new timing sample
+to either registered study. The dimensional covariance checks and policy
+scale changes described in the teaching material distinguish preserving
+physical meaning from intentionally changing a directional preference.
+The coexistence of that numerical agreement with the complete negative
+timing endpoint is the principal practical result: mathematical equivalence
+and smaller principal dimensions do not guarantee a cheaper complete operation.
+\input{generated/figure-directional-lesson.tex}

@@ -5,7 +5,7 @@
 // Methodology, Implementation, Experiments, Benchmark; the landing never moves the tabs. Identity, licence and visibility come from product.json (one source,
 // written by scripts/instantiate.py); the version is VERSION, injected at build.
 import { lazy, Suspense } from 'react';
-import { AppShell, CitationsProvider, Landing, STANDARD_ROUTES, type ShellConfig } from '@fasl-work/caos-app-shell';
+import { AppShell, CitationsProvider, Landing, LinkedViewProvider, STANDARD_ROUTES, type ShellConfig } from '@fasl-work/caos-app-shell';
 import { Route, Routes } from 'react-router';
 import product from '../../product.json';
 import { architecture } from './architecture';
@@ -18,6 +18,7 @@ const Experiments = lazy(() => import('./pages/Experiments').then((module) => ({
 const Implementation = lazy(() => import('./pages/Implementation').then((module) => ({ default: module.Implementation })));
 const Introduction = lazy(() => import('./pages/Introduction').then((module) => ({ default: module.Introduction })));
 const Methodology = lazy(() => import('./pages/Methodology').then((module) => ({ default: module.Methodology })));
+const Story = lazy(() => import('./pages/Story').then((module) => ({ default: module.Story })));
 const Workbench = lazy(() => import('./workbench/Workbench').then((module) => ({ default: module.Workbench })));
 
 const config: ShellConfig = {
@@ -29,17 +30,20 @@ const config: ShellConfig = {
   license: { en: `${product.license} licence`, es: `Licencia ${product.license}` },
   visibility: product.visibility === 'private' ? 'private' : 'public',
   contain: true,
+  immersiveRoutes: ['/story'],
   architecture,
 };
 
 export function App() {
   return (
     <CitationsProvider items={CITATIONS}>
+      <LinkedViewProvider>
       <AppShell config={config}>
         <Suspense fallback={<p className="caos-pending" data-state="loading" role="status" aria-label="Loading / Cargando">…</p>}>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/app" element={<Workbench />} />
+            <Route path="/story/:step" element={<Story />} />
             <Route path="/introduction" element={<Introduction />} />
             <Route path="/methodology" element={<Methodology />} />
             <Route path="/implementation" element={<Implementation />} />
@@ -49,6 +53,7 @@ export function App() {
           </Routes>
         </Suspense>
       </AppShell>
+      </LinkedViewProvider>
     </CitationsProvider>
   );
 }
