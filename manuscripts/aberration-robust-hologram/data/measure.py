@@ -659,6 +659,12 @@ def write_outputs(data: dict, out: Path) -> None:
     m.add("effAllMax", f(max(effs_all), 3))
     m.add("seedsPassing", str(sum(1 for r in ratios_all if r >= 1.25)))
     m.add("ciBelowN", str(sum(1 for r in main if r["p95_ci"][0] < 1.25)))
+    # AR-3: the seeds whose own bootstrap interval of the ratio clears the H1 threshold of 1.25 (lower end at or above it)
+    m.add("ciClearN", str(sum(1 for r in main if r["p95_ci"][0] >= 1.25)))
+    # AR-6: the headline over every seed of the main comparison, next to the value of the first three seeds
+    m.add("ratioHeadAll", f(statistics.median(ratios_all), 3))
+    m.add("ratioHeadThree", f(statistics.median(ratios3), 3))
+    m.add("ratioHeadAllN", str(len(ratios_all)))
     m.add("seedsEffPassing", str(sum(1 for r in effs_all if r >= 0.9)))
     s1 = main[0]
     m.add("sigmaNomOne", f(s1["nominal"]["p95"], 3))
