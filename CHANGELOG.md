@@ -42,6 +42,10 @@ tagged.
 - The full gate's findings on the release build: labels that overlapped or were cut in the optical train, the SLM section, the
   phasor figure and the lanes figure; the story's callouts, which overlapped at some sizes and were missing on the phone; the
   method step, which kept changing while idle.
+- The local generation starts again. Template 0.15.007's check refused every version-stamped stage input, and DinHot carries its
+  engine reference fixtures (`tests/fixtures/engine/`, stamped with the engine version that wrote them) for its readiness provider
+  to read in the stage, outside the promoted payload; CI failed `test_the_template_workflow_config_passes`. The template's fix
+  (0.15.013: refuse a stamped input only inside a promoted folder) is taken verbatim: `scripts/local/workflow.py` and its test.
 - At 390 px, dense traps at the edge of a small optical-train field no longer overlap: a site that still overlaps after its nudge
   moves to the nearest free point inside the field (case C06).
 - The Pareto view reads every method at a uniformity value two of them share: one chart row per value, so the keyboard and the

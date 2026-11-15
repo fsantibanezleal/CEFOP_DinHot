@@ -129,5 +129,36 @@ def test_adversarial_an_absent_stage_input_keeps_its_refusal(workflow, tmp_path,
 
 
 def test_the_template_workflow_config_passes(workflow):
-    inputs = workflow.authored_inputs(ROOT, workflow.settings(ROOT))
-    assert list(inputs) == ["data/examples/params.csv"]
+    config = workflow.settings(ROOT)
+    inputs = workflow.authored_inputs(ROOT, config)
+    # a product declares its own authored inputs (ChancaDEM has two); the guard admits exactly the declared ones, each present
+    assert list(inputs) == list(config.get("stage_inputs", []))
+    assert all(path.is_file() for path in inputs.values())
+    if (ROOT / ".template-source").is_file():
+        assert list(inputs) == ["data/examples/params.csv"]  # the template's own list stays pinned
+
+
+def test_a_stamped_input_outside_the_promoted_payload_is_carried(workflow, tmp_path, monkeypatch):
+    # RP-030 (0.15.013): the refusal covers what the admission would refuse later, a stamped document inside a promoted folder,
+    # where `validate_stage` compares its stamp with VERSION after the whole bake. A stamped document outside the promoted folders
+    # (CEFOP_DinHot's engine reference fixtures, read by its readiness provider in the stage) is never promoted and never compared,
+    # so it is carried byte for byte like any authored input.
+    fixture = "tests/fixtures/engine/rng.stream.json"
+    text = json.dumps({"engine_version": "an-older-release", "schema": "example.engine-ref/v1", "cases": []})
+    root, config, env = plant(tmp_path, monkeypatch, workflow, {fixture: text})
+    assert list(workflow.authored_inputs(root, config)) == [fixture]
+    # the plant bakes nothing, so its admission stops later on the absent readiness document; what matters here is that the
+    # generation command ran and the stage holds the fixture byte for byte
+    with pytest.raises((workflow.Failure, OSError)) as later:
+        workflow.generate(root, config, env)
+    assert "version-stamped" not in str(later.value), str(later.value)
+    assert (tmp_path / MARKER).exists(), "the generation command did not run"
+    stages = list((tmp_path / "scratch").glob("caos-local-*"))
+    assert len(stages) == 1 and (stages[0] / fixture).read_text(encoding="utf-8") == text
+
+
+def test_adversarial_a_stamped_input_under_a_promoted_folder_is_refused_at_any_depth(workflow, tmp_path, monkeypatch):
+    nested = "models/released/card.json"
+    root, config, env = plant(tmp_path, monkeypatch, workflow, {nested: json.dumps({"engine_version": "an-older-release"})})
+    with pytest.raises(workflow.Failure, match="models/released/card.json"):
+        workflow.authored_inputs(root, config)

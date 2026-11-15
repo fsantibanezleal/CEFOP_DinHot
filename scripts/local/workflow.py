@@ -499,14 +499,18 @@ def stamped_input(path):
 def authored_inputs(root, config):
     """The ``stage_inputs``: authored sources (tables, configuration) carried byte for byte into the stage.
 
-    A version-stamped document (template 0.15.007, #120) is produced by the generation, never carried: ``validate_stage``
-    refuses a stale stamp only after the whole bake, so the refusal is made here, in the first call of ``generate`` and of
-    the admission, before any stage or generation command exists."""
+    A version-stamped document (template 0.15.007, #120) inside a promoted folder is produced by the generation, never
+    carried: ``validate_stage`` compares the stamps of the promoted payload with VERSION only after the whole bake, so the
+    refusal is made here, in the first call of ``generate`` and of the admission, before any stage or generation command
+    exists. A stamped document outside every promoted folder (a test fixture a readiness provider reads in the stage) is never
+    promoted and never compared, so it is carried like any authored input (0.15.013, RP-030)."""
     inputs = {name: relative(root, name) for name in config.get("stage_inputs", [])}
+    promoted = [Path(name).parts for name in config.get("promote", [])]
     for name, path in inputs.items():
         if not path.is_file():
             raise Failure(f"Missing authored stage input: {name}")
-        if stamped_input(path):
+        parts = Path(name).parts
+        if stamped_input(path) and any(parts[:len(folder)] == folder for folder in promoted):
             raise Failure(
                 f"Stage input {name} is a version-stamped document ({' or '.join(VERSION_KEYS)}): such a document is "
                 "produced by the generation and never carried. Remove it from stage_inputs and produce it in a "
