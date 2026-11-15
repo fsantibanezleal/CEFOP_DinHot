@@ -1,0 +1,66 @@
+\section{Problem formulation and notation}\label{sec:problem}
+Let $P\succeq0$ be symmetric, $q$ finite, $A$ sparse and $x\in\R^n$ the
+original decision. Each row value $z_i=A_i x$ has an interval
+$[\ell_i,u_i]$ whose endpoints may be explicitly absent. Hard rows form
+$\mathcal H$; all other admitted rows have a specified convex price. The
+model is
+\begin{equation}\label{eq:paper-model}
+ \min_x\ \tfrac12x^\top P x+q^\top x+g(Ax)
+ \quad\text{subject to}\quad
+ \ell_i\leq A_ix\leq u_i\quad(i\in\mathcal H).
+\end{equation}
+The function $g$ is separable for the first method and a sum over disjoint
+directional groups for the second. Both constructions keep physical hard
+policy distinct from numerical penalty parameters. An elastic optimum can
+purchase a preferred-row violation; that does not change what constitutes
+hard feasibility.
+
+Lower and upper departures are $v_{L,i}=(\ell_i-z_i)_+$ and
+$v_{U,i}=(z_i-u_i)_+$. Corrective slack has sign
+$s_i=v_{L,i}-v_{U,i}$, opposite to the signed violation residual
+$z_i-\Pi_C(z)_i$. The distinction matters when conjugates and original
+row multipliers are recovered. Upper finite-side multipliers enter the
+original dual positively; lower finite-side multipliers enter negatively.
+The fixed positive diagonal proximal metric is $H=\diag(h_i)$, $h_i>0$.
+It is not a changing physical price or an arbitrary dense coupling matrix.
+
+\begin{table}[htbp]\centering\small
+\caption{Symbols and dimensions for the two proximal constructions. Physical row and decision units belong to each original model; computational duration and model prediction time remain different quantities.}\label{tab:paper-notation}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}\toprule
+Symbol & Meaning & Dimension\\\midrule
+$x,z=Ax$ & Decision and original row value & Decision / row unit\\
+$C,\Pi_C,r$ & Interval box, box projection and residual & Row space / row unit\\
+$a_i,b_i$ & Linear and quadratic side price & Cost/row unit; cost/row unit squared\\
+$c_{U,i},c_{L,i}$ & Directional scale & Peak unit/row unit\\
+$\Psi,g_C$ & Residual and eliminated interval penalty & Cost\\
+$H,\alpha$ & Fixed proximal metric and relaxation & Cost/row unit squared; dimensionless\\
+$y,\sigma_C,\Psi^*$ & Original multiplier, support and conjugate & Cost/row unit; cost; cost\\
+$T,R$ & Computational duration and relative reduction & Seconds; dimensionless\\\bottomrule
+\end{tabularx}
+\end{table}
+
+Table~\ref{tab:paper-notation} fixes the interpretation used in derivations
+and figures. For a directional group, scales make physically different
+departures comparable in one peak unit. With metres as row units and a
+dimensionless peak, directional scales have inverse-metre units. A
+reciprocal row conversion scales both endpoints and the scale coefficient;
+changing only one directional coefficient instead changes the policy.
+We do not add raw departures with incompatible dimensions or interpret a
+population index as physical time.
+
+Input validity does not imply solution existence. A hard model may be
+infeasible; semidefinite curvature may admit unbounded directions or
+nonunique optimizers. The splitting statements assume an attained saddle
+point in addition to their closed-convex conditions. The native grouped
+interface additionally requires nonempty boxes, disjoint groups and positive
+finite directional scales. Mathematical extension to overlapping groups,
+dense metrics or nonconvex prices is not inferred from tests of the
+admitted cases. These assumptions keep the implemented objective, the
+proximal proof and the experimental acceptance domain aligned.
+
+The empirical quantities have their own dimensions: complete-call durations
+are seconds, relative reductions are dimensionless and displayed as percent,
+and counts identify observations or instances as specified by each protocol.
+An unavailable result carries no numerical duration or objective for inference.
+These conventions prevent missing values from becoming successful zero-cost
+operations when tables or statistical arrays are assembled.

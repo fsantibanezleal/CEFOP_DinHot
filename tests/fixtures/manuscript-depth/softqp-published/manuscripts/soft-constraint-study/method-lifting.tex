@@ -1,0 +1,90 @@
+\subsection{Explicit slack lifting with OSQP}\label{sec:lift}
+Explicit lifting converts a priced interval problem into an ordinary quadratic
+program by exposing finite-side departures as optimization variables. For each
+soft lower side introduce $t_{L,i}\geq0$, and for each soft upper side introduce
+$t_{U,i}\geq0$. Retain original hard rows without slack. The transformed bounds
+are
+\begin{equation}\label{eq:lift-constraints}
+ A_i x+t_{L,i}\geq\ell_i,\qquad A_i x-t_{U,i}\leq u_i,
+ \qquad t_{L,i},t_{U,i}\geq0.
+\end{equation}
+The lifted objective is
+\begin{equation}\label{eq:lift-objective}
+ \tfrac12x^\top P x+q^\top x+
+ \sum_i\left(a_{L,i}t_{L,i}+\tfrac12 b_{L,i}t_{L,i}^2
+             +a_{U,i}t_{U,i}+\tfrac12 b_{U,i}t_{U,i}^2\right).
+\end{equation}
+Monotonicity of the nonnegative side prices permits an optimum whose slacks equal
+the actual departures. Zero prices can leave auxiliary variables nonunique, but
+recovering departure directly from $Ax$ still gives the correct original
+objective. The evaluator therefore does not infer original violation by trusting
+an arbitrarily chosen unpriced lifted slack.
+
+The sparse model construction is explicit. Original variables occupy the first
+block, followed by only the finite-side auxiliaries actually required. Original
+curvature and linear coefficients remain in their block; auxiliary diagonal
+curvature and linear prices populate the new entries. Every added nonnegativity
+bound and relaxed side has a documented position. This construction supports
+side-asymmetric prices without changing their meaning. Compact special helpers
+are used for the mixed published building objective, where treating a shared peak
+as independent row slacks would instead change the objective.
+
+OSQP applies an operator-splitting iteration to the resulting convex QP and
+solves a regularized quasi-definite linear system~\cite{osqp}. Its numerical
+regularization is part of the solver subproblem, not an added scientific penalty
+in \eqref{eq:lift-objective}. Positive semidefinite problems remain admissible
+within the backend's convex domain. Existence of a saddle point and the relevant
+fixed or controlled parameter assumptions govern convergence; a finite iteration
+limit still produces only the method-specific termination outcome. Numerical
+infeasibility certificates and post-solve accuracy checks are separate operations.
+
+Algorithm~\ref{alg:lift} describes the adapter's procedure. After solving, upper-
+side lifted multipliers contribute positively to the original row dual and lower-
+side multipliers negatively. Hard equalities retain their original dual position.
+The resulting $x,y$ are passed to the original objective and feasibility routines.
+This recovery makes it possible to compare an enlarged problem to an original-row
+implementation without comparing unrelated residual definitions. A small residual
+in the lifted coordinates alone would not prove that the right physical model
+had been assembled.
+
+\begin{algorithm}[htbp]
+\caption{Construct an equivalent finite-side lift, solve its ordinary quadratic program and recover the original-space decision and multiplier for independent evaluation.}\label{alg:lift}
+\begin{algorithmic}[1]
+\Require Original $P,q,A,\ell,u$, hard mask and side prices
+\State Allocate one nonnegative auxiliary for each present soft side
+\State Assemble \eqref{eq:lift-constraints} and \eqref{eq:lift-objective}; retain hard rows
+\State Solve with the pinned OSQP implementation and explicit settings
+\State Recover $x$ and $y_i=y_{U,i}-y_{L,i}$, preserving hard-row multipliers
+\State Recompute original objective, departures and raw hard violation
+\State Return the backend status and independent metrics, including failure reasons
+\end{algorithmic}
+\end{algorithm}
+
+The formulation cost depends on the number of finite soft sides and the sparsity
+of their incidence. It increases variable and row counts, but that increase does
+not determine factorization fill or end-to-end runtime. Sparse ordering, diagonal
+structure and reuse of prepared workspaces can make an enlarged problem highly
+competitive. For C01 the stored assembled lift has two variables, three rows and
+seven nonzeros; the original-row representation has one variable, one row and two
+nonzeros. These counts describe assembled matrices, not the nonzeros of a numeric
+factor or a guarantee of a particular runtime ratio.
+
+Two uses of lifting must be distinguished. The timed original comparison uses
+the pinned native backend for both ordinary lifting and the candidate so backend
+implementation differences do not automatically favor one path. The independent
+high-accuracy reference uses stock OSQP with tighter tolerances. That reference
+is an accuracy oracle, not a timed participant substituted after seeing results.
+The coupled comparison separately uses the exact compact peak epigraph. Its
+different auxiliary structure is described with the directional method rather
+than conflated with independent per-side lifting.
+
+The lift's auxiliary uniqueness deserves particular care in validation. A
+strictly positive quadratic departure price determines a unique optimal slack
+for a fixed original decision. A zero-price side can instead permit many
+auxiliary values with the same scientific cost. Comparing those auxiliaries
+componentwise to one reference would reject mathematically equivalent answers.
+The evaluator therefore reconstructs the smallest physical departures from
+the original row values, retains hard feasibility, and compares the original
+objective. This convention also prevents a backend's slack-storage sign from
+being mistaken for a physical lower or upper violation in the user-facing
+record.

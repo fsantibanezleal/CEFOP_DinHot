@@ -1,0 +1,63 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for softqp-coupled-batch. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-softqp-coupled-batch}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema\_\allowbreak{}version & string & const=\allowbreak{}1.\allowbreak{}0.\allowbreak{}0 & structural metadata /\allowbreak{} nested units\\
+kind & string & const=\allowbreak{}directional-\allowbreak{}coupled-\allowbreak{}peak-\allowbreak{}batch & structural metadata /\allowbreak{} nested units\\
+description & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+problem & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['P', 'A', 'q', 'lower', 'upper', 'groups'] & structural metadata /\allowbreak{} nested units\\
+problem.\allowbreak{}P & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['shape', 'data', 'indices', 'indptr'] & structural metadata /\allowbreak{} nested units\\
+problem.\allowbreak{}P.\allowbreak{}shape & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}P.\allowbreak{}shape[] & integer & minimum=\allowbreak{}1; maximum=\allowbreak{}16384 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}P.\allowbreak{}data & array & maxItems=\allowbreak{}4194304 & cost /\allowbreak{} decision units squared\\
+problem.\allowbreak{}P.\allowbreak{}data[] & number & See defined object /\allowbreak{} value type & cost /\allowbreak{} decision units squared\\
+problem.\allowbreak{}P.\allowbreak{}indices & array & maxItems=\allowbreak{}4194304 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}P.\allowbreak{}indices[] & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}P.\allowbreak{}indptr & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}16385 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}P.\allowbreak{}indptr[] & integer & minimum=\allowbreak{}0; maximum=\allowbreak{}4194304 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}A & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['shape', 'data', 'indices', 'indptr'] & structural metadata /\allowbreak{} nested units\\
+problem.\allowbreak{}A.\allowbreak{}shape & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}A.\allowbreak{}shape[] & integer & minimum=\allowbreak{}1; maximum=\allowbreak{}16384 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}A.\allowbreak{}data & array & maxItems=\allowbreak{}4194304 & row /\allowbreak{} decision unit\\
+problem.\allowbreak{}A.\allowbreak{}data[] & number & See defined object /\allowbreak{} value type & row /\allowbreak{} decision unit\\
+problem.\allowbreak{}A.\allowbreak{}indices & array & maxItems=\allowbreak{}4194304 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}A.\allowbreak{}indices[] & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}A.\allowbreak{}indptr & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}16385 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}A.\allowbreak{}indptr[] & integer & minimum=\allowbreak{}0; maximum=\allowbreak{}4194304 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}q & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & cost /\allowbreak{} decision unit\\
+problem.\allowbreak{}q[] & number & See defined object /\allowbreak{} value type & cost /\allowbreak{} decision unit\\
+problem.\allowbreak{}lower & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & original row unit\\
+problem.\allowbreak{}lower[] & number /\allowbreak{} null & See defined object /\allowbreak{} value type & original row unit\\
+problem.\allowbreak{}upper & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & original row unit\\
+problem.\allowbreak{}upper[] & number /\allowbreak{} null & See defined object /\allowbreak{} value type & original row unit\\
+problem.\allowbreak{}groups & array & maxItems=\allowbreak{}16384 & structural metadata /\allowbreak{} nested units\\
+problem.\allowbreak{}groups[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['rows', 'lower\_\allowbreak{}scale', 'upper\_\allowbreak{}scale', 'linear', 'quadratic'] & structural metadata /\allowbreak{} nested units\\
+problem.\allowbreak{}groups[].\allowbreak{}rows & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384; uniqueItems=\allowbreak{}True & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}groups[].\allowbreak{}rows[] & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+problem.\allowbreak{}groups[].\allowbreak{}lower\_\allowbreak{}scale & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & peak unit /\allowbreak{} row unit; model map\\
+problem.\allowbreak{}groups[].\allowbreak{}lower\_\allowbreak{}scale[] & number & exclusiveMinimum=\allowbreak{}0 & peak unit /\allowbreak{} row unit; model map\\
+problem.\allowbreak{}groups[].\allowbreak{}upper\_\allowbreak{}scale & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & peak unit /\allowbreak{} row unit; model map\\
+problem.\allowbreak{}groups[].\allowbreak{}upper\_\allowbreak{}scale[] & number & exclusiveMinimum=\allowbreak{}0 & peak unit /\allowbreak{} row unit; model map\\
+problem.\allowbreak{}groups[].\allowbreak{}linear & number & minimum=\allowbreak{}0 & cost /\allowbreak{} peak unit\\
+problem.\allowbreak{}groups[].\allowbreak{}quadratic & number & minimum=\allowbreak{}0 & cost /\allowbreak{} peak unit squared\\
+updates & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}512 & structural metadata /\allowbreak{} nested units\\
+updates[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['q', 'lower', 'upper'] & structural metadata /\allowbreak{} nested units\\
+updates[].\allowbreak{}q & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & cost /\allowbreak{} decision unit\\
+updates[].\allowbreak{}q[] & number & See defined object /\allowbreak{} value type & cost /\allowbreak{} decision unit\\
+updates[].\allowbreak{}lower & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & original row unit\\
+updates[].\allowbreak{}lower[] & number /\allowbreak{} null & See defined object /\allowbreak{} value type & original row unit\\
+updates[].\allowbreak{}upper & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & original row unit\\
+updates[].\allowbreak{}upper[] & number /\allowbreak{} null & See defined object /\allowbreak{} value type & original row unit\\
+units & object & additionalProperties=\allowbreak{}\{'type': 'string', 'minLength': 1\}; required=\allowbreak{}['variable', 'row', 'q', 'P\_\allowbreak{}diagonal', 'objective'] & structural metadata /\allowbreak{} nested units\\
+units.\allowbreak{}variable & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & structural metadata /\allowbreak{} nested units\\
+units.\allowbreak{}variable[] & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+units.\allowbreak{}row & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & structural metadata /\allowbreak{} nested units\\
+units.\allowbreak{}row[] & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+units.\allowbreak{}q & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & cost /\allowbreak{} decision unit\\
+units.\allowbreak{}q[] & string & minLength=\allowbreak{}1 & cost /\allowbreak{} decision unit\\
+units.\allowbreak{}P\_\allowbreak{}diagonal & array & minItems=\allowbreak{}1; maxItems=\allowbreak{}16384 & structural metadata /\allowbreak{} nested units\\
+units.\allowbreak{}P\_\allowbreak{}diagonal[] & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+units.\allowbreak{}objective & string & minLength=\allowbreak{}1 & model cost unit\\
+\end{longtable}\endgroup

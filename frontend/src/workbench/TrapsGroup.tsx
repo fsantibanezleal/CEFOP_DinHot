@@ -8,9 +8,11 @@ import { useMemo, useState } from 'react';
 import { INTENSITY_LUT } from './colormaps';
 import { cardOf } from './HologramGroup';
 import { Heatmap } from './HeatmapStage';
-import { histogram, isShaped, trapDeviation, useSelection, type Selection } from './model';
+import { histogram, isShaped, methodName, trapDeviation, useSelection, type Selection } from './model';
+import { selectedSeries, selectedValue } from './trapSelection';
 import { umToPixel } from './traps';
 import { Fill, LOADING, Pending, Unavailable, useActions, useFmt, useStateKey, useT } from './ui';
+import { useNav } from './nav';
 
 // More than this many bars put their id labels on top of each other (G10): a sorted-points chart carries the larger arrays.
 const BARS_MAX = 12;
@@ -18,9 +20,12 @@ const BARS_MAX = 12;
 export function TrapsGroup() {
   const { t } = useT();
   const sel = useSelection();
+  const nav = useNav();
   return (
     <SubTabs
       ariaLabel={t('Trap views', 'Vistas de las trampas')}
+      value={nav?.tabs.traps}
+      onChange={nav ? (id) => nav.setTab('traps', id) : undefined}
       tabs={[
         { id: 'uniformity', label: t('Per-trap intensity', 'Intensidad'), content: sel ? <IntensityView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'depth', label: t('Depth', 'Pozo'), content: sel ? <DepthView sel={sel} /> : <Pending label={LOADING} /> },
@@ -67,7 +72,7 @@ function ShapedPotential({ sel, title, note }: { sel: Selection; title: { en: st
             summary={t(`Focal intensity over the mean inside the shape, ${focal.size} by ${focal.size} bins, colour scale 0 to 2.`, `Intensidad focal sobre la media dentro de la forma, ${focal.size} por ${focal.size} bins, escala de color de 0 a 2.`)}
           />
         ) : (
-          <Unavailable reason={{ en: `No focal map for ${sel.methodId} on this case.`, es: `No hay mapa focal de ${sel.methodId} en este caso.` }} />
+          <Unavailable reason={{ en: `No focal map for ${methodName(sel.methodId).en} on this case.`, es: `No hay mapa focal de ${methodName(sel.methodId).es} en este caso.` }} />
         )}
       </Fill>
     </PlotCard>
@@ -86,6 +91,9 @@ export function IntensityView({ sel }: { sel: Selection }) {
   const stats = useMemo(() => (trapI ? trapDeviation(trapI) : null), [trapI]);
   const items = useMemo(() => (trapI ? ordered({ ...sel, sortBy }, trapI) : []), [sel, trapI, sortBy]);
   const hist = useMemo(() => (trapI ? histogram(trapI, Math.min(0.5, ...trapI), Math.max(1.5, ...trapI), 21) : null), [trapI]);
+  // the trap selected anywhere (focal plane, bars, optical train) is marked here, in the bars or the sorted points and in the histogram
+  const picked = useMemo(() => selectedSeries(items, sel.trapId), [items, sel.trapId]);
+  const pickedValue = selectedValue(items, sel.trapId);
   const within = trapI ? trapI.filter((v) => Math.abs(v - 1) <= band).length : 0;
   const noTraps = !trapI || trapI.length === 0;
   if (noTraps && isShaped(sel.data.manifest)) {
@@ -101,7 +109,7 @@ export function IntensityView({ sel }: { sel: Selection }) {
     return (
       <PlotCard fill title={{ en: 'Per-trap intensity', es: 'Intensidad por trampa' }} {...c} dataKey={stateKey}>
         <Fill>
-          <Unavailable reason={{ en: `The bake holds no per-trap intensities for ${sel.methodId} on this case (it records them for the methods it ran), and the live engine is not on this build.`, es: `La generación no guarda intensidades por trampa de ${sel.methodId} en este caso (las guarda para los métodos que corrió) y el motor en vivo no está en esta versión.` }} />
+          <Unavailable reason={{ en: `The bake holds no per-trap intensities for ${methodName(sel.methodId).en} on this case (it records them for the methods it ran), and the live engine is not on this build.`, es: `La generación no guarda intensidades por trampa de ${methodName(sel.methodId).es} en este caso (las guarda para los métodos que corrió) y el motor en vivo no está en esta versión.` }} />
         </Fill>
       </PlotCard>
     );
@@ -134,7 +142,10 @@ export function IntensityView({ sel }: { sel: Selection }) {
               title={{ en: 'Trap intensity, sorted by deviation from the mean', es: 'Intensidad de las trampas, ordenada por desviación de la media' }}
               x={{ values: items.map((_, i) => i + 1), label: { en: 'Trap rank', es: 'Rango de la trampa' }, format: { decimals: 0 } }}
               y={{ label: { en: 'Intensity over the mean', es: 'Intensidad sobre la media' }, format: { decimals: 2 } }}
-              series={[{ label: { en: 'Trap intensity', es: 'Intensidad de la trampa' }, values: items.map((i) => i.v), color: '--color-accent', mode: 'points', size: 4 }]}
+              series={[
+                { label: { en: 'Trap intensity', es: 'Intensidad de la trampa' }, values: items.map((i) => i.v), color: '--color-accent', mode: 'points', size: 4 },
+                ...(picked ? [{ label: { en: `Selected trap ${sel.trapId}`, es: `Trampa elegida ${sel.trapId}` }, values: picked, color: '--color-magenta' as const, mode: 'points' as const, size: 12 }] : []),
+              ]}
               yMarks={[
                 { y: 1 + band, label: { en: 'band', es: 'banda' }, tone: 'warn' },
                 { y: 1 - band, tone: 'warn' },
@@ -173,7 +184,7 @@ export function IntensityView({ sel }: { sel: Selection }) {
             x={{ values: hist.centres, label: { en: 'Intensity over the mean', es: 'Intensidad sobre la media' }, format: { decimals: 2 } }}
             y={{ label: { en: 'Traps', es: 'Trampas' }, format: { decimals: 0 } }}
             series={[{ label: { en: 'Traps', es: 'Trampas' }, values: hist.counts, color: '--color-accent', dots: true }]}
-            marks={[{ x: 1, label: { en: 'mean', es: 'media' } }]}
+            marks={[{ x: 1, label: { en: 'mean', es: 'media' } }, ...(pickedValue !== null ? [{ x: pickedValue, label: { en: `trap ${sel.trapId}`, es: `trampa ${sel.trapId}` } }] : [])]}
           />
         </Fill>
       </PlotCard>
@@ -196,6 +207,7 @@ export function DepthView({ sel }: { sel: Selection }) {
   const values = trapI ? trapI.map((v) => (scale === null ? v : v * scale)) : null;
   const unit = scale === null ? { en: 'ratio to the mean', es: 'razón a la media' } : { en: dyn!.depth.unit, es: dyn!.depth.unit };
   const items = useMemo(() => (values ? sel.traps.map((tr, i) => ({ id: tr.id, v: values[i] })) : []), [sel.traps, values]);
+  const picked = useMemo(() => selectedSeries(items, sel.trapId), [items, sel.trapId]);
   if ((!values || values.length === 0) && isShaped(sel.data.manifest)) {
     return (
       <ShapedPotential
@@ -209,7 +221,7 @@ export function DepthView({ sel }: { sel: Selection }) {
     return (
       <PlotCard fill title={{ en: 'Trap depth', es: 'Profundidad de las trampas' }} {...c} dataKey={stateKey}>
         <Fill>
-          <Unavailable reason={{ en: `No per-trap intensities for ${sel.methodId} on this case, so no depth can be derived.`, es: `No hay intensidades por trampa de ${sel.methodId} en este caso, así que no se puede derivar la profundidad.` }} />
+          <Unavailable reason={{ en: `No per-trap intensities for ${methodName(sel.methodId).en} on this case, so no depth can be derived.`, es: `No hay intensidades por trampa de ${methodName(sel.methodId).es} en este caso, así que no se puede derivar la profundidad.` }} />
         </Fill>
       </PlotCard>
     );
@@ -235,7 +247,10 @@ export function DepthView({ sel }: { sel: Selection }) {
             title={{ en: 'Trap depth by trap id', es: 'Profundidad por identificador de trampa' }}
             x={{ values: items.map((i) => i.id), label: { en: 'Trap id', es: 'Identificador de trampa' }, format: { decimals: 0, grouping: false } }}
             y={{ label: { en: 'Depth', es: 'Profundidad' }, unit, format: { decimals: 2 } }}
-            series={[{ label: { en: 'Depth', es: 'Profundidad' }, values: items.map((i) => i.v), color: '--color-accent', mode: 'points', size: 4 }]}
+            series={[
+              { label: { en: 'Depth', es: 'Profundidad' }, values: items.map((i) => i.v), color: '--color-accent', mode: 'points', size: 4 },
+              ...(picked ? [{ label: { en: `Selected trap ${sel.trapId}`, es: `Trampa elegida ${sel.trapId}` }, values: picked, color: '--color-magenta' as const, mode: 'points' as const, size: 12 }] : []),
+            ]}
             yMarks={[{ y: mean, label: { en: 'mean', es: 'media' }, tone: 'neutral' }]}
             onPick={(k) => act.selectTrap(items[k]?.id ?? null)}
           />
@@ -265,7 +280,7 @@ export function BudgetView({ sel }: { sel: Selection }) {
     return (
       <PlotCard fill title={{ en: 'Where the optical power goes', es: 'A dónde va la potencia óptica' }} {...c} dataKey={stateKey}>
         <Fill>
-          <Unavailable reason={{ en: `No metrics for ${sel.methodId} on this case.`, es: `No hay métricas de ${sel.methodId} en este caso.` }} />
+          <Unavailable reason={{ en: `No metrics for ${methodName(sel.methodId).en} on this case.`, es: `No hay métricas de ${methodName(sel.methodId).es} en este caso.` }} />
         </Fill>
       </PlotCard>
     );

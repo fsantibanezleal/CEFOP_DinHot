@@ -1,0 +1,363 @@
+\section{Data and data contracts}\label{sec:data}
+Every numerical input in the evaluated product is synthetic or adapted from an
+identified open synthetic model. There are no private building measurements,
+customer records or operational performance labels. The fifteen-case catalog
+uses a fixed authored seed and separates scalar semantics, hard-row integrity,
+sparse structure, predictive control and energy policy. The registered original
+and grouped studies introduce their own prospective instance grids and seed
+splits; neither is inferred from the teaching catalog. The code and model
+attribution retain their separate upstream terms, while explanatory material
+and the archived scientific datasets carry their stated distribution licences.
+
+The C13 building source follows the published two-zone model from OSQPSlack,
+with a 20~kWh battery and 96 quarter-hour intervals. It preserves mixed quadratic,
+grouped, elastic and Huber prices. C14 and C15 reuse the physical structure with
+explicitly changed separable side-price policies, so their optima are not
+reproductions of the mixed objective. The grouped study's hourly thermal inputs
+use a separate synthetic RC forecast model with hard dynamics, initial conditions
+and heater-energy limits. A forecast input is not a measured trajectory or a
+closed-loop controller experiment. These distinctions constrain every comparison
+and figure interpretation.
+
+The eighteen versioned boundaries below specify how those scientific objects
+move between producers, numerical tools and readers. Tables are generated from
+the actual JSON schemas; the accompanying prose explains the physical semantics
+and cross-field checks that a type validator cannot prove. Unknown fields,
+malformed dimensions and invalid states are refused according to the respective
+schema and consumer. Missing data remain missing rather than becoming an empty
+successful result. A schema example establishes shape, not deployed availability.
+Physical units are explicit row/decision metadata where they apply; identifiers,
+hashes, enum states and counts have no physical dimension.
+
+\subsection{Deployment case inventory}\label{sec:contract-case-index}
+The case-index contract schema 3.1.0 is produced by the manifest component and
+consumed by the static artifact loader and optional file-serving API. Its schema,
+engine version, case count, default case, case list and file inventory are shown
+in Table~\ref{tab:contract-case-index}. Each listed artifact has an identity that
+the reader checks before using its contents. Counts are nonnegative integers;
+paths and hashes are identifiers rather than physical quantities. A default
+selection must refer to a listed case, and a file's checksum must match its
+actual bytes. Schema validity alone cannot establish either condition. Absence
+of this inventory stops the site build because a reader cannot safely discover
+its scientific evidence. An older pipeline version is stale and is displayed
+as such. The index never proves that every possible solver request has run;
+it names the finite exported distribution. Replacing the source with a fixture
+inventory exercises the same consumer boundary without pretending the fixture
+is the complete production case population.
+\input{generated/contract-case-index.tex}
+
+\subsection{Individual deployment manifest}\label{sec:contract-case-manifest}
+The case-manifest contract schema 5.0.0 connects one scientific case to the
+shared deployment shell. The manifest producer assigns the case identifier,
+bilingual title/category, engine identity, product version, seed, source,
+artifact descriptors, lane and acceptance information. The consumer uses that
+envelope to select available evidence without embedding numerical assumptions
+in navigation code. Table~\ref{tab:contract-case-manifest} lists the actual
+fields. A seed is a reproducibility identifier; it is not a physical measurement.
+Each artifact retains its own unit-bearing scientific payload. If an indexed
+manifest is absent, readiness is partial and the corresponding case is unavailable,
+while other cases remain accessible. Unknown cases receive a missing-file response.
+A stale engine/product identity cannot be hidden by preserving an old checksum.
+The producer and consumer tests also exercise source substitution, preventing a
+handwritten browser fixture from becoming a special unvalidated path. This
+contract describes presentation availability, not a certificate of every
+mathematical optimum contained in the referenced payload.
+\input{generated/contract-case-manifest.tex}
+
+\subsection{Readiness and catalog identity}\label{sec:contract-readiness}
+The readiness contract schema 2.0.1 is computed from the actual contract catalog,
+product identity and distributed inventory. Its schema tag, product version,
+catalog digest and per-contract states are shown in Table~\ref{tab:contract-readiness}.
+It is consumed by the shared reader and optional API to distinguish available,
+provider, missing, partial and stale evidence within the shared state vocabulary.
+These are availability states with explanatory reasons, not accuracy labels.
+The producer does not infer a trained model from an empty model directory, and
+the readiness document excludes itself from recursively proving its own presence.
+An absent file prevents a complete build; a runtime load failure is reported
+as unknown readiness while other views retain their own evidence. The catalog
+digest prevents a changed boundary inventory from being paired silently with an
+old readiness result. Four grouped-study boundaries remain unavailable to the
+browser because no validated replay adapter is installed. Their valid schema
+examples and complete external study data do not change that missing state.
+\input{generated/contract-readiness.tex}
+
+\subsection{Dormant file-serving API}\label{sec:contract-api}
+The API contract schema 2.1.0 is an OpenAPI boundary owned by the optional app
+service. In the current static product this service is dormant. Its unavailable
+body has a detail field, while the full OpenAPI description also specifies
+case, artifact and readiness routes and response states. Table~\ref{tab:contract-api}
+describes the unavailable body rather than inventing a live inference response.
+The producer serves precomputed files when explicitly activated; it never
+executes an optimizer as a consequence of an HTTP request. The static reader
+uses committed artifacts directly and therefore does not depend on a resident
+API. A missing routed document returns the documented unavailable response
+with its reason, and an unknown case or artifact is missing. An enabled
+service's own readiness is distinct from the static distribution's explicit
+dormant-API entry. This distinction avoids interpreting an example response,
+a schema-valid object or a local development server as evidence of a deployed
+numerical computation service.
+\input{generated/contract-api.tex}
+
+\subsection{Scientific case inventory}\label{sec:contract-softqp-index}
+The softqp-index contract schema 1.1.0 is produced by the scientific catalog
+runner and consumed by the workbench's case-data loader. It carries its schema
+version, overall state, default case, case descriptions, environment and
+limitations; Table~\ref{tab:contract-softqp-index} gives the field inventory.
+It names actual scientific records separately from shell deployment manifests.
+The case count and identifiers describe a finite synthetic catalog, not a
+sample of field deployments. Environment strings identify how the exported
+objects were computed; they do not make an arbitrary user's local runtime
+equivalent. A missing inventory leaves the scientific workbench unavailable
+with a path-specific explanation. Development/provider evidence is identified
+as such. Consumers compare listed paths and byte identities before interpreting
+case records, and source-swap tests exercise the same code using a real
+alternative fixture tree. This boundary prevents a visually populated case
+selector from being confused with loaded, current and scientifically compatible
+data for the selected method.
+\input{generated/contract-softqp-index.tex}
+
+\subsection{Original-space case result}\label{sec:contract-softqp-case-result}
+The softqp-case-result contract schema 2.3.0 contains a case identifier, bilingual
+descriptive fields, seed/source, numerical settings, method outcomes, original
+row metadata and, where supplied, the sparse problem. The scientific runner
+produces it; the workbench validates it and computes its physical displays.
+Table~\ref{tab:contract-softqp-case-result} lists its fields. Each run retains
+state and reason, original decision/dual vectors, dimensions, termination and
+objective/violation metrics when available. Row units attach to original
+departures, not auxiliary lifted coordinates. Method incompatibility and
+numerical failure do not satisfy the available-result branch of the schema.
+Cross-field consumers check vector lengths, original objectives, hard policy
+and lower/upper violation consistency. A missing case leaves that case
+unavailable while other records remain usable. A zero numerical hard error is
+reported only when the selected unit actually contains hard rows; absence of
+such rows is unavailable, not a fabricated zero. This preserves both scientific
+semantics and unit-aware interpretation.
+\input{generated/contract-softqp-case-result.tex}
+
+\subsection{Sparse scientific problem specification}\label{sec:contract-softqp-case-spec}
+The softqp-case-spec contract schema 1.0.0 is the original-space input exchanged
+by local request execution. Its matrices $P,A$, vector $q$, lower/upper bounds
+and penalty object appear in Table~\ref{tab:contract-softqp-case-spec}. Sparse
+matrices use explicit compressed-column arrays: data, row indices, column
+pointers and shape. Pointer monotonicity, index range, finite coefficients and
+dimension agreement are numerical cross-field requirements beyond a list type.
+Bounds may explicitly omit a side; missing endpoints are not replaced by
+arbitrary large finite constants. The penalty object preserves hard/soft
+policy and side coefficients. The producer is the local I/O component, and
+the native executor and browser import validator are its consumers. A complete
+matching specification is required before local execution can be accepted;
+its absence does not disable canonical replay. Physical units remain supplied
+by the original case's row/decision context, so a structurally valid matrix
+cannot independently redefine metres as centimetres or change a hard physical
+row into a finite-cost preference.
+\input{generated/contract-softqp-case-spec.tex}
+
+\subsection{Bounded local cost-edit request}\label{sec:contract-softqp-run-request}
+The softqp-run-request contract schema 1.1.0 carries the case identity, immutable
+base digest, schema version and three edit factors; its fields are in
+Table~\ref{tab:contract-softqp-run-request}. The browser creates the request,
+and the local scientific request runner consumes it. Lower and upper factors
+range from 0.01 to 100, while the additional quadratic factor ranges from 0 to 100.
+They are dimensionless multipliers on existing side prices, not replacement
+physical units or arbitrary sparse matrices. The base digest binds the edit
+to the exact canonical model. Cross-field validation preserves matrices,
+linear term, bounds and hard-row coefficients; grouped/Huber models outside
+the separable editor are refused. If no matching complete request exists,
+the local path is unavailable while stored replay remains valid. A changed
+digest, extra field or unsupported factor cannot be repaired by accepting an
+unrelated result. This narrowly defined exchange makes a local what-if policy
+change inspectable without implying a hosted solver or browser-native execution.
+\input{generated/contract-softqp-run-request.tex}
+
+\subsection{Local native result envelope}\label{sec:contract-softqp-local-export}
+The softqp-local-export contract schema 1.1.0 wraps the original request,
+result, schema identity and optional runtime information. The local request
+runner produces it, and the browser verifies it before changing the selected
+workbench result. Table~\ref{tab:contract-softqp-local-export} gives the top-level
+fields; nested request and result retain their own complete definitions.
+Runtime fingerprints improve provenance but do not replace original-space
+numerical checks. The consumer matches case digest and edit factors, checks
+unchanged hard policy, recomputes objective components and departures, and
+rejects altered imported objectives. Missing or mismatched exports leave
+local execution unavailable, preserving canonical replay. Accepted imports
+are labelled local-native and can be restored to the original record; changing
+the selected case discards an incompatible local import. No upload is sent
+to a hosted service. The exported file is therefore evidence of a particular
+external numerical execution under a matching request, not proof that the
+reader itself computed an optimizer or that every result from a user machine
+has the historical experiment's source identity.
+\input{generated/contract-softqp-local-export.tex}
+
+\subsection{Paired predictive-control stream}\label{sec:contract-softqp-stream}
+The softqp-stream contract schema 1.0.0 is produced by the experiment exporter
+and consumed by the fixed C12 stream reader. It carries case/protocol/source
+identities, environment, stream specification, frames, counts and limitations,
+as shown in Table~\ref{tab:contract-softqp-stream}. Frames retain physical time,
+the common state, oracle action, disturbances and method/mode observations.
+Position, velocity and acceleration use metres, metres per second and metres
+per squared second; elapsed numerical durations use seconds. Thirty-two
+frames share one independently driven trajectory, so comparing their solver
+outputs does not compare separate closed-loop controllers. Warm and cold
+workspaces have explicit setup/update boundaries. A missing stream is shown
+as missing with its path without erasing other evidence. The stream remains
+unavailable after an edited local model because its recorded policy no longer
+matches that request. Full frame ordering and mode identities are checked;
+overlapping predicted horizon costs cannot be summed as realized operational
+costs, and incompatible generalized projection states remain visible.
+\input{generated/contract-softqp-stream.tex}
+
+\subsection{Original experiment summary}\label{sec:contract-softqp-campaign} % voice-ok: literal contract schema identifier or source path
+The softqp-campaign contract schema 1.0.0 summarizes the original registered % voice-ok: literal contract schema identifier or source path
+study. The exporter supplies the protocol, environment, source/digest maps,
+observed process duration, peak worker memory, restart count, planned/completed
+instance counts, cell summaries, primary endpoint and linked artifacts.
+Table~\ref{tab:contract-softqp-campaign} lists these fields. Durations are in % voice-ok: literal contract schema identifier or source path
+seconds and resident memory in bytes; objective discrepancies and relative
+reductions are dimensionless. The browser's experimental reader consumes the
+summary after byte verification. A completed count must agree with the actual
+instance inventory and retained trial states. Its primary endpoint is the
+stored original 168-pair analysis, not a value recomputed from whichever
+descriptive plot is currently filtered. Missing evidence is explicitly
+unavailable while other case data remain present. Runtime measurements describe
+the specified supervised process and are not process-wide maxima inferred
+from CPU activity. This contract connects numerical observations to their
+registered uncertainty without treating a schema-valid positive replacement
+or a newly written checksum as independent scientific acceptance.
+\input{generated/contract-softqp-campaign.tex} % voice-ok: literal contract schema identifier or source path
+
+\subsection{Seeded instance inventory}\label{sec:contract-softqp-datasets}
+The softqp-datasets contract schema 1.0.0 governs the original study's array
+of generated-instance descriptors. Each entry identifies its split, dimension,
+density, diagonal condition, penalty family, seed, generation duration,
+problem digest and independent oracle state/reason/objective. Its item fields
+are shown in Table~\ref{tab:contract-softqp-datasets}. This is a list contract,
+not an object whose missing top-level properties imply an empty dataset.
+The experiment exporter produces it; the benchmark reader and replay validator
+consume it. Seeds and digests identify exact generated models. Density and
+condition are dimensionless controlled inputs; generation duration is a
+reported process interval distinct from solver time. A missing list makes
+experiment evidence unavailable with its specific path. Duplicate or omitted
+instances are inconsistent with the prospective population even if every
+remaining entry validates separately. Oracle failure is retained rather than
+replacing its model with an easier seed. This inventory therefore supports
+denominator and compatibility checks without turning an authored synthetic
+case grid into an operational sampling claim.
+\input{generated/contract-softqp-datasets.tex}
+
+\subsection{Original per-trial observation}\label{sec:contract-softqp-trial}
+The softqp-trial contract schema 1.0.0 governs each JSONL observation and its
+CSV projection. It retains the instance/split/family controls, method,
+repetition and warm-up flag, state/reason, original metrics, discrepancy,
+elapsed/update/setup durations, numerical result information, iterations,
+dimensions and backend status fields. Table~\ref{tab:contract-softqp-trial}
+lists the actual field inventory. The experiment exporter produces these
+rows; replay and benchmark consumers preserve their identity and type.
+Numerical durations are seconds, matrix sizes are counts and acceptance
+metrics have their stated normalized or physical interpretation. An
+incompatible observation can carry no solved objective; absence is not
+encoded as a successful zero. Warm-up flags prevent initialization samples
+from entering the measured primary reduction. Missing raw evidence remains
+missing even if a summary CSV exists. Full JSONL retains diagnostics that
+cannot be reconstructed from selected plot points. Repetition, method
+ordering and reason fields are retained so a fast unsuccessful or unsupported
+call cannot silently enter an accuracy-qualified timing distribution.
+\input{generated/contract-softqp-trial.tex}
+
+\subsection{Experimental artifact inventory}\label{sec:contract-softqp-experiment-index}
+The softqp-experiment-index contract schema 1.0.0 associates the protocol
+identity and experiment state with the exported artifact list. The producer
+is the experiment export module; the static experimental loader is its
+consumer. Table~\ref{tab:contract-softqp-experiment-index} lists its schema
+version, protocol identifier, artifacts and state. Each artifact is a named
+file with a declared representation and checksum rather than an inferred
+availability flag. Counts and byte identities are dimensionless metadata;
+physical units remain in the scientific records. Missing inventory leaves
+experiment evidence unavailable but does not disable independent teaching
+cases. The browser verifies actual bytes before reading JSON or plotting
+the selected projection. A valid inventory cannot certify the underlying
+mathematical acceptance on its own: replay must also verify complete
+populations, numerical states and source identities. Conversely, an existing
+large external archive does not automatically become a declared browser
+artifact. This boundary keeps the small public reader's exact distributed
+files separate from external raw study storage and prevents accidental
+claims that an unimplemented adapter has loaded an archived computation.
+\input{generated/contract-softqp-experiment-index.tex}
+
+\subsection{Directional repeated-forecast input batch}\label{sec:contract-softqp-coupled-batch}
+The softqp-coupled-batch contract schema 1.0.0 is an offline research input
+boundary produced and consumed by the coupled contract/worker components.
+Its schema version, kind, description, original problem, vector updates and
+unit arrays appear in Table~\ref{tab:contract-softqp-coupled-batch}. The
+problem retains sparse matrices, hard policy, disjoint groups, positive
+directional scales and original physical metadata. Updates change only
+the admitted repeated-operation vectors while preserving the fixed structural
+objects. Units distinguish each decision, interval row and group peak, so
+an inverse-row-unit directional scale can be checked against the chosen
+dimensionless peak. The batch is hashed before worker execution and
+cross-referenced by its observations. A valid batch example does not
+establish an available browser replay path: that consumer is absent and
+readiness remains missing for this boundary. Invalid group overlap,
+nonpositive scales, changed hard policy or mismatched update dimensions
+are refused rather than coerced into a superficially feasible model. The
+complete external archive contains the actual synthetic batches separately
+from these shape examples.
+\input{generated/contract-softqp-coupled-batch.tex}
+
+\subsection{Directional method observation}\label{sec:contract-softqp-coupled-observation}
+The softqp-coupled-observation contract schema 1.0.0 represents one oracle or
+method operation in the grouped study. It retains role, instance/split/seed,
+family/curvature/quadratic controls, method, repetition, warm-up, state/reason,
+complete elapsed duration, input batch digest, compatibility status, frame
+records, backend results, objectives and structural dimensions. The fields
+are shown in Table~\ref{tab:contract-softqp-coupled-observation}. The supervised
+worker produces the observation; the replay validator checks every returned
+frame in original coordinates. An elapsed duration measures preparation
+plus all 32 updates, solves, recovery and required acceptance calculations,
+not one forecast frame. An inaccurate candidate, dependent oracle failure
+and timeout remain distinct states. Missing primal/dual vectors are not
+fabricated from an objective value. No browser adapter is installed for
+these observations, so schema examples do not make the lane available.
+The batch digest, fixed method settings and complete frame count prevent
+transplanting an accepted solution from another instance or counting only
+successful frames from an otherwise failed repeated operation.
+\input{generated/contract-softqp-coupled-observation.tex}
+
+\subsection{Directional split summary}\label{sec:contract-softqp-coupled-campaign} % voice-ok: literal contract schema identifier or source path
+The softqp-coupled-campaign contract schema 1.0.0 summarizes each registered % voice-ok: literal contract schema identifier or source path
+grouped-study split. Its environment/source maps, full instance inventory,
+dataset paths, measured state counts, primary fields, peak worker memory,
+restart count and raw/CSV hashes are listed in
+Table~\ref{tab:contract-softqp-coupled-campaign}. The offline exporter produces % voice-ok: literal contract schema identifier or source path
+the summary, and independent replay consumes it. Development, held-out and
+robustness populations remain separate; they cannot be pooled to replace
+the 144-member primary endpoint. Elapsed quantities in nested observations
+use seconds, resident memory uses bytes and structural sizes are counts.
+Split names and digests identify populations rather than statistical
+weights selected after timing. A browser consumer is explicitly absent,
+and readiness remains missing. The external validation checks all measured
+states, inventories and artifact hashes before accepting the summary.
+Rewriting a checksum alongside a changed primary number therefore does
+not recreate the independent evidence authority. This contract supports
+archival reproducibility and denominator accounting without declaring a
+hosted research execution service or a successful computational hypothesis.
+\input{generated/contract-softqp-coupled-campaign.tex} % voice-ok: literal contract schema identifier or source path
+
+\subsection{Isolated directional teaching exchange}\label{sec:contract-softqp-coupled-lesson}
+The softqp-coupled-lesson contract schema 1.0.0 connects a small physical
+teaching input to actual native, compact-epigraph and directional row-split
+answers. It carries schema/SDK identity, worker fingerprint, input digest,
+the original input and method records; Table~\ref{tab:contract-softqp-coupled-lesson}
+lists these fields. The separately configured direct-CPython worker produces
+the result, and the teaching consumer verifies it before interpreting
+objectives, physical decisions, group peaks, hard errors and original KKT
+diagnostics. Inputs specify linear/quadratic group prices, row scaling
+and a directional policy scale. Row conversion is distinct from changing
+that policy. The source fingerprint and installed public SDK manifest
+prevent an unrelated local module from silently replacing the tested
+implementation. The exchange has bounded process time, output size and
+cleanup behavior. It remains unavailable to the browser because the
+teaching consumer is offline. Missing or mismatched results are refused,
+and a local shape example never serves as proof of a deployed numerical
+lane. This small illustration is separate from the full registered timing
+population and contributes no additional inference to that endpoint.
+\input{generated/contract-softqp-coupled-lesson.tex}

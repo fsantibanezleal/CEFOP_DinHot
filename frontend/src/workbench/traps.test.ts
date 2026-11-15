@@ -9,8 +9,8 @@ describe('the field-of-view bound', () => {
   it('accepts a trap strictly inside and names the bound for one at or beyond it, in both languages', () => {
     expect(outsideField(T(0, 664.9), HALF)).toBeNull();
     const at = outsideField(T(3, 665), HALF);
-    expect(at?.en).toBe('trap 3 has x_um=665 um, outside the unaliased field of view (abs must be below 665.0 um = lambda f / (2 p))');
-    expect(at?.es).toMatch(/la trampa 3 tiene x_um=665 um, fuera del campo de visión sin solapamiento \(abs debe ser menor que 665,0 um/);
+    expect(at?.en).toBe('trap 3 has x_um=665 µm, outside the unaliased field of view (abs must be below 665.0 µm = lambda f / (2 p))');
+    expect(at?.es).toMatch(/la trampa 3 tiene x_um=665 µm, fuera del campo de visión sin solapamiento \(abs debe ser menor que 665,0 µm/);
     expect(outsideField(T(1, 0, -700), HALF)?.en).toMatch(/y_um=-700/);
   });
 });

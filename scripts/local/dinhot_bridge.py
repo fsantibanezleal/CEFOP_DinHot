@@ -7,8 +7,13 @@ evidence the readiness rows read), so generation stages them there first and mov
 end, the repository's own layout, before the stage is validated and promoted.
 
     python scripts/local/dinhot_bridge.py stage-learned <stage>   # before the bake
+    python scripts/local/dinhot_bridge.py evaluate <stage>        # the held-out metrics of the released models at this version
     python scripts/local/dinhot_bridge.py finalize <stage>        # after the readiness document
     python scripts/local/dinhot_bridge.py validate <stage>        # a validator: the released files unchanged, every case present
+
+The model metrics (contract model-metrics, ``data/derived/models/metrics.json``) carry the version that measured them, so a stage
+of a new version measures them again (``pipeline.stages.evaluate`` on the staged released graphs and the held-out files of the data
+root, ``<CAOS_DATA_ROOT>/dinhot/learned`` unless ``DINHOT_LEARNED_DIR`` names another), instead of carrying the previous version's copy.
 
 Standard library only. Exit 0 on success, 1 with the reason otherwise.
 """
@@ -16,7 +21,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -50,6 +57,26 @@ def stage_learned(stage: Path) -> None:
         shutil.copyfile(path, target / path.name)
 
 
+def evaluation_command(stage: Path, environ: dict) -> tuple[list[str], Path, dict]:
+    """The command, working folder and environment of the evaluation stage on this stage's released graphs."""
+    learned = environ.get("DINHOT_LEARNED_DIR", "").strip()
+    if not learned:
+        data_root = environ.get("CAOS_DATA_ROOT", "").strip()
+        if not data_root:
+            raise SystemExit("dinhot_bridge: set CAOS_DATA_ROOT (the data root holding dinhot/learned) or DINHOT_LEARNED_DIR")
+        learned = str(Path(data_root) / "dinhot" / "learned")
+    models = stage / "data" / "derived" / "models"
+    command = [sys.executable, "-m", "pipeline.stages.evaluate", "--models-dir", str(models), "--out", str(models)]
+    return command, ROOT / "data-pipeline", {**environ, "DINHOT_LEARNED_DIR": learned}
+
+
+def evaluate(stage: Path) -> None:
+    command, cwd, env = evaluation_command(stage, dict(os.environ))
+    result = subprocess.run(command, cwd=cwd, env=env)
+    if result.returncode:
+        raise SystemExit(f"dinhot_bridge: the evaluation of the released models failed (exit {result.returncode})")
+
+
 def finalize(stage: Path) -> None:
     source = stage / "data" / "derived" / "models"
     target = stage / "models"
@@ -80,10 +107,10 @@ def validate(stage: Path) -> None:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 2 or argv[0] not in ("stage-learned", "finalize", "validate"):
+    if len(argv) != 2 or argv[0] not in ("stage-learned", "evaluate", "finalize", "validate"):
         print(__doc__, file=sys.stderr)
         return 2
-    {"stage-learned": stage_learned, "finalize": finalize, "validate": validate}[argv[0]](Path(argv[1]).resolve())
+    {"stage-learned": stage_learned, "evaluate": evaluate, "finalize": finalize, "validate": validate}[argv[0]](Path(argv[1]).resolve())
     return 0
 
 

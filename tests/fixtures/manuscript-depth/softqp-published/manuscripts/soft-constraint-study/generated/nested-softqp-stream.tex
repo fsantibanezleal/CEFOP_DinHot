@@ -1,0 +1,145 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for softqp-stream. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-softqp-stream}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}stream/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+case\_\allowbreak{}id & string & const=\allowbreak{}C12 & structural metadata /\allowbreak{} nested units\\
+protocol\_\allowbreak{}id & string & const=\allowbreak{}softqp-\allowbreak{}experiments-\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+engine\_\allowbreak{}source & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{40\}\$ & structural metadata /\allowbreak{} nested units\\
+environment & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['python', 'platform', 'packages'] & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}python & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}platform & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}packages & object & additionalProperties=\allowbreak{}\{'type': 'string'\} & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}engine\_\allowbreak{}revision & string /\allowbreak{} null & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{40\}\$ & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}engine\_\allowbreak{}source\_\allowbreak{}dirty & boolean /\allowbreak{} null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}native\_\allowbreak{}binary\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+specification & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['case\_\allowbreak{}id', 'frames', 'horizon', 'dt\_\allowbreak{}seconds', 'initial\_\allowbreak{}state', 'velocity\_\allowbreak{}impulses', 'policy', 'methods', 'modes', 'timing'] & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}case\_\allowbreak{}id & string & const=\allowbreak{}C12 & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}frames & integer & const=\allowbreak{}32 & count /\allowbreak{} integer identifier\\
+specification.\allowbreak{}horizon & integer & const=\allowbreak{}20 & count /\allowbreak{} integer identifier\\
+specification.\allowbreak{}dt\_\allowbreak{}seconds & number & const=\allowbreak{}0.\allowbreak{}2 & s\\
+specification.\allowbreak{}initial\_\allowbreak{}state & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & components: m and m/\allowbreak{}s\\
+specification.\allowbreak{}initial\_\allowbreak{}state[0] & number & const=\allowbreak{}1.\allowbreak{}6 & m\\
+specification.\allowbreak{}initial\_\allowbreak{}state[1] & number & const=\allowbreak{}0.\allowbreak{}0 & m/\allowbreak{}s\\
+specification.\allowbreak{}velocity\_\allowbreak{}impulses & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['8', '20'] & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}velocity\_\allowbreak{}impulses.\allowbreak{}8 & number & const=\allowbreak{}0.\allowbreak{}8 & m/\allowbreak{}s; key is frame index\\
+specification.\allowbreak{}velocity\_\allowbreak{}impulses.\allowbreak{}20 & number & const=\allowbreak{}-0.\allowbreak{}6 & m/\allowbreak{}s; key is frame index\\
+specification.\allowbreak{}policy & string & const=\allowbreak{}Independent stock lifting drives the common plant trajectory.\allowbreak{} Every compared method receives identical state inputs.\allowbreak{} These are paired solver observations, not separate controller rollouts.\allowbreak{} & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}methods & array & minItems=\allowbreak{}4; maxItems=\allowbreak{}4 & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}methods[0] & string & const=\allowbreak{}lifted & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}methods[1] & string & const=\allowbreak{}generalized & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}methods[2] & string & const=\allowbreak{}asymmetric & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}methods[3] & string & const=\allowbreak{}daqp & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}modes & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}modes[0] & string & const=\allowbreak{}cold & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}modes[1] & string & const=\allowbreak{}warm & structural metadata /\allowbreak{} nested units\\
+specification.\allowbreak{}timing & string & const=\allowbreak{}one documented stream observation per frame; no statistical superiority claim from it & structural metadata /\allowbreak{} nested units\\
+frames & array & minItems=\allowbreak{}32; maxItems=\allowbreak{}32 & count /\allowbreak{} integer identifier\\
+frames[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['frame', 'time\_\allowbreak{}seconds', 'state', 'velocity\_\allowbreak{}impulse', 'oracle\_\allowbreak{}objective', 'objective\_\allowbreak{}constant', 'oracle\_\allowbreak{}horizon\_\allowbreak{}cost', 'oracle\_\allowbreak{}control', 'applied\_\allowbreak{}control', 'next\_\allowbreak{}state', 'generation\_\allowbreak{}seconds', 'runs'] & count /\allowbreak{} integer identifier\\
+frames[].\allowbreak{}frame & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+frames[].\allowbreak{}time\_\allowbreak{}seconds & number & minimum=\allowbreak{}0 & s\\
+frames[].\allowbreak{}state & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & C12 components: m and m/\allowbreak{}s\\
+frames[].\allowbreak{}state[] & number & See defined object /\allowbreak{} value type & C12 components: m and m/\allowbreak{}s\\
+frames[].\allowbreak{}velocity\_\allowbreak{}impulse & number & See defined object /\allowbreak{} value type & m/\allowbreak{}s\\
+frames[].\allowbreak{}oracle\_\allowbreak{}objective & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}objective\_\allowbreak{}constant & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}oracle\_\allowbreak{}horizon\_\allowbreak{}cost & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}oracle\_\allowbreak{}control & number & See defined object /\allowbreak{} value type & m/\allowbreak{}s squared\\
+frames[].\allowbreak{}applied\_\allowbreak{}control & number & See defined object /\allowbreak{} value type & m/\allowbreak{}s squared\\
+frames[].\allowbreak{}next\_\allowbreak{}state & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & C12 components: m and m/\allowbreak{}s\\
+frames[].\allowbreak{}next\_\allowbreak{}state[] & number & See defined object /\allowbreak{} value type & C12 components: m and m/\allowbreak{}s\\
+frames[].\allowbreak{}generation\_\allowbreak{}seconds & number & minimum=\allowbreak{}0 & s\\
+frames[].\allowbreak{}runs & array & minItems=\allowbreak{}8; maxItems=\allowbreak{}8 & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['method', 'mode', 'state', 'reason', 'metrics', 'normalized\_\allowbreak{}gap', 'elapsed\_\allowbreak{}seconds', 'update\_\allowbreak{}seconds', 'workspace\_\allowbreak{}setup\_\allowbreak{}seconds', 'result'] & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}method & enumerated value & enum=\allowbreak{}['lifted', 'generalized', 'asymmetric', 'daqp', 'flex', 'elastiqp'] & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}mode & enumerated value & enum=\allowbreak{}['cold', 'warm'] & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}state & enumerated value & enum=\allowbreak{}['accepted', 'incompatible', 'failed', 'accuracy-\allowbreak{}rejected', 'timeout', 'resource-\allowbreak{}limit', 'oracle-\allowbreak{}failed'] & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}reason & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}reason (anyOf1) & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}reason (anyOf2) & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1) & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['base\_\allowbreak{}objective', 'penalty\_\allowbreak{}objective', 'objective', 'hard\_\allowbreak{}violation', 'lower\_\allowbreak{}violation', 'upper\_\allowbreak{}violation', 'slack'] & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}base\_\allowbreak{}objective & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}penalty\_\allowbreak{}objective & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}objective & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}hard\_\allowbreak{}violation & number & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}lower\_\allowbreak{}violation & array & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}lower\_\allowbreak{}violation[] & number & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}upper\_\allowbreak{}violation & array & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}upper\_\allowbreak{}violation[] & number & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}slack & array & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}slack[] & number & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}stationarity\_\allowbreak{}residual & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & cost /\allowbreak{} decision unit; raw gradient norm\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}stationarity\_\allowbreak{}residual (anyOf1) & number & minimum=\allowbreak{}0 & cost /\allowbreak{} decision unit; raw gradient norm\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}stationarity\_\allowbreak{}residual (anyOf2) & null & See defined object /\allowbreak{} value type & cost /\allowbreak{} decision unit; raw gradient norm\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}objective\_\allowbreak{}gap\_\allowbreak{}against\_\allowbreak{}lifted & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}objective\_\allowbreak{}gap\_\allowbreak{}against\_\allowbreak{}lifted (anyOf1) & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf1).\allowbreak{}objective\_\allowbreak{}gap\_\allowbreak{}against\_\allowbreak{}lifted (anyOf2) & null & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}metrics (anyOf2) & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}normalized\_\allowbreak{}gap & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+frames[].\allowbreak{}runs[].\allowbreak{}normalized\_\allowbreak{}gap (anyOf1) & number & minimum=\allowbreak{}0 & dimensionless normalized diagnostic /\allowbreak{} factor\\
+frames[].\allowbreak{}runs[].\allowbreak{}normalized\_\allowbreak{}gap (anyOf2) & null & See defined object /\allowbreak{} value type & dimensionless normalized diagnostic /\allowbreak{} factor\\
+frames[].\allowbreak{}runs[].\allowbreak{}elapsed\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}elapsed\_\allowbreak{}seconds (anyOf1) & number & minimum=\allowbreak{}0 & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}elapsed\_\allowbreak{}seconds (anyOf2) & null & See defined object /\allowbreak{} value type & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}update\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}update\_\allowbreak{}seconds (anyOf1) & number & minimum=\allowbreak{}0 & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}update\_\allowbreak{}seconds (anyOf2) & null & See defined object /\allowbreak{} value type & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}workspace\_\allowbreak{}setup\_\allowbreak{}seconds & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}workspace\_\allowbreak{}setup\_\allowbreak{}seconds (anyOf1) & number & minimum=\allowbreak{}0 & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}workspace\_\allowbreak{}setup\_\allowbreak{}seconds (anyOf2) & null & See defined object /\allowbreak{} value type & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}result & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1) & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['method', 'status', 'status\_\allowbreak{}code', 'x', 'metrics', 'dimensions', 'iterations', 'setup\_\allowbreak{}seconds', 'solve\_\allowbreak{}seconds', 'elapsed\_\allowbreak{}seconds'] & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}method & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}status & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}status\_\allowbreak{}code & integer & See defined object /\allowbreak{} value type & count /\allowbreak{} integer identifier\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}x & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & decision unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}x (anyOf1) & array & See defined object /\allowbreak{} value type & decision unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}x (anyOf1)[] & number & See defined object /\allowbreak{} value type & decision unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}x (anyOf2) & null & See defined object /\allowbreak{} value type & decision unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}y & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & cost /\allowbreak{} original row unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}y (anyOf1) & array & See defined object /\allowbreak{} value type & cost /\allowbreak{} original row unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}y (anyOf1)[] & number & See defined object /\allowbreak{} value type & cost /\allowbreak{} original row unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}y (anyOf2) & null & See defined object /\allowbreak{} value type & cost /\allowbreak{} original row unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1) & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['base\_\allowbreak{}objective', 'penalty\_\allowbreak{}objective', 'objective', 'hard\_\allowbreak{}violation', 'lower\_\allowbreak{}violation', 'upper\_\allowbreak{}violation', 'slack'] & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}base\_\allowbreak{}objective & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}penalty\_\allowbreak{}objective & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}objective & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}hard\_\allowbreak{}violation & number & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}lower\_\allowbreak{}violation & array & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}lower\_\allowbreak{}violation[] & number & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}upper\_\allowbreak{}violation & array & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}upper\_\allowbreak{}violation[] & number & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}slack & array & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}slack[] & number & See defined object /\allowbreak{} value type & original row units; see unit map\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}stationarity\_\allowbreak{}residual & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & cost /\allowbreak{} decision unit; raw gradient norm\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}stationarity\_\allowbreak{}residual (anyOf1) & number & minimum=\allowbreak{}0 & cost /\allowbreak{} decision unit; raw gradient norm\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}stationarity\_\allowbreak{}residual (anyOf2) & null & See defined object /\allowbreak{} value type & cost /\allowbreak{} decision unit; raw gradient norm\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}objective\_\allowbreak{}gap\_\allowbreak{}against\_\allowbreak{}lifted & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}objective\_\allowbreak{}gap\_\allowbreak{}against\_\allowbreak{}lifted (anyOf1) & number & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf1).\allowbreak{}objective\_\allowbreak{}gap\_\allowbreak{}against\_\allowbreak{}lifted (anyOf2) & null & See defined object /\allowbreak{} value type & model cost unit\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}metrics (anyOf2) & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}dimensions & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['variables', 'rows', 'nnz'] & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}dimensions.\allowbreak{}variables & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}dimensions.\allowbreak{}rows & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}dimensions.\allowbreak{}nnz & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}iterations & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}setup\_\allowbreak{}seconds & number & minimum=\allowbreak{}0 & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}solve\_\allowbreak{}seconds & number & minimum=\allowbreak{}0 & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}elapsed\_\allowbreak{}seconds & number & minimum=\allowbreak{}0 & s\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf1).\allowbreak{}backend\_\allowbreak{}settings & object & additionalProperties=\allowbreak{}\{'type': 'number'\} & structural metadata /\allowbreak{} nested units\\
+frames[].\allowbreak{}runs[].\allowbreak{}result (anyOf2) & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+counts & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}[] & structural metadata /\allowbreak{} nested units\\
+counts.\allowbreak{}accepted & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}incompatible & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}failed & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}accuracy-\allowbreak{}rejected & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}timeout & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}resource-\allowbreak{}limit & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+counts.\allowbreak{}oracle-\allowbreak{}failed & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+limitations & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+limitations[] & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

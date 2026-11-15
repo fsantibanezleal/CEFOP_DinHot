@@ -56,7 +56,14 @@ Checks, in increasing strength:
    from the row, a reason without a waiver and a row that says ``not applicable`` while ``product.json`` records no waiver are
    findings. ``frontend/scripts/gate.mjs`` holds the same rules and refuses to run the shell gate when they fail.
 
-6. **The three method tiers** (0.13.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): the ``## Method ladder`` is
+6. **The visualization catalog** (ADR-0082): ``## Visualization catalog`` is a table with the columns ``id``, ``question``,
+   ``data contract``, ``kind``, ``interactions``, ``linked views`` and ``placement``. Every row is specific, non-placeholder,
+   and the set names V1 through V6 exactly once; an inapplicable kind must give its reason and a replacement view of the same purpose.
+   The guided story (0.15.001, issue #102) is declared in ``product.json`` as ``"showcase": {"story_routes": [...]}``: 3 to 6
+   distinct routes ``/story/<step>`` in story order. A ``product.json`` without the list, or with a list that is not that, is a
+   finding: ADR-0082 requires the story, and this guard, not the gate runner, is where its absence fails. The gate runner and
+   ``frontend/scripts/check_story_mode.mjs`` walk the same list. A tree without ``product.json`` declares nothing.
+7. **The three method tiers** (0.13.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): the ``## Method ladder`` is
    a table ``| id | tier | method | acceptance criterion | gate |`` and each row's tier is ``classical``, ``sota`` (the state of
    the art) or ``beyond`` (beyond it). A product (a tree without ``.template-source``) needs a method in each tier, a section
    ``## Beyond the state of the art`` that lists at least one proposed method ``BS-<n>`` and never says "None claimed.", and a
@@ -781,6 +788,76 @@ def ladder_findings(stripped: str) -> list[str]:
     return out
 
 
+STORY_ROUTE = re.compile(r"^/story/[A-Za-z0-9][A-Za-z0-9._~-]*$")
+STORY_RULE = "ADR-0082: every App has a guided story of 3 to 6 directly addressable steps"
+
+
+def story_findings() -> list[str]:
+    """The guided story's routes, declared in ``product.json`` ``showcase.story_routes`` (0.15.001): 3 to 6 distinct ``/story/<step>``
+    routes. The gate runner and the story check read the same list; a missing story fails here."""
+    path = ROOT / "product.json"
+    if not path.is_file():
+        return []
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError:
+        return []  # app_kind_findings reports the file
+    if not isinstance(doc, dict):
+        return []
+    showcase = doc.get("showcase")
+    routes = showcase.get("story_routes") if isinstance(showcase, dict) else None
+    if routes is None:
+        return [f'product.json declares no showcase.story_routes ({STORY_RULE}): list the story\'s routes, "/story/<step>", '
+                'in story order, as the gate runner walks them']
+    if not isinstance(routes, list):
+        return [f'product.json showcase.story_routes must be a list of "/story/<step>" routes ({STORY_RULE})']
+    out: list[str] = []
+    for i, route in enumerate(routes):
+        if not isinstance(route, str) or not STORY_ROUTE.match(route):
+            out.append(f'product.json showcase.story_routes[{i}] is {json.dumps(route)}: each entry is one step, "/story/<step>" ({STORY_RULE})')
+        elif routes.index(route) != i:
+            out.append(f"product.json showcase.story_routes lists {route} twice ({STORY_RULE})")
+    if not 3 <= len(routes) <= 6:
+        out.append(f"product.json showcase.story_routes has {len(routes)} step(s) ({STORY_RULE})")
+    return out
+
+
+def visualization_catalog_findings(stripped: str) -> list[str]:
+    """Every CAOS app states the problem-specific data and interaction contract for the six ADR-0082 view kinds."""
+    body = section_text(stripped, "Visualization catalog")
+    if body is None:
+        return ["SDD.md has no '## Visualization catalog' (ADR-0082): add one row for each V1–V6 with question, data contract, interactions, linked views and placement"]
+    head = ["id", "question", "data contract", "kind", "interactions", "linked views", "placement"]
+    rows = table_rows(body, head)
+    if rows is None:
+        return ["SDD.md Visualization catalog needs a table with columns | id | question | data contract | kind | interactions | linked views | placement | (ADR-0082)"]
+    out: list[str] = []
+    seen: dict[str, int] = {}
+    for cells in rows:
+        if len(cells) != len(head):
+            out.append(f"SDD.md Visualization catalog row has {len(cells)} cells; expected {len(head)}")
+            continue
+        vid = cells[0].strip().upper()
+        match = re.search(r"\bV([1-6])\b", vid)
+        if not match:
+            out.append(f"SDD.md Visualization catalog row id {cells[0]!r} must identify V1 through V6")
+            continue
+        kind = f"V{match.group(1)}"
+        seen[kind] = seen.get(kind, 0) + 1
+        for label, value in zip(head[1:], cells[1:], strict=True):
+            if not value.strip() or value.strip().lower() in PLACEHOLDER or re.search(r"\b(TODO|TBD|TBC|placeholder|unknown)\b", value, re.I):
+                out.append(f"SDD.md {kind} {label} is empty or a placeholder; ADR-0082 requires a product-specific contract")
+        reasoned = bool(re.search(r"not applicable|inapplicable", cells[3], re.I))
+        if reasoned and (re.search(r"because|reason", cells[3], re.I) is None or len(cells[4].split()) < 3):
+            out.append(f"SDD.md {kind} kind waives applicability without a reason and a replacement purpose in interactions")
+    for kind in (f"V{i}" for i in range(1, 7)):
+        if seen.get(kind, 0) == 0:
+            out.append(f"SDD.md Visualization catalog is missing {kind} (ADR-0082)")
+        elif seen[kind] > 1:
+            out.append(f"SDD.md Visualization catalog lists {kind} {seen[kind]} times; each kind has one canonical row")
+    return out
+
+
 def sdd_findings() -> list[str]:
     if not SDD.is_file():
         return [f"{SDD.relative_to(ROOT).as_posix()} is missing"]
@@ -791,6 +868,8 @@ def sdd_findings() -> list[str]:
     out += sections_findings(text)
     out += app_kind_findings(text)
     stripped = strip_markup(text)
+    out += visualization_catalog_findings(stripped)
+    out += story_findings()
     out += ladder_findings(stripped)
     research = section_text(stripped, "Research basis")
     resources = section_text(stripped, "Resources")

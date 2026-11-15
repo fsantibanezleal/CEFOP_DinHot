@@ -38,9 +38,9 @@ export function ReproducibilityTopic() {
 }
 
 const TOLERANCES: { group: { en: string; es: string }; phi: string; abs: string; rel: string }[] = [
-  { group: { en: 'Methods of the GS family, M01 to M08, M12, M14, M15, M16, M19', es: 'Métodos de la familia GS, M01 a M08, M12, M14, M15, M16, M19' }, phi: '1e-9 rad', abs: '1e-10', rel: '1e-9' },
-  { group: { en: 'M10 and M11 (line search and Adam pass last-bit differences through the iterate)', es: 'M10 y M11 (la búsqueda de línea y Adam propagan diferencias del último bit por la iteración)' }, phi: '1e-8 rad', abs: '1e-9', rel: '1e-8' },
-  { group: { en: 'Live grid 256 x 256 padded 2, 30 iterations: M04, M06, M07', es: 'Grilla en vivo de 256 x 256 con relleno 2, 30 iteraciones: M04, M06, M07' }, phi: '1e-6 rad', abs: '1e-9', rel: '1e-8' },
+  { group: { en: 'Methods of the GS family, prisms and lenses to MRAF, closed-loop WGS, Zernike correction, Laguerre-Gaussian vortices, Hungarian rearrangement, multi-plane GS', es: 'Métodos de la familia GS, el método de prismas y lentes a MRAF, WGS en lazo cerrado, corrección de Zernike, vórtices de Laguerre-Gauss, reordenamiento húngaro, GS multiplano' }, phi: '1e-9 rad', abs: '1e-10', rel: '1e-9' },
+  { group: { en: 'The conjugate gradient method and Wirtinger gradient with Adam (line search and Adam pass last-bit differences through the iterate)', es: 'El método de gradiente conjugado y gradiente de Wirtinger con Adam (la búsqueda de línea y Adam propagan diferencias del último bit por la iteración)' }, phi: '1e-8 rad', abs: '1e-9', rel: '1e-8' },
+  { group: { en: 'Live grid 256 x 256 padded 2, 30 iterations: Gerchberg-Saxton, weighted GS, phase-fixed weighted GS', es: 'Grilla en vivo de 256 x 256 con relleno 2, 30 iteraciones: Gerchberg-Saxton, GS ponderado, GS ponderado con fase fija' }, phi: '1e-6 rad', abs: '1e-9', rel: '1e-8' },
 ];
 
 export function ParityTopic() {

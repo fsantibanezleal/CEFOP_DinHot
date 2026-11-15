@@ -68,6 +68,7 @@ import sys
 import tokenize
 import urllib.error
 import urllib.request
+from html.parser import HTMLParser
 from pathlib import Path
 
 # the size limits of a committed notebook: the whole file (outputs included) and each embedded image, so the set stays
@@ -914,11 +915,114 @@ def parse_code(code: str) -> ast.Module | None:
         return None
 
 
+class _VisibleHTML(HTMLParser):
+    """Static visible content; hidden HTML cannot pad the notebook's teaching prose."""
+
+    VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.stack: list[tuple[str, bool]] = []
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        style = re.sub(r"/\*.*?\*/", "", attributes.get("style") or "", flags=re.S)
+        effective: dict[str, tuple[str, bool]] = {}
+        displays = {"none", "block", "inline", "inline-block", "flex", "inline-flex", "grid", "inline-grid",
+                    "contents", "flow-root", "table", "inline-table", "table-row", "table-cell", "table-caption",
+                    "table-row-group", "table-header-group", "table-footer-group", "table-column", "table-column-group",
+                    "list-item", "inherit", "initial", "unset", "revert", "revert-layer"}
+        for declaration in style.split(";"):
+            property_name, separator, value = declaration.partition(":")
+            if not separator:
+                continue
+            property_name = property_name.strip().lower()
+            important = bool(re.search(r"!important\s*$", value, re.I))
+            value = re.sub(r"\s*!important\s*$", "", value, flags=re.I).strip().lower()
+            if property_name == "display" and value not in displays:
+                continue
+            if property_name == "visibility" and value not in {"hidden", "collapse", "visible", "inherit", "initial", "unset", "revert", "revert-layer"}:
+                continue
+            if property_name == "opacity":
+                try:
+                    float(value.rstrip("%"))
+                except ValueError:
+                    continue  # A CSS expression is not statically resolved to hidden.
+            if effective.get(property_name, ("", False))[1] and not important:
+                continue
+            effective[property_name] = value, important
+        hidden_style = (effective.get("display", ("", False))[0] == "none"
+                        or effective.get("visibility", ("", False))[0] in {"hidden", "collapse"}
+                        or ("opacity" in effective and float(effective["opacity"][0].rstrip("%")) <= 0))
+        hidden = (bool(self.stack and self.stack[-1][1]) or "hidden" in attributes
+                  or tag in {"script", "style", "template", "pre", "code"}
+                  or hidden_style)
+        if tag not in self.VOID:
+            self.stack.append((tag, hidden))
+        elif tag in {"br", "hr"} and not hidden:
+            self.parts.append("\n")
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in self.VOID:
+            self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data):
+        if not self.stack or not self.stack[-1][1]:
+            self.parts.append(data)
+
+    def handle_entityref(self, name):
+        self.handle_data(f"&{name};")
+
+    def handle_charref(self, name):
+        self.handle_data(f"&#{name};")
+
+
+# CommonMark raw HTML (spec 0.31.2, section 6.6): an open tag with its attributes, a closing tag, a comment, a processing instruction,
+# a declaration or CDATA. Any other `<` is text (`sum_{k<n}`, `i<j`, `x <y`) and never reaches the HTML parser, whose handling of
+# an unterminated "tag" changed in Python 3.12.11 and 3.13.4 (it hid the rest of the document: ChancaDEM's SDD, 0.15.000, #102).
+_HTML_ATTRIBUTE = r"""\s+[A-Za-z_:][A-Za-z0-9_.:-]*(?:\s*=\s*(?:[^\s"'=<>`]+|'[^']*'|"[^"]*"))?"""
+RAW_HTML = re.compile(rf"<(?:[A-Za-z][A-Za-z0-9-]*(?:{_HTML_ATTRIBUTE})*\s*/?>|/[A-Za-z][A-Za-z0-9-]*\s*>|!--|\?|![A-Za-z]|!\[CDATA\[)")
+
+
+def visible_markdown(text: str) -> str:
+    """Remove hidden DOM and complete or unterminated HTML comments; preserve visible Markdown. Only real markup (``RAW_HTML``) is
+    parsed: a `<` that starts no tag is prose, on every Python release."""
+    protected: dict[str, str] = {}
+
+    def protect(match):
+        token = f"\x00{len(protected)}\x00"
+        protected[token] = match[0]
+        return token
+
+    # Literal code/math is not HTML: a quoted hidden tag must not swallow later prose.
+    text = re.sub(r"(?ms)^\s*(`{3,}|~{3,})[^\n]*\n.*?^\s*\1[^\n]*(?:\n|$)", protect, text)
+    text = re.sub(r"<(?:https?://|mailto:)[^\s<>]+>", protect, text, flags=re.I)
+    text = re.sub(r"(`+)[^`\n]*\1|\$\$.*?\$\$|\$[^$\n]*\$|\\\[.*?\\\]|"
+                  r"\\begin\{(?P<environment>(?:equation|align)\*?)\}.*?\\end\{(?P=environment)\}",
+                  protect, text, flags=re.S)
+    text = re.sub(r"<", lambda m: m[0] if RAW_HTML.match(m.string, m.start()) else protect(m), text)
+    parser = _VisibleHTML()
+    parser.feed(re.sub(r"<!--.*?(?:-->|$)", "", text, flags=re.S))
+    parser.close()
+    result = "".join(parser.parts)
+    for token, value in protected.items():
+        result = result.replace(token, value)
+    return result
+
+
 def strip_markup(text: str) -> str:
     """Markdown without what a reader does not read as prose: fenced and indented code, HTML comments, tables, display and inline math."""
     kept: list[str] = []
     fenced = False
-    for line in text.splitlines():
+    for line in visible_markdown(text).splitlines():
         if FENCE.match(line):
             fenced = not fenced
         elif not fenced:
@@ -1536,7 +1640,7 @@ class Reading:
         for i, c in enumerate(self.cells):
             if c["cell_type"] == "markdown":
                 fenced = False
-                for line in text_of(c["source"]).splitlines():
+                for line in visible_markdown(text_of(c["source"])).splitlines():
                     if FENCE.match(line):
                         fenced = not fenced
                     elif not fenced and (m := HEADING2.match(line)):

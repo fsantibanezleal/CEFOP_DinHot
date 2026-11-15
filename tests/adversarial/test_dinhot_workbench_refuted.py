@@ -68,7 +68,7 @@ def test_a_lane_that_calls_a_baked_method_live_fails_the_lane_gate(tmp_path):
 def test_a_replayed_map_labelled_computed_here_fails_the_provenance_gate(tmp_path):
     """WK-008: the replay label is reworded to a computed-here claim: the label assertion fails (local-only: needs node and `npm ci` in frontend/, which the checks job does not install; the CI web job runs the same vitest suite)"""
     web_refute(tmp_path, 'frontend/src/workbench/views.test.tsx', 'replayed maps are labelled replayed from the bake and name the reference method; they are never labelled live', [
-        ('src/workbench/ui.tsx', '`Replayed from the bake: the maps are those of the reference method ${sel.maps.method}.`', '`Computed here: the maps are those of the reference method ${sel.maps.method}.`'),
+        ('src/workbench/ui.tsx', '`Replayed from the bake: the maps are those of the reference method ${methodName(sel.maps.method).en}.`', '`Computed here: the maps are those of the reference method ${methodName(sel.maps.method).en}.`'),
     ])
 
 

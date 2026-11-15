@@ -6,13 +6,18 @@
 import { PlotCard, SubTabs, usePausedViz, ViewsRow, Stage } from '@fasl-work/caos-app-shell';
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { loadIndex, useArtifact } from '../api/artifacts';
+import { CalloutScene } from './CalloutScene';
 import { INTENSITY_LUT } from './colormaps';
 import { getEngine, type ParticleResult } from './engine';
 import { Heatmap } from './HeatmapStage';
 import { cardOf } from './HologramGroup';
-import { histogram, useSelection, type Selection } from './model';
+import { histogram, methodName, useSelection, type Selection } from './model';
+import { appHref, beadWindow, cornerOnPlot, DYNAMICS_CASE, framePoint, frameTimeMs, particleCallouts } from './particle';
 import { umToPixel } from './traps';
-import { Fill, LOADING, Pending, Unavailable, useFmt, useStateKey, useT } from './ui';
+import { ReadinessNote } from '../readiness/ReadinessNote';
+import { CASE_ROWS, Fill, LOADING, Pending, Unavailable, useFmt, useStateKey, useT } from './ui';
+import { useNav } from './nav';
 
 const KB = 1.380649e-23;
 const AMU = 1.66053906660e-27;
@@ -20,11 +25,14 @@ const AMU = 1.66053906660e-27;
 export function DynamicsGroup() {
   const { t } = useT();
   const sel = useSelection();
+  const nav = useNav();
   return (
     <SubTabs
       ariaLabel={t('Dynamics views', 'Vistas de dinámica')}
+      value={nav?.tabs.dynamics}
+      onChange={nav ? (id) => nav.setTab('dynamics', id) : undefined}
       tabs={[
-        { id: 'particle', label: t('Trapped particle', 'Partícula atrapada'), content: sel ? <ParticleView sel={sel} /> : <Pending label={LOADING} /> },
+        { id: 'particle', label: t('Trapped particle', 'Partícula atrapada'), content: sel ? <ParticleView sel={sel} callouts /> : <Pending label={LOADING} /> },
         { id: 'psd', label: t('Spectrum', 'Espectro'), content: sel ? <SpectrumView sel={sel} /> : <Pending label={LOADING} /> },
         { id: 'rearrangement', label: t('Rearrangement', 'Reordenamiento'), content: sel ? <RearrangementView sel={sel} /> : <Pending label={LOADING} /> },
       ]}
@@ -124,7 +132,7 @@ export function useTrajectory(sel: Selection): Trajectory | null {
     fHz: dyn.psd.f_hz,
     p: dyn.psd.p,
     fcHz: dyn.fc_hz,
-    stiffness: dyn.kappa_pn_per_um !== undefined ? { value: dyn.kappa_pn_per_um, unit: 'pN/um' } : { value: dyn.omega_r_hz ?? NaN, unit: 'Hz' },
+    stiffness: dyn.kappa_pn_per_um !== undefined ? { value: dyn.kappa_pn_per_um, unit: 'pN/µm' } : { value: dyn.omega_r_hz ?? NaN, unit: 'Hz' },
     failed,
     pending: wantLive && !failed,
   };
@@ -135,8 +143,49 @@ const NO_DYNAMICS = {
   es: 'Este caso no tiene simulación de partícula (solo los casos de dinámica la tienen). Elija un caso de la categoría de dinámica para verla.',
 };
 
-export function ParticleView({ sel }: { sel: Selection }) {
+/** The case without a particle simulation: it names the case that holds one and opens it in one action (no live line, nothing computed here). */
+function DynamicsOffer() {
   const { t, pick } = useT();
+  const index = useArtifact((s) => loadIndex(s), []);
+  const entry = index.state === 'ready' ? index.data.cases.find((x) => x.case_id === DYNAMICS_CASE) : undefined;
+  const title = entry ? pick(entry.title) : DYNAMICS_CASE;
+  const nav = useNav();
+  const href = appHref(import.meta.env.BASE_URL, { case: DYNAMICS_CASE, view: 'dynamics' });
+  return (
+    <div className="dh-pv-offer" data-dynamics-offer="">
+      <Unavailable reason={NO_DYNAMICS} />
+      <p>{t(`The case "${title}" holds one: a bead held in a trap of the array.`, `El caso "${title}" tiene una: una microesfera sujeta en una trampa de la matriz.`)}</p>
+      <button type="button" className="btn" data-open-dynamics-case="" onClick={() => (nav?.openCase ? nav.openCase(DYNAMICS_CASE) : window.location.assign(href))}>
+        {t('Open the dynamics case', 'Abrir el caso de dinámica')}
+      </button>
+    </div>
+  );
+}
+
+/** The power spectrum of the trajectory with its Lorentzian fit and the corner frequency marked: the same chart in the dynamics view and in the spectrum view. */
+function PsdChart({ tr, fit }: { tr: Trajectory; fit: { fit: number[] } }) {
+  return (
+    <UPlotChart
+      height="fill"
+      title={{ en: 'Power spectral density, log-log', es: 'Densidad espectral de potencia, log-log' }}
+      x={{ values: Array.from(tr.fHz), label: { en: 'Frequency', es: 'Frecuencia' }, unit: 'Hz', log: true }}
+      y={{ label: { en: 'Power', es: 'Potencia' }, unit: 'µm^2/Hz', log: true }}
+      series={[
+        { label: { en: 'Simulated', es: 'Simulado' }, values: Array.from(tr.p), color: '--color-accent', mode: 'points', size: 5 },
+        { label: { en: 'Lorentzian fit', es: 'Ajuste lorentziano' }, values: fit.fit, color: '--color-warn' },
+      ]}
+      marks={[{ x: tr.fcHz, label: { en: 'fc', es: 'fc' } }]}
+    />
+  );
+}
+
+/**
+ * V4, the bead in its trap: the map zoomed on the trap the bead sits in with the bead and its trail at the time cursor, its position against
+ * time with the now line, and its spectrum with the fitted corner frequency. `callouts` pins the stiffness, the corner frequency and the depth
+ * to the picture; the story draws its own, so it leaves it off.
+ */
+export function ParticleView({ sel, callouts = false }: { sel: Selection; callouts?: boolean }) {
+  const { t, pick, lang } = useT();
   const fmt = useFmt();
   const stateKey = useStateKey();
   const c = cardOf(sel);
@@ -177,21 +226,65 @@ export function ParticleView({ sel }: { sel: Selection }) {
       col[i] = cc + tr.xUm[i] / focal.binUm;
       row[i] = cr + tr.yUm[i] / focal.binUm;
     }
-    return { col, row };
+    return { col, row, cc, cr };
   }, [tr, focal, trap, n]);
+  const fit = useMemo(() => (tr ? lorentzianFit(tr.fHz, tr.p, tr.fcHz) : null), [tr]);
+  // the position against time: one x per sample, in milliseconds, so a click on the chart is a frame
+  const series = useMemo(() => {
+    if (!tr) return null;
+    const ms = Array.from({ length: n }, (_, i) => frameTimeMs(i, tr.dtS));
+    const x = Array.from(tr.xUm).slice(0, n);
+    const y = Array.from(tr.yUm).slice(0, n);
+    // a fixed, symmetric range a little wider than the excursion, so the scale does not move with the playback
+    const peak = Math.max(1e-6, ...x.map(Math.abs), ...y.map(Math.abs));
+    return { ms, x, y, span: Math.ceil(peak * 1.15 * 20) / 20 };
+  }, [tr, n]);
 
+  // where the bead and the corner frequency are drawn, measured in the laid-out view as fractions of the scene (the second reading's N1:
+  // fixed fractions missed both on the story's narrower card)
+  const grid = useRef<HTMLDivElement | null>(null);
+  const psdCell = useRef<HTMLDivElement | null>(null);
+  const [spots, setSpots] = useState<{ bead: { x: number; y: number }; spectrum: { x: number; y: number } } | null>(null);
+  const fRange = tr && tr.fHz.length > 1 ? [tr.fHz[0], tr.fHz[tr.fHz.length - 1]] : null;
+  useEffect(() => {
+    const root = grid.current;
+    if (!root || !tr) return undefined;
+    const measure = () => {
+      const scene = root.closest('.dh-va-box')?.getBoundingClientRect();
+      const map = root.querySelector('canvas[data-heatmap]')?.getBoundingClientRect();
+      const plot = psdCell.current?.querySelector('.u-over')?.getBoundingClientRect();
+      if (!scene || !map || !plot || scene.width === 0 || scene.height === 0 || plot.width === 0) return;
+      const fc = fRange ? cornerOnPlot(tr.fcHz, Math.max(1e-9, fRange[0] || fRange[1] / 1000), fRange[1]) : { x: 0.5, y: 0.3 };
+      const fx = (px: number) => Math.round(((px - scene.left) / scene.width) * 1000) / 1000;
+      const fy = (py: number) => Math.round(((py - scene.top) / scene.height) * 1000) / 1000;
+      const next = {
+        bead: { x: fx(map.left + map.width / 2), y: fy(map.top + map.height / 2) },
+        spectrum: { x: fx(plot.left + fc.x * plot.width), y: fy(plot.top + fc.y * plot.height) },
+      };
+      setSpots((cur) => (cur && JSON.stringify(cur) === JSON.stringify(next) ? cur : next));
+    };
+    const watch = new ResizeObserver(measure);
+    watch.observe(root);
+    if (psdCell.current) watch.observe(psdCell.current);
+    const late = setTimeout(measure, 400);
+    measure();
+    return () => {
+      watch.disconnect();
+      clearTimeout(late);
+    };
+  }, [tr, fRange?.[0], fRange?.[1]]);
   if (!params) {
     return (
-      <PlotCard fill title={{ en: 'Trapped particle', es: 'Partícula atrapada' }} {...c} dataKey={stateKey}>
-        <Fill>
-          <Unavailable reason={NO_DYNAMICS} />
-        </Fill>
+      <PlotCard fill title={{ en: 'Trapped particle', es: 'Partícula atrapada' }} {...c} lane="replay" dataKey={stateKey}>
+        <div className="dh-fill">
+          <DynamicsOffer />
+        </div>
       </PlotCard>
     );
   }
   const bakedPower = params.power_mw;
   const what = { en: params.particle === 'bead' ? 'A bead' : 'An atom', es: params.particle === 'bead' ? 'Una microesfera' : 'Un átomo' };
-  const holo = sel.maps?.lane === 'live' ? { en: `the live ${sel.maps.method} hologram`, es: `el holograma ${sel.maps.method} en vivo` } : { en: `the baked ${sel.maps?.method} hologram`, es: `el holograma ${sel.maps?.method} de la generación` };
+  const holo = sel.maps?.lane === 'live' ? { en: `the live ${methodName(sel.maps.method).en} hologram`, es: `el holograma ${methodName(sel.maps.method).es} en vivo` } : { en: `the baked ${methodName(sel.maps?.method).en} hologram`, es: `el holograma ${methodName(sel.maps?.method).es} de la generación` };
   const where =
     tr?.lane === 'live'
       ? { en: `simulated now in your browser in the local map of ${holo.en}, seed ${sel.seed % 1000}, ${fmt(sel.powerMw, { decimals: 2 })} mW`, es: `simulado ahora en su navegador en el mapa local de ${holo.es}, semilla ${sel.seed % 1000}, ${fmt(sel.powerMw, { decimals: 2 })} mW` }
@@ -202,53 +295,97 @@ export function ParticleView({ sel }: { sel: Selection }) {
           : !sel.engineAvailable && sel.powerMw !== bakedPower
             ? { en: `replayed from the bake at ${fmt(bakedPower, { decimals: 1 })} mW; the live engine is not on this build, so the rail power rescales depth only`, es: `reproducido de la generación con ${fmt(bakedPower, { decimals: 1 })} mW; el motor en vivo no está en esta versión, así que la potencia del panel solo reescala la profundidad` }
             : { en: 'replayed from the bake', es: 'reproducido de la generación' };
+  const now = tr ? frameTimeMs(frame, tr.dtS) : 0;
+  const pt = tr ? framePoint(tr, frame) : { xUm: 0, yUm: 0 };
   const note = {
-    en: `${what.en} in trap ${params.trap_id}, ${where.en}. Press play, or scrub; time ${fmt(((tr?.dtS ?? 0) * frame) * 1e3, { decimals: 2 })} ms.`,
-    es: `${what.es} en la trampa ${params.trap_id}, ${where.es}. Pulse reproducir o recorra; tiempo ${fmt(((tr?.dtS ?? 0) * frame) * 1e3, { decimals: 2 })} ms.`,
+    en: `${what.en} in trap ${params.trap_id}, ${where.en}. Press play, or scrub; time ${fmt(now, { decimals: 2 })} ms, ${fmt(pt.xUm * 1e3, { decimals: 0 })} nm and ${fmt(pt.yUm * 1e3, { decimals: 0 })} nm from the trap centre.`,
+    es: `${what.es} en la trampa ${params.trap_id}, ${where.es}. Pulse reproducir o recorra; tiempo ${fmt(now, { decimals: 2 })} ms, ${fmt(pt.xUm * 1e3, { decimals: 0 })} nm y ${fmt(pt.yUm * 1e3, { decimals: 0 })} nm del centro de la trampa.`,
   };
-  return (
-    <PlotCard fill title={{ en: 'Particle trajectory over the focal map', es: 'Trayectoria de la partícula sobre el mapa focal' }} {...c} lane={tr?.lane ?? 'replay'} dataKey={stateKey} note={note}>
-      <Fill>
-        <div className="dh-stack">
-        <div className="dh-scrub">
-          <button type="button" className="btn" aria-pressed={viz.playing} onClick={() => (frame >= n - 1 ? (setFrame(0), viz.restart()) : viz.toggle())}>
-            {viz.playing ? t('Pause', 'Pausa') : t('Play', 'Reproducir')}
-          </button>
-          <label htmlFor="dh-particle-frame" className="sr-only">
-            {t('Frame', 'Cuadro')}
-          </label>
-          <input
-            id="dh-particle-frame"
-            type="range"
-            min={0}
-            max={Math.max(0, n - 1)}
-            value={frame}
-            onChange={(e) => {
-              viz.pause();
-              setFrame(Number(e.target.value));
-            }}
-          />
-          <output>{`${frame + 1} / ${n}`}</output>
-        </div>
-        <div className="dh-fill">
+  const dyn = sel.data.trace.dynamics;
+  const items = (geom: { width: number; band: number }) =>
+    tr
+      ? particleCallouts({ tr, depth: dyn ? dyn.depth : null, depthScale: sel.powerMw > 0 && bakedPower > 0 ? sel.powerMw / bakedPower : 1, particle: params.particle, lang, narrow: geom.width <= 900, spots })
+      : [];
+  const body = (
+    <div className="dh-pv-grid" ref={grid}>
+      <div className="dh-pv-cell dh-pv-map">
         {focal && trail ? (
           <Heatmap
-            label={{ en: 'Focal map with the particle trajectory', es: 'Mapa focal con la trayectoria de la partícula' }}
+            label={{ en: 'Focal map zoomed on the trap, with the bead and its trail', es: 'Mapa focal con zoom en la trampa, con la microesfera y su recorrido' }}
             data={focal.db}
             cols={focal.size}
             rows={focal.size}
             lut={INTENSITY_LUT}
             range={[sel.dbFloor, 0]}
-            trail={{ col: trail.col, row: trail.row, upto: frame }}
-            describe={(col, row, v) => pick({ en: `bin (${col}, ${row}): ${fmt(v, { decimals: 1 })} dB`, es: `bin (${col}, ${row}): ${fmt(v, { decimals: 1 })} dB` })}
-            summary={t(`Focal map ${focal.size} by ${focal.size} with the trajectory of ${n} samples of a ${params.particle}, now at sample ${frame + 1}.`, `Mapa focal de ${focal.size} por ${focal.size} con la trayectoria de ${n} muestras de ${params.particle === 'bead' ? 'una microesfera' : 'un átomo'}, ahora en la muestra ${frame + 1}.`)}
+            focus={{ col: trail.cc, row: trail.cr, half: beadWindow(params.particle === 'bead' ? (params.bead_radius_um ?? 0) : 0, focal.binUm) }}
+            axes={{ umPerCell: focal.binUm }}
+            trail={{ col: trail.col, row: trail.row, upto: frame, beadCells: params.particle === 'bead' && params.bead_radius_um ? params.bead_radius_um / focal.binUm : undefined }}
+            describe={(col, row, v) => {
+              const half = focal.size / 2;
+              const text = `x ${fmt((col - half + 0.5) * focal.binUm, { decimals: 2 })} µm, y ${fmt((row - half + 0.5) * focal.binUm, { decimals: 2 })} µm: ${fmt(v, { decimals: 1 })} dB`;
+              return pick({ en: text, es: text });
+            }}
+            summary={t(`Focal map zoomed on trap ${params.trap_id} with the trajectory of ${n} samples of a ${params.particle}, now at sample ${frame + 1}, ${fmt(now, { decimals: 2 })} ms.`, `Mapa focal con zoom en la trampa ${params.trap_id} con la trayectoria de ${n} muestras de ${params.particle === 'bead' ? 'una microesfera' : 'un átomo'}, ahora en la muestra ${frame + 1}, ${fmt(now, { decimals: 2 })} ms.`)}
           />
         ) : (
           <Unavailable reason={tr ? { en: 'The focal map of this method is not available here, so the trajectory has nothing to be drawn over.', es: 'El mapa focal de este método no está disponible aquí, así que la trayectoria no tiene sobre qué dibujarse.' } : NO_DYNAMICS} />
         )}
+      </div>
+      <div className="dh-pv-side">
+        <div className="dh-pv-cell">
+          {series && (
+            <UPlotChart
+              height="fill"
+              title={{ en: 'Bead position against time', es: 'Posición de la microesfera contra el tiempo' }}
+              x={{ values: series.ms, label: { en: 'Time', es: 'Tiempo' }, unit: 'ms', format: { decimals: 0 } }}
+              y={{ label: { en: 'Displacement from the trap centre', es: 'Desplazamiento desde el centro de la trampa' }, unit: 'µm', format: { decimals: 2 }, range: [-series.span, series.span] }}
+              series={[
+                { label: { en: 'x', es: 'x' }, values: series.x, color: '--color-accent' },
+                { label: { en: 'y', es: 'y' }, values: series.y, color: '--color-warn', dash: [5, 4] },
+              ]}
+              marks={[{ x: series.ms[Math.min(frame, n - 1)], label: { en: 'now', es: 'ahora' } }]}
+              onPick={(k) => {
+                viz.pause();
+                setFrame(k);
+              }}
+              readout={(k) => `${fmt(series.ms[k], { decimals: 2 })} ms: x ${fmt(series.x[k] * 1e3, { decimals: 0 })} nm, y ${fmt(series.y[k] * 1e3, { decimals: 0 })} nm`}
+            />
+          )}
         </div>
-        </div>
-      </Fill>
+        <div className="dh-pv-cell" ref={psdCell}>{tr && fit && <PsdChart tr={tr} fit={fit} />}</div>
+      </div>
+    </div>
+  );
+  return (
+    // while the engine's trajectory for this selection is still computing, the card shows the baked one and says it is recomputing (a key
+    // other than the selection's): the live answer replaces the series when it lands, so the view is not settled before it (gates G7, G20)
+    <PlotCard fill title={{ en: 'Particle trajectory over the focal map', es: 'Trayectoria de la partícula sobre el mapa focal' }} {...c} lane={tr?.lane ?? 'replay'} dataKey={tr?.pending ? `${stateKey}|pending` : stateKey} note={note}>
+      <div className="dh-stack">
+          <ReadinessNote ids={CASE_ROWS} />
+          <div className="dh-scrub">
+            <button type="button" className="btn" aria-pressed={viz.playing} onClick={() => (frame >= n - 1 ? (setFrame(0), viz.restart()) : viz.toggle())}>
+              {viz.playing ? t('Pause', 'Pausa') : t('Play', 'Reproducir')}
+            </button>
+            <label htmlFor="dh-particle-frame" className="sr-only">
+              {t('Time', 'Tiempo')}
+            </label>
+            <input
+              id="dh-particle-frame"
+              type="range"
+              min={0}
+              max={Math.max(0, n - 1)}
+              value={frame}
+              onChange={(e) => {
+                viz.pause();
+                setFrame(Number(e.target.value));
+              }}
+            />
+            <output>{`${fmt(now, { decimals: 1 })} ms`}</output>
+          </div>
+          <CalloutScene items={callouts ? items : null} tall>
+            {body}
+          </CalloutScene>
+      </div>
     </PlotCard>
   );
 }
@@ -320,17 +457,7 @@ export function SpectrumView({ sel }: { sel: Selection }) {
         }}
       >
         <Fill>
-          <UPlotChart
-            height="fill"
-            title={{ en: 'Power spectral density, log-log', es: 'Densidad espectral de potencia, log-log' }}
-            x={{ values: Array.from(tr.fHz), label: { en: 'Frequency', es: 'Frecuencia' }, unit: 'Hz', log: true }}
-            y={{ label: { en: 'Power', es: 'Potencia' }, unit: 'um^2/Hz', log: true }}
-            series={[
-              { label: { en: 'Simulated', es: 'Simulado' }, values: Array.from(tr.p), color: '--color-accent', mode: 'points', size: 5 },
-              { label: { en: 'Lorentzian fit', es: 'Ajuste lorentziano' }, values: fit.fit, color: '--color-warn' },
-            ]}
-            marks={[{ x: tr.fcHz, label: { en: 'fc', es: 'fc' } }]}
-          />
+          <PsdChart tr={tr} fit={fit} />
         </Fill>
       </PlotCard>
       <PlotCard
@@ -353,7 +480,7 @@ export function SpectrumView({ sel }: { sel: Selection }) {
             <UPlotChart
               height="fill"
               title={{ en: 'Counts by x position, simulated and Boltzmann', es: 'Cuentas por posición x, simulado y Boltzmann' }}
-              x={{ values: boltz.h.centres, label: { en: 'Displacement from the trap centre', es: 'Desplazamiento desde el centro de la trampa' }, unit: 'um', format: { decimals: 3 } }}
+              x={{ values: boltz.h.centres, label: { en: 'Displacement from the trap centre', es: 'Desplazamiento desde el centro de la trampa' }, unit: 'µm', format: { decimals: 3 } }}
               y={{ label: { en: 'Samples', es: 'Muestras' }, format: { decimals: 0 } }}
               series={[
                 { label: { en: 'Simulated', es: 'Simulado' }, values: boltz.h.counts, color: '--color-accent', dots: true },

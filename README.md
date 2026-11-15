@@ -32,13 +32,19 @@ Every method runs on the product's cases with the same seeds and metrics, and is
 
 ## Technical report and manuscripts
 
-The detailed technical report and the manuscript of the proposed methods are on Zenodo, each under its own concept DOI, and are
+The detailed technical report and the manuscripts of the proposed methods are on Zenodo, each under its own concept DOI, and are
 declared in `product.json` `manuscripts`.
 
 - Technical report (Zenodo, CC BY 4.0), the product, its 24 methods, fourteen cases and the benchmark:
   [10.5281/zenodo.23788731](https://doi.org/10.5281/zenodo.23788731) (concept DOI, always the latest version).
 - Manuscript on device-aware weighted GS and flicker-bounded phase-continuous sequences (Zenodo, CC BY 4.0):
   [10.5281/zenodo.23788733](https://doi.org/10.5281/zenodo.23788733) (concept DOI).
+- Manuscript on the weighted-cost continuation of the efficiency-uniformity front (Zenodo, CC BY 4.0):
+  [10.5281/zenodo.24022462](https://doi.org/10.5281/zenodo.24022462) (concept DOI).
+- Manuscript on aberration-robust holograms by expected-cost optimization (Zenodo, CC BY 4.0):
+  [10.5281/zenodo.24022464](https://doi.org/10.5281/zenodo.24022464) (concept DOI).
+- Manuscript on a learned warm start for phase-fixed weighted GS, a measured negative result (Zenodo, CC BY 4.0):
+  [10.5281/zenodo.24022470](https://doi.org/10.5281/zenodo.24022470) (concept DOI).
 
 ## Areas
 
@@ -46,7 +52,7 @@ The repository by area: its folder, whether the area is active or dormant, and w
 
 | Area | Folder | Status | What it holds |
 |---|---|---|---|
-| Web | [`frontend/`](frontend/) | active | The workbench (`/app`) and the five documentation routes (`/introduction`, `/methodology`, `/implementation`, `/experiments`, `/benchmark`) on the shared shell 0.19.6, with the engine ported to the browser. Build and test: `cd frontend && npm ci && npm run build && npm test`. |
+| Web | [`frontend/`](frontend/) | active | The workbench (`/app`) and the five documentation routes (`/introduction`, `/methodology`, `/implementation`, `/experiments`, `/benchmark`) on the shared shell 0.26.2, with the engine ported to the browser. Build and test: `cd frontend && npm ci && npm run build && npm test`. |
 | API | [`app/`](app/) | dormant: this solution does not require it at the moment | Ships dormant, the site is static; activation is [guide 04](docs/guides/04_run-the-api.md). |
 | Core pipelines | [`data-pipeline/`](data-pipeline/) | active | The engine (`pipeline/model/holo/`: forward model, 24 methods in four families, the learned slots), the named stages (bake, evaluate, benchmark, train) and the canonical bake of the fourteen cases: `./scripts/precompute.sh`. See [data-pipeline/README.md](data-pipeline/README.md). |
 | Packages | (PyPI) [numpy](https://pypi.org/project/numpy/) | active: consumes numpy, and in the notebooks matplotlib, scipy, [slmsuite](https://pypi.org/project/slmsuite/) 0.5.0 and [onnxruntime](https://pypi.org/project/onnxruntime/) 1.31.1 | DinHot publishes no package of its own; the methods live in the pipeline and are imported by path. |

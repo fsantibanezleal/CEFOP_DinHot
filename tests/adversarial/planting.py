@@ -1,6 +1,7 @@
 """Helpers of the adversarial tests: run a guard as a subprocess and plant one defect in a copy."""
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
@@ -137,12 +138,34 @@ def copy_node_modules(frontend: Path) -> None:
     assert not target.is_symlink() and not target.is_junction(), "refuse a borrowed fixture dependency tree"
     assert target.resolve().is_relative_to(frontend), "fixture dependencies escape the fixture"
     assert NODE_MODULES.is_dir(), "installed frontend/node_modules is required; no install is performed by the test"
-    # The template's complete install is about 156 MB; DinHot's is about 330 MB, 144 MB of it onnxruntime-web for the released
-    # learned model. Bound the simple copy rather than build another package resolver.
-    files = [p for p in NODE_MODULES.rglob("*") if p.is_file()]
-    assert len(files) <= 12_000 and sum(p.stat().st_size for p in files) <= 384 * 1024 * 1024, "dependency fixture exceeded its copy budget"
+    install_is_the_locks(NODE_MODULES)
+    # The budget is the product's own install (0.15.001, issue #102): the template's is about 156 MB, a product with
+    # onnxruntime-web about 337 MB, and a fixed number refused the second. What bounds the copy is the drive it lands on.
+    skipped = {".bin", "__tests__"}
+    size = sum(p.stat().st_size for p in NODE_MODULES.rglob("*")
+               if p.is_file() and not skipped.intersection(p.relative_to(NODE_MODULES).parts))
+    free = shutil.disk_usage(frontend).free
+    assert free - size >= COPY_FREE_FLOOR, (f"dependency fixture exceeded its copy budget: {size} bytes would leave "
+                                           f"{max(free - size, 0)} free, under {COPY_FREE_FLOOR} on the plant's drive")
     # Vendor test fixtures are not runtime dependencies and can exceed Windows path limits in a nested copy.
-    shutil.copytree(NODE_MODULES, target, dirs_exist_ok=True, ignore=shutil.ignore_patterns(".bin", "__tests__"))
+    shutil.copytree(NODE_MODULES, target, dirs_exist_ok=True, ignore=shutil.ignore_patterns(*skipped))
+
+
+# a dependency copy never leaves its drive with less free space than this
+COPY_FREE_FLOOR = 2 * 1024 ** 3
+
+
+def install_is_the_locks(node_modules: Path) -> None:
+    """The copied tree is what ``npm ci`` installed from the product's lock: every package npm recorded as installed
+    (node_modules/.package-lock.json) is a package of package-lock.json at the same version."""
+    hidden = node_modules / ".package-lock.json"
+    lock = node_modules.parent / "package-lock.json"
+    assert hidden.is_file() and lock.is_file(), "node_modules was not installed from a lock: run npm ci in frontend/"
+    installed = json.loads(hidden.read_text(encoding="utf-8")).get("packages", {})
+    locked = json.loads(lock.read_text(encoding="utf-8")).get("packages", {})
+    stray = sorted(name for name, meta in installed.items()
+                   if name and (name not in locked or locked[name].get("version") != meta.get("version")))
+    assert not stray, f"node_modules holds packages its lock does not ({', '.join(stray[:5])}): run npm ci in frontend/"
 
 
 SDD = "docs/design/SDD.md"

@@ -4,7 +4,7 @@ import { formatNumber, pick, useShellLang, useWorkbenchState, type BiText, type 
 import { createContext, useContext, type ReactNode } from 'react';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import type { Text } from '../lib/contract.types';
-import { methodLabel, UnavailableContext, useSelection, type Selection } from './model';
+import { methodLabel, methodName, UnavailableContext, useSelection, type DeviceChoice, type Selection } from './model';
 
 /** The rows every replay view of the case consumes; the model slots add theirs where a view shows them. */
 export const CASE_ROWS = ['case-index', 'case-manifest', 'trace'];
@@ -14,6 +14,8 @@ export type EditMode = 'inspect' | 'add' | 'move' | 'delete';
 export interface Actions {
   mode: EditMode;
   selectTrap: (id: number | null) => void;
+  /** The SLM device of the run and of the section view: the ideal one or the case's own (one state with the rail's switch). */
+  setDevice: (device: DeviceChoice) => void;
   setRegion: (r: Selection['region']) => void;
   addTrap: (xUm: number, yUm: number) => void;
   moveTrap: (id: number, xUm: number, yUm: number) => void;
@@ -27,6 +29,10 @@ export interface Actions {
   setCoeff: (j: number, value: number) => void;
   setPlane: (plane: 'xz' | 'yz') => void;
   setVolThreshold: (fraction: number) => void;
+  /** Loads a method of the case into the workbench, as the rail's method choice does (the Pareto view's method load). */
+  setMethod: (id: string) => void;
+  /** The Pareto view's benchmark cell (a `cellKey`, null for the case's own) and scope, held in the run state and the selection key. */
+  setPareto: (p: { cell?: string | null; scope?: 'top' | 'all' }) => void;
 }
 export const ActionsContext = createContext<Actions | null>(null);
 export function useActions(): Actions {
@@ -71,7 +77,25 @@ export function Pending({ label }: { label: BiText }) {
   );
 }
 
+/** The lane and provenance every card of a group declares, from what the selection's maps came from. */
+export function cardOf(sel: Selection) {
+  return { lane: sel.maps?.lane ?? ('replay' as const), provenance: sel.data.manifest.real_or_synthetic };
+}
+
 export const LOADING: BiText = { en: 'Loading the case artifacts', es: 'Cargando los artefactos del caso' };
+
+/**
+ * The stage of a view that carries controls under it (ADR-0082, ADR-0071 rule 8): on a desktop it takes the height the controls leave; on a
+ * phone it is marked `data-caos-flow`, so the card takes the height of its content (the shell's rule for flowing content) and the stage the
+ * height the scene needs, instead of the 260 to 440 px the card is clamped to with the controls inside it.
+ */
+export function StageBox({ children }: { children: ReactNode }) {
+  return (
+    <div className="dh-stagebox" data-caos-flow="">
+      {children}
+    </div>
+  );
+}
 
 /** A card's body whose content is unavailable for a stated reason (not a spinner, not an empty chart). */
 export function Unavailable({ reason }: { reason: BiText }) {
@@ -89,10 +113,12 @@ export function Unavailable({ reason }: { reason: BiText }) {
  * takes the height that is left.
  */
 /** `quiet` leaves out the readiness note: the first card of a row carries it, the others do not repeat it. */
-export function Fill({ children, rows = CASE_ROWS, mapsOnly = false, quiet = false }: { children: ReactNode; rows?: string[]; mapsOnly?: boolean; quiet?: boolean }) {
+export function Fill({ children, rows = CASE_ROWS, mapsOnly = false, quiet = false, noteAfter = false }: { children: ReactNode; rows?: string[]; mapsOnly?: boolean; quiet?: boolean; noteAfter?: boolean }) {
   const sel = useSelection();
+  // `noteAfter`: on a phone the provenance line follows the view instead of preceding it (a view whose controls must stay in the panel's
+  // first screen, above the Focus HUD); the reading order is unchanged
   return (
-    <div className="dh-stack">
+    <div className={noteAfter ? 'dh-stack dh-note-after' : 'dh-stack'}>
       {!quiet && <ReadinessNote ids={rows} />}
       {sel && !quiet && <Provenance sel={sel} mapsOnly={mapsOnly} />}
       <div className="dh-fill">{children}</div>
@@ -109,13 +135,13 @@ export function Provenance({ sel, mapsOnly }: { sel: Selection; mapsOnly: boolea
   if (sel.maps) {
     parts.push(
       lane === 'live'
-        ? t(`Live: ${sel.maps.method} computed in your browser${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`, `En vivo: ${sel.maps.method} calculado en su navegador${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`)
+        ? t(`Live: ${methodName(sel.maps.method).en} computed in your browser${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`, `En vivo: ${methodName(sel.maps.method).es} calculado en su navegador${sel.maps.backend ? ` (${sel.maps.backend === 'gpu' ? 'WebGPU' : 'CPU'}${sel.maps.timeMs !== null ? `, ${fmt(sel.maps.timeMs, { decimals: 0 })} ms` : ''})` : ''}.`)
         : sel.methodId !== sel.maps.method
           ? t(
-              `Replayed from the bake: ${sel.methodId} is not run live, so its metrics and per-trap intensities are its own but the maps drawn are those of the reference method ${sel.maps.method}.`,
-              `Reproducido de la generación: ${sel.methodId} no corre en vivo, así que sus métricas e intensidades por trampa son las suyas pero los mapas dibujados son los del método de referencia ${sel.maps.method}.`,
+              `Replayed from the bake: ${methodName(sel.methodId).en} is not run live, so its metrics and per-trap intensities are its own but the maps drawn are those of the reference method ${methodName(sel.maps.method).en}.`,
+              `Reproducido de la generación: ${methodName(sel.methodId).es} no corre en vivo, así que sus métricas e intensidades por trampa son las suyas pero los mapas dibujados son los del método de referencia ${methodName(sel.maps.method).es}.`,
             )
-          : t(`Replayed from the bake: the maps are those of the reference method ${sel.maps.method}.`, `Reproducido de la generación: los mapas son los del método de referencia ${sel.maps.method}.`),
+          : t(`Replayed from the bake: the maps are those of the reference method ${methodName(sel.maps.method).en}.`, `Reproducido de la generación: los mapas son los del método de referencia ${methodName(sel.maps.method).es}.`),
     );
     // The WebGPU fallback reason is stated once, in the rail's backend line, so a card keeps its height for the drawing.
   }
@@ -125,7 +151,7 @@ export function Provenance({ sel, mapsOnly }: { sel: Selection; mapsOnly: boolea
   if (sel.edited && !sel.engineAvailable) {
     parts.push(t('Your trap edits are held: the live engine is not on this build, so the result is the baked case.', 'Sus ediciones de trampas quedan guardadas: el motor en vivo no está en esta versión, así que el resultado es el caso precalculado.'));
   } else if (sel.edited && !sel.liveMethods.includes(sel.methodId)) {
-    parts.push(t(`Your trap edits are held: ${sel.methodId} is replayed from the bake, not run live.`, `Sus ediciones de trampas quedan guardadas: ${sel.methodId} se reproduce de la generación y no corre en vivo.`));
+    parts.push(t(`Your trap edits are held: ${methodName(sel.methodId).en} is replayed from the bake, not run live.`, `Sus ediciones de trampas quedan guardadas: ${methodName(sel.methodId).es} se reproduce de la generación y no corre en vivo.`));
   }
   if (sel.running) {
     parts.push(

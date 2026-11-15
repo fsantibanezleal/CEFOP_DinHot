@@ -108,13 +108,22 @@
     "pipeline.model.holo.methods.optim.m13_crosstalk_cg.run",
     "pipeline.model.holo.methods.optim.m18_ot_mraf.run"
   ],
+  "showcase": {
+    "story_routes": [
+      "/story/setup",
+      "/story/device",
+      "/story/method",
+      "/story/compare",
+      "/story/hold"
+    ]
+  },
   "method_packages": [],
   "manuscripts": [
     {
       "kind": "technical-report",
       "concept_doi": "10.5281/zenodo.23788731",
       "title": "DinHot: A Holographic Optical Trap Studio Comparing Hologram Methods on a Device Model",
-      "version": "0.02.002",
+      "version": "0.02.003",
       "covers": [
         "BS-1",
         "BS-2",
@@ -127,7 +136,7 @@
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.23788733",
       "title": "Device-Aware Weighted Gerchberg-Saxton and Flicker-Bounded Phase-Continuous Sequences for Holographic Optical Trap Arrays",
-      "version": "0.03",
+      "version": "0.04",
       "covers": [
         "BS-1",
         "BS-2"
@@ -136,7 +145,7 @@
     {
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.24022462",
-      "title": "A Weighted-Cost Continuation Adds the Efficient Side of the Efficiency-Uniformity Trade-off of Holographic Optical Trap Arrays: Larger Hypervolume on One Lattice, No Better Uniform End, No Gain on the Benchmark at 100 Iterations",
+      "title": "A Weighted-Cost Continuation Adds the Efficient Side of the Efficiency-Uniformity Trade-off of Holographic Optical Trap Arrays: Larger Hypervolume on One Lattice, No Better Uniform End, Mixed Margins on the Benchmark",
       "version": "0.01",
       "covers": [
         "BS-5"

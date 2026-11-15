@@ -54,10 +54,16 @@ from pipeline.model.holo.core.metrics import efficiency, rel_std, trap_intensiti
 from pipeline.model.holo.core.rng import Rng  # noqa: E402
 from pipeline.model.holo.core.traps import TrapSet, square_grid  # noqa: E402
 from pipeline.model.holo.core.types import Budget, Target  # noqa: E402
+from pipeline.model.holo.methods.baseline import m04_gs, m05_gaa, m06_gsw, m07_phase_fixed_wgs  # noqa: E402
 from pipeline.model.holo.methods.beyond import b5_pareto as B5  # noqa: E402
 from pipeline.model.holo.methods.optim import _common as C  # noqa: E402
 from pipeline.model.holo.methods.optim import _gs_family as G  # noqa: E402
 from pipeline.model.holo.methods.optim import m09_direct_search as M09  # noqa: E402
+
+# the engine keys of the published methods (the keys of the stored points and of the benchmark document; never printed):
+# Gerchberg-Saxton, adaptive additive GS, weighted GS, direct search, phase-fixed weighted GS
+ID_GS, ID_GAA, ID_GSW, ID_DS, ID_PF = (m04_gs.SPEC.id, m05_gaa.SPEC.id, m06_gsw.SPEC.id, M09.SPEC.id,
+                                      m07_phase_fixed_wgs.SPEC.id)
 
 # two-sided 95 percent quantiles of Student's t distribution by degrees of freedom
 T95 = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228,
@@ -183,7 +189,7 @@ def published_points(seed: int) -> dict:
     (direct search with one sweep) and phase-fixed WGS, each scored on the ideal device."""
     setup, traps = task()
     pts = {}
-    for name, variant in (("M04", "gs"), ("M05", "gaa"), ("M06", "gsw"), ("M07", "pfwgs")):
+    for name, variant in ((ID_GS, "gs"), (ID_GAA, "gaa"), (ID_GSW, "gsw"), (ID_PF, "pfwgs")):
         phi, _ = G.weighted_gs(setup, traps, BASE_ITERS, Rng(seed), variant=variant)
         pts[name] = list(scores(phi, setup, traps)[:2])
     t0 = time.perf_counter()
@@ -334,7 +340,7 @@ def stored() -> dict:
         for f in sorted(bench.get("pareto") or [], key=lambda p: p["geometry"]):
             g = f["geometry"]
             pts = [(cells[(m, g)]["efficiency"]["median"], cells[(m, g)]["uniformity"]["median"])
-                   for m in ("M04", "M05", "M06", "M09") if (m, g) in cells]
+                   for m in (ID_GS, ID_GAA, ID_GSW, ID_DS) if (m, g) in cells]
             if not pts:
                 continue
             front = [(p["efficiency"], p["uniformity"]) for p in f["points"]]
@@ -348,10 +354,10 @@ def stored() -> dict:
     for case, vals in mr["measured"].items():
         if "B5.efficiency" in vals:
             bake[case] = {m: stats(vals[f"B5.{m}"]) for m in ("efficiency", "uniformity", "rel_std_pct")}
-            bake[case]["M06"] = {m: stats(vals[f"M06.{m}"]) for m in ("efficiency", "uniformity", "rel_std_pct")} \
-                if "M06.efficiency" in vals else None
-            bake[case]["M07"] = {m: stats(vals[f"M07.{m}"]) for m in ("efficiency", "uniformity", "rel_std_pct")} \
-                if "M07.efficiency" in vals else None
+            bake[case][ID_GSW] = {m: stats(vals[f"{ID_GSW}.{m}"]) for m in ("efficiency", "uniformity", "rel_std_pct")} \
+                if f"{ID_GSW}.efficiency" in vals else None
+            bake[case][ID_PF] = {m: stats(vals[f"{ID_PF}.{m}"]) for m in ("efficiency", "uniformity", "rel_std_pct")} \
+                if f"{ID_PF}.efficiency" in vals else None
     out["bake"] = bake
     out["bake_seeds"] = mr["seeds"]
     return out
@@ -369,9 +375,9 @@ def analyse(data: dict) -> dict:
     """Per-seed derived quantities and their summaries, written back into ``data['analysis']``."""
     rows = data["main"]
     a: dict = {}
-    names = ("M04", "M05", "M06", "M09")
+    names = (ID_GS, ID_GAA, ID_GSW, ID_DS)
     hv_f, hv_b, hv_b7, ratio = [], [], [], []
-    dom = {n: [] for n in (*names, "M07")}
+    dom = {n: [] for n in (*names, ID_PF)}
     any_dom_all = []
     refs_f = {k: [] for k in REFS}
     refs_b = {k: [] for k in REFS}
@@ -389,9 +395,9 @@ def analyse(data: dict) -> dict:
         for k, ref in REFS.items():
             refs_f[k].append(f["hv_refs"][k])
             refs_b[k].append(hv_of(base, ref))
-        for n in (*names, "M07"):
+        for n in (*names, ID_PF):
             dom[n].append(dominating(f, p[n]))
-        any_dom_all.append(all(dominating(f, p[n]) > 0 for n in ("M04", "M05")))
+        any_dom_all.append(all(dominating(f, p[n]) > 0 for n in (ID_GS, ID_GAA)))
         kn = f["knee"]
         knee_e.append(f["e"][kn]); knee_u.append(f["u"][kn]); knee_s.append(f["sigma"][kn])
         secs.append(f["seconds"]); npar.append(len(f["pareto"]))
@@ -448,7 +454,7 @@ def analyse(data: dict) -> dict:
     a["lambda_saturation"] = stats(lam_sat)
     # the points of the published methods
     a["points"] = {n: {"e": stats([r["published"][n][0] for r in rows]), "u": stats([r["published"][n][1] for r in rows])}
-                   for n in (*names, "M07")}
+                   for n in (*names, ID_PF)}
     # rival one-parameter fronts
     if data.get("rivals"):
         riv = data["rivals"]
@@ -459,7 +465,7 @@ def analyse(data: dict) -> dict:
             a["rivals"][key] = {"hv": stats(hv), "diff": stats(diff), "front_ge": int(sum(1 for d in diff if d >= 0))}
         union = []
         for row, r in zip(rows, riv):
-            pts = [row["published"][n] for n in (*names, "M07")] + r["gsw_path"] + r["pfwgs_path"] + r["gaa_sweep"]
+            pts = [row["published"][n] for n in (*names, ID_PF)] + r["gsw_path"] + r["pfwgs_path"] + r["gaa_sweep"]
             union.append(hv_of(pts))
         diff = [row["front"]["hv"] - h for row, h in zip(rows, union)]
         a["rivals"]["union"] = {"hv": stats(union), "diff": stats(diff), "front_ge": int(sum(1 for d in diff if d >= 0))}
@@ -479,7 +485,7 @@ def analyse(data: dict) -> dict:
         for row, r in zip(rows, data["rivals"]):
             fr = row["front"]
             F = list(zip(fr["e"], fr["u"]))
-            pub = [tuple(row["published"][n]) for n in (*names, "M07")] \
+            pub = [tuple(row["published"][n]) for n in (*names, ID_PF)] \
                 + [tuple(x) for k in ("gsw_path", "pfwgs_path", "gaa_sweep") for x in r[k]]
             dom_pub.append(sum(1 for e, u in F if any(e2 >= e and u2 >= u and (e2 > e or u2 > u) for e2, u2 in pub)))
             gain.append(hv_of(F + pub) - fr["hv"])
@@ -505,7 +511,7 @@ def analyse(data: dict) -> dict:
             for r in runs:
                 rv = data["rivals"][r["seed"] - 1]
                 row = rows[r["seed"] - 1]
-                pub = [tuple(row["published"][n]) for n in (*names, "M07")] \
+                pub = [tuple(row["published"][n]) for n in (*names, ID_PF)] \
                     + [tuple(x) for k in ("gsw_path", "pfwgs_path", "gaa_sweep") for x in rv[k]]
                 dom.append(sum(1 for e, u in zip(r["e"], r["u"])
                                if any(e2 >= e and u2 >= u and (e2 > e or u2 > u) for e2, u2 in pub)))
@@ -594,12 +600,12 @@ def write_outputs(data: dict) -> None:
         m(macro(f"hvRef{nm}Diff", f(r["diff"]["mean"], 4)))
         m(macro(f"hvRef{nm}Lo", f(r["diff"]["ci_lo"], 4))); m(macro(f"hvRef{nm}Hi", f(r["diff"]["ci_hi"], 4)))
         m(macro(f"hvRef{nm}Ge", r["ge"]))
-    for n, nm in (("M04", "GS"), ("M05", "GAA"), ("M06", "GSW"), ("M09", "DS"), ("M07", "PF")):
+    for n, nm in ((ID_GS, "GS"), (ID_GAA, "GAA"), (ID_GSW, "GSW"), (ID_DS, "DS"), (ID_PF, "PF")):
         d = a["dominating"][n]
         m(macro(f"dom{nm}Mean", f(d["stats"]["mean"], 1))); m(macro(f"dom{nm}Min", int(d["stats"]["min"])))
         m(macro(f"dom{nm}Max", int(d["stats"]["max"]))); m(macro(f"dom{nm}Seeds", d["seeds_with_any"]))
     m(macro("domBothSeeds", a["both_ms_dominated_seeds"]))
-    for n, nm in (("M04", "GS"), ("M05", "GAA"), ("M06", "GSW"), ("M09", "DS"), ("M07", "PF")):
+    for n, nm in ((ID_GS, "GS"), (ID_GAA, "GAA"), (ID_GSW, "GSW"), (ID_DS, "DS"), (ID_PF, "PF")):
         p = a["points"][n]
         m(macro(f"pt{nm}E", f(p["e"]["mean"], 3))); m(macro(f"pt{nm}U", f(p["u"]["mean"], 3)))
     kn = a["knee"]
@@ -719,7 +725,7 @@ def write_outputs(data: dict) -> None:
     T.append("\\midrule\n")
     names = {"M04": "Gerchberg-Saxton", "M05": "Adaptive additive", "M06": "Weighted GS",
              "M07": "Phase-fixed WGS", "M09": "Direct search"}
-    for n in ("M04", "M05", "M06", "M07", "M09"):
+    for n in (ID_GS, ID_GAA, ID_GSW, ID_PF, ID_DS):
         p = a["points"][n]
         hv = stats([e * u for e, u in zip([r["published"][n][0] for r in data["main"]], [r["published"][n][1] for r in data["main"]])])
         T.append(row([names[n], pm(p["e"]), pm(p["u"]), pm(hv, 3)]))

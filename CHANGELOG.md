@@ -3,6 +3,58 @@
 All notable changes to this product. Versions are X.XX.XXX (VERSION is the single source); every release is
 tagged.
 
+## [0.02.003], 2026-11-15
+
+### Changed
+
+- Adopted CAOS_PRODUCT_TEMPLATE 0.15.010 and the shared app shell 0.26.2. The shell's gate now measures DinHot's long
+  documentation pages, because the walk's budget scales with the document. The story's callout cards show their state. The
+  fourteen methods in the rail are one select, using the shell's variant select layout, which was added for DinHot. The site's
+  further files (the benchmark, the model metrics, the released models) are served through the base's product hook. Shell 0.26.0
+  carries the fixes for the defects DinHot found on 0.25.0 (known defects 63 to 66 and 68): the story's step into the method view
+  runs at 59.5 to 59.9 frames per second on the fifth percentile, against 15 to 20 on 0.25.0, because the shell keeps one number
+  formatter per locale instead of building one per call. DinHot drops the two workarounds it carried for them: the particle view
+  no longer waits for the callout band to hold before it is drawn, and no longer pauses the bead when the reader touches its chart.
+  Shell 0.26.1 and 0.26.2 fix two defects DinHot found. On 0.26.0 a chart's readout was cut with an ellipsis, so the gate counted
+  the Benchmark page's two robustness charts as no chart at 390 px in Spanish, whose hint at rest is wider than the chart (known
+  defect 45); the readout now wraps. On 0.26.1 a keyboard reading that grew the readout of a chart filling its card dropped the
+  crosshair, so the Pareto view and the particle trajectory read the hint (known defect 70); the crosshair now stays on its point.
+  The generation's staged inputs are stamped and checked before a generation (template 0.15.007 to 0.15.010).
+- The App opens on the optical train, from the laser to the traps, drawn from the case's setup, and shows the SLM in section, one
+  pixel row with its commanded and displayed phase; both carry anchored callouts. A trap selected on the focal plane, in the per-trap
+  bars or on the optical train is selected everywhere. The method at work redraws the focal plane at the iteration the reader scrubs.
+- A guided story of five steps (`/story/setup`, `/story/device`, `/story/method`, `/story/compare`, `/story/hold`) states one measured
+  finding per step, computed from the release's artifacts; the comparison step is on the modelled device.
+- Every method is named by its name in the app, the notebooks, the manuscripts and the README; the engine ids stay in code and data.
+- The notebook runtimes live in the device's venvs root (`<venvs root>/dinhot/`), as the base requires.
+- Re-baked at 0.02.003: case C01 traps a bead in water (medium index 1.33), so its stiffness and corner frequency are 1.98 pN/um and
+  34.5 Hz; the other twelve cases reproduce; the benchmark was run again (its cells run the seeds a 600 s wall-clock bound admits);
+  the model metrics are measured again at this version by the generation itself.
+- Publications: the technical report v0.02.003 (10.5281/zenodo.24049958) and the device-aware weighted GS and flicker-bounded
+  sequences paper v0.04 (10.5281/zenodo.24049969), and three new papers: the efficiency-uniformity front (10.5281/zenodo.24022463),
+  the aberration-robust hologram (10.5281/zenodo.24022465) and the learned warm start (10.5281/zenodo.24022471), each generated
+  from this bake and reviewed by a reader other than its writer.
+
+### Fixed
+
+- The review findings of the technical report, the four method papers and the notebooks of topics 01 to 08, and the citations checked
+  against the full texts where they were open.
+- The full gate's findings on the release build: labels that overlapped or were cut in the optical train, the SLM section, the
+  phasor figure and the lanes figure; the story's callouts, which overlapped at some sizes and were missing on the phone; the
+  method step, which kept changing while idle.
+- At 390 px, dense traps at the edge of a small optical-train field no longer overlap: a site that still overlaps after its nudge
+  moves to the nearest free point inside the field (case C06).
+- The Pareto view reads every method at a uniformity value two of them share: one chart row per value, so the keyboard and the
+  pointer read both (on 0.02.002 the cursor read only the first row at that value; case C08).
+- Two readings of the views by a reviewer other than their builders:
+  - **The story:** its exits open the App on the step's view and method. Its callouts sit above their subjects on every screen size.
+    The hold step pins its cards to the bead and to the fitted corner frequency.
+  - **The App's views:**
+    - A trap selected anywhere is marked in the focal image and in the per-trap bars. The focal image has micrometre axes and three callouts.
+    - The dynamics view shows the bead in its trap with its position against time and its spectrum.
+    - The Pareto view tells its series apart, draws the seed ranges, and recommends a method with its reason.
+  - **Text:** cases and benchmark geometries are named by their names, never their ids, and micrometres are written µm.
+
 ## [0.02.002], 2026-10-31
 
 ### Changed

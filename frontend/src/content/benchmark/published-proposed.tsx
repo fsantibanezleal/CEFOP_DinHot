@@ -4,7 +4,7 @@
 import { BarChart, Cite, DocSection, PlotCard, useShellLang, type BarDatum } from '@fasl-work/caos-app-shell';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import { bestOfKind, bestPublished, budgetText, KIND_ORDER, KIND_TEXT, mostUniform, nameOf, pickRows, shownId, type Lang, type Picked } from './data';
+import { bestOfKind, bestPublished, budgetText, KIND_ORDER, KIND_TEXT, mostUniform, nameOf, pickRows, type Lang, type Picked } from './data';
 import { CellControls, Note, Ready, TableWrap, KIND_LEGEND, KIND_TONE, useBench, useNum, useResolved } from './shared';
 
 function KindBody({ res }: { res: BenchmarkResults }) {
@@ -18,7 +18,7 @@ function KindBody({ res }: { res: BenchmarkResults }) {
     const b = bestOfKind(rows, kind);
     return b ? (
       <td key={key} className="caos-col-text" style={{ whiteSpace: 'normal' }}>
-        {shownId(b.method)} {b.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : ''}
+        {nameOf(b.method, lang)} {b.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : ''}
         <span className="caos-plot-note" style={{ display: 'block' }}>
           {pct(b.row.rel_std_pct.median)}, {es ? 'eficiencia' : 'efficiency'} {n(b.row.efficiency.median)}
         </span>
@@ -37,7 +37,7 @@ function KindBody({ res }: { res: BenchmarkResults }) {
   const bars: BarDatum[] = byGeometry.flatMap(({ g, rows }) =>
     KIND_ORDER.flatMap((kind) => {
       const b = bestOfKind(rows, kind);
-      return b ? [{ id: `${g.id}-${kind}`, label: { en: `${g.id} ${KIND_TEXT[kind].en}`, es: `${g.id} ${KIND_TEXT[kind].es}` }, value: b.row.uniformity.median, tone: KIND_TONE[kind], hint: { en: `${shownId(b.method)} ${nameOf(b.method, 'en')}`, es: `${shownId(b.method)} ${nameOf(b.method, 'es')}` } }] : [];
+      return b ? [{ id: `${g.id}-${kind}`, label: { en: `${g.id} ${KIND_TEXT[kind].en}`, es: `${g.id} ${KIND_TEXT[kind].es}` }, value: b.row.uniformity.median, tone: KIND_TONE[kind], hint: { en: `${nameOf(b.method, 'en')}`, es: `${nameOf(b.method, 'es')}` } }] : [];
     }),
   );
   const whole = byGeometry.flatMap(({ rows }) => rows);
@@ -87,8 +87,8 @@ function KindBody({ res }: { res: BenchmarkResults }) {
       ) : null}
       <h3>{es ? 'Cada método propuesto frente al método publicado más fuerte de su celda' : 'Each proposed method against the strongest published method of its cell'}</h3>
       <P
-        en="A proposed method's row is set against the most uniform row among all the published methods (M01 to M19) of its own cell, which is the strongest baseline that cell offers by the page's rule. The comparison is like with like: the same geometry, device, budget and parameter set, so a tuned proposed row stands against a tuned baseline and a default one against a default one; where the baseline has no tuned row in the cell, the row says so. The factor is the baseline's relative standard deviation over the challenger's and the efficiency ratio is the challenger's efficiency over the baseline's; a factor above 1 with a ratio near 1 is a gain that did not cost light."
-        es="La fila de un método propuesto se contrasta con la fila más uniforme entre todos los métodos publicados (M01 a M19) de su propia celda, que es la línea base más fuerte que esa celda ofrece según la regla de la página. La comparación es de igual con igual: la misma geometría, dispositivo, presupuesto y conjunto de parámetros, de modo que una fila ajustada de un método propuesto se enfrenta a una línea base ajustada y una por defecto a una por defecto; donde la línea base no tiene fila ajustada en la celda, la fila lo dice. El factor es la desviación estándar relativa de la línea base sobre la del retador y la razón de eficiencia es la eficiencia del retador sobre la de la línea base; un factor mayor que 1 con una razón cercana a 1 es una ganancia que no costó luz."
+        en="A proposed method's row is set against the most uniform row among all the published methods of its own cell, which is the strongest baseline that cell offers by the page's rule. The comparison is like with like: the same geometry, device, budget and parameter set, so a tuned proposed row stands against a tuned baseline and a default one against a default one; where the baseline has no tuned row in the cell, the row says so. The factor is the baseline's relative standard deviation over the challenger's and the efficiency ratio is the challenger's efficiency over the baseline's; a factor above 1 with a ratio near 1 is a gain that did not cost light."
+        es="La fila de un método propuesto se contrasta con la fila más uniforme entre todos los métodos publicados de su propia celda, que es la línea base más fuerte que esa celda ofrece según la regla de la página. La comparación es de igual con igual: la misma geometría, dispositivo, presupuesto y conjunto de parámetros, de modo que una fila ajustada de un método propuesto se enfrenta a una línea base ajustada y una por defecto a una por defecto; donde la línea base no tiene fila ajustada en la celda, la fila lo dice. El factor es la desviación estándar relativa de la línea base sobre la del retador y la razón de eficiencia es la eficiencia del retador sobre la de la línea base; un factor mayor que 1 con una razón cercana a 1 es una ganancia que no costó luz."
       />
       {pairs.length === 0 ? (
         <p className="caos-pending" data-state="unavailable">
@@ -119,10 +119,10 @@ function KindBody({ res }: { res: BenchmarkResults }) {
                   <tr key={`${g.id}-${p.method}`}>
                     <td className="caos-col-text">{g.id}</td>
                     <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
-                      {shownId(p.method)} {p.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : view === 'tuned' ? (es ? '(por defecto)' : '(default)') : ''}
+                      {nameOf(p.method, lang)} {p.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : view === 'tuned' ? (es ? '(por defecto)' : '(default)') : ''}
                     </td>
                     <td className="caos-col-text" style={{ whiteSpace: 'normal' }}>
-                      {base ? `${shownId(base.method)} ${base.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : view === 'tuned' ? (es ? '(por defecto)' : '(default)') : ''}` : es ? 'sin fila' : 'no row'}
+                      {base ? `${nameOf(base.method, lang)} ${base.params === 'tuned' ? (es ? '(ajustado)' : '(tuned)') : view === 'tuned' ? (es ? '(por defecto)' : '(default)') : ''}` : es ? 'sin fila' : 'no row'}
                     </td>
                     <td>{n(factor)}</td>
                     <td>{n(ratio)}</td>
@@ -136,8 +136,8 @@ function KindBody({ res }: { res: BenchmarkResults }) {
       <p className="caos-plot-note" lang={lang}>
         {overall
           ? es
-            ? `En todo el documento, en esta celda, el método más uniforme es ${shownId(overall.method)} (${pct(overall.row.rel_std_pct.median)}).`
-            : `Across every geometry of this cell the most uniform method is ${shownId(overall.method)} (${pct(overall.row.rel_std_pct.median)}).`
+            ? `En todo el documento, en esta celda, el método más uniforme es ${nameOf(overall.method, 'es')} (${pct(overall.row.rel_std_pct.median)}).`
+            : `Across every geometry of this cell the most uniform method is ${nameOf(overall.method, 'en')} (${pct(overall.row.rel_std_pct.median)}).`
           : ''}
       </p>
     </>

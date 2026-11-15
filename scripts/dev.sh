@@ -1,21 +1,14 @@
 #!/usr/bin/env bash
-# Local dev: frontend dev server (+ the API only if app/ is activated). Dormant lanes are skipped.
 set -euo pipefail
-cd "$(dirname "$0")/.."
-
-# API lane (only if app/ is active — i.e. requirements-api.txt is non-placeholder AND app has a real main)
-if [ -f requirements-api.txt ] && grep -qvE '^\s*#|^\s*$' requirements-api.txt 2>/dev/null && [ -f app/main.py ]; then
-  VP=".venv/bin/python"; [ -x "$VP" ] || VP=".venv/Scripts/python.exe"
-  echo "[dev] app/ active -> starting uvicorn on :8000 (background)"
-  "$VP" -m uvicorn app.main:app --reload --port 8000 &
+entry_dir="$(cd "$(dirname "$0")" && pwd)"
+python_command="${PYTHON:-python3}"
+if ! command -v "$python_command" >/dev/null 2>&1; then
+  if [ "${1:-}" = "--install" ] && command -v brew >/dev/null 2>&1; then
+    brew install python@3.12
+    echo "Python installed. Open a new terminal and rerun 00_install-prereqs."
+    exit 0
+  fi
+  echo "Python is missing; install Python>=3.12 and rerun 00_install-prereqs." >&2
+  exit 1
 fi
-
-# Frontend (the replay SPA)
-if [ -f frontend/package.json ]; then
-  cd frontend
-  [ -d node_modules ] || npm install
-  # npm run dev copies the declared artifacts first (predev: scripts/copy-data.mjs)
-  npm run dev
-else
-  echo "[dev] no frontend/ — this product ships without a web surface (static/web lane dormant)."
-fi
+exec "$python_command" "$entry_dir/local/workflow.py" dev "$@"

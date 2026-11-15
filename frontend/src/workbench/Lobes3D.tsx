@@ -238,8 +238,8 @@ export function Lobes3D({ sel }: { sel: Selection }) {
               <th>y</th>
               <th>z</th>
               <th>I/mean</th>
-              <th>{t('lateral semi-axis (um)', 'semieje lateral (um)')}</th>
-              <th>{t('axial semi-axis (um)', 'semieje axial (um)')}</th>
+              <th>{t('lateral semi-axis (µm)', 'semieje lateral (µm)')}</th>
+              <th>{t('axial semi-axis (µm)', 'semieje axial (µm)')}</th>
             </tr>
           </thead>
           <tbody>

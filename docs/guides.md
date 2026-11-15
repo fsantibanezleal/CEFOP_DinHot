@@ -9,3 +9,4 @@
 - [07, the five documentation pages and the areas each must cover](guides/07_documentation-pages.md)
 - [08, write the product's notebooks (English and Spanish, by topic and level) and keep the README by areas](guides/08_notebooks.md)
 - [09 The three method tiers and the manuscripts](guides/09_method-tiers.md)
+- [10, native LaTeX manuscript sources, complete content and independent publication acceptance](guides/10_native-manuscripts.md)

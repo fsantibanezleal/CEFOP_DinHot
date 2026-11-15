@@ -1,0 +1,89 @@
+\subsection{DAQP with side-specific elastic weights}\label{sec:daqp}
+DAQP uses a dual active-set strategy for convex quadratic programs and exposes
+side-specific soft weights through its public interface~\cite{daqp,goldfarb}.
+This capability is important to the comparison: asymmetry alone cannot be
+claimed as a new modeling feature of an original-row projection method. A fair
+adapter must reproduce the requested finite objective rather than select the
+backend's default softness convention and call the result equivalent.
+
+For a compatible elastic side with departure $t\geq0$, the requested price is
+\begin{equation}\label{eq:daqp-cost}
+ \varphi(t)=a t+\tfrac12 b t^2,\qquad a\geq0,\quad b>0.
+\end{equation}
+The adapter maps the quadratic convention reciprocally where the public
+backend defines a softness parameter through its inverse curvature. The precise
+mapping is applied per side, with lower and upper coefficients kept separate.
+It is validated by evaluating \eqref{eq:daqp-cost} in original coordinates after
+the solve, rather than assuming that similarly named interface fields have the
+same units or normalization. Dividing by a zero quadratic price is not a valid
+way to request a pure linear objective.
+
+An active set identifies constraints whose multipliers may be nonzero. For a
+positive-definite original Hessian, eliminating the primal vector yields a dual
+quadratic structure involving
+\begin{equation}\label{eq:daqp-dual}
+ x=-P^{-1}(q+A^\top y),\qquad
+ A P^{-1}A^\top,
+\end{equation}
+with the finite-side and elastic conventions handled by the backend. This
+identity explains why positive-definite curvature matters to the direct path;
+it is not a prescription to form dense inverses explicitly. The tested adapter
+uses the library interface and its maintained factors. It does not repair a
+semidefinite scientific model by adding an undisclosed Hessian shift.
+
+The ordinary comparison admits DAQP when the base Hessian and finite soft-side
+quadratic coefficients meet the implemented positive-definite elastic domain.
+Pure L1 and grouped/Huber objectives are incompatible with that particular
+mapping. The coupled study has separately registered direct epigraph and
+proximal DAQP policies, including their stated linear-programming cases. Those
+policies are not silently substituted into the earlier experiment. Distinct
+protocols make their different acceptance and termination conditions inspectable.
+
+Algorithm~\ref{alg:daqp} describes the direct side-weight adapter. The conversion
+has explicit size bounds of 2048 variables and 8192 finite sides or rows where
+applicable. These are implementation resource limits, not mathematical
+restrictions of convex quadratic programming. A refusal at this boundary is
+retained as an unavailable operation; it does not justify reporting a successful
+answer to a smaller or differently regularized model. Inputs that pass the size
+check still require semantic compatibility and original-space evaluation.
+
+\begin{algorithm}[htbp]
+\caption{Map compatible side-specific elastic prices into DAQP, retain its active workspace for allowed vector updates and recover original-space objective and multipliers.}\label{alg:daqp}
+\begin{algorithmic}[1]
+\Require Positive-definite admitted QP and finite-side elastic coefficients
+\State Check finite dimensions, hard mask, side pattern and strictly positive quadratic prices
+\State Convert each lower and upper softness convention with its physical scale
+\State Prepare DAQP; retain factor and active state for compatible vector updates
+\State Solve; interpret the backend's own status convention
+\State Recover original dual signs and independently evaluate all original rows
+\State Return accepted only if the external accuracy requirements also hold
+\end{algorithmic}
+\end{algorithm}
+
+Repeated-operation fairness requires using DAQP's documented update operation.
+The prepared workspace preserves its active state and updates only the allowed
+linear term and bounds. It does not resend a complete sense vector on every
+frame when the public API already permits a cheaper vector update. Conversely,
+changing penalty structure invalidates that reuse. The measured timing includes
+the selected preparation/update boundary consistently, so the comparison is not
+an active-set warm start against a deliberately rebuilt reference.
+
+Backend status interpretation is method-specific. DAQP's status indicating a
+soft optimum cannot be read using OSQP's integer convention, where a numerically
+equal value may denote an inaccurate result. The adapter translates the status,
+then recomputes objective discrepancy and maximum raw hard violation. In the
+coupled study, candidate vectors also face the separate primal and dual checks.
+An active-set result that is fast but solves the wrong softness scaling is
+therefore rejected; a correct result outside the supported direct domain is not
+manufactured by altering the objective. These controls preserve the scientific
+comparison even when different backends make different engineering tradeoffs.
+The separately registered proximal DAQP policies address additional epigraph
+regimes through a proximal-point interpretation rather than a permanent
+scientific Hessian shift~\cite{daqpprox,rockafellarppa}. Their original objective
+is checked after numerical recovery. This distinction matters for a zero-
+Hessian linear-price case: a positive quadratic term introduced only to
+make a direct solver callable would change the requested model. The protocol
+instead admits only its explicitly specified policies and retains unsupported
+or unsuccessful outcomes. These later grouped policies do not retroactively
+expand the direct adapter's compatibility in the original separable timing
+study, whose method settings and excluded cells remain fixed.

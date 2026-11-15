@@ -1,0 +1,44 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for softqp-case-spec. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-softqp-case-spec}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+P & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['shape', 'data', 'indices', 'indptr'] & structural metadata /\allowbreak{} nested units\\
+P.\allowbreak{}shape & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & count /\allowbreak{} integer identifier\\
+P.\allowbreak{}shape[0] & integer & minimum=\allowbreak{}0; maximum=\allowbreak{}20000 & count /\allowbreak{} integer identifier\\
+P.\allowbreak{}shape[1] & integer & minimum=\allowbreak{}0; maximum=\allowbreak{}20000 & count /\allowbreak{} integer identifier\\
+P.\allowbreak{}data & array & maxItems=\allowbreak{}2000000 & cost /\allowbreak{} decision units squared\\
+P.\allowbreak{}data[] & number & See defined object /\allowbreak{} value type & cost /\allowbreak{} decision units squared\\
+P.\allowbreak{}indices & array & maxItems=\allowbreak{}2000000 & count /\allowbreak{} integer identifier\\
+P.\allowbreak{}indices[] & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+P.\allowbreak{}indptr & array & maxItems=\allowbreak{}20001 & count /\allowbreak{} integer identifier\\
+P.\allowbreak{}indptr[] & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+q & array & maxItems=\allowbreak{}20000 & cost /\allowbreak{} decision unit\\
+q[] & number & See defined object /\allowbreak{} value type & cost /\allowbreak{} decision unit\\
+A & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['shape', 'data', 'indices', 'indptr'] & structural metadata /\allowbreak{} nested units\\
+A.\allowbreak{}shape & array & minItems=\allowbreak{}2; maxItems=\allowbreak{}2 & count /\allowbreak{} integer identifier\\
+A.\allowbreak{}shape[0] & integer & minimum=\allowbreak{}0; maximum=\allowbreak{}20000 & count /\allowbreak{} integer identifier\\
+A.\allowbreak{}shape[1] & integer & minimum=\allowbreak{}0; maximum=\allowbreak{}20000 & count /\allowbreak{} integer identifier\\
+A.\allowbreak{}data & array & maxItems=\allowbreak{}2000000 & row /\allowbreak{} decision unit\\
+A.\allowbreak{}data[] & number & See defined object /\allowbreak{} value type & row /\allowbreak{} decision unit\\
+A.\allowbreak{}indices & array & maxItems=\allowbreak{}2000000 & count /\allowbreak{} integer identifier\\
+A.\allowbreak{}indices[] & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+A.\allowbreak{}indptr & array & maxItems=\allowbreak{}20001 & count /\allowbreak{} integer identifier\\
+A.\allowbreak{}indptr[] & integer & minimum=\allowbreak{}0 & count /\allowbreak{} integer identifier\\
+lower & array & maxItems=\allowbreak{}20000 & original row unit\\
+lower[] & number /\allowbreak{} null & See defined object /\allowbreak{} value type & original row unit\\
+upper & array & maxItems=\allowbreak{}20000 & original row unit\\
+upper[] & number /\allowbreak{} null & See defined object /\allowbreak{} value type & original row unit\\
+penalty & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['lower\_\allowbreak{}linear', 'upper\_\allowbreak{}linear', 'lower\_\allowbreak{}quadratic', 'upper\_\allowbreak{}quadratic', 'soft'] & structural metadata /\allowbreak{} nested units\\
+penalty.\allowbreak{}lower\_\allowbreak{}linear & array & maxItems=\allowbreak{}20000 & cost /\allowbreak{} row unit\\
+penalty.\allowbreak{}lower\_\allowbreak{}linear[] & number & minimum=\allowbreak{}0 & cost /\allowbreak{} row unit\\
+penalty.\allowbreak{}upper\_\allowbreak{}linear & array & maxItems=\allowbreak{}20000 & cost /\allowbreak{} row unit\\
+penalty.\allowbreak{}upper\_\allowbreak{}linear[] & number & minimum=\allowbreak{}0 & cost /\allowbreak{} row unit\\
+penalty.\allowbreak{}lower\_\allowbreak{}quadratic & array & maxItems=\allowbreak{}20000 & cost /\allowbreak{} row unit squared\\
+penalty.\allowbreak{}lower\_\allowbreak{}quadratic[] & number & minimum=\allowbreak{}0 & cost /\allowbreak{} row unit squared\\
+penalty.\allowbreak{}upper\_\allowbreak{}quadratic & array & maxItems=\allowbreak{}20000 & cost /\allowbreak{} row unit squared\\
+penalty.\allowbreak{}upper\_\allowbreak{}quadratic[] & number & minimum=\allowbreak{}0 & cost /\allowbreak{} row unit squared\\
+penalty.\allowbreak{}soft & array & maxItems=\allowbreak{}20000 & structural metadata /\allowbreak{} nested units\\
+penalty.\allowbreak{}soft[] & boolean & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

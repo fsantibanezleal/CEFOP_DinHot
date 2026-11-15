@@ -1,0 +1,33 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for softqp-index. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-softqp-index}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema\_\allowbreak{}version & string & const=\allowbreak{}softqp.\allowbreak{}index/\allowbreak{}v1 & structural metadata /\allowbreak{} nested units\\
+state & string & const=\allowbreak{}development & structural metadata /\allowbreak{} nested units\\
+default\_\allowbreak{}case & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+default\_\allowbreak{}case (anyOf1) & string & pattern=\allowbreak{}\textasciicircum{}C[0-9]\{2\}\$ & structural metadata /\allowbreak{} nested units\\
+default\_\allowbreak{}case (anyOf2) & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+cases & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+cases[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['case\_\allowbreak{}id', 'title', 'category', 'path', 'sha256', 'failed'] & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}case\_\allowbreak{}id & string & pattern=\allowbreak{}\textasciicircum{}C[0-9]\{2\}\$ & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}title & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['en', 'es'] & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}title.\allowbreak{}en & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}title.\allowbreak{}es & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}category & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['en', 'es'] & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}category.\allowbreak{}en & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}category.\allowbreak{}es & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}path & string & pattern=\allowbreak{}\textasciicircum{}C[0-9]\{2\}\textbackslash{}.\allowbreak{}json\$ & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[a-\allowbreak{}f0-9]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+cases[].\allowbreak{}failed & boolean & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['python', 'platform', 'packages'] & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}python & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}platform & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}packages & object & additionalProperties=\allowbreak{}\{'type': 'string'\} & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}engine\_\allowbreak{}revision & string /\allowbreak{} null & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{40\}\$ & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}engine\_\allowbreak{}source\_\allowbreak{}dirty & boolean /\allowbreak{} null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+environment.\allowbreak{}native\_\allowbreak{}binary\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+limitations & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+limitations[] & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

@@ -1,3 +1,4 @@
+import { ID } from '../../lib/methodIds';
 // The acceptance measurements of the beyond-the-state-of-the-art rows that the benchmark matrix cannot reproduce, as the SDD records them.
 // The benchmark scores every method on the same geometries, devices and budgets; three claims are measured by a test that does something
 // the matrix does not: B1 over five seeds on the crosstalk device and on the full C08 device, B2 on the transient intensity of a moving
@@ -8,7 +9,7 @@
 
 export interface RecordedClaim {
   /** The ladder row in the SDD ("Method ladder" table). */
-  row: 'B1' | 'B2' | 'B4';
+  row: string;
   /** The test that measures it. */
   test: string;
   /** Every number the page shows from this record; each must appear in the SDD row. */
@@ -16,8 +17,8 @@ export interface RecordedClaim {
 }
 
 export const RECORDED: Record<string, RecordedClaim> = {
-  'B1': {
-    row: 'B1',
+  [ID.B1]: {
+    row: ID.B1,
     test: 'tests/methods/beyond/test_b1_device_wgs.py',
     numbers: {
       /** Median of the factor by which B1 lowers the relative standard deviation below the corrected M07 on the crosstalk device. */
@@ -31,8 +32,8 @@ export const RECORDED: Record<string, RecordedClaim> = {
       fullDeviceFactor: 2.0,
     },
   },
-  'B2': {
-    row: 'B2',
+  [ID.B2]: {
+    row: ID.B2,
     test: 'tests/methods/beyond/test_b2_flicker_bounded.py',
     numbers: {
       /** The acceptance task: the minimum transient intensity of a moving trap over its mean, B2 and LPI. */
@@ -67,8 +68,8 @@ export const RECORDED: Record<string, RecordedClaim> = {
       threshold: 0.9,
     },
   },
-  'B4': {
-    row: 'B4',
+  [ID.B4]: {
+    row: ID.B4,
     test: 'tests/methods/beyond/test_b4_robust.py',
     numbers: {
       /** Median over three seeds of the factor on the 95th percentile of the relative standard deviation over a 200-sample ensemble of aberrations. */

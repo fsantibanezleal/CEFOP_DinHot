@@ -1,5 +1,5 @@
 {
- "engine_version": "0.02.002",
+ "engine_version": "0.02.003",
  "bs1_crosstalk": {
   "label": "crosstalk device",
   "device": {
@@ -1374,7 +1374,7 @@
  },
  "bake": {
   "C08_device_limited": {
-   "engine_version": "0.02.002",
+   "engine_version": "0.02.003",
    "seed": 20261028,
    "params": {
     "n_pix": 128,
@@ -1436,7 +1436,7 @@
    "seeds_mean_ratio": 2.0342637581760887
   },
   "C10_rearrangement": {
-   "engine_version": "0.02.002",
+   "engine_version": "0.02.003",
    "seed": 20261028,
    "params": {
     "n_pix": 256,
@@ -1744,9 +1744,9 @@
      "n_traps": 1024,
      "n_seeds": 2,
      "n_seeds_b1": 2,
-     "n_seeds_m07": 9,
+     "n_seeds_m07": 5,
      "sigma_b1": 17.114947,
-     "sigma_m07": 29.63927,
+     "sigma_m07": 29.648212,
      "sigma_b1_iqr": [
       10.725278,
       23.504616
@@ -1755,8 +1755,8 @@
       9.155891,
       29.728148
      ],
-     "factor": 1.7317769082194645,
-     "eff_ratio": 1.0600270003734094
+     "factor": 1.7322993755107743,
+     "eff_ratio": 1.0612483560640626
     }
    ],
    "ideal": [
@@ -1764,8 +1764,8 @@
      "geometry": "G1",
      "name": "Square 10 x 10",
      "n_traps": 100,
-     "n_seeds": 17,
-     "n_seeds_b1": 17,
+     "n_seeds": 8,
+     "n_seeds_b1": 8,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 1.478603,
@@ -1778,14 +1778,14 @@
       6.87643
      ],
      "factor": 1478603.0,
-     "eff_ratio": 0.9990962022047747
+     "eff_ratio": 1.0007869803931213
     },
     {
      "geometry": "G2",
      "name": "Ring of 36 traps",
      "n_traps": 36,
-     "n_seeds": 17,
-     "n_seeds_b1": 17,
+     "n_seeds": 9,
+     "n_seeds_b1": 9,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 0.0,
@@ -1804,8 +1804,8 @@
      "geometry": "G3",
      "name": "Random 100 traps",
      "n_traps": 100,
-     "n_seeds": 13,
-     "n_seeds_b1": 13,
+     "n_seeds": 7,
+     "n_seeds_b1": 7,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 0.0,
@@ -1818,14 +1818,14 @@
       0.028104
      ],
      "factor": 0.0,
-     "eff_ratio": 0.9998981098662656
+     "eff_ratio": 0.9978229953116188
     },
     {
      "geometry": "G4",
      "name": "Quasi-periodic 119",
      "n_traps": 119,
-     "n_seeds": 11,
-     "n_seeds_b1": 11,
+     "n_seeds": 7,
+     "n_seeds_b1": 7,
      "n_seeds_m07": 20,
      "sigma_b1": 0.0,
      "sigma_m07": 0.011994,
@@ -1838,7 +1838,7 @@
       0.165447
      ],
      "factor": 11994.0,
-     "eff_ratio": 0.9999893536182394
+     "eff_ratio": 0.9991269966956293
     },
     {
      "geometry": "G6",
@@ -1846,18 +1846,18 @@
      "n_traps": 1024,
      "n_seeds": 2,
      "n_seeds_b1": 2,
-     "n_seeds_m07": 10,
+     "n_seeds_m07": 4,
      "sigma_b1": 0.0,
-     "sigma_m07": 0.592595,
+     "sigma_m07": 0.680738,
      "sigma_b1_iqr": [
       0.0,
       0.0
      ],
      "sigma_m07_iqr": [
-      0.280919,
-      1.01643
+      0.321587,
+      1.187181
      ],
-     "factor": 592595.0,
+     "factor": 680738.0,
      "eff_ratio": 0.9999194733291706
     }
    ]

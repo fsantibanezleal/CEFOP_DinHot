@@ -4,8 +4,8 @@ the oracle-phase bound and the weight accounting; write ``warm.json``, ``warm_nu
 
 The network is the rejected candidate: the checkpoint ``ws-final/ckpt.pt`` of the training run (6000 steps) in the learned
 directory of the data root. Nothing is retrained. The held-out file is verified against the sha256 of the committed record
-``data/derived/models/warmstart-model-rejected.json`` before anything runs. Every arm runs the engine's M07 (phase-fixed
-WGS, point form) from the same ``Rng`` seeds, on the same geometries, with the same budget as the evaluation of the record
+``data/derived/models/warmstart-model-rejected.json`` before anything runs. Every arm runs the engine's phase-fixed
+weighted GS (point form) from the same ``Rng`` seeds, on the same geometries, with the same budget as the evaluation of the record
 (``data-pipeline/pipeline/model/holo/learned/evaluation.py``): seeds 301 to 303, 60 iterations, iterations to 1 percent of
 relative standard deviation (budget plus one when never reached), per-geometry median over the seeds.
 
@@ -36,6 +36,11 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
+
+from pipeline.model.holo.methods.baseline import m04_gs, m06_gsw, m07_phase_fixed_wgs  # noqa: E402
+
+# the engine keys of the arms that are published methods (the keys of the stored arms and references; never printed)
+ARM_GS, ARM_GSW, ARM_PF = m04_gs.SPEC.id, m06_gsw.SPEC.id, m07_phase_fixed_wgs.SPEC.id
 
 SEEDS = (301, 302, 303)
 BUDGET = 60
@@ -138,7 +143,7 @@ def _weights_task(job):
             log["spread"].append(float(lw.max() - lw.min()))
         return out
 
-    res = _gs.run_traps("M07", setup, ts, Budget(BUDGET), Rng(seed), init, "point", rule, state)
+    res = _gs.run_traps(ARM_PF, setup, ts, Budget(BUDGET), Rng(seed), init, "point", rule, state)
     iters = _first_below([x["rel_std"] for x in res.history])
     return (arm, i, seed, {"allow": log["allow"], "spread": log["spread"], "iters": iters})
 
@@ -199,8 +204,8 @@ def compute(learned: str, workers: int, out: Path) -> dict:
         arms = {"R12": ("random", 12), "R3": ("random", 3), "N3": ("net", 3), "N12": ("net", 12)}
         for arm, (st, nf) in arms.items():
             jobs += [(arm, i, s, st, nf) for i in range(n_geo) for s in SEEDS]
-        jobs += [("M04", i, s, "m04", 0) for i in range(n_geo) for s in SEEDS]
-        jobs += [("M06", i, s, "m06", 0) for i in range(n_geo) for s in SEEDS]
+        jobs += [(ARM_GS, i, s, "m04", 0) for i in range(n_geo) for s in SEEDS]
+        jobs += [(ARM_GSW, i, s, "m06", 0) for i in range(n_geo) for s in SEEDS]
         for nf in SWEEP_NFIX:
             jobs += [(f"R{nf}", i, s, "random", nf) for i in sweep_idx for s in SEEDS]
         for nf in (1, 2, 4, 6, 8):
@@ -263,7 +268,7 @@ def compute(learned: str, workers: int, out: Path) -> dict:
     ed["N3_vs_R3"] = float(abs(np.median(E["N3"]) - np.median(E["R3"])) / np.median(E["R3"]))
     res["eff_rel_diff"] = ed
     refs = {}
-    for arm in ("M04", "M06"):
+    for arm in (ARM_GS, ARM_GSW):
         its, fin, eff, uni = per_geo(arm, allg)
         refs[arm] = {"iters_median": _med(its), "iters_ci": _boot_median(its, rng), "never_runs": never(arm, allg), "final_rel_std_median": _med(fin), "eff_median": _med(eff)}
     res["refs"] = refs
@@ -388,7 +393,7 @@ def emit(d: dict, outdir: Path) -> None:
     mac("capRNotN", int(((r3_ > d["budget"]) & (n3_ <= d["budget"])).sum())); mac("capNNotR", int(((n3_ > d["budget"]) & (r3_ <= d["budget"])).sum()))
     mac("capBoth", int(((n3_ > d["budget"]) & (r3_ > d["budget"])).sum()))
     mac("OTwelveGain", g(float(np.median(o["R12"])) - float(np.median(o["O12"]))))
-    for arm, key in (("M04", "MFour"), ("M06", "MSix")):
+    for arm, key in ((ARM_GS, "MFour"), (ARM_GSW, "MSix")):
         r_ = d["refs"][arm]
         mac(f"it{key}", g(r_["iters_median"])); mac(f"it{key}Lo", g(r_["iters_ci"][0])); mac(f"it{key}Hi", g(r_["iters_ci"][1]))
         mac(f"never{key}", g(100 * r_["never_runs"])); mac(f"fin{key}", f"{r_['final_rel_std_median']:.3g}"); mac(f"effm{key}", f"{r_['eff_median']:.3f}")
@@ -410,7 +415,7 @@ def emit(d: dict, outdir: Path) -> None:
     for arm, lab, nf in (("R12", "random (engine default)", 12), ("R3", "random", 3), ("N3", "network (candidate)", 3), ("N12", "network", 12)):
         a = A[arm]
         t += row([lab, str(nf), f"{g(a['iters_median'])} [{g(a['iters_ci'][0])}, {g(a['iters_ci'][1])}]", f"{g(a['iters_q1'])}--{g(a['iters_q3'])}", g(100 * a["never_runs"]), f"{a['final_rel_std_median']:.3g}", f"{a['eff_median']:.3f}"])
-    for arm, lab in (("M04", "Gerchberg--Saxton, random start"), ("M06", "weighted GS, random start")):
+    for arm, lab in ((ARM_GS, "Gerchberg--Saxton, random start"), (ARM_GSW, "weighted GS, random start")):
         r_ = d["refs"][arm]
         t += row([lab, "--", f"{g(r_['iters_median'])} [{g(r_['iters_ci'][0])}, {g(r_['iters_ci'][1])}]", "--", g(100 * r_["never_runs"]), f"{r_['final_rel_std_median']:.3g}", f"{r_['eff_median']:.3f}"])
     (outdir / "tab_main.tex").write_text(t + "\\bottomrule\n\\end{tabular}\n", encoding="utf-8")

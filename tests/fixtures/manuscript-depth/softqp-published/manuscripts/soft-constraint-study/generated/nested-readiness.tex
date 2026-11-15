@@ -1,0 +1,64 @@
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.20\textwidth}@{}}
+\caption{Complete nested fields, value types, literal schema restrictions and physical or structural dimensions for readiness. Required and optional structures retain the original schema and model interpretation.}\label{tab:nested-readiness}\\
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endfirsthead
+\toprule Field path & Type & Restrictions & Unit / role\\\midrule\endhead
+\bottomrule\endfoot
+schema & string & const=\allowbreak{}softqp.\allowbreak{}readiness/\allowbreak{}v2 & structural metadata /\allowbreak{} nested units\\
+product\_\allowbreak{}version & string & pattern=\allowbreak{}\textasciicircum{}\textbackslash{}d+\textbackslash{}.\allowbreak{}\textbackslash{}d\{2\}\textbackslash{}.\allowbreak{}\textbackslash{}d\{3\}\$ & structural metadata /\allowbreak{} nested units\\
+catalog\_\allowbreak{}sha256 & string & pattern=\allowbreak{}\textasciicircum{}[0-9a-\allowbreak{}f]\{64\}\$ & structural metadata /\allowbreak{} nested units\\
+contracts & array & minItems=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+contracts[] & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['id', 'version', 'status', 'provenance', 'state', 'reason', 'missing'] & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}id & string & pattern=\allowbreak{}\textasciicircum{}[a-\allowbreak{}z0-9][a-\allowbreak{}z0-9-]*\$ & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}version & string & pattern=\allowbreak{}\textasciicircum{}\textbackslash{}d+\textbackslash{}.\allowbreak{}\textbackslash{}d+\textbackslash{}.\allowbreak{}\textbackslash{}d+\$ & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}status & enumerated value & enum=\allowbreak{}['real', 'active'] & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}provenance & enumerated value & enum=\allowbreak{}['real', 'stub', 'simulator', 'fixture', 'baseline', None] & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}state & enumerated value & enum=\allowbreak{}['available', 'partial', 'stale', 'provider', 'training', 'missing'] & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}reason & union /\allowbreak{} composition & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}reason (oneOf1) & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['en', 'es'] & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}reason (oneOf1).\allowbreak{}en & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}reason (oneOf1).\allowbreak{}es & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}reason (oneOf2) & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}missing & array & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[].\allowbreak{}missing[] & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) (if) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) (if).\allowbreak{}state & string & const=\allowbreak{}available & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) (then) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) (then).\allowbreak{}reason & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) (then).\allowbreak{}provenance & string & const=\allowbreak{}real & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) (else) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) (else).\allowbreak{}reason & object & additionalProperties=\allowbreak{}False; required=\allowbreak{}['en', 'es'] & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) (else).\allowbreak{}reason.\allowbreak{}en & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf1) (else).\allowbreak{}reason.\allowbreak{}es & string & minLength=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf2) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf2) (if) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf2) (if).\allowbreak{}state & string & const=\allowbreak{}partial & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf2) (then) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf2) (then).\allowbreak{}missing & array & minItems=\allowbreak{}1 & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf2) (else) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf2) (else).\allowbreak{}missing & array & maxItems=\allowbreak{}0 & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf3) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf3) (if) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf3) (if).\allowbreak{}state & string & const=\allowbreak{}missing & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf3) (then) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf3) (then).\allowbreak{}provenance & null & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf3) (else) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf3) (else).\allowbreak{}provenance & string & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf4) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf4) (if) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf4) (if).\allowbreak{}state & string & const=\allowbreak{}provider & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf4) (then) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf4) (then).\allowbreak{}provenance & enumerated value & enum=\allowbreak{}['stub', 'simulator', 'fixture', 'baseline'] & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf5) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf5) (if) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf5) (if).\allowbreak{}state & string & const=\allowbreak{}training & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf5) (then) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf5) (then).\allowbreak{}provenance & enumerated value & enum=\allowbreak{}['real', 'baseline'] & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf6) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf6) (if) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf6) (if).\allowbreak{}status & string & const=\allowbreak{}active & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf6) (then) & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf6) (then).\allowbreak{}provenance & object & See defined object /\allowbreak{} value type & structural metadata /\allowbreak{} nested units\\
+contracts[] (allOf6) (then).\allowbreak{}provenance (not) & string & const=\allowbreak{}real & structural metadata /\allowbreak{} nested units\\
+\end{longtable}\endgroup

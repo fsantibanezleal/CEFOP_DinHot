@@ -6,7 +6,7 @@ import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useState } from 'react';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import { budgetText, budgetsOf, geometryOf, nameOf, orderMethods, pickRows, shownId, kindOf, KIND_TEXT, type Budget, type Lang } from './data';
+import { budgetText, budgetsOf, geometryOf, ladderOf, nameOf, orderMethods, pickRows, kindOf, KIND_TEXT, type Budget, type Lang } from './data';
 import { Note, Ready, TableWrap, useBench, useNum, useResolved, CellControls, spreadText } from './shared';
 
 const FLOOR = 1e-3;
@@ -63,7 +63,7 @@ function DeviceBody({ res }: { res: BenchmarkResults }) {
             <UPlotChart
               title={title}
               height={320}
-              x={{ label: { en: 'Method', es: 'Método' }, values: pairs.map((_, i) => i + 1), range: [0.5, pairs.length + 0.5], ticks: pairs.map((p, i) => ({ value: i + 1, label: { en: p.method, es: p.method } })) }}
+              x={{ label: { en: 'Method', es: 'Método' }, values: pairs.map((_, i) => i + 1), range: [0.5, pairs.length + 0.5], ticks: pairs.map((p, i) => ({ value: i + 1, label: ladderOf(p.method)?.short ?? { en: p.method, es: p.method } })) }}
               y={{ label: { en: 'Relative standard deviation', es: 'Desviación estándar relativa' }, unit: { en: '%', es: '%' }, log: true, format: { digits: 3 } }}
               series={[
                 { id: 'ideal', label: { en: 'ideal device', es: 'dispositivo ideal' }, mode: 'points', size: 10, values: pairs.map((p) => Math.max(p.a.row.rel_std_pct.median, FLOOR)) },
@@ -72,7 +72,7 @@ function DeviceBody({ res }: { res: BenchmarkResults }) {
               solo
               readout={(i) => {
                 const p = pairs[i];
-                return p ? `${shownId(p.method)} ${nameOf(p.method, lang)}: ${es ? 'ideal' : 'ideal'} ${spreadText(p.a.row.rel_std_pct.median, lang)}, C08 ${spreadText(p.b.row.rel_std_pct.median, lang)}` : '';
+                return p ? `${nameOf(p.method, lang)}: ${es ? 'ideal' : 'ideal'} ${spreadText(p.a.row.rel_std_pct.median, lang)}, C08 ${spreadText(p.b.row.rel_std_pct.median, lang)}` : '';
               }}
             />
           </PlotCard>
@@ -98,7 +98,7 @@ function DeviceBody({ res }: { res: BenchmarkResults }) {
                   const t = kindOf(p.method);
                   return (
                     <tr key={p.method}>
-                      <td className="caos-col-text">{shownId(p.method)}</td>
+                      <td className="caos-col-text">{nameOf(p.method, lang)}</td>
                       <td className="caos-col-text">{t ? KIND_TEXT[t][lang] : '-'}</td>
                       <td>{n(p.a.row.rel_std_pct.median)}</td>
                       <td>{n(p.b.row.rel_std_pct.median)}</td>
@@ -112,7 +112,7 @@ function DeviceBody({ res }: { res: BenchmarkResults }) {
           </TableWrap>
           {lost.length ? (
             <p className="caos-plot-note" lang={lang}>
-              {es ? `Sin fila sobre el dispositivo en esta celda, y por eso fuera de la comparación: ${lost.map(shownId).join(', ')}.` : `No row on the device in this cell, and so left out of the comparison: ${lost.map(shownId).join(', ')}.`}
+              {es ? `Sin fila sobre el dispositivo en esta celda, y por eso fuera de la comparación: ${lost.map((m) => nameOf(m, 'es')).join(', ')}.` : `No row on the device in this cell, and so left out of the comparison: ${lost.map((m) => nameOf(m, 'en')).join(', ')}.`}
             </p>
           ) : null}
         </>
@@ -171,7 +171,7 @@ function BudgetBody({ res }: { res: BenchmarkResults }) {
             y={{ label: { en: 'Relative standard deviation', es: 'Desviación estándar relativa' }, unit: { en: '%', es: '%' }, log: true, format: { digits: 3 } }}
             series={methods.map((m) => ({
               id: m,
-              label: { en: `${shownId(m)} ${nameOf(m, 'en')}`, es: `${shownId(m)} ${nameOf(m, 'es')}` },
+              label: { en: `${nameOf(m, 'en')}`, es: `${nameOf(m, 'es')}` },
               mode: 'line' as const,
               dots: true,
               values: iters.map((b) => {

@@ -1,7 +1,7 @@
 {
   "name": "dinhot-frontend",
   "private": true,
-  "version": "0.2.2",
+  "version": "0.2.3",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
@@ -13,11 +13,12 @@
     "build": "node scripts/gen-contract-types.mjs --check && tsc --noEmit && vite build && node scripts/materialize-routes.mjs",
     "preview": "node scripts/serve.mjs",
     "test": "node --test scripts/codegen-compatibility.test.mjs && vitest run",
-    "gate": "node scripts/gate.mjs",
+    "check:story": "node scripts/check_story_mode.mjs",
+    "gate": "node scripts/check_story_mode.mjs && node scripts/gate.mjs",
     "engine:browser": "node scripts/engine-browser.mjs --assert"
   },
   "dependencies": {
-    "@fasl-work/caos-app-shell": "0.19.6",
+    "@fasl-work/caos-app-shell": "0.26.2",
     "fft.js": "4.0.4",
     "katex": "0.19.1",
     "lucide-react": "^1.52.0",

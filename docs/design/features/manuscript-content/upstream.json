@@ -1,0 +1,19 @@
+{
+  "scope": "Initial exact guard export, with explicit test import/path adaptation. Subsequent changes are separate derivatives.",
+  "source_repository": "fsantibanezleal/CAOS_MANAGE",
+  "source_commit": "a5180cdc22011c4c9fc8d868afa7867bd9924e0c",
+  "files": {
+    "tools/zenodo/check_manuscript_depth.py": {
+      "source_sha256": "5a07961313f16ab512e871e012d116c395c2c17c46e68ccd0ee67b788ff95047",
+      "target": "scripts/check_manuscript_depth.py",
+      "export_sha256": "5a07961313f16ab512e871e012d116c395c2c17c46e68ccd0ee67b788ff95047",
+      "exact_bytes": true
+    },
+    "tools/zenodo/test_check_manuscript_depth.py": {
+      "source_sha256": "ec7225d032bcfb1ce04bb7fd7c2969b804dfd961f27209287c96d49be909424e",
+      "target": "tests/test_manuscript_depth.py",
+      "export_sha256": "2ee1a8aa1bc723713e5591b1fea75d108fea55d0dd5bc94a2b3007a706ed5d56",
+      "exact_bytes": false
+    }
+  }
+}

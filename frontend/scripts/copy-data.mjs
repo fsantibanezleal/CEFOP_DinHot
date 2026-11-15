@@ -4,10 +4,16 @@
 // from the bake never lingers in the site (failure class 9: a filter by extension shipped stale files and missed
 // declared ones). A file the readiness document lists as absent in a partial row (a declared-partial bake) is warned
 // about and left out; any other absent file stops the build.
-import { createHash } from 'node:crypto';
+// Product hook (0.15.005): a product that serves further files beyond its index (a benchmark document, model metrics, released
+// model cards) puts that in its own module `copy-data.product.mjs` next to this script and takes this file verbatim. Its default
+// export is called once, after the declared files are copied into the rebuilt overlay, with `{ derived, out, repo, readiness }`
+// (the data tree, the overlay folder, the repository root, the parsed readiness document or null) and returns
+// `{ copied, absent, problems }`, arrays of strings: the paths (relative to `out`) it copied, the paths it leaves out as declared
+// absent (each printed as a WARN line), and the problems that stop the build. A hook that throws, returns another shape, or
+// reports a path outside `out` or a copied file that is not there stops the build. No module: the output is that of 0.15.004.
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { declaredFiles, INDEX_REL } from './declared.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -15,70 +21,13 @@ const repo = join(here, '..', '..');
 // CAOS_DATA_ROOT selects the provider tree (absolute, or relative to the repository root); the default is the bake.
 const root = process.env.CAOS_DATA_ROOT?.trim() || 'data/derived';
 const derived = isAbsolute(root) ? root : resolve(repo, root);
-// CAOS_PUBLIC_DIR and CAOS_MODELS_DIR exist for the test of this script (declared.test.ts); a build never sets them.
-const out = process.env.CAOS_PUBLIC_DIR?.trim() || join(here, '..', 'public', 'data');
-const modelsDir = process.env.CAOS_MODELS_DIR?.trim() || join(repo, 'models');
+const out = join(here, '..', 'public', 'data');
 
 if (!existsSync(join(derived, INDEX_REL))) {
   console.error(`[copy-data] ${INDEX_REL} is missing under ${derived}: run the pipeline first (scripts/precompute)`);
   process.exit(1);
 }
 const { index, declared, missing, tolerated, problems } = declaredFiles(derived);
-
-// DinHot's further declared files (catalog rows benchmark-results and model-metrics): documents of the bake that the Benchmark views and the
-// workbench's Pareto view read. They are required, unless the readiness document says the row is `missing` or `provider` (the views then say not available
-// yet, with the reason, which is the catalog's behaviour for an unbaked benchmark).
-const PRODUCT_FILES = [
-  { rel: 'benchmark/results.json', row: 'benchmark-results' },
-  { rel: 'models/metrics.json', row: 'model-metrics' },
-];
-let readinessDoc = null;
-try {
-  readinessDoc = JSON.parse(readFileSync(join(derived, 'readiness.json'), 'utf8'));
-} catch {
-  readinessDoc = null;
-}
-const rowState = (id) => readinessDoc?.contracts?.find((c) => c.id === id)?.state;
-for (const f of PRODUCT_FILES) {
-  declared.push(f.rel);
-  if (!existsSync(join(derived, f.rel))) {
-    missing.push(f.rel);
-    // `provider`: the row is served by its provider until the producer exists (catalog), so a bake without the file is declared, not broken.
-    if (['missing', 'provider'].includes(rowState(f.row))) tolerated.push(f.rel);
-  }
-}
-
-// The learned models (catalog rows cgh-net and warmstart-model): the card and the graph of a released model sit in the repository's models/
-// directory, not in the bake, and are copied beside the bake's documents (the site reads them from data/models/). No card means no released
-// model (the baseline answers). A card whose graph is absent, or whose sha256 or size is not the graph's, stops the build: the browser would
-// refuse it at run time, and a site must not ship a model it will refuse.
-const MODEL_CARDS = ['cgh-net.json', 'warmstart.json'];
-const models = [];
-const modelProblems = [];
-for (const name of MODEL_CARDS) {
-  const cardAt = join(modelsDir, name);
-  if (!existsSync(cardAt)) continue;
-  let card;
-  try {
-    card = JSON.parse(readFileSync(cardAt, 'utf8'));
-  } catch (e) {
-    modelProblems.push(`models/${name}: not JSON (${e.message})`);
-    continue;
-  }
-  const graphAt = join(modelsDir, String(card.onnx ?? '').replace(/^models\//, ''));
-  if (!card.onnx || !existsSync(graphAt)) {
-    modelProblems.push(`models/${name}: names the graph ${card.onnx}, which is absent`);
-    continue;
-  }
-  const bytes = readFileSync(graphAt);
-  if (bytes.length !== card.bytes || createHash('sha256').update(bytes).digest('hex') !== card.sha256) {
-    modelProblems.push(`models/${name}: the graph ${card.onnx} is not the one its card describes (size or sha256)`);
-    continue;
-  }
-  models.push({ from: cardAt, rel: `models/${name}` }, { from: graphAt, rel: String(card.onnx) });
-}
-if (modelProblems.length) problems.push(...modelProblems);
-
 const stopping = missing.filter((rel) => !tolerated.includes(rel));
 for (const rel of tolerated) console.warn(`[copy-data] WARN ${rel} is absent, as readiness.json declares (partial): the site says not available yet`);
 if (stopping.length || problems.length) {
@@ -91,8 +40,46 @@ for (const rel of declared.filter((r) => !tolerated.includes(r))) {
   mkdirSync(dirname(join(out, rel)), { recursive: true });
   cpSync(join(derived, rel), join(out, rel));
 }
-for (const m of models) {
-  mkdirSync(dirname(join(out, m.rel)), { recursive: true });
-  cpSync(m.from, join(out, m.rel));
+let summary = `[copy-data] root ${derived}: ${declared.length - tolerated.length} declared files (${index.cases.length} cases, ${tolerated.length} declared absent) -> public/data`;
+
+const HOOK = 'copy-data.product.mjs';
+if (existsSync(join(here, HOOK))) {
+  const fail = (lines) => {
+    console.error(`[copy-data] ${HOOK}:\n  ${lines.join('\n  ')}`);
+    process.exit(1);
+  };
+  /** A path the hook reports is relative and stays inside the overlay. */
+  const inside = (rel) => typeof rel === 'string' && rel !== '' && !isAbsolute(rel) && !/^[a-zA-Z]:/.test(rel) &&
+    !relative(out, resolve(out, rel)).split(/[\\/]/).includes('..') && relative(out, resolve(out, rel)) !== '';
+  let readiness = null;
+  try {
+    readiness = JSON.parse(readFileSync(join(derived, 'readiness.json'), 'utf8'));
+  } catch {
+    readiness = null;
+  }
+  let result;
+  try {
+    const hook = (await import(pathToFileURL(join(here, HOOK)).href)).default;
+    if (typeof hook !== 'function') fail(['the default export is not a function']);
+    result = await hook({ derived, out, repo, readiness });
+  } catch (error) {
+    fail([`threw: ${error?.stack ?? error}`]);
+  }
+  const lists = ['copied', 'absent', 'problems'];
+  if (!result || lists.some((k) => !Array.isArray(result[k]) || result[k].some((s) => typeof s !== 'string'))) {
+    fail(['must return { copied, absent, problems }, each an array of strings']);
+  }
+  const { copied, absent, problems: hookProblems } = result;
+  const outside = [...copied, ...absent].filter((rel) => !inside(rel));
+  const notThere = copied.filter((rel) => inside(rel) && !existsSync(join(out, rel)));
+  if (hookProblems.length || outside.length || notThere.length) {
+    fail([
+      ...hookProblems,
+      ...outside.map((rel) => `reports ${JSON.stringify(rel)}, which is not a path inside public/data`),
+      ...notThere.map((rel) => `reports ${rel} as copied, but it is not in public/data`),
+    ]);
+  }
+  for (const rel of absent) console.warn(`[copy-data] WARN ${rel} is absent, as ${HOOK} declares: the site says not available yet`);
+  summary += `; ${copied.length} from ${HOOK} (${absent.length} declared absent)`;
 }
-console.log(`[copy-data] root ${derived}: ${declared.length - tolerated.length} declared files (${index.cases.length} cases, ${tolerated.length} declared absent), ${models.length / 2} released model(s) -> public/data`);
+console.log(summary);

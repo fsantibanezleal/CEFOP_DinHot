@@ -17,13 +17,13 @@ reimplementan. Cada uno es una lección sobre una sola pregunta.
 Eight topics, from simple to complex, in two trees:
 
 1. `01-fourier-optics`: where a phase pattern sends the light, the numbers that judge a trap array, and the engine-reference, readiness and API contracts.
-2. `02-analytic-holograms`: the one-step holograms, the baselines, and the Laguerre-Gaussian vortex traps (M15).
-3. `03-gerchberg-saxton`: the Gerchberg-Saxton family, phase-fixed WGS against slmsuite, and device-aware WGS (B1).
+2. `02-analytic-holograms`: the one-step holograms, the baselines, and the Laguerre-Gaussian vortex traps.
+3. `03-gerchberg-saxton`: the Gerchberg-Saxton family, phase-fixed WGS against slmsuite, and device-aware WGS.
 4. `04-shaped-potentials`: what a shaped potential asks, the signal and the noise region, MRAF and optimal-transport starts for shaped targets.
-5. `05-optimization`: conjugate gradient and Wirtinger-Adam on the explicit cost, and the efficiency-uniformity front (B5).
-6. `06-device-and-aberrations`: what the device costs, Zernike correction, crosstalk-aware descent and robust holograms (B4).
-7. `07-feedback-and-dynamics`: a bead in the computed trap, atom rearrangement, camera feedback, flicker-bounded moves (B2).
-8. `08-learned-holography`: what the released network takes and returns, how it learns without labels, the network against the volumetric GS, and the refused warm start (B3).
+5. `05-optimization`: conjugate gradient and Wirtinger-Adam on the explicit cost, and the efficiency-uniformity front.
+6. `06-device-and-aberrations`: what the device costs, Zernike correction, crosstalk-aware descent and robust holograms.
+7. `07-feedback-and-dynamics`: a bead in the computed trap, atom rearrangement, camera feedback, flicker-bounded moves.
+8. `08-learned-holography`: what the released network takes and returns, how it learns without labels, the network against the volumetric GS, and the refused warm start.
 
 Levels: 1 fundamentals, 2 the method in practice, 3 comparison with published methods (the published methods of the SDD's ladder,
 run against slmsuite 0.5.0 or as published), 4 proposed methods (the product's own claims, measured, including the negatives).

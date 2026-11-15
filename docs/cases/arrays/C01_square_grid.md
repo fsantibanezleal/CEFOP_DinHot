@@ -105,8 +105,8 @@ The seeds of M01 give the same value (the method does not depend on the seed her
 | `M12.efficiency` | 0.7312 to 0.8937 | 0.81117, 0.811546, 0.81474 | fraction of the input power in the trap peaks |
 | `M12.rel_std_pct` | 16.31 to 19.93 | 17.7117, 17.5563, 19.0878 | relative standard deviation of the trap intensities, in percent |
 | `M12.uniformity` | 0.657 to 0.803 | 0.7493, 0.751651, 0.688965 | 1 minus (max minus min) over (max plus min) of the weighted trap intensities, 1 is perfect |
-| `boltzmann_tv` | 0.03595 to 0.04397 | 0.0382792, 0.0422874, 0.0393148 | total variation between the position histogram and the Boltzmann law, 0 is a perfect match |
-| `fc_ratio` | 0.8613 to 1.124 | 0.919889, 1.00676, 1.05126 | fitted corner frequency over the expected one (bead), or fitted over expected trap frequency (atom) |
+| `boltzmann_tv` | 0.01541 to 0.03761 | 0.0335522, 0.0235335, 0.0224525 | total variation between the position histogram and the Boltzmann law, 0 is a perfect match |
+| `fc_ratio` | 0.8488 to 1.037 | 0.91969, 0.929659, 0.980127 | fitted corner frequency over the expected one (bead), or fitted over expected trap frequency (atom) |
 | `feedback_final_rel_std_pct` | 0 to 1.022 | 0.0236, 0.019, 0.7702 | measured spread after the camera loop, in percent |
 | `feedback_initial_rel_std_pct` | 5.911 to 13.57 | 9.1161, 8.1364, 11.9642 | measured spread before the camera loop, in percent |
 

@@ -147,7 +147,7 @@ export function randomMinSpacing(n: number, extentUm: number, minSpacingUm: numb
   const pts: [number, number][] = [];
   let attempts = 0;
   while (pts.length < n) {
-    if (attempts > 2000 * n) throw new Error(`cannot place ${n} traps with spacing ${minSpacingUm} um in ${extentUm} um`);
+    if (attempts > 2000 * n) throw new Error(`cannot place ${n} traps with spacing ${minSpacingUm} µm in ${extentUm} µm`);
     attempts++;
     const x = (rng.uniform() - 0.5) * ext;
     const y = (rng.uniform() - 0.5) * ext;

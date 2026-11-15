@@ -1,0 +1,45 @@
+\section{Reproducibility}\label{sec:reproducibility}
+The public source repository is
+\url{https://github.com/fsantibanezleal/CAOS_SoftQP}; the separate native engine
+is \url{https://github.com/fsantibanezleal/CAOS_SoftQP_Engine}.
+The original study uses its recorded native source identity, which must not
+be equated silently with a later public wheel. The grouped study uses the
+separate pinned SDK 0.2 profile and registered protocol/source map. Replaying
+archived observations does not require rerunning timing measurements.
+
+The grouped evidence dataset is available at
+\url{https://doi.org/10.5281/zenodo.23875194}. The stored original summaries % voice-ok: cited supporting dataset identity, not this document's deposit narrative
+and common control trajectory are \path{data/derived/experiments/campaign.json} % voice-ok: literal public evidence filename
+and \path{data/derived/experiments/stream.json} in the product source at
+\url{https://github.com/fsantibanezleal/CAOS_SoftQP/tree/2d3f299d80edad49c2599e61bb6e3c875c119043}.
+The original computation used native engine source
+\path{d0c69ed974d577ba02adbd4806332270d9425651}; the grouped registered
+implementation used source \path{246bf87e690f4d010494c556e2021d311d587422}.
+The grouped archive contains the protocol and complete observations; its
+summary is also \path{manuscripts/coupled-peak-study/results/summary/summary.json}
+in that frozen product tree. These identifiers locate the numerical evidence
+independently of later manuscript presentation changes.
+
+The committed manuscript asset generator reads immutable scientific inputs,
+checks their Git identities and emits vector PDF figures, literal result
+tables and source manifests. Running
+\texttt{python manuscripts/shared/generate\_assets.py} rebuilds those assets
+without solving a model or recomputing a confidence interval. Each document's
+\texttt{build.py} verifies numeric sources and compiles native LaTeX with
+BibTeX, refusing unresolved or clipped output. The manuscript rendering
+requirements are pinned separately from numerical experiment environments.
+
+The full grouped data include canonical batches, complete JSONL/CSV,
+protocol snapshots, environment identities, unsuccessful observations and
+replay validation. Reproduction of a new timing study requires an exact
+historical source/environment checkout and a new external output directory;
+such a rerun is not needed to inspect the preserved results. Large study
+outputs, temporary files and scientific environments use external role
+roots. No secret token or private operational dataset is required to read
+the scientific inputs or reconstruct the published figures and tables.
+
+\paragraph{Declaration of generative AI use.}
+Generative AI tools assisted source synthesis, mathematical checking,
+implementation and drafting. Numerical and editorial claims were checked
+against independent formulations and preserved computational evidence.
+Responsibility for the work rests with the named author.
