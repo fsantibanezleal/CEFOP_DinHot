@@ -1,0 +1,18 @@
+\begin{tabular}{@{}l r l r r r r@{}}
+\toprule
+Move & Frames & Sequence & Median & Range & Seeds at 0.9 or above & Reading against the flicker-bounded sequence \\
+\midrule
+lattice, 12 bins & 58 & flicker-bounded sequence & 0.933 & 0.023 to 0.965 & 6 of 8 &  \\
+lattice, 12 bins & 58 & linear phase interpolation & 0.675 & 0.568 to 0.756 & 0 of 8 & proposed ($n$ = 8) \\
+lattice, 12 bins & 58 & per-frame GS with phase induction, 5 iterations & 0.960 & 0.927 to 0.976 & 8 of 8 & tie ($n$ = 8) \\
+lattice, 12 bins & 58 & per-frame GS with phase induction, 10 iterations & 0.948 & 0.912 to 0.978 & 8 of 8 & tie ($n$ = 8) \\
+lattice, 20 bins & 95 & flicker-bounded sequence & 0.936 & 0.584 to 0.966 & 6 of 8 &  \\
+lattice, 20 bins & 95 & linear phase interpolation & 0.651 & 0.581 to 0.701 & 0 of 8 & proposed ($n$ = 8) \\
+lattice, 20 bins & 95 & per-frame GS with phase induction, 5 iterations & 0.960 & 0.928 to 0.976 & 8 of 8 & published ($n$ = 8) \\
+lattice, 20 bins & 95 & per-frame GS with phase induction, 10 iterations & 0.949 & 0.908 to 0.979 & 8 of 8 & tie ($n$ = 8) \\
+rearrangement C10, 16 moving traps & 137 & flicker-bounded sequence & 0.914 & 0.909 to 0.917 & 6 of 6 &  \\
+rearrangement C10, 16 moving traps & 137 & linear phase interpolation & 0.556 & 0.044 to 0.738 & 0 of 6 & proposed ($n$ = 6) \\
+rearrangement C10, 16 moving traps & 137 & per-frame GS with phase induction, 5 iterations & 0.938 & 0.922 to 0.956 & 6 of 6 & published ($n$ = 6) \\
+rearrangement C10, 16 moving traps & 137 & per-frame GS with phase induction, 10 iterations & 0.920 & 0.846 to 0.936 & 5 of 6 & tie ($n$ = 6) \\
+\bottomrule
+\end{tabular}
