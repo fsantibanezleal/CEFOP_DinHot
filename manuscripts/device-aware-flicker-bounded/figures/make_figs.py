@@ -323,6 +323,15 @@ def write_numbers(d: dict, geo: dict[str, list[dict]]) -> None:
         mac(f"bench{name}SecRefMax", f"{max(ref):.0f}")
         mac(f"bench{name}SecMsevenMin", f"{min(m07):.2f}")
         mac(f"bench{name}SecMsevenMax", f"{max(m07):.2f}")
+    def trow(method: str, geometry: str) -> dict:
+        return next(x for x in res["rows"] if x["method"] == method and x["geometry"] == geometry and x["device"] == "device"
+                    and x["budget_kind"] == "time" and x["budget"] == 1.0 and x["params"] == "default")
+    its1 = [trow("B1", g)["iterations"]["median"] for g in geos]
+    over1 = [trow("B1", g)["time_s"]["median"] - 1.0 for g in geos]
+    mac("benchOneSecItersMin", f"{min(its1):.0f}")
+    mac("benchOneSecItersMax", f"{max(its1):.0f}")
+    mac("benchOneSecOverrunMin", f"{min(over1):.2f}")
+    mac("benchOneSecOverrunMax", f"{max(over1):.2f}")
     same = sum(1 for g in geos if abs(row("B1", g, 10)["rel_std_pct"]["median"] - row("B1", g, 100)["rel_std_pct"]["median"]) < 1e-6
                and abs(row("B1", g, 30)["rel_std_pct"]["median"] - row("B1", g, 100)["rel_std_pct"]["median"]) < 1e-6)
     mac("benchBudgetSameCells", same)
