@@ -140,10 +140,10 @@ def c10_plan():
 
 
 def aligned_plan(setup: Setup, start: TrapSet, dest: TrapSet, alpha: float) -> tuple[TrapSet, np.ndarray, list]:
-    """The origin traps in the order of the destination under the Hungarian assignment of M16 itself, the moving mask and the assignment.
+    """The origin traps in the order of the destination under the rearrangement method's own Hungarian assignment, the moving mask and the assignment.
 
-    With ties in the cost the assignment of the plan and the one M16 returns may differ, so every sequence is run on the assignment M16
-    returns for the loaded atoms ``start`` (target ``k`` takes atom ``f[k]``); the flicker-bounded sequence and the baselines then move
+    With ties in the cost the assignment of the plan and the one the rearrangement method returns may differ, so every sequence is run on the
+    assignment it returns for the loaded atoms ``start`` (target ``k`` takes atom ``f[k]``); the flicker-bounded sequence and the baselines then move
     the same traps along the same paths."""
     b = focal_bin_m(setup)
     f = list(M16.assign(np.c_[dest.x_m, dest.y_m] / b, np.c_[start.x_m, start.y_m] / b, alpha))
@@ -154,7 +154,7 @@ def aligned_plan(setup: Setup, start: TrapSet, dest: TrapSet, alpha: float) -> t
 
 
 def linear_at(start: TrapSet, end: TrapSet, n_steps: int):
-    """The linear trajectory of the rearrangement method (``M16``): the trap set at the fractional frame ``s`` of ``n_steps`` steps."""
+    """The linear trajectory of the rearrangement method: the trap set at the fractional frame ``s`` of ``n_steps`` steps."""
     def at(s: float) -> TrapSet:
         f = s / n_steps
         return TrapSet(replace(t, x_m=t.x_m + (e.x_m - t.x_m) * f, y_m=t.y_m + (e.y_m - t.y_m) * f) for t, e in zip(start, end))
@@ -224,7 +224,7 @@ def run_b2(setup, start, dest, moving, seed, frames, *, end_phases=None, phase_v
 
 def run_m16(setup, start, dest, moving, seed, frames, sequence, frame_iterations=M16.FRAME_ITERATIONS, alpha=1.5, atoms=None,
             assignment=None) -> tuple[dict, list, object]:
-    """The published sequences of M16 on the same traps and the same number of frames (``max_step_bins`` from the longest move)."""
+    """The published sequences of the rearrangement method on the same traps and the same number of frames (``max_step_bins`` from the longest move)."""
     b = focal_bin_m(setup)
     longest = max(math.hypot(e.x_m - t.x_m, e.y_m - t.y_m) for t, e in zip(start, dest)) / b
     step = longest / (frames - 1) * (1.0 + 1e-9)
@@ -233,7 +233,7 @@ def run_m16(setup, start, dest, moving, seed, frames, sequence, frame_iterations
                   sequence=sequence, frame_iterations=frame_iterations)
     sec = time.perf_counter() - t0
     assert res.meta["n_steps"] == frames - 1, (res.meta["n_steps"], frames)
-    assert list(res.meta["assignment"]) == (list(range(len(start))) if assignment is None else list(assignment)), "the assignment of M16 changed"
+    assert list(res.meta["assignment"]) == (list(range(len(start))) if assignment is None else list(assignment)), "the assignment of the rearrangement method changed"
     assert int(res.meta["moved"].sum()) == int(moving.sum()), "the assignment moved a different set of traps"
     phis = [np.asarray(f) for f in res.meta["frames"]]
     seq = res.meta["trap_sequence"]
@@ -404,7 +404,7 @@ def read_pair(proposed: list[float], published: list[float]) -> dict:
     ``proposed``, ``published`` or ``tie``, with the seeds behind each side. The rule is the benchmark's, imported once."""
     def row(method, v):
         return {"method": method, "n_seeds": len(v), "efficiency": {"median": 1.0}, "rel_std_pct": _quartiles(v), "budget_kind": "time"}
-    r = X.cell_result([row("B2", proposed), row("M16", published)])
+    r = X.cell_result([row("B2", proposed), row(M16.SPEC.id, published)])
     return {"result": r["result"], "reason": r["reason"], "n_proposed": len(proposed), "n_published": len(published)}
 
 
