@@ -5,7 +5,7 @@
   fig-convergence.pdf  relative standard deviation against iteration from the baked traces: C02 (ideal device) and C08 (device).
   fig-device.pdf       the device model: crosstalk kernel, quantization efficiency and pixel-aperture envelope, from the formulas.
   fig-geometry.pdf     the spread by geometry: every method at 100 iterations, ideal and C08 device (benchmark medians).
-  fig-pareto.pdf       the stored efficiency-uniformity fronts of the benchmark against the single points of published methods.
+  fig-pareto.pdf       the stored points of the efficiency-uniformity continuation in the benchmark against the single points of published methods.
   fig-nfix.pdf         phase-fixed weighted GS: minimum spread against the freeze index, and iterations to 0.5 percent against weighted GS.
 
 Run from the repository root:  python manuscripts/holographic-trap-studio/figures/make_figs.py   (it calls this module)
@@ -187,11 +187,14 @@ def fig_geometry() -> None:
 
 def fig_pareto() -> None:
     b = _load(DER / "benchmark" / "results.json")
-    fig, axs = plt.subplots(2, 3, figsize=(7.4, 4.2))
+    n_panels = len(b["pareto"])
+    ncols = 4 if n_panels > 6 else 3
+    nrows = -(-n_panels // ncols)
+    fig, axs = plt.subplots(nrows, ncols, figsize=(7.4, 2.1 * nrows + 0.2), squeeze=False)
     marks = {ID["gs"]: ("o", GREEN), ID["gaa"]: ("s", "#8a8a8a"), ID["wgs"]: ("^", ORANGE), ID["directsearch"]: ("D", PURPLE)}
     for ax, fr in zip(axs.flat, b["pareto"]):
         pts = sorted(fr["points"], key=lambda p: p["lambda"])
-        ax.plot([p["efficiency"] for p in pts], [p["uniformity"] for p in pts], color=BLUE, marker=".", ms=4, lw=1.0, label="front")
+        ax.plot([p["efficiency"] for p in pts], [p["uniformity"] for p in pts], color=BLUE, marker=".", ms=4, lw=1.0, label="continuation")
         for m, (mk, col) in marks.items():
             cell = [x for x in b["rows"] if x["method"] == m and x["geometry"] == fr["geometry"] and x["device"] == "ideal"
                     and x["budget_kind"] == "iterations" and x["budget"] == 100 and x["params"] == "default"]
@@ -200,7 +203,9 @@ def fig_pareto() -> None:
         ax.set_title(fr["geometry"], fontsize=8)
         ax.grid(True, color=GRID, lw=0.5)
         ax.tick_params(labelsize=6.5)
-    for ax in axs[1]:
+    for ax in axs.flat[n_panels:]:
+        ax.axis("off")
+    for ax in axs[-1]:
         ax.set_xlabel("efficiency")
     for ax in axs[:, 0]:
         ax.set_ylabel("uniformity")
