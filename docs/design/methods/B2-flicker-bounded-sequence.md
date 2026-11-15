@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b2_flicker_bounded.py` |
 | Live port | none (lane `baked`; `getMethod('B2')` raises `NotLive`) |
 | Card | [B2](../../frameworks/B2_flicker-bounded-sequence.md) |
-| Outcome | hypothesis confirmed in DinHot's transient model on the acceptance task (0.916 to 0.926 against the test's LPI at 0.551 to 0.709 after the 2026-10-29 rule corrections; 0.919 to 0.923 against 0.537 to 0.724 before), with the measured scope of the update below; the model is DinHot's own and is not calibrated against a measured display |
+| Outcome (0.02.004, update of 2026-11-15) | against linear phase interpolation the hypothesis is confirmed in DinHot's transient model (a mean of 0.923 against 0.644 over 6 seeds); against per-frame Gerchberg-Saxton with phase induction (Kim, Kim, Lee and Ahn 2019) the result is a trade: phase steps between frames 5.3 times smaller (0.077 rad against 0.408 rad) and a lower per-frame spread, but the per-frame method reaches the higher transient minimum (0.948 against 0.923), so the sequence does not improve the dip over it; the older acceptance figures (0.916 to 0.926 against 0.551 to 0.709, 3 seeds) stay as the record of the ladder test; the model is DinHot's own and is not calibrated against a measured display |
 
 ## Tier and role
 
@@ -21,7 +21,7 @@ minimum transient intensity of a moving trap at least 0.9 of its mean and above 
 
 **The gap.** The LPI paper (https://arxiv.org/abs/2501.01391) observes that at 11 kHz sampling the weighted-GS spot nearly vanished several times while the LPI spot stayed above 70 percent; its
 intermediate holograms are not optimized, so their trap intensities are uneven, and phase slips near $\pi$ lost atoms while slips of several tenths of $\pi$ barely mattered (gap study, algorithms
-dossier D5.1 B2). No source optimizes the frames of a trap trajectory.
+dossier D5.1 B2). Per-frame Gerchberg-Saxton with phase induction (Kim, Kim, Lee and Ahn 2019, Opt. Express 27, 2184, https://doi.org/10.1364/OE.27.002184) does compute every frame, each started from the phase of the previous one; it has no equation that says where the trap phases should go along the trajectory and sets the number of frames by an empirical fit of the minimum against the step. What B2 adds to the published pair is the prescribed and locked phase trajectory and a closed-form frame count.
 
 ## Problem it answers
 
@@ -92,7 +92,7 @@ Acceptance run of 2026-10-28 (E3 report D3 and D5), 256 by 256 padded 2, test se
 | Per-frame relative standard deviation (seeds 1 to 3, re-measured 2026-10-30; at most 0.17 and 24 to 29 before the rule corrections) | at most 0.386 percent | 22.8 to 27.0 percent |
 
 The paper reports above 0.70 for LPI on hardware; the test's LPI scores lower under DinHot's transient model, so the two numbers are not the same measurement. The M16 sequence (an LPI) scores 0.870 median
-[0.748, 0.963] on its own 7 by 7 to 3 by 3 sort under its frame-position measure, which also differs. Outcome: confirmed within the model.
+[0.748, 0.963] on its own 7 by 7 to 3 by 3 sort under its frame-position measure, which also differs. Outcome: confirmed within the model against linear phase interpolation; the comparison with per-frame Gerchberg-Saxton with phase induction is in the update of 2026-11-15.
 
 Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, mean over 3 seeds with the range; case C10 only, a rearrangement, with its optics in `data/derived/manifests/C10_rearrangement.json`;
 the table shows B2's final hologram as the bake scores it):
@@ -121,3 +121,16 @@ frames; the measured file does not name the method of that driver, so it is not 
 ## Update after the corrections of 2026-10-29
 
 Measured scope, with one assignment shared by B2 and linear phase interpolation (LPI) and the transient model of the acceptance test: `b2_flicker_bounded.frames_for_move` names the fewest frames that keep the peak step per frame at most 0.2 Fourier units, a bound set where C10's lowest moving trap first reached 0.9; with those frames the claim holds on most seeds and not on all. Acceptance task (moves of 4 bins, 13 frames, a peak step of 0.31 Fourier units per frame, outside that bound, seeds 1 to 3): B2 0.916 to 0.926 of the mean, LPI 0.551 to 0.709. C10's long sort on M16's own plan (16 moving traps, the longest 29 bins, seeds 1 to 6): at 25 frames LPI leads in every seed (0.320 to 0.594 against 0.205 to 0.391); B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds (median 0.911), where LPI reaches 0.360 to 0.690, and on seed 2 it collapses to 0.155 with the same frames, against 0.617 for LPI (the phase-path limit of the lattice moves below); with held phases at 25 frames the lowest moving trap is at 0.177 (seed 1). Long moves of the acceptance lattice (two columns moved 12 or 20 bins, 8 seeds, the frames of `frames_for_move`): median 0.933 and 0.936, 6 of 8 seeds at least 0.9 and 7 of 8 above LPI on the same assignment and frames (LPI 0.568 to 0.756 and 0.581 to 0.701); the seeds below (0.768 and 0.023 at 12 bins, 0.584 and 0.847 at 20 bins) stay below with twice the frames (0.757, 0.000, 0.558 and 0.840; re-measured 2026-10-30 by the BS-1 and BS-2 manuscript's `measure.py`, with the phase-step bound lifted from 0.3 to 1 rad as the end phases need), so the limit there is the phase path that the end phases prescribe, not the frame count (`tests/methods/beyond/test_b2_flicker_bounded.py::test_long_moves_meet_the_claim_on_most_seeds_with_the_frames_of_the_move`). Measured 2026-10-29 after the GS family of the beyond methods was made the ladder methods' own rules (M06 and M07 project the start's field unweighted, as slmsuite does). The transient model is not calibrated in absolute terms.
+
+## Update of 2026-11-15 (0.02.004): the trade against per-frame Gerchberg-Saxton with phase induction
+
+The numbers are those of `manuscripts/flicker-bounded-sequences/data/flicker_numbers.tex` (acceptance task of 13 frames, 6 seeds, simulated, the same blend model for every method). Per-frame Gerchberg-Saxton with phase induction (Kim, Kim, Lee and Ahn 2019) is the published method that also optimizes every frame:
+
+| Quantity | B2 | Linear phase interpolation | Per-frame GS with phase induction (5 iterations per frame) |
+|---|---|---|---|
+| Lowest transient ratio of the moving traps, mean | 0.923 (interval 0.916 to 0.930) | 0.644 | 0.948 (0.925 at 10 iterations per frame) |
+| Largest phase step between frames (rad) | 0.077 | 0.476 | 0.408 |
+| Largest per-frame spread, median (percent) | 0.240 | 23.497 | 2.228 |
+| Seconds per sequence, mean | 1.18 | n/a | 0.60 |
+
+The paired difference against linear phase interpolation is 0.279 (0.218 to 0.340). The phase step of B2 is 5.3 times smaller than the per-frame method's and the smaller on every seed; the per-frame method reaches the higher transient minimum on every seed at 5 iterations per frame, ties at 10 iterations per frame and at 25 frames, and is clearly better at 7 frames. B2 costs about 2 times the seconds at its own iteration count. On the long moves at the frames of the bound B2 reaches 0.9 on 6 of 8 seeds of each lattice move and on 6 of 6 seeds of the sort; the per-frame method reaches it on every seed of the lattice moves; doubling the frames does not rescue the failing seeds. The frame count is a closed form (20 frames for the 2 Fourier unit move of the acceptance task against the 13 used), in place of the empirical fit of Kim et al. The advantage of B2 is a controlled phase step, which matters where the phase slip per hologram causes loss; it is not a higher minimum intensity, and the benefit is a simulation result without a measured flicker curve or a measurement on atoms.

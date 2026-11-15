@@ -209,6 +209,12 @@ export const METHODOLOGY_CITATIONS: Citation[] = [
     doi: '10.1103/PhysRevA.95.053424',
   },
   {
+    id: 'kim2019oe',
+    label: { en: 'Kim, Kim, Lee and Ahn 2019', es: 'Kim, Kim, Lee y Ahn 2019' },
+    citation: 'Kim, Kim, Lee, Ahn (2019). Gerchberg-Saxton algorithm for fast and efficient atom rearrangement in optical tweezer traps. Optics Express, 27(3), 2184.',
+    doi: '10.1364/OE.27.002184',
+  },
+  {
     id: 'endres2016',
     label: { en: 'Endres et al. 2016', es: 'Endres et al. 2016' },
     citation: 'Endres et al. (2016). Atom-by-atom assembly of defect-free one-dimensional cold atom arrays. Science, 354, 1024 (title as recorded in the physics dossier, not confirmed).',

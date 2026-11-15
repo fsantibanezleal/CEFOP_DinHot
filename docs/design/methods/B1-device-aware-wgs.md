@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b1_device_wgs.py` |
 | Live port | none (lane `baked`; `getMethod('B1')` raises `NotLive`) |
 | Card | [B1](../../frameworks/B1_device-aware-wgs.md) |
-| Outcome (measured with the weight update on, the 0.02.003 default; see the update of 2026-11-14) | hypothesis confirmed on the ladder criterion (a median of 25.8 times below M07 over five seeds at 0.995 of its efficiency); in the benchmark on the C08 device it holds on the ring and the random set, not on the large set (1.73 times) nor on the two lattices, where it keeps its start (update of 2026-10-30) |
+| Outcome (0.02.004, update of 2026-11-15) | negative result against Schroff et al. 2023: through the same warm start, device model and conjugate gradient, their normalized-error loss gives 0.031 percent against 0.030 percent for the efficiency-level loss on the crosstalk device and 0.222 against 0.242 percent on the full device, so the method's own elements add nothing measurable and the weight update makes the spread 7 times higher; the gain belongs to the device model in the loop (a geometric-mean factor of 201.3 over M07 on the crosstalk device, gone without the model); the ladder criterion against M07 is met, in the benchmark on the C08 device at 100 iterations both thresholds hold on 4 of 6 geometries, and a hologram takes 34 s to 356 s against under 1 s for M07. The older figures of this record (a median of 25.8 times, 1.73 times on the large set) were measured with the weight update on and are superseded by the update at the end of this record |
 
 ## Tier and role
 
@@ -19,12 +19,13 @@ Beyond the state of the art: DinHot's own proposal.
 steps on a device-aware loss, makes the traps equal on the device and not only in the ideal model: on the crosstalk device the relative standard deviation of the trap intensities is
 at least two times below that of phase-fixed WGS (M07), at an efficiency at most 10 percent lower.
 
-**The gap.** Schroff et al. 2023 (https://doi.org/10.1038/s41598-023-30296-6) put the crosstalk model into conjugate gradient on shaped potentials (10 minutes per hologram, no WGS
-comparison); Persson, Engstrom and Goksor 2012 (Opt. Express 20, 22334, https://opg.optica.org/oe/fulltext.cfm?uri=oe-20-20-22334) convolve the phase inside a weighted GS but
-replace amplitudes only; Kim et al. 2019 (https://doi.org/10.1364/OL.44.003178) and Ebadi et al. 2021 (https://arxiv.org/abs/2012.12281) use no device model in the solver and rely on
+**The gap.** Schroff et al. 2023 (https://doi.org/10.1038/s41598-023-30296-6) put the crosstalk model into conjugate gradient on shaped potentials and a Gaussian spot array (their Fig. 5c; 10 minutes per feedback protocol, no WGS
+comparison); Persson, Engstrom and Goksor 2012 (Opt. Express 20, 22334, https://opg.optica.org/oe/fulltext.cfm?uri=oe-20-20-22334) modify a hologram algorithm for crosstalk (known here through its abstract only); Kim et al. 2019 (https://doi.org/10.1364/OL.44.003178) and Ebadi et al. 2021 (https://arxiv.org/abs/2012.12281) use no device model in the solver and rely on
 camera feedback (the gap study, algorithms dossier D5.1 B1). The proposal combines the device model of Schroff et al. with a weighted GS start (and, as an option, the weights of Di Leonardo et al. 2007
 (https://doi.org/10.1364/OE.15.001913)), applied to trap arrays, and it is run against Schroff et al.'s own loss (`loss='normalized-error'`, the update of 2026-11-14); it is a method that answers the problem differently from M07 (solver aware of the
 device) and not a validation protocol.
+
+**What is and is not new (read in full, update of 2026-11-15).** Schroff et al. already put a pixel-crosstalk model (3 by 3 upsampling, a fitted kernel) inside a conjugate-gradient minimization of a normalized intensity error, with automatic differentiation and camera feedback, and make light potentials with it, among them a Gaussian spot array (their Fig. 5c). The idea of a crosstalk model inside a conjugate-gradient refinement of a trap array is theirs, not DinHot's. The method is a transposition of that approach to point-trap arrays, with three elements of its own (the efficiency-level loss, the weight update, the best-iterate safeguard), and the paper measures whether they add anything: they do not (the update at the end of this record).
 
 ## Problem it answers
 
@@ -105,7 +106,7 @@ Acceptance run of 2026-10-28 (E3 report D3 and D5), superseded by the updates at
 | Efficiency | 0.7423 | 0.7447 and 0.7459 |
 | Ratio | 49 times lower spread, 0.997 of the efficiency | |
 
-More iterations do not help the baseline (spread 4.504 with 30 iterations and 4.525 with 100). Outcome: confirmed, by a wide margin, on this device and this seed.
+More iterations do not help the baseline (spread 4.504 with 30 iterations and 4.525 with 100). Outcome: the ladder criterion (a comparison with M07) is met, by a wide margin, on this device and this seed; it does not say which element of the method carries the gain (the update of 2026-11-15).
 
 Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, mean over 3 seeds with the range; case C08 only, an 8 by 8 array on a device with 4-bit phase, crosstalk
 (sigma 1.24, q 1.80), fill factor 0.85 and flicker 0.05 rad, scored on the device, with its optics in `data/derived/manifests/C08_device_limited.json`):
@@ -167,3 +168,16 @@ An independent review of the device-aware paper found that its own ablation refu
   the warm start, the conjugate-gradient optimizer, the outer iterations and the best-iterate safeguard are B1's own, so the comparison isolates the loss. The gradient is $\partial C/\partial I_k = (2s/P)(\sum_m d_m \tilde I_m - d_k)$ with $d = \tilde T - \tilde I$ and $P = \sum_m I_m$, through the adjoint of the device model, checked against finite differences.
   The steepness $s$ is `1 / sum(T~^2)` by default (so that $C$ is the relative squared error); Schroff et al.'s constant `s = 1e12` (Methods, p. 7) is a pixel-grid scale and only rescales $C$.
 - **Tests.** `test_weights_true_reproduces_the_run_recorded_before_the_default_changed`, `test_the_default_equals_the_weights_false_run_recorded_before_the_default_changed`, `test_the_weight_update_is_an_option_and_off_by_default`, `test_spec_name_is_the_device_aware_conjugate_gradient_refinement` (MD-023); `test_normalized_error_value_is_schroff_eq3_on_the_trap_intensities`, `test_normalized_error_gradient_matches_finite_differences`, `test_normalized_error_runs_the_same_warm_start_and_safeguard_and_differs_only_by_the_loss`, `test_normalized_error_honours_the_deadline_and_counts_its_work` (MD-024).
+
+## Update of 2026-11-15 (0.02.004): reported as a negative result against Schroff et al.
+
+Read in full, Schroff et al. 2023 already put a pixel-crosstalk model inside a conjugate-gradient refinement and make a spot array with it (their Fig. 5c). Through the same warm start, device model, conjugate-gradient optimizer and safeguard, the method's own elements add nothing measurable over their normalized-error loss. The numbers are those of `manuscripts/device-aware-flicker-bounded/data/beyond_numbers.tex`, `tab_schroff.tex` and `tab_abl_b1_geo.tex` (5 seeds each, simulated):
+
+| Quantity | Efficiency-level loss (default) | Normalized-error loss of Schroff et al. | Conditions |
+|---|---|---|---|
+| Spread, median (range), crosstalk device | 0.030 (0.016 to 0.032) | 0.031 (0.021 to 0.049) | 10 by 10 task; the ranges overlap |
+| Factor over M07, geometric mean (95 percent interval) | 201.3 (132.9 to 304.9) | 159.9 (107.0 to 239.1) | efficiency ratio 0.999 in both |
+| Spread, median (range), full device | 0.242 (0.202 to 0.335) | 0.222 (0.172 to 0.258) | the normalized-error loss has the lower median |
+| Seconds per hologram, median | 34 (crosstalk), 59 (full) | 34 and 58 | one CPU |
+
+Reading: the efficiency-level loss adds nothing measurable; the best-iterate safeguard did not act on these seeds; the weight update raises the spread from 0.030 to 0.205 percent on the crosstalk device (7 times) and from 0.242 to 0.729 on the full device (3 times). The gain belongs to the device model in the loop (without it the spread returns to 5.15 percent against 5.21 for M07). On the benchmark's C08 device at 100 iterations (2 seeds per cell) the factors over M07 are G1 1.90, G2 2.04, G3 4.82, G4 1.05, G6a 2.15 and G6b 2.08: both thresholds hold on the ring, the random set and the two large sets, not on the square lattice or the quasi-periodic set; at an equal wall-clock time of 1 s the refinement reads as better on 3 of 6 geometries and ties on 3. Time per hologram: 106 to 356 s at 10 outer iterations on the benchmark geometries against 0.05 to 0.89 s for M07 (779 s against 2.728 s on G1 at 100 iterations). What the work keeps as its own: the transposition to point-trap arrays, the closed-form gradient of the point-trap loss, and the measurement that isolates the loss, the weights, the safeguard and the device model.

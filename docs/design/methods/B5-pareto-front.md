@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b5_pareto.py` |
 | Live port | none (lane `baked`; `getMethod('B5')` raises `NotLive`) |
 | Card | [B5](../../frameworks/B5_pareto-front.md) |
-| Outcome | hypothesis confirmed on the ladder criterion (hypervolume 0.8190 against 0.8018 after the 2026-10-29 rule corrections, 0.8201 against 0.8033 before; the continuation points dominate M04 and M05, 16.6 s); the margin is small; in the benchmark the stored continuation curve (B5's converged run of the first seed) reaches the hypervolume of the classical points on none of the 6 geometries with a curve against their medians at 100 iterations on the ideal device, below them by at most 0.007, and on all 6 against those at 30 (the count at 100 iterations moves between runs of the benchmark, 3, 4 and 0, because a cell's medians depend on the seeds its wall-clock bound admits), 2026-10-31 run, 2026-10-30 |
+| Outcome (0.02.004, update of 2026-11-15) | the ladder criterion is met by a small margin, and the gain is small and shrinks at a stricter reference point: over 8 seeds a hypervolume of 0.8223 against 0.8104 for the union of the five published points (a paired difference of 0.0119, 95 percent interval 0.0097 to 0.0141), and 0.0015 (12.4 percent of it) when the reference point demands a uniformity of 0.9; the curve is not the non-dominated set of the trade-off (4 to 7 of its 20 points are dominated by iterates of weighted GS); in the benchmark every cell is a tie by the win rule because the stored curves hold one seed, and the stored curve is above the union of the published points on 3 of 7 geometries at 100 iterations. The figures of the 2026-10-29 acceptance run (0.8190 against 0.8018, 16.6 s) stay as the record of the ladder test |
 
 ## Tier and role
 
@@ -122,3 +122,18 @@ On C02 the knee has a relative standard deviation of 0.67 percent or below again
 ## Update after the corrections of 2026-10-29
 
 Re-measured after M06 and M07 were made to project the start's field unweighted and the GS family of the beyond methods was made the ladder methods' own rules: on the acceptance task the continuation curve's hypervolume is 0.8190 against 0.8018 for the M04, M05, M06 and M09 points, and 7 and 8 continuation points dominate M04 (0.8114, 0.5503) and M05 (0.8086, 0.7093); 16.6 s on the CPU. The criterion holds. In notebook 05-05 the continuation curve starts from M07's own hologram, so its uniform end is M07 refined and M07 is not dominated (0.7931 against 0.7930 at equal uniformity); the other five single points are.
+
+## Update of 2026-11-15 (0.02.004): a small gain, sensitive to the reference point
+
+The numbers are those of `manuscripts/efficiency-uniformity-front/data/b5_numbers.tex` (10 by 10 lattice of 100 traps, 8 seeds, 20 values of lambda, 15 CG iterations each, ideal device, simulated).
+
+| Quantity | Measured |
+|---|---|
+| Hypervolume of the curve and of the union of the five published points (GS, GAA, weighted GS, phase-fixed WGS, direct search) | 0.8223 against 0.8104; paired difference 0.0119 (0.0097 to 0.0141), positive in 8 of 8 seeds, 1.47 percent of the union |
+| Against the four-point union of the acceptance criterion (without phase-fixed WGS) | 0.8223 against 0.8071; difference 0.0152 (0.0125 to 0.0179) |
+| Difference at the reference points (0.5, 0), (0.7, 0), (0, 0.9) and (0, 0.95) | 0.0117, 0.0113, 0.0015 and 0.0011, that is 97.9, 95.2, 12.4 and 9.6 percent of the headline difference |
+| Efficiency along the curve | rises by at most 5.4 percent over the start while the uniformity falls from one to near zero |
+| Domination | the curve dominates the weighted GS point in 2 of 8 seeds and the phase-fixed point in 3 of 8; 4 to 7 of its 20 points are dominated by iterates of weighted GS |
+| Benchmark | 14 cells (7 geometries at 30 and at 100 iterations), all ties by the win rule (one seed behind each stored curve); at 100 iterations the stored curve is above the union on 3 of 7 geometries, below it by at most 0.023 on the others |
+
+Reading: the area that the curve adds lies where the uniformity falls far below one, so a reader who requires a uniformity of 0.9 or more sees a gain that is a small share of the headline. The curve is a weighted-cost continuation of the trade-off, not its non-dominated set, and it is computed for the ideal device, not for the device that displays the hologram.
