@@ -286,6 +286,8 @@ def test_declared_producer_plan_keeps_all_outputs_external(workflow, fixture_rep
     config["stage_inputs"] = []  # Actual authored input/admission is covered by the real-pipeline test.
     config.pop("readiness_check", None)
     config.pop("readiness_exceptions", None)
+    # RP-032: this is an output-routing check on the strict path; a product's guarded provider needs its readiness_check
+    config.pop("readiness_provider", None)
     write(root / "scripts/local/workflow.json", json.dumps(config))
     shutil.copyfile(ROOT / "scripts/local/producer_bridge.py", root / "scripts/local/producer_bridge.py")
     for name in ("pipeline/__init__.py", "pipeline/core/__init__.py", "pipeline/cases/__init__.py"):
