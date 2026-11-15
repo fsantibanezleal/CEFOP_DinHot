@@ -2,14 +2,14 @@
   "kind": "manuscript",
   "title_support": [
     "tab:b1",
-    "tab:bench",
+    "tab:schroff",
+    "fig:schroff",
     "tab:ablb1",
-    "fig:b2",
-    "tab:long",
-    "tab:ablb2"
+    "fig:ablation",
+    "tab:bench",
+    "fig:bench"
   ],
   "claims": {
-    "BS-1": "sec:b1",
-    "BS-2": "sec:b2"
+    "BS-1": "sec:method"
   }
 }
