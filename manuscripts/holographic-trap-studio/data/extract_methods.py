@@ -526,26 +526,28 @@ def s3(x: float) -> str:
 
 
 def table_b1_weights() -> str:
-    """The ablation of the weight update of B1 (companion manuscript's measurements): the acceptance task and the benchmark lattices."""
+    """The weight update of B1 (companion manuscript's measurements): the acceptance task and the benchmark lattices, the default
+    (no update) against the update and, on the lattices, against the loss of Schroff et al. (0.02.004)."""
     comp = HERE.parents[1] / "device-aware-flicker-bounded" / "data"
     bj = load(comp / "beyond.json")["ablation"]
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Ablation of the weight update of the device-aware weighted GS, the method run with its weight update and with every "
-           "weight kept at one. First block: the $10\\times10$ acceptance task, median [min, max] of the relative standard deviation "
+           "\\caption{The weight update of the device-aware refinement: the method at its default (every weight kept at one), with the "
+           "weight update and, on the lattices, with the loss of Schroff et al. First block: the $10\\times10$ acceptance task, median [min, max] of the relative standard deviation "
            "$\\sigma$ (\\%) over the seeds. Second block: the four benchmark geometries on the C08 device at 10 outer iterations, median over "
-           "three seeds of $\\sigma$ and of the efficiency $e$.}\\label{tab:b1-weights}\n",
-           "\\begin{tabular}{@{}l r r r r@{}}\\toprule Task & $\\sigma$ with weights & $\\sigma$ no weights & $e$ with & $e$ no weights"
+           "the seeds of $\\sigma$ and of the efficiency $e$ (seeds in the row).}\\label{tab:b1-weights}\n",
+           "\\begin{tabular}{@{}l r r r r r r@{}}\\toprule Task & $\\sigma$ with weights & $\\sigma$ default & $\\sigma$ Schroff & $e$ with & $e$ default & $e$ Schroff"
            "\\\\\\midrule\n"]
     for key, label in (("b1_crosstalk", "acceptance task, crosstalk device"), ("b1_full", "acceptance task, 4-bit device")):
         v = bj[key]["summary"]
-        out.append(f"{label} ({v['full']['sigma']['n']} seeds) & {s3(v['full']['sigma']['median'])} "
-                   f"[{s3(v['full']['sigma']['min'])}, {s3(v['full']['sigma']['max'])}] & {s3(v['no_weights']['sigma']['median'])} "
-                   f"[{s3(v['no_weights']['sigma']['min'])}, {s3(v['no_weights']['sigma']['max'])}] & & \\\\\n")
+        out.append(f"{label} ({v['full']['sigma']['n']} seeds) & {s3(v['weights']['sigma']['median'])} "
+                   f"[{s3(v['weights']['sigma']['min'])}, {s3(v['weights']['sigma']['max'])}] & {s3(v['full']['sigma']['median'])} "
+                   f"[{s3(v['full']['sigma']['min'])}, {s3(v['full']['sigma']['max'])}] & & & & \\\\\n")
     for g, nm in GEO_NAMES.items():
         rows = [r for r in load(comp / f"b1_weights_geo_{g}.json") if r["device"]]
         med = lambda k, q: statistics.median(r[k][q] for r in rows)  # noqa: E731
         out.append(f"{g} {nm} (C08 device, {len(rows)} seeds) & {sig(med('weights', 'sigma'))} & {sig(med('no_weights', 'sigma'))} & "
-                   f"{fmt(med('weights', 'eff'), 3)} & {fmt(med('no_weights', 'eff'), 3)}\\\\\n")
+                   f"{sig(med('schroff', 'sigma'))} & {fmt(med('weights', 'eff'), 3)} & {fmt(med('no_weights', 'eff'), 3)} & "
+                   f"{fmt(med('schroff', 'eff'), 3)}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 

@@ -1,17 +1,19 @@
 \begin{table}[t]\centering\footnotesize
-\caption{Benchmark, per geometry and device: the published method and the proposed method with the lowest median relative standard deviation $\sigma$ (\%) at 100 iterations among those that reach at least half of the best median efficiency of the cell, and the best method of all at a time budget of 1~s. Default parameters, medians over the seeds of each cell.}\label{tab:benchmark}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth} l >{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}p{0.2\textwidth} >{\raggedright\arraybackslash}p{0.2\textwidth}@{}}\toprule Geometry & Device & Published & Proposed & Best at 1 s\\\midrule
-G1 Square 10 x 10 & ideal & direct search 0.066 & device-aware weighted GS $<$0.001 & device-aware weighted GS 0.0084\\
-G1 Square 10 x 10 & C08 & Wirtinger gradient descent with Adam 13 & aberration-robust hologram 24 & conjugate-gradient minimization 24\\
-G2 Ring of 36 traps & ideal & phase-fixed weighted GS $<$0.001 & device-aware weighted GS $<$0.001 & device-aware weighted GS $<$0.001\\
-G2 Ring of 36 traps & C08 & superposition of prisms and lenses 6.6 & device-aware weighted GS 7.5 & superposition of prisms and lenses 6.6\\
-G3 Random 100 traps & ideal & phase-fixed weighted GS $<$0.001 & device-aware weighted GS $<$0.001 & device-aware weighted GS $<$0.001\\
-G3 Random 100 traps & C08 & Wirtinger gradient descent with Adam 14 & device-aware weighted GS 4.4 & Zernike correction 20\\
-G4 Quasi-periodic 119 & ideal & phase-fixed weighted GS 0.012 & device-aware weighted GS $<$0.001 & efficiency-uniformity Pareto front $<$0.001\\
-G4 Quasi-periodic 119 & C08 & Wirtinger gradient descent with Adam 20 & efficiency-uniformity Pareto front 76 & direct search 53\\
-G5 3D lattice 5 x 5 x 3 & ideal & direct search 0.049 & flicker-bounded phase-continuous sequence $<$0.001 & flicker-bounded phase-continuous sequence $<$0.001\\
-G6 Large: 32 x 32 and disordered 819 & ideal & direct search 0.15 & device-aware weighted GS $<$0.001 & Zernike correction 0.93\\
-G6 Large: 32 x 32 and disordered 819 & C08 & Wirtinger gradient descent with Adam 18 & device-aware weighted GS 17 & aberration-robust hologram 19\\
-G7 Shaped fields (ring, disc, line, LG ring) & ideal & GS 35 & n/a & optimal-transport initialized MRAF 28\\
-G7 Shaped fields (ring, disc, line, LG ring) & C08 & GS 40 & n/a & optimal-transport initialized MRAF 38\\
+\caption{Benchmark at equal wall clock, per geometry and device: every method stops at the 1~s deadline in every phase. The published method and the proposed method with the lowest median relative standard deviation $\sigma$ (\%) among those of their kind that reach at least half of the best median efficiency of the kind, with the seeds behind each ($n$), and the reading of the cell: one kind wins only if both have at least 5 seeds, their interquartile ranges do not overlap and their medians differ by at least 0.01 percentage points; otherwise the cell is a tie. Default parameters, medians over the seeds of each cell.}\label{tab:benchmark}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth} l >{\raggedright\arraybackslash}p{0.2\textwidth} >{\raggedright\arraybackslash}p{0.2\textwidth} l@{}}\toprule Geometry & Device & Published & Proposed & Reading\\\midrule
+G1 Square 10 x 10 & ideal & phase-fixed weighted GS 0.35 (n=20) & efficiency-uniformity Pareto front $<$0.001 (n=12) & proposed\\
+G1 Square 10 x 10 & C08 & direct search 24 (n=5) & device-aware weighted GS 21 (n=5) & proposed\\
+G2 Ring of 36 traps & ideal & phase-fixed weighted GS $<$0.001 (n=20) & device-aware weighted GS $<$0.001 (n=14) & tie\\
+G2 Ring of 36 traps & C08 & superposition of prisms and lenses 6.6 (n=20) & device-aware weighted GS 8.2 (n=5) & published\\
+G3 Random 100 traps & ideal & phase-fixed weighted GS $<$0.001 (n=20) & device-aware weighted GS $<$0.001 (n=10) & tie\\
+G3 Random 100 traps & C08 & direct search 20 (n=5) & device-aware weighted GS 8.9 (n=5) & proposed\\
+G4 Quasi-periodic 119 & ideal & phase-fixed weighted GS 0.011 (n=20) & device-aware weighted GS $<$0.001 (n=9) & tie\\
+G4 Quasi-periodic 119 & C08 & conjugate-gradient minimization 81 (n=20) & learned warm start 85 (n=20) & tie\\
+G5 3D lattice 5 x 5 x 3 & ideal & weighted GS 0.068 (n=20) & learned warm start $<$0.001 (n=20) & tie\\
+G6a Large lattice 32 x 32 & ideal & Zernike correction 1.4 (n=5) & aberration-robust hologram 1 (n=5) & tie\\
+G6a Large lattice 32 x 32 & C08 & Zernike correction 30 (n=5) & aberration-robust hologram 30 (n=5) & tie\\
+G6b Disordered 819 & ideal & phase-fixed weighted GS 0.29 (n=7) & efficiency-uniformity Pareto front 0.26 (n=5) & tie\\
+G6b Disordered 819 & C08 & Zernike correction 9 (n=6) & aberration-robust hologram 9 (n=5) & tie\\
+G7 Shaped fields (ring, disc, line, LG ring) & ideal & GS 36 (n=20) & n/a & tie\\
+G7 Shaped fields (ring, disc, line, LG ring) & C08 & GS 41 (n=20) & n/a & tie\\
 \bottomrule\end{tabular}\end{table}

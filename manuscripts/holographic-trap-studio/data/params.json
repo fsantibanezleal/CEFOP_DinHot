@@ -2,7 +2,7 @@
  "schema": "dinhot.manuscript-params/v1",
  "methods": {
   "B1": {
-   "name": "Device-aware weighted GS",
+   "name": "Device-aware conjugate-gradient refinement",
    "family": "beyond",
    "lane": "baked",
    "targets": [
@@ -15,7 +15,9 @@
    "params": {
     "steps": 3,
     "warm": 12,
-    "weights": true
+    "weights": false,
+    "loss": "efficiency-level",
+    "steepness": null
    }
   },
   "B2": {
@@ -79,7 +81,7 @@
    }
   },
   "B5": {
-   "name": "Efficiency-uniformity Pareto front",
+   "name": "Efficiency-uniformity continuation",
    "family": "beyond",
    "lane": "baked",
    "targets": [
@@ -374,7 +376,9 @@
     "atoms": null,
     "alpha": 1.5,
     "max_step_bins": null,
-    "n_fix": 12
+    "n_fix": 12,
+    "sequence": "lpi",
+    "frame_iterations": 5
    }
   },
   "M17": {
