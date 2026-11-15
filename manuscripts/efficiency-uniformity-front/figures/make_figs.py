@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Regenerate the figures of the Pareto-front manuscript from ``data/b5.json`` (written by ``data/measure.py``).
+"""Regenerate the figures of the efficiency-uniformity continuation manuscript from ``data/b5.json`` (written by ``data/measure.py``).
 
-  fig-front.pdf     (a) the fronts of every seed with the points of the published methods; (b) the same, enlarged near the
+  fig-front.pdf     (a) the continuation curves of every seed with the points of the published methods; (b) the same, enlarged near the
                     efficient end, with the seed-1 front joined by a line.
   fig-lambda.pdf    efficiency and uniformity along the weight lambda, every seed, with the saturation value of Proposition 1.
   fig-shift.pdf     (a) the total light the shifted target asks for, against lambda; (b) the efficiency reached against that total.
@@ -51,7 +51,7 @@ def fig_front(d: dict) -> None:
     for ax, zoom in zip(axs, (False, True)):
         for k, r in enumerate(d["main"]):
             f = r["front"]
-            ax.plot(f["e"], f["u"], "o-", ms=2.2, lw=0.6, color=BLUE, alpha=0.55, label="front, one seed" if k == 0 else None)
+            ax.plot(f["e"], f["u"], "o-", ms=2.2, lw=0.6, color=BLUE, alpha=0.55, label="continuation curve, one seed" if k == 0 else None)
         for name, (lab, mk, col) in PUB.items():
             ax.plot([r["published"][name][0] for r in d["main"]], [r["published"][name][1] for r in d["main"]], mk, ms=5,
                     mfc="white" if lab != "direct search" else col, mec=col, color=col, label=lab)
@@ -127,7 +127,7 @@ def fig_bound(d: dict) -> None:
         xs += list(bound)
         ys += list(f["sigma"])
     xs, ys = np.array(xs), np.array(ys)
-    ax.loglog(xs, ys, "o", ms=2.2, color=BLUE, alpha=0.6, label="front points")
+    ax.loglog(xs, ys, "o", ms=2.2, color=BLUE, alpha=0.6, label="continuation points")
     lo, hi = min(xs.min(), ys.min()) * 0.8, max(xs.max(), ys.max()) * 1.2
     ax.plot([lo, hi], [lo, hi], color=INK, lw=0.9, ls="--", label="equality")
     ax.set_xlabel(r"bound  $100\sqrt{E}\,e_0/e$  (percent)")
@@ -143,7 +143,7 @@ def fig_rivals(d: dict) -> None:
     fig, ax = plt.subplots(figsize=(4.6, 3.2))
     r0, rv = d["main"][0], d["rivals"][0]
     f = r0["front"]
-    ax.plot(f["e"], f["u"], "o-", ms=3, lw=1.0, color=BLUE, label="front by continuation")
+    ax.plot(f["e"], f["u"], "o-", ms=3, lw=1.0, color=BLUE, label="continuation curve")
     for key, mk, col, lab in (("gsw_path", ".", GREEN, "weighted GS, iterates 1 to 100"),
                               ("pfwgs_path", "x", PURPLE, "phase-fixed WGS, iterates 1 to 100"),
                               ("gaa_sweep", "^", ORANGE, "adaptive additive, exponent 0 to 1")):
@@ -178,7 +178,7 @@ def fig_ablation(d: dict) -> None:
     ax.set_yticks(y)
     ax.set_yticklabels([lab for _, lab in ABL_LABELS], fontsize=7.5)
     ax.invert_yaxis()
-    ax.set_xlabel("change of the hypervolume against the reference front (mean, 95 percent interval)")
+    ax.set_xlabel("change of the hypervolume against the reference continuation (mean, 95 percent interval)")
     grid(ax)
     fig.tight_layout()
     fig.savefig(HERE / "fig-ablation.pdf")
@@ -192,13 +192,15 @@ def fig_bench(d: dict) -> None:
     w = 0.38
     for k, (budget, col, hat) in enumerate(((30, BLUE, ""), (100, ORANGE, "//"))):
         vals = {g["geometry"]: g["margin"] for g in st if g["budget"] == budget}
+        ties = all(g["reading"].startswith("tie") for g in st if g["budget"] == budget)
         ax.bar([i + (k - 0.5) * w for i, g in enumerate(geos)], [vals.get(g, np.nan) for g in geos], w, color=col, hatch=hat,
-               edgecolor=INK, lw=0.4, label=f"{budget} iterations")
+               edgecolor=INK, lw=0.4, alpha=0.55 if ties else 1.0,
+               label=f"{budget} iterations" + (" (every cell a tie)" if ties else ""))
     ax.axhline(0, color=INK, lw=0.8)
     ax.set_xticks(range(len(geos)))
     ax.set_xticklabels(geos)
     ax.set_xlabel("benchmark geometry")
-    ax.set_ylabel("front minus published union (hypervolume)")
+    ax.set_ylabel("continuation minus published union (hypervolume)")
     ax.legend(fontsize=7, frameon=False)
     grid(ax)
     fig.tight_layout()
@@ -247,8 +249,22 @@ def fig_schedule(d: dict) -> None:
     plt.close(fig)
 
 
+def rename_tables() -> None:
+    """The tables written by data/measure.py name the method's curve 'Front'; the paper names it a continuation (the rule of
+    the rename of method B5), so the tables the text inputs are copies of the data files with the label changed and nothing else."""
+    out = HERE.parent / "tex" / "gen"
+    out.mkdir(exist_ok=True)
+    for t in sorted(DATA.glob("tab_*.tex")):
+        s = t.read_text(encoding="utf-8")
+        s = s.replace("Front (", "Continuation (").replace("Front minus", "Continuation minus").replace("Seeds front", "Seeds continuation").replace("One-parameter front", "One-parameter curve")
+        s = s.replace("& Front &", "& Continuation &").replace("Front & Union", "Continuation & Union").replace("$n$ front,", "$n$ curve,").replace("tie (fewer than 5 seeds)", "tie, $n<5$")
+        s = s.replace("Reference of the hypervolume", "Reference").replace("Five-point union (headline)", "Five-point union").replace("Difference, 95\\% interval", "Difference").replace("Share of the headline kept (\\%)", "Kept (\\%)").replace("Four-point union: difference, 95\\% interval", "Four-point difference")
+        (out / t.name).write_text(s, encoding="utf-8")
+
+
 def main() -> int:
     d = load()
+    rename_tables()
     for fn in (fig_front, fig_lambda, fig_shift, fig_bound, fig_rivals, fig_ablation, fig_bench, fig_cost, fig_schedule):
         fn(d)
         print("wrote", fn.__name__)
