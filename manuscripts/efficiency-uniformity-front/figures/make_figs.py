@@ -249,22 +249,8 @@ def fig_schedule(d: dict) -> None:
     plt.close(fig)
 
 
-def rename_tables() -> None:
-    """The tables written by data/measure.py name the method's curve 'Front'; the paper names it a continuation (the rule of
-    the rename of method B5), so the tables the text inputs are copies of the data files with the label changed and nothing else."""
-    out = HERE.parent / "tex" / "gen"
-    out.mkdir(exist_ok=True)
-    for t in sorted(DATA.glob("tab_*.tex")):
-        s = t.read_text(encoding="utf-8")
-        s = s.replace("Front (", "Continuation (").replace("Front minus", "Continuation minus").replace("Seeds front", "Seeds continuation").replace("One-parameter front", "One-parameter curve")
-        s = s.replace("& Front &", "& Continuation &").replace("Front & Union", "Continuation & Union").replace("$n$ front,", "$n$ curve,").replace("tie (fewer than 5 seeds)", "tie, $n<5$")
-        s = s.replace("Reference of the hypervolume", "Reference").replace("Five-point union (headline)", "Five-point union").replace("Difference, 95\\% interval", "Difference").replace("Share of the headline kept (\\%)", "Kept (\\%)").replace("Four-point union: difference, 95\\% interval", "Four-point difference")
-        (out / t.name).write_text(s, encoding="utf-8")
-
-
 def main() -> int:
     d = load()
-    rename_tables()
     for fn in (fig_front, fig_lambda, fig_shift, fig_bound, fig_rivals, fig_ablation, fig_bench, fig_cost, fig_schedule):
         fn(d)
         print("wrote", fn.__name__)

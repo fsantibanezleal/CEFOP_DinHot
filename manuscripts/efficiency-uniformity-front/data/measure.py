@@ -774,14 +774,14 @@ def write_outputs(data: dict) -> None:
     T.append("\\midrule\n")
     T.append(row(["Union of the five published points (headline)", "", "", pm(a["hv_published_with_m07"], 4)]))
     T.append(row(["Union of the four points of 0.02.003 (secondary)", "", "", pm(a["hv_published"], 4)]))
-    T.append(row(["Front (knee point)", pm(a["knee"]["e"]), pm(a["knee"]["u"]), ""]))
-    T.append(row(["Front (whole)", f"{f(a['e_min']['mean'])} to {f(a['e_max']['mean'])}", f"{f(a['u_min']['mean'])} to 1", pm(a["hv_front"], 4)]))
+    T.append(row(["Continuation (knee point)", pm(a["knee"]["e"]), pm(a["knee"]["u"]), ""]))
+    T.append(row(["Continuation (whole)", f"{f(a['e_min']['mean'])} to {f(a['e_max']['mean'])}", f"{f(a['u_min']['mean'])} to 1", pm(a["hv_front"], 4)]))
     T.append("\\bottomrule\n\\end{tabular}\n")
     (HERE / "tab_main.tex").write_text("".join(T), encoding="utf-8")
 
     T = ["\\begin{tabular}{@{}lrrrrr@{}}\n\\toprule\n"]
-    T.append(row(["Reference of the hypervolume", "Front", "Five-point union (headline)", "Difference, 95\\% interval", "Share of the headline kept (\\%)",
-                  "Four-point union: difference, 95\\% interval"]))
+    T.append(row(["Reference", "Continuation", "Five-point union", "Difference", "Kept (\\%)",
+                  "Four-point difference"]))
     T.append("\\midrule\n")
     for k, lab in REF_LABEL.items():
         r = a["refs"][k]
@@ -791,7 +791,7 @@ def write_outputs(data: dict) -> None:
 
     if "rivals" in a:
         T = ["\\begin{tabular}{@{}lrrr@{}}\n\\toprule\n"]
-        T.append(row(["One-parameter front of a published method", "Hypervolume", "Front minus it", "Seeds front $\\ge$"]))
+        T.append(row(["One-parameter curve of a published method", "Hypervolume", "Continuation minus it", "Seeds continuation $\\ge$"]))
         T.append("\\midrule\n")
         lab = {"gsw_path": "Weighted GS, iterates 1 to 100", "pfwgs_path": "Phase-fixed WGS, iterates 1 to 100",
                "gaa_sweep": "Adaptive additive, exponent 0 to 1", "union": "Union of all of them and the five points"}
@@ -821,12 +821,13 @@ def write_outputs(data: dict) -> None:
         (HERE / "tab_ablation.tex").write_text("".join(T), encoding="utf-8")
 
     T = ["\\begin{tabular}{@{}llrrrrrrr@{}}\n\\toprule\n"]
-    T.append(row(["Geometry", "Iter.", "Points", "Largest $\\lambda$", "Front", "Union", "Difference", "$n$ front, points", "Reading"]))
+    T.append(row(["Geometry", "Iter.", "Points", "Largest $\\lambda$", "Continuation", "Union", "Difference", "$n$ curve, points", "Reading"]))
     T.append("\\midrule\n")
     for g in st["geometries"]:
         T.append(row([g["geometry"] + " " + SHORT.get(g["geometry"], g["name"]), str(g["budget"]), str(g["n_front"]),
                       f(g["lam_max"], 3), f(g["hv_front"], 4), f(g["hv_published"], 4), f"{g['margin']:+.4f}",
-                      f"{g['seeds_front']}, {g['seeds_points_min']}", g["reading"]]))
+                      f"{g['seeds_front']}, {g['seeds_points_min']}",
+                      g["reading"].replace("tie (fewer than %d seeds)" % WIN_MIN_SEEDS, "tie, $n<%d$" % WIN_MIN_SEEDS)]))
     T.append("\\bottomrule\n\\end{tabular}\n")
     (HERE / "tab_bench.tex").write_text("".join(T), encoding="utf-8")
 

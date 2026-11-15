@@ -18,7 +18,7 @@ the curve is steep: a gain of a few percent in light is paid for with nearly all
 \centering\small
 \caption{Efficiency and uniformity (mean $\pm$ half-width of the 95 percent interval over \nSeeds{} seeds) of the points of the published methods and of the curve on the ten by ten lattice, and the hypervolume with the reference $(0,0)$: for a single point it is $e\,u$, for a union of points and for the curve it is the area of Eq.~\ref{eq:hv}. The headline union holds the five points; the secondary row holds the four points of the acceptance criterion (Gerchberg--Saxton, the adaptive additive iteration, weighted GS and direct search), without phase-fixed WGS. The curve spans an efficiency of \eMin{} to \eMaxFront{} and a mean uniformity of \uMinFront{} to \kneeU{}: its added area lies where the uniformity is far below one.}
 \label{tab:main}
-\input{gen/tab_main.tex}
+\input{../data/tab_main.tex}
 \end{table}
 
 The first hypothesis holds. The hypervolume of the curve is \hvFront{} (interval \hvFrontCi) and that of the union of the five published points, the headline of the comparison, is \hvFivePub{} (interval \hvFivePubCi). The paired difference is \hvFiveDiff{} with the interval \hvFiveLo{} to \hvFiveHi{}; it is positive in \hvFiveGe{} of \nSeeds{} seeds, from \hvFiveMin{} in the weakest seed to \hvFiveMax{} in the strongest, which is a gain of \hvFiveRatioPct{} percent of the union. The five-point union is the headline because it contains phase-fixed WGS, the strongest published point at the uniform end and the start of the curve; the union of four points of the acceptance criterion of the method, which leaves it out, is a secondary row (Table~\ref{tab:main}): its hypervolume is \hvPub{} (interval \hvPubCi) and the difference \hvDiff{} (interval \hvDiffLo{} to \hvDiffHi), positive in \hvGeCount{} of \nSeeds{} seeds, a gain of \hvRatioPct{} percent. The first hypothesis therefore holds against both unions, and the headline difference is the smaller of the two. The union of the published points is not dominated by the curve: the gain comes from the region of efficiency above the uniform end, where the curve has points at intermediate uniformity that the published points leave empty, and not from a better uniform end.
@@ -49,7 +49,7 @@ The size of the difference does. The two efficiency floors keep \hvRefFiveHalfSh
 \centering\small
 \caption{Hypervolume of the curve and of the headline union of the five published points for five reference points, with the paired difference (mean $\pm$ half-width of the 95 percent interval over \nSeeds{} seeds), the share of the headline difference that each reference keeps (column Kept, in percent), and the paired difference against the four-point union. The ordering is the same for the five references; the uniformity floors keep a small share of the gain.}
 \label{tab:refs}
-\input{gen/tab_refs.tex}
+\input{../data/tab_refs.tex}
 \end{table}
 
 A single point of a published method is a weak comparator, because each method has a knob that moves it. The one-parameter curves of Section~\ref{sec:compared} give the published methods their best chance: the iterates of weighted GS and of phase-fixed WGS, and the sweep of the exponent of the adaptive additive iteration. Table~\ref{tab:rivals} gives their hypervolume. The curve exceeds the weighted GS path by \rivGswDiff{} (interval \rivGswLo{} to \rivGswHi), the phase-fixed path by \rivPfDiff{} (\rivPfLo{} to \rivPfHi) and the adaptive additive sweep by \rivGaaDiff{} (\rivGaaLo{} to \rivGaaHi), in \rivGswGe{}, \rivPfGe{} and \rivGaaGe{} of \nSeeds{} seeds, and it exceeds the union of all of them and of the five points by \rivUnionDiff{} (interval \rivUnionLo{} to \rivUnionHi{}) in \rivUnionGe{} of \nSeeds{} seeds.
@@ -59,7 +59,7 @@ The fifth hypothesis therefore holds on the hypervolume. It does not mean that t
 \centering\small
 \caption{Hypervolume of the one-parameter curves that the published methods give on the same seeds, the paired difference of the curve from each (mean $\pm$ half-width of the 95 percent interval), and the number of seeds in which the curve is at least as large. The last row is the union of the three curves and of the five points.}
 \label{tab:rivals}
-\input{gen/tab_rivals.tex}
+\input{../data/tab_rivals.tex}
 \end{table}
 
 \begin{figure}[t]
@@ -118,7 +118,7 @@ The hypervolume margins of the table, plotted in Figure~\ref{fig:bench}, are the
 \caption{Hypervolume of the stored curve of each benchmark geometry that has one, that of the union of the medians of the four published points (Gerchberg--Saxton, adaptive additive, weighted GS, direct search), and their difference, at 30 and at 100 iterations on the ideal device; the number of stored points, the largest stored weight, the number $n$ of seeds behind the stored curve and behind the published points, and the reading by the win rule are listed. A cell with fewer than five seeds on either side is a tie. Source: the committed benchmark file.}
 \label{tab:bench}
 \footnotesize\setlength{\tabcolsep}{3pt}
-\input{gen/tab_bench.tex}
+\input{../data/tab_bench.tex}
 \end{table}
 
 \begin{figure}[t]
@@ -134,7 +134,7 @@ Table~\ref{tab:bake} lists the knee of the curve that the studio's bake stores f
 \centering\small
 \caption{Knee of the curve stored by the studio's bake for the cases that run the method: efficiency, uniformity and relative standard deviation (mean $\pm$ half-width of the 95 percent interval over \bakeSeeds{} seeds; the intervals are wide with three seeds). Source: the committed file of measured ranges.}
 \label{tab:bake}
-\input{gen/tab_bake.tex}
+\input{../data/tab_bake.tex}
 \end{table}
 
 \subsection{Outcome of each hypothesis}\label{sec:res-outcome}
