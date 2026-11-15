@@ -1,0 +1,71 @@
+\section{Problem formulation}\label{sec:problem}
+
+\subsection{Forward model of the traps}
+
+The SLM has $n_{\mathrm{pix}}\times n_{\mathrm{pix}}$ pixels of pitch $p$ and a Gaussian input beam of amplitude $A_j$, normalized so that $\sum_jA_j^2=n_{\mathrm{pix}}^2$. A hologram is a phase $\phi_j\in[0,2\pi)$ per pixel $j$ at position $(x_j,y_j)$. For a trap $m$ at $(x_m,y_m)$ in the focal plane of a lens of focal length $f$ at wavelength $\lambda$, with the axial coordinate zero and no vortex, the field and the intensity are
+\begin{equation}
+V_m=\frac1{n_{\mathrm{pix}}^2}\sum_jA_je^{\,i(\phi_j-\Delta_j^m)},\qquad \Delta_j^m=\frac{2\pi}{\lambda f}(x_jx_m+y_jy_m),\qquad I_m=|V_m|^2,\label{eq:forward}
+\end{equation}
+following Di Leonardo et al.~\cite{dileonardo}. The unit of length in the focal plane for moves is the Fourier unit $\lambda f/(n_{\mathrm{pix}}p)$, which is the spacing of the bins of the Fourier transform of the SLM field without padding; with a zero-padding factor $\mathrm{pad}$ a focal bin is $1/\mathrm{pad}$ of a Fourier unit. The simulated setup of all experiments has a wavelength of \setupLambda{} nm, a lens of \setupFocal{} mm, a pixel pitch of \setupPitch{} $\mu$m, \setupNpix{} pixels per side, a padding factor of \setupPad{} and a numerical aperture of \setupNa, so that a Fourier unit equals \setupPad{} bins. Each trap has a design weight $\omega_m$ (equal in every task of the paper), a design amplitude $a_m=\sqrt{\omega_m/\langle\omega\rangle}$ and a relative amplitude $r_m=|V_m|/a_m$. Equation~\ref{eq:forward} is linear in the unit phasors $e^{i\phi_j}$, so the field at any position, bin or not, is available in closed form. The model is scalar and monochromatic, the device is ideal, and no camera or measured hologram enters the paper.
+
+\subsection{Moving traps, the blend of two frames and the transient ratio}
+
+A sequence has $S+1$ frames $s=0,\dots,S$, and each moving trap $m$ has a position $x_m(s)$ that follows a time profile $h(\tau)$ with $\tau=s/S$. The SLM does not jump from one hologram to the next: the liquid crystal relaxes, and a trap that moves is read at its position between the two frames. We model the displayed field between frames $s$ and $s+1$ as the blend of the two holograms,
+\begin{equation}
+f_\alpha=A\,\big[(1-\alpha)\,e^{i\phi^{(s)}}+\alpha\,e^{i\phi^{(s+1)}}\big],\qquad\alpha\in[0,1],\label{eq:blend}
+\end{equation}
+sampled at \parSubsteps{} sub-frames per interval, and read trap $m$ at its trajectory point $x_m(s+\alpha)$. With $I_m(s,\alpha)=|V_m(f_\alpha;x_m(s+\alpha))|^2$ and $I_m(s)$ the intensity at frame $s$, the transient ratio of a trap is
+\begin{equation}
+\rho_m=\frac{\min_{s,\alpha}I_m(s,\alpha)}{\operatorname{mean}_sI_m(s)},\qquad \rho=\min_{m\in\mathcal M}\rho_m,\label{eq:transient}
+\end{equation}
+where $\mathcal M$ is the set of moving traps. The numerator is the lowest intensity the trap takes over the frames and over the blend instants, and the denominator is its mean intensity at the frames, so $\rho_m=1$ means that the trap never dips below its mean and $\rho_m=0.9$ means that the lowest transient is a tenth below it. The blend is the same model for every sequence, so the methods are compared with each other under one display model. It is our definition, not a measurement: the source of linear phase interpolation reports a camera measurement and gives no equation~\cite{lpi}, so the absolute value of $\rho$ is a property of the model, and the model is not calibrated against a measured display. The per-frame minimum ratio, the same quantity restricted to the frames and without the blend, is reported alongside.
+
+\subsection{Phase continuity and uniformity metrics}
+
+Two further quantities describe a sequence. The achieved optical phase of a trap at frame $s$ is $\psi_m(s)=\arg V_m(\phi^{(s)};x_m(s))$, and the largest phase step is
+\begin{equation}
+\Theta=\max_{m\in\mathcal M}\ \max_{s}\ \big|\operatorname{wrap}\big(\psi_m(s+1)-\psi_m(s)\big)\big|,\label{eq:phasestep}
+\end{equation}
+with wrap into $(-\pi,\pi]$. It is the quantity that the source of linear phase interpolation relates to atom survival: a phase slip near $\pi$ between holograms caused loss, and slips of up to several tenths of $\pi$ did not~\cite{lpi}. The per-frame spread is the largest, over the frames, of the relative standard deviation of the trap intensities divided by their design weights, in percent,
+\begin{equation}
+\sigma^{(s)}=100\,\frac{\operatorname{std}_m\big(I_m(s)/\omega_m\big)}{\operatorname{mean}_m\big(I_m(s)/\omega_m\big)},\qquad \sigma_{\max}=\max_s\sigma^{(s)}.\label{eq:sigmaframe}
+\end{equation}
+The spread of a frame is a property of the optimized hologram and does not involve the blend. A sequence that equalizes each frame has a small $\sigma_{\max}$, and linear phase interpolation, whose frames are inverse transforms of interpolated spots, does not. Eqs.~\ref{eq:transient} to~\ref{eq:sigmaframe} are computed by one function for every method (Section~\ref{sec:design}), so that no method is scored on its own model. The three quantities are complementary: $\rho$ reads the worst instant of the move, $\Theta$ reads how far the phase of a trap travels between two frames, and $\sigma_{\max}$ reads how well each frame equalizes the traps, and a method can be good on one and poor on another.
+
+\subsection{Trajectories, notation and assumptions}
+
+The sequence of this paper moves traps along the minimal-jerk profile (Section~\ref{sec:flicker-method}); the published baselines of the engine move them at constant velocity between the endpoints, with the number of frames fixed by the longest move. A trap that does not move holds still in every sequence, and every sequence is run on the same assignment of atoms to sites. The assumptions are the following: a scalar model on an ideal SLM; traps in one plane; a transient that is the blend of two fields; moving traps scored through the minimum over them, and holding traps through the per-frame spread; and a time profile that differs between the proposed sequence and the baselines, an asymmetry that the ablation of Section~\ref{sec:ablation} measures by running the proposed sequence with a linear profile. Table~\ref{tab:notation} collects the symbols.
+
+\begin{table}[t]
+\centering\small
+\caption{Notation: every symbol of the formulation and of the method with its meaning and unit. Dimensionless quantities are marked as such.}
+\label{tab:notation}
+\begin{tabular}{@{}l p{8.6cm} l@{}}
+\toprule
+Symbol & Meaning & Unit\\
+\midrule
+$n_{\mathrm{pix}}$, $p$ & SLM pixels per side, pixel pitch & 1, m\\
+$\lambda$, $f$ & wavelength, focal length of the lens & m\\
+$A_j$, $\phi_j$ & input amplitude and displayed phase of pixel $j$ & 1, rad\\
+$\Delta_j^m$ & delay from pixel $j$ to trap $m$ & rad\\
+$V_m$, $I_m=|V_m|^2$ & trap field and intensity (fraction of the SLM flux) & 1\\
+$\omega_m$, $a_m$, $r_m$ & design weight, design amplitude, relative amplitude $|V_m|/a_m$ & 1\\
+$w_m$ & multiplicative weight of the iteration & 1\\
+$S$, $s$ & number of frame intervals of a sequence, frame index & 1\\
+$h(\tau)$, $\tau=s/S$ & minimal-jerk time profile and normalized time & 1\\
+$x_m(s)$ & position of trap $m$ at frame $s$ & Fourier unit\\
+$\theta_m(s)$, $\theta_m^{\mathrm{end}}$ & prescribed (locked) optical phase of trap $m$ at frame $s$, and at the end of the move & rad\\
+$\psi_m(s)$ & achieved optical phase $\arg V_m$ & rad\\
+$\varepsilon_m(s)$ & residual phase error $\psi_m(s)-\theta_m(s)$ & rad\\
+$K_0$, $K_{\mathrm f}$ & iterations of the cold first frame and of every later frame & 1\\
+$\dot\theta_{\max}$ & bound on the prescribed phase step per frame & rad\\
+$L$ & length of the longest move & Fourier unit\\
+$\delta$, $\delta_{\max}$, $\delta_{\mathrm{claim}}$ & shift of the pattern between two frames, its largest value along a move, the bound used & Fourier unit\\
+$F(L)$, $F_0$ & frames required by the bound for a move of length $L$, default number of frames & 1\\
+$\alpha$ & blend coordinate between two frames & 1\\
+$\rho_m$, $\rho$ & transient ratio of trap $m$, its minimum over the moving traps $\mathcal M$ & 1\\
+$\Theta$ & largest phase step of the achieved phases & rad\\
+$\sigma^{(s)}$, $\sigma_{\max}$ & relative standard deviation of the trap intensities of frame $s$, its maximum & percent\\
+\bottomrule
+\end{tabular}
+\end{table}

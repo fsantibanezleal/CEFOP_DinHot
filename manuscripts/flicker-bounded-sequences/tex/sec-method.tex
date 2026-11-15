@@ -1,0 +1,79 @@
+\section{The flicker-bounded phase-continuous sequence}\label{sec:flicker-method}
+
+\subsection{Idea}
+
+A sequence of holograms that moves traps must satisfy two requirements that pull in different directions. Every frame must be a good hologram, with traps of equal intensity, and the transition between two frames must not make a moving trap dim, which happens when the fields of the two holograms interfere destructively at the trap. Linear phase interpolation meets the second requirement by controlling the optical phase of every trap and gives up the first, because its frames are not optimized~\cite{lpi}. Per-frame Gerchberg--Saxton with phase induction meets the first by optimizing every frame, and tries to meet the second by starting each frame from the phase of the previous one~\cite{kimoe}; the phases are then continuous at the start of the iteration and free during it.
+
+The sequence proposed here keeps both: every frame is optimized, and the optical phase of every moving trap is a prescribed function of time that the optimization cannot change. The target field of the optimization at frame $s$ is built from the prescribed phases, so the target of frame $s+1$ differs from that of frame $s$ by a bounded amount, and the hologram that inverts it is a small perturbation of the previous hologram. The frame update starts from the hologram and the weights of the previous frame, so that it needs few iterations, and the weights integrate the amplitude error across frames as well as across iterations. A bound on the shift of the pattern between frames fixes how many frames a move needs. The sequence does not claim that free phases always flicker: in the measurements below the induced sequence of Kim et al.\ often does not. It is a construction whose phase path is controlled by design, and Sections~\ref{sec:results} and~\ref{sec:ablation} measure what that control is worth.
+
+\subsection{Derivation}
+
+Positions follow the minimal-jerk profile, the polynomial of lowest degree with zero velocity and zero acceleration at both ends,
+\begin{equation}
+x_m(s)=x_m(0)+\big(x_m(S)-x_m(0)\big)\,h(\tau),\qquad h(\tau)=10\tau^3-15\tau^4+6\tau^5,\qquad \tau=\frac sS.\label{eq:minjerk}
+\end{equation}
+The optical phases of the traps follow the same profile between the phases $\theta_m(0)$ of the first frame and given end phases $\theta_m^{\mathrm{end}}$; by default the phases are held, $\theta_m^{\mathrm{end}}=\theta_m(0)$,
+\begin{equation}
+\theta_m(s)=\theta_m(0)+\operatorname{wrap}\big(\theta_m^{\mathrm{end}}-\theta_m(0)\big)\,h(\tau).\label{eq:phaseprofile}
+\end{equation}
+Frame $s\ge1$ is a phase-fixed weighted Gerchberg--Saxton step with the trap phases locked to Eq.~\ref{eq:phaseprofile}: with the trap set $x_m(s)$ and the coefficients $c_m=w_ma_me^{i\theta_m(s)}$,
+\begin{equation}
+\phi_j^{(s)}=\arg\sum_mc_m\,e^{+i\Delta_j^m(x_m(s))},\qquad w_m\leftarrow w_m\,\frac{\langle r\rangle}{r_m},\label{eq:frame}
+\end{equation}
+started from the hologram and the weights of frame $s-1$ and iterated $K_{\mathrm f}$ times, with $r_m$ recomputed from the current hologram at every iteration. Frame 0 is a cold phase-fixed weighted Gerchberg--Saxton run of $K_0$ iterations whose trap phases give $\theta_m(0)$. The hard lock is the limit $\lambda\to\infty$ of a penalty $\lambda\sum_m(\arg V_m-\theta_m)^2$ added to the amplitude error; the implementation uses the limit and never forms the penalty. The sequence is refused when the prescribed phase step per frame exceeds a bound $\dot\theta_{\max}$,
+\begin{equation}
+\max_{m,s}\big|\theta_m(s+1)-\theta_m(s)\big|\le\dot\theta_{\max}.\label{eq:phasebound}
+\end{equation}
+The bound has a direct meaning for the optimization target: the coefficients of two consecutive frames differ by
+\begin{equation}
+\big|c_m(s+1)-c_m(s)\big|\le w_ma_m\,\big|\theta_m(s+1)-\theta_m(s)\big|+a_m\,\big|w_m(s+1)-w_m(s)\big|,\label{eq:targetstep}
+\end{equation}
+so a bounded phase step and weights that change little make the target field, and therefore the hologram that inverts it, change slowly from frame to frame. The number of frames follows from the same profile. The velocity of $h$ is $h'(\tau)=30\tau^2(1-\tau)^2$, maximal at $\tau=\tfrac12$ where it equals $15/8$, so the largest shift between two consecutive frames of a trap that travels $L$ Fourier units in $S$ intervals is, to first order in $1/S$, and the number of frames for a step bound $\delta_{\mathrm{claim}}$ is
+\begin{equation}
+\delta_{\max}=\frac{15}{8}\,\frac{L}{S},\qquad F(L)=\max\Big\{F_0,\ \Big\lceil\frac{15}{8}\,\frac{L}{\delta_{\mathrm{claim}}}\Big\rceil+1\Big\},\label{eq:frames}
+\end{equation}
+where $F_0$ is the default number of frames and $\delta_{\mathrm{claim}}=\claimStepFu{}$ Fourier units is the step bound of the sequence. Proposition~\ref{prop:blend} shows what this bound means for a single trap, and Section~\ref{sec:theory} states that its value is a calibration and not a derived constant.
+
+The equations read as follows. Equation~\ref{eq:minjerk} fixes where each trap is at each frame, and Eq.~\ref{eq:phaseprofile} fixes the optical phase that it must have there. Equation~\ref{eq:frame} is the usual weighted back-projection with one difference, which gives the method its name: the phase of each coefficient comes from the prescribed path and not from the current field. In Kim et al.'s induction the previous phase only initializes the iteration~\cite{kimoe}; here it constrains it. The weights and the hologram are carried from frame to frame, so every frame is a few iterations away from the previous one and not a new solution: with held phases and small steps, the problem of frame $s$ is a small perturbation of the problem of frame $s-1$. In the penalty form the lock would be a soft constraint, and the optimizer could trade phase error for amplitude error; the hard lock refuses the trade, and the price is that when the prescribed path is one along which no hologram can make the traps equal, the per-frame optimization cannot repair it. When end phases are given, Eq.~\ref{eq:phaseprofile} follows the wrapped difference, which is the short path on the circle and can differ from the path that the hologram at the destination would take on its own: the end phases are an input of the method and not a result of it.
+
+\subsection{Algorithm}
+
+Algorithm~\ref{alg:flicker} states the procedure. The transient ratios of Eq.~\ref{eq:transient} are computed after the last frame on the blend model, and they are the figure of merit of the sequence; they are not used inside the optimization.
+
+\begin{algorithm}[t]
+\caption{Flicker-bounded sequence for a move from traps $X(0)$ to $X(S)$ with end phases $\theta^{\mathrm{end}}$ (held by default).}
+\label{alg:flicker}
+\begin{algorithmic}[1]
+\Require traps $X(0)$, destination $X(S)$ with the same ids, frames $S+1$, iterations $K_0$ and $K_{\mathrm f}$, bound $\dot\theta_{\max}$, seed
+\Ensure holograms $\phi^{(0)},\dots,\phi^{(S)}$ and transient ratios $\rho_m$
+\State $\phi^{(0)}\gets$ phase-fixed weighted GS of $K_0$ iterations on $X(0)$; $\theta_m(0)\gets\arg V_m(\phi^{(0)})$
+\State $\theta_m(s)\gets$ Eq.~\ref{eq:phaseprofile}; \textbf{if} Eq.~\ref{eq:phasebound} fails \textbf{then} refuse the sequence
+\State $w_m\gets1$; $\phi\gets\phi^{(0)}$
+\For{$s=1,\dots,S$}
+  \State place the traps at $x_m(s)$ (Eq.~\ref{eq:minjerk}); $c_m\gets w_ma_me^{i\theta_m(s)}$
+  \For{$t=1,\dots,K_{\mathrm f}$}
+    \State $V_m\gets V_m(\phi)$ at $x_m(s)$; $w_m\gets w_m\langle r\rangle/r_m$; $\phi\gets\arg\sum_mw_ma_me^{i\theta_m(s)}e^{+i\Delta^m}$ \Comment{Eq.~\ref{eq:frame}}
+  \EndFor
+  \State $\phi^{(s)}\gets\phi\bmod2\pi$
+\EndFor
+\State compute $\rho_m$ from the blend of consecutive frames (Eq.~\ref{eq:transient}); \Return holograms and $\rho$
+\end{algorithmic}
+\end{algorithm}
+
+Line 1 is the cold start and fixes the phases that the move starts from; line 2 builds the prescribed phase table and refuses a sequence whose prescribed step exceeds the bound, so that the refusal happens before any frame is computed; lines 4 to 9 are the frames. The inner loop is the phase-fixed weighted iteration with a changed target phase: the intensity weights update from the amplitude that the current hologram produces at the traps, and the back-projection uses the prescribed phase. The weights $w_m$ are initialized once, at frame 1, and are never reset, which is what lets them integrate the error along the move.
+
+\subsection{Parameters}
+
+The number of frames, \parFrames{}, is the number of holograms that the source of linear phase interpolation uses to sort a $6\times6$ array into a $4\times4$ array~\cite{lpi}. The number of iterations per frame, \parFrameIters{}, is an engine choice, and the ablation of Section~\ref{sec:ablation} measures how the transient ratio depends on it. The cold start of frame 0 runs \setupCold{} iterations, with the phase frozen after 12 of them, as in the phase-fixed rule~\cite{kimol}. The bound on the prescribed phase step per frame, \parPhaseVel{} rad, is an engine choice taken from the observation of Knottnerus et al.\ that phase slips of several tenths of $\pi$ did not drastically change atom survival while slips around $\pi$ lost atoms~\cite{lpi}; it is a bound on the prescribed path and not a claim about atoms. The step bound $\delta_{\mathrm{claim}}$ of \claimStepFu{} Fourier units is the peak shift per frame at which the lowest moving trap of the sort measured 0.9 of its mean on the calibration case (Section~\ref{sec:theory}). The blend is sampled at \parSubsteps{} sub-frames per interval, a numerical resolution of the transient model. Two parameters interact: with held phases the prescribed step is zero and Eq.~\ref{eq:phasebound} never binds, whereas with end phases the largest prescribed step is $\tfrac{15}{8}|\Delta\theta|/S$ for a phase difference $\Delta\theta$, which is why the long-move experiments that use end phases lift the bound to \scopePhaseVel{} rad.
+
+\subsection{Complexity}
+
+A sequence is one cold run of $K_0$ iterations and $S$ warm-started runs of $K_{\mathrm f}$ iterations, each iteration being one forward projection and one back-projection of the point-trap form, $O(n_{\mathrm{pix}}^2M)$ for $M$ traps. The total number of iterations is
+\begin{equation}
+N_{\mathrm{it}}=K_0+S\,K_{\mathrm f},\qquad \frac{K_0}{N_{\mathrm{it}}}=\frac{K_0}{K_0+S\,K_{\mathrm f}},\label{eq:cost}
+\end{equation}
+so frame 0 is not free: on the acceptance task, with $S=\fpeval{\parFrames-1}$ intervals, the sequence runs \fpeval{\setupCold+(\parFrames-1)*\parFrameIters} iterations of which the cold start is \fpeval{round(100*\setupCold/(\setupCold+(\parFrames-1)*\parFrameIters))} percent, and on the longest move of the sort, with $S=\fpeval{\cTenFrames-1}$, the cold start is \fpeval{round(100*\setupCold/(\setupCold+(\cTenFrames-1)*\parFrameIters),1)} percent. The frame count grows linearly with the length of the move (Eq.~\ref{eq:frames}), and so does the cost; this is the price of the bound and one of the limits of the method. The memory of a run also grows with the number of frames, since every hologram is stored, and the scoring of the blend evaluates \parSubsteps{} projections per interval, which for the longest move is a larger share of the run than for the acceptance move. Linear phase interpolation costs two cold runs and one inverse transform per frame, with no iterations in the frames; the per-frame Gerchberg--Saxton sequence costs the same cold run and $S$ runs of its own iteration count, \parKimIters{} or \parFrameIters{}. The seconds measured for each are in Section~\ref{sec:results}.
+
+\subsection{Implementation}
+
+The method is the module \texttt{b2\_flicker\_bounded.py} of the engine of the studio, release \engineRelease{}. It provides the profile, the trajectory, the transient scoring and the frame-count rule, and takes the destination, the number of frames, the iterations per frame, the end phases and the bound as arguments. It works in the point-trap form, so traps need not lie on bins, in two or three dimensions, on the ideal device. The cold start and the weighted iteration are those of the studio's phase-fixed and weighted Gerchberg--Saxton methods, called through one shared routine, so that a correction of one reaches the other at once. The call returns the last hologram as the phase, a history with one entry per frame, the trap fields of the last frame and, in the metadata, every frame, the transient ratio per trap, the mask of the moving traps (those with a displacement), the phases of the first frame, the iterations run and the number of frames. It raises an error for a shaped target, for a destination that does not hold the same trap identifiers in the same order, for end phases whose number differs from the number of traps, and for a prescribed phase step above the bound. A time limit stops the iterations of any frame, and a frame that is cut keeps the iterations it ran. The ablation script re-implements the sequence with switchable components and checks that, with all components on, it reproduces the lowest transient ratio of the module to a difference of \ablTCheck{} for every seed, so that the ablated variants are the module with parts removed and not a second method.

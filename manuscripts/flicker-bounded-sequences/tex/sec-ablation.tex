@@ -1,0 +1,31 @@
+\section{Ablation}\label{sec:ablation}
+
+\subsection{Variants and what each removes}
+
+The ablation removes one component of the sequence at a time on the acceptance task at \parFrames{} frames over \ablTN{} seeds, with the same seeds as the main result. The variants are: the sequence with all components; the sequence without the trajectory lock, in which the phase of each coefficient is the phase of the current field as in the induced sequence, while the weights are still carried across frames and the positions still follow the minimal-jerk profile; the sequence without the per-frame optimization, in which every frame is the inverse transform of the prescribed spots with unit weights and no iteration, so that only the lock and the profile remain; the sequence with 1 and with 3 iterations per frame instead of \parFrameIters{}; and the sequence with a linear time profile for the positions instead of the minimal-jerk profile, with the same frame count. The two published sequences are reproduced from Table~\ref{tab:main} as references. Table~\ref{tab:ablation} gives the results and Fig.~\ref{fig:ablation} shows them per seed. The variant with all components is checked against the module of the engine and agrees to \ablTCheck{}, so the other rows are the module with parts removed.
+
+\begin{table}[t]
+\centering\small
+\caption{Ablation of the flicker-bounded sequence on the acceptance task at \parFrames{} frames over \ablTN{} seeds: transient minimum ratio (mean $\pm$ standard deviation, range), seeds at $0.9$ or above, largest per-frame spread and largest phase step (medians over the seeds); the three last rows are the published sequences for reference.}
+\label{tab:ablation}
+\adjustbox{max width=\textwidth}{\input{../data/tab_abl_b2.tex}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig-ablation.pdf}
+\caption{Transient minimum ratio of the moving traps per seed for the full sequence and each ablated variant on the acceptance task; markers are seeds, bars are medians, and the dotted line is $0.9$. Removing the per-frame optimization or reducing the iterations to one puts every seed below $0.9$; removing the lock spreads the seeds widely; the linear time profile raises every seed.}
+\label{fig:ablation}
+\end{figure}
+
+\subsection{Reading the ablation}
+
+\emph{The per-frame optimization is necessary.} Without it the mean falls from \ablTFullMean{} to \ablTNoOptMean{} (standard deviation \ablTNoOptSd{}), no seed reaches $0.9$, and the largest per-frame spread rises from \ablTFullSig{} to \ablTNoOptSig{} percent, close to the \accLpiSigmaMed{} percent of linear phase interpolation. The phase step stays small, \ablTNoOptStep{} rad, since the lock still holds. The variant is better than linear phase interpolation, \accLpiTransMean{}, so the locked phases explain part of the gap to it, and the optimization explains the rest. H7 held.
+
+\emph{The lock does not move the mean as far as the optimization, but it controls the step and the spread of outcomes.} Without the lock the mean is \ablTNoLockMean{} (standard deviation \ablTNoLockSd{}, range \ablTNoLockMin{} to \ablTNoLockMax{}) against \ablTFullMean{} (\ablTFullSd{}), and a majority of seeds still reaches $0.9$, so H6 is refuted by the rule fixed in advance. What changes is the phase step, from \ablTFullStep{} to \ablTNoLockStep{} rad, a factor of \lockStepRatio{}, and the largest spread of a frame, from \ablTFullSig{} to \ablTNoLockSig{} percent. The unlocked variant has the phase step of the induced sequences: \ablTNoLockStep{} rad against the median of \accKimTenStepMed{} rad for the per-frame method at the same iteration count. This is the evidence that the lock, and not the carried weights or the profile, is what reduces the step, and it is the consistency check of Proposition~\ref{prop:lock}.
+
+\emph{Three iterations suffice.} With 3 iterations per frame the mean is \ablTItersThreeMean{}, indistinguishable from \ablTFullMean{} at ten, while with one iteration it falls to \ablTItersOneMean{}. The iteration count of the main experiments, \parFrameIters{}, is therefore conservative for this task, and a sequence with 3 iterations per frame does less work than the per-frame method at \parKimIters{} iterations while reaching a similar level, \ablTItersThreeMean{} against \accKimFiveTransMean{}. Because the experiments of the paper use \parFrameIters{} for the proposed sequence, the comparison with the per-frame method at 5 iterations is in fact favourable to the per-frame method on work, and the comparison at \parFrameIters{} is the equal-work one.
+
+\emph{The minimal-jerk profile lowers the transient minimum on this task.} With a linear time profile and the same number of frames the mean rises to \ablTLinearMean{} (range \ablTLinearMin{} to \ablTLinearMax{}), above the per-frame method at \parKimIters{} iterations by \linearGap{} in the mean, and the phase step falls to \ablTLinearStep{} rad. The reason is Proposition~\ref{prop:frames}: the minimal-jerk profile has a peak velocity of $15/8$ times the mean, so at the same frame count its peak shift between frames is almost twice that of the linear profile, and the transient ratio depends on the peak shift. The profile is chosen in the method for its zero velocity and acceleration at the ends, which is a property of the motion of atoms and not of the hologram, and the measurement here does not weigh that property. The variant is a single-task result: the ranges of the linear variant and of the per-frame method at \parKimIters{} iterations overlap, and no reading by the benchmark rule is made.
+
+Taken together, the ablation says that the value of the sequence lies in the combination of the lock with the per-frame optimization, that the lock is what lowers the phase step, that the iteration count and the time profile of the main experiments are not tuned for the dip, and that a sequence with a linear profile would be the better configuration for the dip on this task. These are the conclusions that Section~\ref{sec:discussion} draws on.
