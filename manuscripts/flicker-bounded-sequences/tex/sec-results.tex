@@ -22,6 +22,15 @@ For the sequence the lowest transient ratio of the moving traps is a mean of \ac
 
 The per-frame Gerchberg--Saxton sequence with phase induction at \parKimIters{} iterations per frame reaches a higher minimum than the proposed sequence: a mean of \accKimFiveTransMean{} (interval \accKimFiveTransCiLo{} to \accKimFiveTransCiHi{}, range \accKimFiveTransMin{} to \accKimFiveTransMax{}) against \accBTransMean{}, a gap of \dipGap{} in the mean, and the benchmark rule reads the dip as \readThirteenKimFiveDip{} ($n$ = \readThirteenKimFiveDipN). On every seed the published method is above the proposed sequence on this measure. At equal work, \parFrameIters{} iterations per frame, its mean is \accKimTenTransMean{} (interval \accKimTenTransCiLo{} to \accKimTenTransCiHi{}) and the rule reads a \readThirteenKimTenDip{}. So the finding for the dip is: the proposed sequence is well above linear phase interpolation, below the published per-frame method at its own iteration count, and indistinguishable from it at ten iterations per frame. On the per-frame spread the reading is \readThirteenKimFiveSigma{} for the sequence against the per-frame method at \parKimIters{} iterations and \readThirteenKimTenSigma{} at ten: its frames are better equalized, with a median largest spread of \accBSigmaMed{} percent against \accKimFiveSigmaMed{} and \accKimTenSigmaMed{} percent.
 
+\begin{table}[t]
+\centering\small
+\caption{The time profile of the sequence as a parameter, acceptance task, \parFrames{} frames, \readProfileN{} seeds: transient minimum ratio (mean and 95 percent interval), largest phase step (maximum over seeds), largest per-frame spread (median) and the reading of the benchmark rule against each baseline on the dip, for the default minimal-jerk profile and for the linear profile of the baselines.}
+\label{tab:profile}
+\adjustbox{max width=\textwidth}{\input{../data/tab_profile.tex}}
+\end{table}
+
+Table~\ref{tab:profile} reports both time profiles against every baseline. With the default minimal-jerk profile the rule reads the dip as \readProfileDefaultKimFiveDip{} against the per-frame method at \parKimIters{} iterations, as a \readProfileDefaultKimTenDip{} at \parFrameIters{} iterations and as \readProfileDefaultLpiDip{} against linear phase interpolation. With the linear profile it reads \readProfileLinearKimFiveDip{} against the per-frame method at \parKimIters{} iterations, \readProfileLinearKimTenDip{} at \parFrameIters{} and \readProfileLinearLpiDip{} against linear phase interpolation, on the dip and on the per-frame spread alike, with a mean of \ablTLinearMean{} against \accKimFiveTransMean{}. The deficit of the default profile has a cause that the data locate: at \parFrames{} frames its peak shift between frames is \accPeakStep{} Fourier units, outside the method's own step bound of \claimStepFu{} Fourier units, for which the bound asks \accFramesForMove{} frames, while the constant-velocity profile at the same frame count has a smaller peak shift for the same move. The default therefore runs outside the bound that the paper derives, and the comparison at this frame count sets the sequence outside its design condition against baselines inside theirs. At 25 frames, inside the bound, the default ties both per-frame sequences (Table~\ref{tab:frames}).
+
 \subsection{Number of frames}
 
 \begin{table}[t]
@@ -51,7 +60,7 @@ Table~\ref{tab:frames} and Fig.~\ref{fig:frames} vary the number of frames. With
 
 Figure~\ref{fig:steps} shows the quantity that the lock is designed to control, the largest phase step $\Theta$ of Eq.~\ref{eq:phasestep}. Over the \nSeedsTwo{} seeds of the acceptance task the largest phase step of the sequence is \accBStepMax{} rad (mean \accBStepMean{}, interval \accBStepCiLo{} to \accBStepCiHi{}). The per-frame method at \parKimIters{} iterations has \accKimFiveStepMax{} rad (mean \accKimFiveStepMean{}), a factor of \stepRatio{}; at ten iterations it has \accKimTenStepMax{} rad, a factor of \stepRatioTen{}; and linear phase interpolation has \accLpiStepMax{} rad, a factor of \stepRatioLpi{}. The sequence has the smaller step on every one of the \nSeedsTwo{} seeds against the per-frame method at \parKimIters{} iterations, and the same holds at 7 and 25 frames. Two readings of these numbers are limited. The step of linear phase interpolation is not small even though its interpolated phase is linear, because the phase achieved in a frame that is an inverse transform of interpolated spots is not the interpolated one. And the largest step of the induced sequence, \accKimFiveStepMax{} rad, is about \fpeval{round(\accKimFiveStepMax/pi,2)}$\pi$, below the several tenths of $\pi$ at which Knottnerus et al.\ saw no change in atom survival~\cite{lpi}: the measurements do not show that the induced sequence would lose atoms. The advantage of the lock is a margin on a quantity that matters near $\pi$, and the acceptance task does not approach it.
 
-\subsection{Long moves and the sort of a $6\times6$ array}
+\subsection{Long moves and the sort of a \texorpdfstring{$6\times6$}{6 by 6} array}
 
 \begin{table}[t]
 \centering\small
@@ -104,13 +113,13 @@ Figure~\ref{fig:seconds} gives the seconds of one sequence. At \parFrames{} fram
 \centering\small
 \caption{Outcome of each hypothesis of Table~\ref{tab:hyp} with the measurement that decides it; ``held'' means the refuting condition did not occur.}
 \label{tab:outcome}
-\begin{tabular}{@{}l l p{9.6cm}@{}}
+\begin{tabular}{@{}l p{3.6cm} p{8.6cm}@{}}
 \toprule
 ID & Outcome & Measurement\\
 \midrule
 H1 & held & lowest seed \bTwoMin{}, linear phase interpolation highest seed \lpiMax{}; paired difference \diffTwoMean{} (\diffTwoCiLo{} to \diffTwoCiHi{})\\
 H2 & held & largest step \accBStepMax{} rad against minimum \accKimFiveStepMin{} rad over seeds for the per-frame method; the sequence is smaller on every seed\\
-H3 & refuted & reading of the dip: \readThirteenKimFiveDip{} at \parKimIters{} iterations per frame, \readThirteenKimTenDip{} at \parFrameIters{}\\
+H3 & refuted at the default profile, held with the linear profile & reading of the dip at the default profile: \readThirteenKimFiveDip{} at \parKimIters{} iterations per frame, \readThirteenKimTenDip{} at \parFrameIters{}; with the linear profile \readProfileLinearKimFiveDip{} and \readProfileLinearKimTenDip{} (Table~\ref{tab:profile})\\
 H4 & held & reading of the per-frame spread: \readThirteenKimFiveSigma{} at \parKimIters{} iterations, \readThirteenKimTenSigma{} at \parFrameIters{}\\
 H5 & held with failures & \longAMet{} of \longSeeds{} and \longBMet{} of \longSeeds{} seeds on the lattice moves, \cTenMet{} of \cTenSeeds{} on the sort\\
 H6 & refuted by the majority rule & see Table~\ref{tab:ablation}: a majority of seeds stays at $0.9$ without the lock, with a lower mean and a wider range\\
@@ -120,4 +129,4 @@ H8 & held & median \bTwoMedSeven{} at 7 frames\\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:outcome} collects the outcomes, and the pattern of the two refuted hypotheses is informative. H3 is the comparison that the novelty claim requires, and it goes against the proposed sequence; H6 is a component rationale that the lock was expected to satisfy, and the lock turns out to act on the phase step and on the spread of seeds and not on the mean of the dip. In both cases the measurement refutes an expectation that the design of the sequence carried. Six hypotheses held, one of them with a qualification (H5, on a majority and not on all seeds), and two were refuted: H3, the sequence is not as good on the dip as the published per-frame method at its own iteration count, and H6, by the majority rule, the lock is not what keeps the dip above $0.9$ on the acceptance task.
+Table~\ref{tab:outcome} collects the outcomes. Six hypotheses held, two of them with a qualification (H5, on a majority and not on all seeds; H3, which is refuted at the default profile and holds with the linear profile), and H6 was refuted by the majority rule: the lock is not what keeps the dip above $0.9$ on the acceptance task, it acts on the phase step and on the spread of seeds. The pattern is informative. The deficit on the dip against the published method belongs to the time profile and to the frame count outside the bound, not to the locked phases, and the measurement refutes an expectation that the design of the sequence carried about the profile it chose as default. The default frame count of the sequence, \parFrames{}, is the count that the source of linear phase interpolation uses for its sort, and it is below the count that the bound asks for the acceptance move.

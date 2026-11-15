@@ -74,7 +74,7 @@ def fig_theory() -> None:
     ax[1].plot(L, np.maximum(f0, np.ceil(15 / 8 * L / claim) + 1), color=COLOR["b2"], lw=1.4, drawstyle="steps-post", label="frames $F(L)$ of the bound")
     used = DATA["figures"]["frames_vs_move"]
     for u, m in zip(used, marks):
-        ax[1].plot([u["fourier_units"]], [u["frames_used"]], m, color="#222222", ms=5.5, mfc="white", mew=1.3, label=f"{u['move']}: {u['frames_used']} frames used")
+        ax[1].plot([u["fourier_units"]], [u["frames_used"]], m, color="#222222", ms=5.5, mfc="white", mew=1.3, label=f"{u['move'].replace('C10 sort', 'sort of 36 traps')}: {u['frames_used']} frames used")
     ax[1].set_xlabel("length of the longest move, $L$ (Fourier units)")
     ax[1].set_ylabel("frames")
     ax[1].set_title("(b) frames the bound requires")
@@ -157,7 +157,7 @@ def fig_bound() -> None:
     ax.bar(x - 0.2, [r["frames_bound"] for r in fv], 0.38, color="#c9d6ea", edgecolor="#1b4f9c", label="frames of the bound")
     ax.bar(x + 0.2, [r["frames_used"] for r in fv], 0.38, color="#1b4f9c", label="frames used")
     ax.set_xticks(x)
-    ax.set_xticklabels([r["move"] for r in fv])
+    ax.set_xticklabels([r["move"].replace("C10 sort", "sort of 36 traps") for r in fv])
     ax.set_ylabel("frames")
     ax.set_ylim(0, 200)
     ax2 = ax.twinx()
