@@ -39,7 +39,22 @@ def test_g6_is_two_geometries_with_their_own_targets_and_every_seed_runs_both():
 
 
 @pytest.fixture(scope="module")
-def doc(tmp_path_factory):
+def real_registry():
+    """The product's own method registry for this module, the previous one restored after it. The session's
+    ``planted_registry`` (``bakefix.py``, used by the contract tests' sandbox bake) keeps a four-method package active
+    for the rest of the session, so without this M07 and B5 are unknown whenever a contract test ran first."""
+    from pipeline.model.holo import methods
+
+    previous = methods._base
+    methods.reload(None)
+    try:
+        yield methods
+    finally:
+        methods.reload(None if previous == methods.__name__ else previous)
+
+
+@pytest.fixture(scope="module")
+def doc(tmp_path_factory, real_registry):
     out = tmp_path_factory.mktemp("eq")
     one = protocol.run(out / "a", seeds=3, workers=1, reduced=True, geometries=["G1", "G6a", "G6b"], methods=["M04", "M07"])
     two = protocol.run(out / "b", seeds=3, workers=1, reduced=True, geometries=["G1"], methods=["B5"])   # the slowest method, one geometry
@@ -63,7 +78,7 @@ def test_no_static_row_for_b2_and_the_two_g6_targets_are_separate(doc):
     assert not any(r["geometry"] == "G6" for r in doc["rows"])
 
 
-def test_evaluations_of_a_run_equal_the_independent_count_of_the_transforms(monkeypatch):
+def test_evaluations_of_a_run_equal_the_independent_count_of_the_transforms(monkeypatch, real_registry):
     """The row's number is the engine counter read between the run and its scoring; count the same run by hand."""
     import sys as _sys
 
