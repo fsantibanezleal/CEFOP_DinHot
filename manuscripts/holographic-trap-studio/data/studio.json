@@ -3383,7 +3383,7 @@
   ],
   [
    "M17",
-   "three-plane network refined by volumetric 3D GS: median accuracy ratio 1.140 (quartiles 1.103 and 1.164) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
+   "three-plane network refined by volumetric 3D GS: median accuracy ratio 1.140 (quartiles 1.103 and 1.163) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
    "162 volumes",
    "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json"
   ],
