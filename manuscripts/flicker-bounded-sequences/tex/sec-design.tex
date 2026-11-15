@@ -2,7 +2,7 @@
 
 \subsection{Hypotheses}
 
-The hypotheses are stated here, before the results, with the condition that refutes each; Table~\ref{tab:hyp} lists them. H1, H5, H6 and H7 are the thresholds that the sequence was designed against: a transient ratio of $0.9$ on the acceptance task, on longer moves with the frames of Eq.~\ref{eq:frames}, and the rationale of its two components, the lock and the per-frame optimization. They were fixed with the method and before the comparison with the per-frame sequence existed. H2 to H4 compare the sequence with the per-frame Gerchberg--Saxton sequence of Kim et al.~\cite{kimoe} and were stated after the sequence was designed, when that method was added to the comparison; they are post hoc with respect to the design of the method, and their thresholds come from the benchmark rule of Section~\ref{sec:stats}. H8 is the consequence of the frame-count equation for a move given fewer frames than the bound asks.
+The hypotheses are stated here, before the results, with the condition that refutes each; Table~\ref{tab:hyp} lists them. H1, H5, H6 and H7 are the thresholds that the sequence was designed against: a transient ratio of $0.9$ on the acceptance task, on longer moves with the frames of Eq.~\ref{eq:frames}, and the rationale of its two components, the lock and the per-frame optimization. They were fixed with the method and before the comparison with the per-frame sequence existed. H2 to H4 compare the sequence with the per-frame Gerchberg--Saxton sequence of Kim et al.~\cite{kimoe} and were stated after the sequence was designed, when that method was added to the comparison; they are post hoc with respect to the design of the method, and their thresholds come from the benchmark rule of Section~\ref{sec:stats}. The comparison with the linear time profile was added after the results and is not one of the hypotheses: it is reported as a finding made after the results (Table~\ref{tab:profile}). H8 is the consequence of the frame-count equation for a move given fewer frames than the bound asks.
 
 \begin{table}[t]
 \centering\small
@@ -14,7 +14,7 @@ ID & Statement & Refuted if\\
 \midrule
 H1 & On the acceptance task the sequence keeps the lowest moving trap at $0.9$ of its mean or more and above linear phase interpolation & a seed below $0.9$, or the paired interval of the difference includes zero\\
 H2 & The largest phase step between frames of the sequence is smaller than that of per-frame Gerchberg--Saxton with phase induction & any seed in which the sequence has the larger step\\
-H3 & The transient minimum ratio of the sequence is not lower than that of per-frame Gerchberg--Saxton with phase induction, at the default profile and with the linear profile & the benchmark rule reads the dip of the published method as better\\
+H3 & The transient minimum ratio of the sequence is not lower than that of per-frame Gerchberg--Saxton with phase induction & the benchmark rule reads the dip of the published method as better\\
 H4 & The largest per-frame spread of the sequence is not larger than that of the per-frame method & the benchmark rule reads the spread of the published method as better\\
 H5 & With the frames of the bound, the sequence keeps the lowest moving trap at $0.9$ or more on a majority of seeds of the long moves and of the sort & a majority of seeds below $0.9$ on a move\\
 H6 & Removing the trajectory lock brings the lowest moving trap below $0.9$ & the variant stays at $0.9$ or more on a majority of seeds\\

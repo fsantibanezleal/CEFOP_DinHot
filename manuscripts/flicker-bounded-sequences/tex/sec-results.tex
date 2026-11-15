@@ -24,7 +24,7 @@ The per-frame Gerchberg--Saxton sequence with phase induction at \parKimIters{} 
 
 \begin{table}[t]
 \centering\small
-\caption{The time profile of the sequence as a parameter, acceptance task, \parFrames{} frames, \readProfileN{} seeds: transient minimum ratio (mean and 95 percent interval), largest phase step (maximum over seeds), largest per-frame spread (median) and the reading of the benchmark rule against each baseline on the dip, for the default minimal-jerk profile and for the linear profile of the baselines.}
+\caption{The time profile of the sequence as a parameter, a comparison added after the results, acceptance task, \parFrames{} frames, \readProfileN{} seeds: transient minimum ratio (mean and 95 percent interval), largest phase step (maximum over seeds), largest per-frame spread (median) and the reading of the benchmark rule against each baseline on the dip, for the default minimal-jerk profile and for the linear profile of the baselines.}
 \label{tab:profile}
 \adjustbox{max width=\textwidth}{\input{../data/tab_profile.tex}}
 \end{table}
@@ -111,7 +111,7 @@ Figure~\ref{fig:seconds} gives the seconds of one sequence. At \parFrames{} fram
 
 \begin{table}[t]
 \centering\small
-\caption{Outcome of each hypothesis of Table~\ref{tab:hyp} with the measurement that decides it; ``held'' means the refuting condition did not occur.}
+\caption{Outcome of each hypothesis of Table~\ref{tab:hyp} with the measurement that decides it, and the finding made after the results; ``held'' means the refuting condition did not occur.}
 \label{tab:outcome}
 \begin{tabular}{@{}l p{3.6cm} p{8.6cm}@{}}
 \toprule
@@ -119,14 +119,15 @@ ID & Outcome & Measurement\\
 \midrule
 H1 & held & lowest seed \bTwoMin{}, linear phase interpolation highest seed \lpiMax{}; paired difference \diffTwoMean{} (\diffTwoCiLo{} to \diffTwoCiHi{})\\
 H2 & held & largest step \accBStepMax{} rad against minimum \accKimFiveStepMin{} rad over seeds for the per-frame method; the sequence is smaller on every seed\\
-H3 & refuted at the default profile, held with the linear profile & reading of the dip at the default profile: \readThirteenKimFiveDip{} at \parKimIters{} iterations per frame, \readThirteenKimTenDip{} at \parFrameIters{}; with the linear profile \readProfileLinearKimFiveDip{} and \readProfileLinearKimTenDip{} (Table~\ref{tab:profile})\\
+H3 & refuted & reading of the dip at the default profile: \readThirteenKimFiveDip{} at \parKimIters{} iterations per frame, \readThirteenKimTenDip{} at \parFrameIters{}\\
 H4 & held & reading of the per-frame spread: \readThirteenKimFiveSigma{} at \parKimIters{} iterations, \readThirteenKimTenSigma{} at \parFrameIters{}\\
 H5 & held with failures & \longAMet{} of \longSeeds{} and \longBMet{} of \longSeeds{} seeds on the lattice moves, \cTenMet{} of \cTenSeeds{} on the sort\\
 H6 & refuted by the majority rule & see Table~\ref{tab:ablation}: a majority of seeds stays at $0.9$ without the lock, with a lower mean and a wider range\\
 H7 & held & see Table~\ref{tab:ablation}: no seed reaches $0.9$ without the per-frame optimization\\
 H8 & held & median \bTwoMedSeven{} at 7 frames\\
+F & finding made after the results, not a hypothesis & with the linear profile of the baselines the dip is read as \readProfileLinearKimFiveDip{} against the per-frame method at \parKimIters{} iterations, \readProfileLinearKimTenDip{} at \parFrameIters{} and \readProfileLinearLpiDip{} against linear phase interpolation (Table~\ref{tab:profile}); acceptance task only\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:outcome} collects the outcomes. Six hypotheses held, two of them with a qualification (H5, on a majority and not on all seeds; H3, which is refuted at the default profile and holds with the linear profile), and H6 was refuted by the majority rule: the lock is not what keeps the dip above $0.9$ on the acceptance task, it acts on the phase step and on the spread of seeds. The pattern is informative. The deficit on the dip against the published method belongs to the time profile and to the frame count outside the bound, not to the locked phases, and the measurement refutes an expectation that the design of the sequence carried about the profile it chose as default. The default frame count of the sequence, \parFrames{}, is the count that the source of linear phase interpolation uses for its sort, and it is below the count that the bound asks for the acceptance move.
+Table~\ref{tab:outcome} collects the outcomes of the eight hypotheses and, in its last row, the finding made after the results. Six hypotheses held, one of them with a qualification (H5, on a majority and not on all seeds), and two were refuted: H3, the sequence with its default profile is not as good on the dip as the published per-frame method at its own iteration count, and H6, by the majority rule the lock is not what keeps the dip above $0.9$ on the acceptance task, it acts on the phase step and on the spread of seeds. The finding made after the results is that with the constant-velocity profile of the baselines the sequence is read as better on the dip than every baseline on the acceptance task; it was not predicted, it was not run on the long moves or the sort, and it is reported as a finding and not as a revision of the outcome of H3. The deficit of the default on the dip belongs to its time profile and to a frame count outside its bound, not to the locked phases. The default frame count of the sequence, \parFrames{}, is the count that the source of linear phase interpolation uses for its sort, and it is below the count that the bound asks for the acceptance move.
