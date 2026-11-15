@@ -1,11 +1,12 @@
-\begin{tabular}{@{}l r r r r r r r@{}}
+\begin{tabular}{@{}l r r r r r r r r r r@{}}
 \toprule
-Geometry & Traps & Seeds (device-aware, phase-fixed) & $\sigma$ phase-fixed WGS (\%) & $\sigma$ device-aware WGS (\%) & Factor & $e$ ratio & Both thresholds \\
+Geometry & Traps & $n$ device-aware, phase-fixed (100 it.) & $\sigma$ phase-fixed WGS (\%) & $\sigma$ device-aware (\%) & Factor & $e$ ratio & Time per hologram (s): GS, WGS, phase-fixed, device-aware & $n$ at 1~s & Reading at equal time & Both thresholds \\
 \midrule
-G1 Square 10 x 10 & 100 & 2, 20 & 26.44 (25.09 to 27.55) & 27.30 (26.34 to 28.26) & 0.97 & 1.013 & no \\
-G2 Ring of 36 traps & 36 & 2, 20 & 16.96 (16.12 to 17.94) & 7.45 (7.25 to 7.65) & 2.28 & 0.965 & yes \\
-G3 Random 100 traps & 100 & 2, 20 & 20.67 (20.24 to 20.83) & 4.41 (4.38 to 4.44) & 4.69 & 0.938 & yes \\
-G4 Quasi-periodic 119 & 119 & 2, 20 & 85.16 (63.96 to 117.28) & 81.09 (73.26 to 88.92) & 1.05 & 0.996 & no \\
-G6 Large: 32 x 32 and disordered 819 & 1024 & 2, 5 & 29.65 (9.16 to 29.73) & 17.11 (10.73 to 23.50) & 1.73 & 1.061 & no \\
+G1 Square 10 x 10 & 100 & 2, 20 & 26.44 (25.09 to 27.55) & 13.91 (13.77 to 14.05) & 1.90 & 0.952 & 2.16, 2.49, 2.73, 779 & 5, 20 & proposed & no \\
+G2 Ring of 36 traps & 36 & 2, 20 & 16.96 (16.12 to 17.94) & 8.31 (8.02 to 8.61) & 2.04 & 0.981 & 0.365, 0.356, 0.367, 810 & 5, 20 & proposed & yes \\
+G3 Random 100 traps & 100 & 2, 20 & 20.67 (20.24 to 20.83) & 4.28 (4.28 to 4.29) & 4.82 & 0.958 & 0.66, 0.664, 0.616, 822 & 5, 20 & proposed & yes \\
+G4 Quasi-periodic 119 & 119 & 2, 20 & 85.16 (63.96 to 117.28) & 81.09 (73.26 to 88.92) & 1.05 & 0.996 & 0.69, 0.752, 0.724, 832 & 5, 20 & tie & no \\
+G6a Large lattice 32 x 32 & 1024 & 2, 6 & 30.06 (29.76 to 30.39) & 13.99 (13.96 to 14.01) & 2.15 & 0.923 & 10.4, 12.9, 7.44, 1939 & 5, 6 & tie & yes \\
+G6b Disordered 819 & 819 & 2, 7 & 9.16 (8.88 to 9.26) & 4.39 (4.39 to 4.40) & 2.08 & 0.992 & 11.5, 13.5, 5.41, 1940 & 5, 7 & tie & yes \\
 \bottomrule
 \end{tabular}
