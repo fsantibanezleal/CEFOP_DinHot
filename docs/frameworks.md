@@ -66,7 +66,7 @@ The other pinned packages (the shell and its UI libraries, the build and test to
 | [B2](frameworks/B2_flicker-bounded-sequence.md) | Flicker-bounded phase-continuous sequence | beyond | baked | gap: arXiv 2501.01391 |
 | [B3](frameworks/B3_learned-warm-start.md) | Learned warm start for phase-fixed WGS | beyond, learned | live inference | gap: no source |
 | [B4](frameworks/B4_aberration-robust-hologram.md) | Aberration-robust hologram | beyond | baked | gap: per-site or global correction only |
-| [B5](frameworks/B5_pareto-front.md) | Efficiency-uniformity Pareto front | beyond | baked | gap: single trade-off points only |
+| [B5](frameworks/B5_pareto-front.md) | Efficiency-uniformity continuation | beyond | baked | gap: single trade-off points only |
 
 The lane column is the `lane` of each method's `SPEC`. "Live" means the TypeScript engine computes it on the reader's input; "baked" means the Python engine bakes it and the
 site replays it; "both" means a small size runs live and the full size is baked. Every method is also run by the benchmark protocol in Python

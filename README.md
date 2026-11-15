@@ -25,10 +25,31 @@ Every method runs on the product's cases with the same seeds and metrics, and is
   device model, closed-loop feedback, atom rearrangement and the learned multi-plane network. The level 3 notebooks run them against
   slmsuite 0.5.0 or against each other.
 - **Proposed methods** (5): device-aware conjugate-gradient refinement, flicker-bounded phase-continuous sequences, a learned warm start, an
-  aberration-robust hologram and an efficiency-uniformity front, each tested and reported as it came out, including two measured
-  negatives (the learned warm start is refuted; the aberration-robust hologram gives no robustness to pointing errors at its acceptance budget, and reaches 1.48 times only with a displacement prior optimized alone at five times that budget)
-  and one measured scope (the flicker-bounded sequence holds for short steps per frame; on long moves linear phase interpolation leads
-  at equal frames). Each has a level 4 notebook.
+  aberration-robust hologram and an efficiency-uniformity continuation, each tested and reported as it came out, with its mixed and negative
+  results. Each has a level 4 notebook. What the 0.02.004 data measured (the files are named in each item):
+  - Device-aware conjugate-gradient refinement runs without the weight update by default, because on the acceptance task the update makes the
+    spread about 7 times worse (`manuscripts/device-aware-flicker-bounded/data/beyond_numbers.tex`, `ablBWeightsRatio`). Its hypothesis H3 is
+    refuted: on the benchmark device it keeps both thresholds (a spread at least 2 times below phase-fixed WGS at at least 0.9 of its
+    efficiency) on 4 of the 6 geometries (the ring, the random set and the two large arrays) and fails on the 10 x 10 lattice (factor 1.90) and on
+    the quasi-periodic set (factor 1.05) (`.../data/tab_bench.tex`). At equal wall clock of 1 s the benchmark reads it as the proposed method on 3
+    of 6 geometries and a tie on the other 3 (`benchOneDevTimeProposed`, `benchOneDevTimeTie`). The normalized-error loss of Schroff et al. 2023,
+    through the same warm start, device model, conjugate gradient and safeguard, gives the same spread within the seed ranges (0.031 percent
+    against 0.030 on the crosstalk device, 5 seeds, `.../data/tab_schroff.tex`), so the gain over phase-fixed WGS comes from the device model in
+    the loop and the conjugate-gradient steps, not from the loss.
+  - The efficiency-uniformity continuation has a mixed result (`manuscripts/efficiency-uniformity-front/data/b5_numbers.tex`). Its hypervolume
+    exceeds the union of the five published points by 0.0119 (interval 0.0097 to 0.0141, 8 of 8 seeds, `hvFiveDiff`) on the 10 x 10 lattice, and
+    by only 0.0015 at the reference (0, 0.9) (`hvRefFiveUNineDiff`), because the gain lies on the efficient side where the uniformity is far
+    below one. It adds no better uniform end. 4 to 7 of its 20 points are dominated by iterates of the published methods (`frontDomMin`,
+    `frontDomMax`), so the curve it draws is not the Pareto front of the problem. The benchmark gives it no win: it stores one seed per geometry,
+    so all 7 cells at 30 iterations and all 7 at 100 are ties, and its margin is not negative on 5 of 7 geometries at 30 iterations and on 3 of 7 at
+    100 (`benchTieThirty`, `benchTieHundred`, `benchPassThirty`, `benchPassHundred`).
+  - The flicker-bounded sequence has a paper of its own and a measured scope. On the acceptance task the per-frame GS with phase induction of Kim et
+    al. 2019 reaches a higher transient minimum intensity (0.953 against 0.923) with phase steps about five times larger (0.408 rad against 0.077
+    rad); the sequence beats linear phase interpolation (0.648), and the sequence holds for short steps per frame (on long moves linear phase
+    interpolation leads at equal frames) (`manuscripts/flicker-bounded-sequences/data/flicker_numbers.tex`, `accKimFiveTransMed`, `accBTransMed`,
+    `accKimFiveStepMax`, `accBStepMax`, `accLpiTransMed`).
+  - Two measured negatives remain: the learned warm start is refuted, and the aberration-robust hologram gives no robustness to pointing errors
+    at its acceptance budget (it reaches 1.48 times only with a displacement prior optimized alone at five times that budget).
 
 ## Technical report and manuscripts
 
@@ -37,9 +58,10 @@ declared in `product.json` `manuscripts`.
 
 - Technical report (Zenodo, CC BY 4.0), the product, its 24 methods, fourteen cases and the benchmark:
   [10.5281/zenodo.23788731](https://doi.org/10.5281/zenodo.23788731) (concept DOI, always the latest version).
-- Manuscript on device-aware weighted GS and flicker-bounded phase-continuous sequences (Zenodo, CC BY 4.0):
-  [10.5281/zenodo.23788733](https://doi.org/10.5281/zenodo.23788733) (concept DOI).
-- Manuscript on the weighted-cost continuation of the efficiency-uniformity front (Zenodo, CC BY 4.0):
+- Manuscript on device-aware conjugate-gradient refinement (Zenodo, CC BY 4.0; the concept DOI of the manuscript that first treated it together
+  with the flicker-bounded sequence): [10.5281/zenodo.23788733](https://doi.org/10.5281/zenodo.23788733) (concept DOI).
+- Manuscript on flicker-bounded phase-continuous sequences: in preparation (a paper of its own, no DOI yet).
+- Manuscript on the weighted-cost continuation of the efficiency-uniformity trade-off (Zenodo, CC BY 4.0):
   [10.5281/zenodo.24022462](https://doi.org/10.5281/zenodo.24022462) (concept DOI).
 - Manuscript on aberration-robust holograms by expected-cost optimization (Zenodo, CC BY 4.0):
   [10.5281/zenodo.24022464](https://doi.org/10.5281/zenodo.24022464) (concept DOI).
