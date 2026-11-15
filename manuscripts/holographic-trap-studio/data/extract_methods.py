@@ -162,7 +162,7 @@ NOTATION = [
     (r"$\alpha$", "exponent of the assignment cost of the Hungarian rearrangement or weight of the generalized adaptive additive GS", "1"),
     (r"$m$ (mixing)", "mixing parameter of the mixed-region rule", "1"),
     (r"$G,\ \rho_m$", "feedback gain and measured intensity relative to its target", "1"),
-    (r"$\lambda_{\mathrm{EU}}$", "trade-off parameter of the efficiency-uniformity Pareto front", "1"),
+    (r"$\lambda_{\mathrm{EU}}$", "trade-off parameter of the efficiency-uniformity continuation", "1"),
     (r"$\mathrm{AC}$", "accuracy of a volume hologram, mean over planes of the overlap of unit-sum intensities", "1"),
     (r"$z_{R,\mathrm{SLM}}$", r"SLM-limited Rayleigh range of the volume network (Eq.~\eqref{eq:m17-zr}), the depth unit of its planes", "mm"),
     (r"$\kappa,\ \gamma,\ f_c$", "trap stiffness, drag coefficient and corner frequency of a bead", r"pN/$\mu$m, kg/s, Hz"),

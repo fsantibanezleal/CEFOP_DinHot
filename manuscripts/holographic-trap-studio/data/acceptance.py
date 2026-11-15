@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure the acceptance quantity of every published method of DinHot, the aberration-robust hologram and the efficiency-uniformity Pareto front, and write ``acceptance.json``.
+"""Measure the acceptance quantity of every published method of DinHot, the aberration-robust hologram and the efficiency-uniformity continuation, and write ``acceptance.json``.
 
 Each ``measure_<id>`` below computes the quantity of its method's gate test, on the same setup, task, seeds and budget as that
 test, with the method modules and ``pipeline.model.holo.core`` of the current engine, and returns the numbers and the text of
@@ -7,7 +7,7 @@ its row of the acceptance table of the technical report (``extract.py`` reads th
 test each function mirrors is named in its docstring and in the ``source`` field of the row. The script measures, it does not
 assert a pass (ADR-0069): a number that misses its bar is written as measured.
 
-The device-aware weighted GS and the flicker-bounded sequence are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` and are not part of this table.
+The device-aware conjugate-gradient refinement and the flicker-bounded sequence are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` and are not part of this table.
 The multi-plane CNN hologram needs the released network, onnxruntime and the held-out file, which the pipeline environment does not have: its row takes
 the values from ``data/derived/models/metrics.json``, the committed artifact its gate test reads, and says so.
 

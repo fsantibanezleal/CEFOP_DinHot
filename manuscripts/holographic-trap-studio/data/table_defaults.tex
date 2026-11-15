@@ -1,7 +1,7 @@
 \begin{table}[t]\centering\scriptsize\setlength{\tabcolsep}{4pt}
 \caption{Keyword defaults of every method, read from the signature of its \texttt{run} function by \texttt{params.py}, in two blocks; a default of \texttt{unset} is chosen at run time from the target, as the method section states, and methods with no keyword take only the interface arguments.}\label{tab:defaults}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth} l l @{\hskip 1.2em} >{\raggedright\arraybackslash}p{0.17\textwidth} l l@{}}\toprule Method & Keyword & Default & Method & Keyword & Default\\\midrule
-device-aware weighted GS & \texttt{steps} & 3 & direct search & \texttt{f} & 0.5\\
+device-aware conjugate-gradient refinement & \texttt{steps} & 3 & direct search & \texttt{f} & 0.5\\
  & \texttt{warm} & 12 &  & \texttt{levels} & 8\\
  & \texttt{weights} & false &  & \texttt{max\_trials} & unset\\
  & \texttt{loss} & efficiency-level & conjugate-gradient minimization & \texttt{t} & unset\\
@@ -22,7 +22,7 @@ aberration-robust hologram & \texttt{q} & 8 &  & \texttt{efficiency} & unset\\
  & \texttt{pointing\_bins} & 0 &  & \texttt{camera} & unset\\
  & \texttt{design} & unset &  & \texttt{modes} & 4 to 11\\
  & \texttt{level\_fraction} & 0.9 &  & \texttt{trial\_waves} & 0.06\\
-efficiency-uniformity Pareto front & \texttt{n\_lambda} & 20 &  & \texttt{base\_iterations} & 30\\
+efficiency-uniformity continuation & \texttt{n\_lambda} & 20 &  & \texttt{base\_iterations} & 30\\
  & \texttt{warm} & 30 & Laguerre-Gaussian vortex traps & \texttt{charge} & unset\\
 superposition of prisms and lenses & (none) &  & Hungarian assignment with phase interpolation & \texttt{atoms} & unset\\
 random superposition & (none) &  &  & \texttt{alpha} & 1.5\\

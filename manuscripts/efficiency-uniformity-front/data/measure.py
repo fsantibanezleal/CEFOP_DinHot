@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure the efficiency-uniformity Pareto front by continuation of a weighted cost (the proposed method of this
+"""Measure the efficiency-uniformity continuation, a continuation of a weighted cost (the proposed method of this
 manuscript) and write ``b5.json``, ``b5_numbers.tex`` and the table files.
 
 The method runs here with the real engine module ``data-pipeline/pipeline/model/holo/methods/beyond/b5_pareto.py`` on the
