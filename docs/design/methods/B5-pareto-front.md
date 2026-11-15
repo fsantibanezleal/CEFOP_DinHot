@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b5_pareto.py` |
 | Live port | none (lane `baked`; `getMethod('B5')` raises `NotLive`) |
 | Card | [B5](../../frameworks/B5_pareto-front.md) |
-| Outcome (0.02.004, update of 2026-11-15) | the ladder criterion is met by a small margin, and the gain is small and shrinks at a stricter reference point: over 8 seeds a hypervolume of 0.8223 against 0.8104 for the union of the five published points (a paired difference of 0.0119, 95 percent interval 0.0097 to 0.0141), and 0.0015 (12.4 percent of it) when the reference point demands a uniformity of 0.9; the curve is not the non-dominated set of the trade-off (4 to 7 of its 20 points are dominated by iterates of weighted GS); in the benchmark every cell is a tie by the win rule because the stored curves hold one seed, and the stored curve is above the union of the published points on 3 of 7 geometries at 100 iterations. The figures of the 2026-10-29 acceptance run (0.8190 against 0.8018, 16.6 s) stay as the record of the ladder test |
+| Outcome (0.02.004) | the ladder criterion is met by a small margin, and the gain is small and shrinks at a stricter reference point: over 8 seeds a hypervolume of 0.8223 against 0.8104 for the union of the five published points (a paired difference of 0.0119, 95 percent interval 0.0097 to 0.0141), and 0.0015 (12.4 percent of it) when the reference point demands a uniformity of 0.9; the curve is not the non-dominated set of the trade-off (4 to 7 of its 20 points are dominated by iterates of weighted GS); in the benchmark every cell is a tie by the win rule because the stored curves hold one seed, and the stored curve is above the union of the published points on 3 of 7 geometries at 100 iterations and on 5 of 7 at 30 |
 
 ## Tier and role
 
@@ -81,17 +81,18 @@ high uniformity, where the weighted-GS point already sits.
 
 ## Measured result
 
-Acceptance run of 2026-10-28 (E3 report D4 and D5), 10x10 task, 256 by 256 padded 2, test setup (850 nm, focal length 250 mm, pitch 12.5 um), 1 seed, 20 values of $\lambda$, 15 CG iterations each:
+Values of the 0.02.004 generation, from `manuscripts/efficiency-uniformity-front/data/b5_numbers.tex` (10 by 10 lattice of 100 traps, 8 seeds, 20 values of lambda, 15 CG iterations each, ideal device, simulated) and `manuscripts/holographic-trap-studio/data/studio_numbers.tex` (the benchmark):
 
-| Quantity | Measured |
+| Quantity | Measured (macros) |
 |---|---|
-| Continuation curve, from the uniform end to the efficient end (efficiency, uniformity) | from (0.790, 1.000) to (0.8305, 0.094) |
-| Hypervolume | 0.8201 against 0.8033 for the union of the baseline points (a margin of 2.1 percent, computed) |
-| Domination | one continuation point dominates M04 (0.8114, 0.5503) and M05 (0.8086, 0.7093) |
-| Time | 24.9 s (limit 60 s), under contention on the development machine |
+| Hypervolume of the curve and of the union of the five published points (GS, GAA, weighted GS, phase-fixed WGS, direct search), reference (0, 0) | 0.8223 against 0.8104; paired difference 0.0119 (0.0097 to 0.0141), positive in 8 of 8 seeds, 1.47 percent of the union (`hvFront`, `hvFivePub`, `hvFiveDiff`, `hvFiveLo`, `hvFiveHi`, `hvFiveGe`, `hvFiveRatioPct`) |
+| Against the four-point union of the acceptance criterion (M04, M05, M09 and M06, without phase-fixed WGS) | 0.8223 against 0.8071; difference 0.0152 (0.0125 to 0.0179), positive in 8 of 8 seeds (`hvFourPub`, `hvFourDiff`, `hvFourLo`, `hvFourHi`, `hvFourGe`) |
+| Difference at the reference points (0.5, 0), (0.7, 0), (0, 0.9) and (0, 0.95), five-point union | 0.0117, 0.0113, 0.0015 (0.0008 to 0.0022) and 0.0011 (0.0005 to 0.0018): 97.9, 95.2, 12.4 and 9.6 percent of the headline difference; against the four points the shares at the two uniformity floors are 31.3 and 29.1 percent (`hvRefFive*Diff`, `hvRefFive*Share`, `hvRefFour*Share`) |
+| Efficiency along the curve | rises from 0.793 to 0.8356, at most 5.4 percent over the start, while the uniformity falls from 1.000 to 0.015 (`eStart`, `eMaxFront`, `eMaxRatioPct`, `uMinFront`) |
+| Domination | the curve dominates the weighted GS point in 2 of 8 seeds and the phase-fixed point in 3 of 8; 4 to 7 of its 20 points (a mean of 5.1) are dominated by iterates of weighted GS (`domGSWSeeds`, `domPFSeeds`, `frontDomMin`, `frontDomMax`, `frontDomMean`) |
+| Benchmark (1482 rows, 20 seeds) | 14 cells (7 geometries at 30 and at 100 iterations), all ties by the win rule (one seed behind each stored curve); at 100 iterations the stored curve reaches the hypervolume of the published points on 3 of 7 geometries and loses on G1 (0.837 against 0.839), G4 (0.771 against 0.772), G6a (0.791 against 0.812) and G6b (0.725 against 0.748), by at most 0.023; at 30 iterations it reaches it on 5 of 7 (`benchFivePass`, `benchFiveN`, `benchFivePassThirty`, `benchFiveLost`, `benchFiveMargin`) |
 
-Outcome: confirmed under the ladder criterion. The efficiency changes by only 0.04 across the whole curve while the uniformity falls from 1 to 0.09: on this task the trade-off is steep and the useful part of the continuation curve
-is the high-uniformity end, which is the risk the dossier named (a flat curve).
+Outcome: the ladder criterion is met by a small margin (a hypervolume gain of 1.47 percent against the five-point union), and the gain is small and shrinks at a stricter reference point: the area that the curve adds lies where the uniformity falls far below one, so a reader who requires a uniformity of 0.9 or more sees a gain that is a small share of the headline. On this task the trade-off is steep (the efficiency changes by 0.043 across the whole curve while the uniformity falls from 1 to 0.015) and the useful part of the curve is the high-uniformity end, which is the flat-curve risk the dossier named.
 
 Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, mean over 3 seeds with the range; each case has its own optics, listed in `data/derived/manifests/`; the `Iterations` column is the number of
 values of $\lambda$ (20), the bake returns the knee):
@@ -119,21 +120,8 @@ On C02 the knee has a relative standard deviation of 0.67 percent or below again
 - Polin, Ladavac, Lee, Roichman and Grier 2005, Opt. Express 13, 5831, https://doi.org/10.1364/OPEX.13.005831
 - Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the phase-fixed start)
 
-## Update after the corrections of 2026-10-29
+## History and reading (0.02.004)
 
-Re-measured after M06 and M07 were made to project the start's field unweighted and the GS family of the beyond methods was made the ladder methods' own rules: on the acceptance task the continuation curve's hypervolume is 0.8190 against 0.8018 for the M04, M05, M06 and M09 points, and 7 and 8 continuation points dominate M04 (0.8114, 0.5503) and M05 (0.8086, 0.7093); 16.6 s on the CPU. The criterion holds. In notebook 05-05 the continuation curve starts from M07's own hologram, so its uniform end is M07 refined and M07 is not dominated (0.7931 against 0.7930 at equal uniformity); the other five single points are.
+The acceptance runs of 2026-10-28 and 2026-10-29 (one seed of the gate test, before and after M06 and M07 projected the start's field unweighted and the GS family of the beyond methods took the ladder methods' own rules) are superseded by the measured result above and are kept in the git history of this file; the gate test (`tests/methods/beyond/test_b5_pareto.py`) still asserts the criterion on its own seed, and its single-seed figures are not re-recorded here because no committed data file holds them.
 
-## Update of 2026-11-15 (0.02.004): a small gain, sensitive to the reference point
-
-The numbers are those of `manuscripts/efficiency-uniformity-front/data/b5_numbers.tex` (10 by 10 lattice of 100 traps, 8 seeds, 20 values of lambda, 15 CG iterations each, ideal device, simulated).
-
-| Quantity | Measured |
-|---|---|
-| Hypervolume of the curve and of the union of the five published points (GS, GAA, weighted GS, phase-fixed WGS, direct search) | 0.8223 against 0.8104; paired difference 0.0119 (0.0097 to 0.0141), positive in 8 of 8 seeds, 1.47 percent of the union |
-| Against the four-point union of the acceptance criterion (without phase-fixed WGS) | 0.8223 against 0.8071; difference 0.0152 (0.0125 to 0.0179) |
-| Difference at the reference points (0.5, 0), (0.7, 0), (0, 0.9) and (0, 0.95) | 0.0117, 0.0113, 0.0015 and 0.0011, that is 97.9, 95.2, 12.4 and 9.6 percent of the headline difference |
-| Efficiency along the curve | rises by at most 5.4 percent over the start while the uniformity falls from one to near zero |
-| Domination | the curve dominates the weighted GS point in 2 of 8 seeds and the phase-fixed point in 3 of 8; 4 to 7 of its 20 points are dominated by iterates of weighted GS |
-| Benchmark | 14 cells (7 geometries at 30 and at 100 iterations), all ties by the win rule (one seed behind each stored curve); at 100 iterations the stored curve is above the union on 3 of 7 geometries, below it by at most 0.023 on the others |
-
-Reading: the area that the curve adds lies where the uniformity falls far below one, so a reader who requires a uniformity of 0.9 or more sees a gain that is a small share of the headline. The curve is a weighted-cost continuation of the trade-off, not its non-dominated set, and it is computed for the ideal device, not for the device that displays the hologram.
+Reading: the curve is a weighted-cost continuation of the trade-off, not its non-dominated set, and it is computed for the ideal device, not for the device that displays the hologram.

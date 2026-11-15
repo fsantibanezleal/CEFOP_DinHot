@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b1_device_wgs.py` |
 | Live port | none (lane `baked`; `getMethod('B1')` raises `NotLive`) |
 | Card | [B1](../../frameworks/B1_device-aware-wgs.md) |
-| Outcome (0.02.004, update of 2026-11-15) | negative result against Schroff et al. 2023: through the same warm start, device model and conjugate gradient, their normalized-error loss gives 0.031 percent against 0.030 percent for the efficiency-level loss on the crosstalk device and 0.222 against 0.242 percent on the full device, so the method's own elements add nothing measurable and the weight update makes the spread 7 times higher; the gain belongs to the device model in the loop (a geometric-mean factor of 201.3 over M07 on the crosstalk device, gone without the model); the ladder criterion against M07 is met, in the benchmark on the C08 device at 100 iterations both thresholds hold on 4 of 6 geometries, and a hologram takes 34 s to 356 s against under 1 s for M07. The older figures of this record (a median of 25.8 times, 1.73 times on the large set) were measured with the weight update on and are superseded by the update at the end of this record |
+| Outcome (0.02.004) | negative result against Schroff et al. 2023: through the same warm start, device model and conjugate gradient, their normalized-error loss gives 0.031 percent against 0.030 percent for the efficiency-level loss on the crosstalk device and 0.222 against 0.242 percent on the 4-bit device (five seeds, overlapping ranges), so the method's own elements add nothing measurable, and the weight update (off by default since 0.02.004) makes the spread 7 times higher; the gain belongs to the device model in the loop (a geometric-mean factor of 201.3 over M07 on the crosstalk device, 1.0 without the model); the ladder criterion against M07 is met (at least two times lower, efficiency at most 10 percent lower), in the benchmark on the C08 device at 100 iterations both thresholds hold on 4 of 6 geometries, and a hologram takes 34 s on the crosstalk task and 779 s to 1940 s on the benchmark geometries against 0.37 s to 7.4 s for M07 |
 
 ## Tier and role
 
@@ -98,30 +98,40 @@ was not measured.
 
 ## Measured result
 
-Acceptance run of 2026-10-28 (E3 report D3 and D5), superseded by the updates at the end of this record, 10x10 task, 256 by 256 padded 2, test setup (850 nm, focal length 250 mm, pitch 12.5 um), 1 seed:
+All values are those of the 0.02.004 generation, read from the committed data files of `manuscripts/device-aware-flicker-bounded/data/` (`beyond_numbers.tex`, `tab_schroff.tex`, `tab_abl_b1_geo.tex`) and of `manuscripts/holographic-trap-studio/data/studio_numbers.tex`. The refinement runs with the weight update off (the default), 10x10 task, 256 by 256 padded 2, five seeds, simulated, against the phase-fixed WGS of the ladder (M07).
 
-| Quantity | B1 | M07 on the ideal model, scored on the device |
-|---|---|---|
-| Relative standard deviation (percent) | 0.091 | 4.454 (the method module, E2) and 4.504 (the in-test copy) |
-| Efficiency | 0.7423 | 0.7447 and 0.7459 |
-| Ratio | 49 times lower spread, 0.997 of the efficiency | |
+| Task | Method | Factor over M07, geometric mean (95 percent interval) | Efficiency ratio | Seconds per hologram |
+|---|---|---|---|---|
+| crosstalk device | device-aware refinement (default) | 201.3 (132.9 to 304.9) | 0.999 | 34 |
+| crosstalk device | normalized-error loss of Schroff et al. 2023 | 159.9 (107 to 239.1) | 0.999 | 34 |
+| crosstalk device | with the weight update | 24.4 (17.5 to 34.1) | 0.995 | n/a |
+| crosstalk device | without the device model | 1.0 | 1.000 | n/a |
+| 4-bit device | device-aware refinement (default) | 23.5 (18.6 to 29.6) | 0.997 | 59 |
+| 4-bit device | normalized-error loss of Schroff et al. 2023 | 26.1 (20.2 to 33.9) | 0.997 | 58 |
+| 4-bit device | with the weight update | 7.4 (5.7 to 9.8) | 0.990 | n/a |
 
-More iterations do not help the baseline (spread 4.504 with 30 iterations and 4.525 with 100). Outcome: the ladder criterion (a comparison with M07) is met, by a wide margin, on this device and this seed; it does not say which element of the method carries the gain (the update of 2026-11-15).
+Sources per value: `ablBFullFac`, `ablBFullFacLo`, `ablBFullFacHi`, `ablBFullEff` (default, crosstalk); `schroffXFac`, `schroffXFacLo`, `schroffXFacHi`, `schroffXEffRatio` (Schroff, crosstalk); `ablBWeightsFac`, `ablBWeightsFacLo`, `ablBWeightsFacHi`, `ablBWeightsEff`; `ablBNoModelFac`; `ablBFFullFac` and its interval and `ablBFFullEff`; `schroffFFac` and its interval and `schroffFEffRatio`; `ablBFWeightsFac` and its interval and `ablBFWeightsEff`; `schroffXSeconds`, `secBFMedian`, `schroffFSeconds` (all in `beyond_numbers.tex`).
 
-Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, mean over 3 seeds with the range; case C08 only, an 8 by 8 array on a device with 4-bit phase, crosstalk
-(sigma 1.24, q 1.80), fill factor 0.85 and flicker 0.05 rad, scored on the device, with its optics in `data/derived/manifests/C08_device_limited.json`):
+Spread, median (range) in percent: crosstalk device 0.030 (0.016 to 0.032) for the default and 0.031 (0.021 to 0.049) for the normalized-error loss; 4-bit device 0.242 (0.202 to 0.335) and 0.222 (0.172 to 0.258). The efficiency-level loss has the lower spread on 4 of 5 seeds on the crosstalk device and on 2 of 5 on the 4-bit device (`schroffXDefaultBeats`, `schroffFBeatsDefault`); the ranges overlap and the two losses are indistinguishable at these seeds. On the 4-bit device the normalized-error loss has the lower median.
+
+Outcome: the ladder criterion (a comparison with M07) is met by a wide margin on the crosstalk device and on the 4-bit device. Against the closest published method the result is negative: Schroff et al. 2023 already put a pixel-crosstalk model inside a conjugate-gradient refinement and make a spot array with it (their Fig. 5c), and the method's own elements (the efficiency-level loss, the weight update, the best-iterate safeguard) add nothing measurable over their loss. The gain belongs to the device model in the loop.
+
+Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, mean over 3 seeds with the range; case C08 only, an 8 by 8 array on a device with 4-bit phase, crosstalk (sigma 1.24, q 1.80), fill factor 0.85 and flicker 0.05 rad, scored on the device, with its optics in `data/derived/manifests/C08_device_limited.json`):
 
 | Case | Iterations | Efficiency | Uniformity | Relative standard deviation (percent) |
 |---|---|---|---|---|
 | C08 | 30 | 0.655 (0.651 to 0.662) | 0.862 (0.847 to 0.887) | 6.5 (5.91 to 7.04) |
 
-On C08 the mean relative standard deviation is 6.50 percent for B1 against 13.2 for M07 (a ratio of the means of 2.0; per seed 1.906, 1.997 and 2.228, so two times or more on one of three seeds; computed from the committed file, 2026-10-30, after the safeguard) at 0.97 of M07's efficiency (0.655 against 0.678):
-the ratio of the means reaches two on the harder device, which has the 4-bit quantizer and the flicker that the optimizer models only as straight-through or drops, and per seed it does on one of three; it is 2.0 there (2.2 in notebook 03-04 over two seeds and four flicker draws) against 15.9 in the acceptance test on its seed.
+On C08 the ratio of the means of the relative standard deviation of M07 over B1 is 2.0 (per seed 1.906, 1.997 and 2.228: `bakeCeightRatioThree` and `bakeCeightSeedRatios` in `beyond_numbers.tex`, so two times or more on one of three seeds) at 0.979 of M07's efficiency (`bakeCeightEffRatio`). That device has the 4-bit quantizer and the flicker that the optimizer models only as straight-through or drops, and it is the hardest of the three.
+
+Benchmark (`data/derived/benchmark/results.json`, the studio's 0.02.004 run; the C08 device at 100 iterations with the default parameters, 2 seeds per cell of B1, `benchOneDevSeeds`): the factors over M07 are G1 square 10 x 10 1.90, G2 ring of 36 traps 2.04, G3 random 100 traps 4.82, G4 quasi-periodic 119 1.05, G6a 2.15 and G6b 2.08, a median of 2.06 (1.05 to 4.82) at a median efficiency ratio of 0.969 (`benchOneDevList`, `benchOneDevMed`, `benchOneDevMin`, `benchOneDevMax`, `benchOneDevEff`). Both thresholds hold on 4 of 6 geometries (G2, G3, G6a, G6b: `benchOneDevPass` of `benchOneDevN`, `benchOnePassList` in `studio_numbers.tex`), not on the square lattice or the quasi-periodic set. At an equal wall-clock time of 1 s the refinement reads as better on 3 of 6 geometries and ties on 3 (`benchOneDevTimeProposed`, `benchOneDevTimeTie`). Time per hologram at 100 iterations: 779 s (G1), 810 s (G2), 822 s (G3), 832 s (G4), 1939 s (G6a) and 1940 s (G6b) against 2.728, 0.367, 0.616, 0.724, 7.444 and 5.415 s for M07 (`benchSecGeo*`). On the ideal device the spreads of B1 and of M07 are both below the resolution of the file on most geometries, which is a tie and not a gain.
+
+Geometry ablation of the loss (`tab_abl_b1_geo.tex`, five seeds, the weight update on against the default against the normalized-error loss, spread in percent): G1 27.14, 13.64 and 14.03; G2 8.03, 8.46 and 8.55; G3 4.43, 4.27 and 4.14; G4 86.01 for all three. The weight update helps on the ring and hurts on the square lattice, which is why it stays available as an option and is off by default.
 
 ## Limits and failure modes
 
 - The unit of $k$ in the crosstalk kernel is DinHot's reading (the model is relative to the model of the device, not to a measured instrument; see M13 and the device model P02).
-- Five seeds in the measurement of the claim and one in the acceptance test; the benchmark's B1 cells on the C08 device hold the seeds of the table in the update below, within the wall-clock bound of a group.
+- Five seeds in the measurement of the claim and one in the acceptance test; the benchmark's B1 cells on the C08 device hold 2 seeds, within the wall-clock bound of a group.
 - Baked: a step works on about nine times the pixels of the plain FFT (3 by 3 upsampling); the cost of a hologram is above the live budget.
 - Traps must be on bins with $z = 0$ and no vortex on a device; a shaped target is refused.
 - Flicker is random and is dropped from the optimization model; it is scored but not modelled.
@@ -135,25 +145,9 @@ the ratio of the means reaches two on the harder device, which has the 4-bit qua
 - Ebadi et al. 2021, https://arxiv.org/abs/2012.12281
 - Di Leonardo, Ianni and Ruocco 2007, Opt. Express 15, 1913, https://doi.org/10.1364/OE.15.001913
 
-## Update after the corrections of 2026-10-29
+## History before 0.02.004
 
-Re-measured against the corrected M07 and against slmsuite's WGS-Kim directly (crosstalk device, 10x10 task, 256 x 256 pixels padded 2, five seeds, the same random-superposition start): the ratio of the reference's relative standard deviation to B1's is a median of 33.1 times (22.0 to 60.5) against both, at 0.994 of the reference's efficiency (0.987 to 0.995). B1's spread per seed: 0.091, 0.145, 0.175, 0.086 and 0.240 percent. The claim holds; the crosstalk of the device, not the first-update defect of the old M07, sets the baseline's floor near 5 percent.
-
-Second re-measurement, the same day, after M06 was corrected the same way (its first field projected with the initial weights, as slmsuite's WGS-Leonardo does; `tests/methods/baseline/test_m06_against_slmsuite.py`) and the GS family of the beyond methods was made the ladder methods' own rules (`optim/_gs_family.py`). B1's warm start is twelve iterations of M06, so B1 changed and the reference did not: the ratio is a median of 25.8 times (15.9 to 33.3 over the same five seeds) at 0.995 of the reference's efficiency (0.991 to 0.997); B1's spread per seed 0.298, 0.198, 0.207, 0.157 and 0.205 percent, the reference 4.745, 4.784, 5.456, 5.213 and 5.287 percent. The claim (at least two times, efficiency at most 10 percent lower) holds on every seed. These numbers supersede the ones above.
-
-## Update of 2026-10-30: the safeguard and the benchmark
-
-B1 now returns its best iterate that keeps 0.9 of its warm start's efficiency (The method, Safeguard). Its acceptance figures do not change: the five seeds of the crosstalk device and the three of the full device give the same spreads to four digits (the studio's `manuscripts/device-aware-flicker-bounded/data/measure.py`, rerun on 2026-10-30), and C08 moves in the fourth digit (its table above). The benchmark repeats the comparison on its own geometries, on the C08 device (4-bit phase, crosstalk, fill factor 0.85 and flicker 0.05 rad), at 100 iterations with the default parameters, read from `data/derived/benchmark/results.json`:
-
-| Geometry | B1 spread (percent) | M07 spread (percent) | Factor | Efficiency ratio | Seeds (B1, M07) |
-|---|---|---|---|---|---|
-| G1 Square 10 x 10 | 27.3 | 26.4 | 0.97 | 1.013 | 2, 20 |
-| G2 Ring of 36 traps | 7.45 | 17 | 2.28 | 0.965 | 2, 20 |
-| G3 Random 100 traps | 4.41 | 20.7 | 4.69 | 0.938 | 2, 20 |
-| G4 Quasi-periodic 119 | 81.1 | 85.2 | 1.05 | 0.996 | 2, 20 |
-| G6 Large: 32 x 32 and disordered 819 | 17.1 | 29.6 | 1.73 | 1.06 | 2, 9 |
-
-So in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.06); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds. On the lattices of this device every iterate past the start gives up more than a tenth of the light, so B1 keeps its start; on the ideal device the spreads of B1 and of M07 are both below the resolution of the file on most geometries, which is a tie and not a gain.
+The measurements of 2026-10-29 and 2026-10-30 (the corrected M07 and slmsuite's WGS-Kim as references, the second re-measurement after M06 projected its start's field unweighted and the GS family of the beyond methods took the ladder methods' own rules, the benchmark on its first five geometries) were taken with the weight update on, which is not the default since 0.02.004; their figures are superseded by the measured result above and are kept in the git history of this file. What they established and still holds: the crosstalk of the device, not the first-update defect of the old M07, sets the baseline's floor near 5 percent; B1 returns its best iterate that keeps 0.9 of its warm start's efficiency (The method, Safeguard; a run on the C08 square lattice wound up on one seed in two before it), and the acceptance spreads do not change with it to four digits on the crosstalk device.
 
 ## Update of 2026-11-14 (0.02.004): weights off by default, the normalized-error loss, the name
 
@@ -162,8 +156,8 @@ An independent review of the device-aware paper found that its own ablation refu
 
 - **Name.** "Device-aware conjugate-gradient refinement" (Spanish: "Refinamiento por gradiente conjugado con modelo del dispositivo"). What distinguishes it from the ladder's weighted GS is the conjugate-gradient refinement through the device model, not the weights.
 - **Weights off by default.** `weights` defaults to False. The ablation (`manuscripts/device-aware-flicker-bounded/data/tab_abl_b1.tex`, five seeds, crosstalk device, 10 x 10 task): median spread 0.030 percent without the update against 0.205 percent with it, 7 times lower, at an efficiency ratio of 0.999 against 0.995;
-  on the full device (`tab_abl_b1_full.tex`, three seeds) 0.242 against 0.724 percent, 3 times lower. On the benchmark lattices the result is mixed (the C08 device at 10 iterations, median over three seeds: square lattice 14 against 29 percent at an efficiency of 0.56 against 0.60; ring of 36: 8.9 against 7.8; the random and quasi-periodic sets unchanged), so `weights=True` stays available and reproduces the 0.02.003 run exactly.
-  The numbers of this record that are not in this update (the acceptance run, the C08 bake, the benchmark table of 2026-10-30) were measured with the update on; the 0.02.004 generation re-measures them with the new default.
+  on the 4-bit device (`beyond_numbers.tex`, five seeds) 0.242 against 0.729 percent, 3 times lower. On the benchmark lattices the result is mixed (the C08 device at 10 iterations, median over three seeds: square lattice 14 against 29 percent at an efficiency of 0.56 against 0.60; ring of 36: 8.9 against 7.8; the random and quasi-periodic sets unchanged), so `weights=True` stays available and reproduces the 0.02.003 run exactly.
+  The measured result above is the 0.02.004 re-measurement with the new default.
 - **The closest published method as a loss option.** `loss='normalized-error'` replaces the efficiency-level loss by the normalized-error cost of Schroff et al. 2023 (Sci. Rep. 13, 3252, eq (3), p. 3), $C = s\sum_{S}(\tilde T - \tilde I)^2$ with $\tilde T = T/\sum_S T$ and $\tilde I = I/\sum_S I$, on the trap intensities through the same device model;
   the warm start, the conjugate-gradient optimizer, the outer iterations and the best-iterate safeguard are B1's own, so the comparison isolates the loss. The gradient is $\partial C/\partial I_k = (2s/P)(\sum_m d_m \tilde I_m - d_k)$ with $d = \tilde T - \tilde I$ and $P = \sum_m I_m$, through the adjoint of the device model, checked against finite differences.
   The steepness $s$ is `1 / sum(T~^2)` by default (so that $C$ is the relative squared error); Schroff et al.'s constant `s = 1e12` (Methods, p. 7) is a pixel-grid scale and only rescales $C$.
@@ -177,7 +171,7 @@ Read in full, Schroff et al. 2023 already put a pixel-crosstalk model inside a c
 |---|---|---|---|
 | Spread, median (range), crosstalk device | 0.030 (0.016 to 0.032) | 0.031 (0.021 to 0.049) | 10 by 10 task; the ranges overlap |
 | Factor over M07, geometric mean (95 percent interval) | 201.3 (132.9 to 304.9) | 159.9 (107.0 to 239.1) | efficiency ratio 0.999 in both |
-| Spread, median (range), full device | 0.242 (0.202 to 0.335) | 0.222 (0.172 to 0.258) | the normalized-error loss has the lower median |
+| Spread, median (range), 4-bit device | 0.242 (0.202 to 0.335) | 0.222 (0.172 to 0.258) | the normalized-error loss has the lower median |
 | Seconds per hologram, median | 34 (crosstalk), 59 (full) | 34 and 58 | one CPU |
 
-Reading: the efficiency-level loss adds nothing measurable; the best-iterate safeguard did not act on these seeds; the weight update raises the spread from 0.030 to 0.205 percent on the crosstalk device (7 times) and from 0.242 to 0.729 on the full device (3 times). The gain belongs to the device model in the loop (without it the spread returns to 5.15 percent against 5.21 for M07). On the benchmark's C08 device at 100 iterations (2 seeds per cell) the factors over M07 are G1 1.90, G2 2.04, G3 4.82, G4 1.05, G6a 2.15 and G6b 2.08: both thresholds hold on the ring, the random set and the two large sets, not on the square lattice or the quasi-periodic set; at an equal wall-clock time of 1 s the refinement reads as better on 3 of 6 geometries and ties on 3. Time per hologram: 106 to 356 s at 10 outer iterations on the benchmark geometries against 0.05 to 0.89 s for M07 (779 s against 2.728 s on G1 at 100 iterations). What the work keeps as its own: the transposition to point-trap arrays, the closed-form gradient of the point-trap loss, and the measurement that isolates the loss, the weights, the safeguard and the device model.
+Reading: the efficiency-level loss adds nothing measurable; the best-iterate safeguard did not act on these seeds; the weight update raises the spread from 0.030 to 0.205 percent on the crosstalk device (7 times) and from 0.242 to 0.729 on the 4-bit device (3 times). The gain belongs to the device model in the loop (without it the spread returns to 5.153 percent against 5.21 for M07: `ablBNoModelSig`, `sigmaMsevenHundred`). On the benchmark's C08 device at 100 iterations (2 seeds per cell) the factors over M07 are G1 1.90, G2 2.04, G3 4.82, G4 1.05, G6a 2.15 and G6b 2.08: both thresholds hold on the ring, the random set and the two large sets, not on the square lattice or the quasi-periodic set; at an equal wall-clock time of 1 s the refinement reads as better on 3 of 6 geometries and ties on 3 (`benchOneDevTimeProposed`, `benchOneDevTimeTie`). Time per hologram: 779 s to 1940 s on the benchmark geometries at 100 iterations against 0.37 s to 7.4 s for M07 (779 s against 2.728 s on G1; `benchSecGeo*` in `beyond_numbers.tex`). What the work keeps as its own: the transposition to point-trap arrays, the closed-form gradient of the point-trap loss, and the measurement that isolates the loss, the weights, the safeguard and the device model.

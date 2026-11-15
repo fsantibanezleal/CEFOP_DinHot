@@ -8,7 +8,7 @@ names its report or committed artifact and its conditions.
 Every record has the same sections: tier and role (for a classical method, the established method and why it is a baseline; for a state-of-the-art method, the current solution replicated and its source; for a beyond
 method, the hypothesis and the gap), the problem it answers, inputs and outputs, the method with its equations and their sources, defaults, complexity and lane, the acceptance criterion and gate (as the ladder row, and how
 the test measures it), the evaluation that confirms or refutes it, the measured result, the limits and failure modes, and the references. A beyond record states its outcome in the header table and keeps a negative one
-(BS-3 refuted, BS-4 negative for pointing errors).
+(BS-1 negative against the normalized-error loss of Schroff et al. 2023, BS-2 a trade against per-frame Gerchberg-Saxton, BS-3 refuted, BS-4 negative for pointing errors).
 
 ## Conditions common to the records
 
@@ -56,8 +56,8 @@ the test measures it), the evaluation that confirms or refutes it, the measured 
 
 | Record | Method | One line |
 |---|---|---|
-| [B1](B1-device-aware-wgs.md) | Device-aware conjugate-gradient refinement (B1) | hypothesis confirmed: spread 49 times below M07 on the crosstalk device at 0.997 of its efficiency |
-| [B2](B2-flicker-bounded-sequence.md) | Flicker-bounded phase-continuous sequence (B2) | hypothesis confirmed in DinHot's transient model: 0.92 against 0.54 to 0.72 for LPI |
+| [B1](B1-device-aware-wgs.md) | Device-aware conjugate-gradient refinement (B1) | negative result against Schroff et al. 2023: their normalized-error loss through the same device model and conjugate gradient does as well (159.9 against 201.3 times over M07 on the crosstalk device, 26.1 against 23.5 on the 4-bit device, overlapping intervals); the ladder criterion against M07 is met (201.3 times at 0.999 of its efficiency) and the gain belongs to the device model in the loop | |
+| [B2](B2-flicker-bounded-sequence.md) | Flicker-bounded phase-continuous sequence (B2) | confirmed against LPI in DinHot's transient model (0.915 to 0.932 against 0.551 to 0.709 over six seeds), a trade against per-frame GS with phase induction: phase steps 0.077 rad against 0.408 rad, but the per-frame method reaches the higher transient minimum (0.918 to 0.965) | |
 | [B3](B3-learned-warm-start.md) | Learned warm start for phase-fixed WGS (B3) | hypothesis refuted: 1.75 times against 2, and a control without the network gains as much |
-| [B4](B4-aberration-robust-hologram.md) | Aberration-robust hologram (B4) | confirmed for residual aberrations (a median of 1.435 times over three seeds); pointing errors not obtained (1.04 times) |
-| [B5](B5-pareto-front.md) | Efficiency-uniformity continuation (B5) | hypothesis confirmed by a small margin: hypervolume 0.8190 against 0.8018 (re-measured 2026-10-29) |
+| [B4](B4-aberration-robust-hologram.md) | Aberration-robust hologram (B4) | met for residual aberrations (a median of 1.435 times over three seeds, 1.439 over ten, 1.35 to 1.57); pointing errors not obtained (1.04 times) | |
+| [B5](B5-pareto-front.md) | Efficiency-uniformity continuation (B5) | met by a small margin that shrinks at a stricter reference point: hypervolume 0.8223 against 0.8104 over eight seeds (a difference of 0.0119), 0.0015 at a uniformity floor of 0.9; the curve is not the non-dominated set | |
