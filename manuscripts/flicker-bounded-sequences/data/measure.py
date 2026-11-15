@@ -49,6 +49,7 @@ by the paper's own figure scripts, never here):
   T1 ``tab_main.tex``: the acceptance task at 13 frames, every method, mean, interval and the reading against each baseline;
   T2 ``tab_frames.tex``: the three frame counts of the acceptance task;
   T3 ``tab_long.tex``: the long moves and the C10 sort at the frames of the bound;
+  T6 ``tab_profile.tex``: the default minimal-jerk and the baselines' linear time profile, each read by the rule against every baseline;
   T4 ``tab_bound.tex``: the frame-count equation against the frames used, the peak step in Fourier units and the ratio reached;
   T5 ``tab_abl_b2.tex``: the ablation of the sequence, with linear phase interpolation and per-frame GS as references.
 
@@ -422,6 +423,23 @@ def readings(rows: list[dict], key=lambda r: r, metric: str = "transient_min_rat
     return out
 
 
+def profile_readings(data: dict) -> dict:
+    """The sequence with its default minimal-jerk time profile (the ablation's ``full`` variant) and with the baselines' linear profile
+    (``linear``) against each published sequence at the ablation's frames, paired by seed with the acceptance runs of the same task, the
+    same seeds and the same scoring (``check_full_vs_b2run`` shows the ``full`` variant equals ``B2.run``), on the dip and the spread."""
+    abl = {r["seed"]: r for r in data["ablation"]["rows"]}
+    runs = {r["seed"]: r for r in data["accept"]["runs"] if r["frames"] == data["ablation"]["frames"]}
+    seeds = sorted(set(abl) & set(runs))
+    out: dict = {"seeds": seeds}
+    for variant in ("full", "linear"):
+        out[variant] = {other: {"dip": read_pair([dip_pct(abl[s][variant]["min"]) for s in seeds],
+                                                 [dip_pct(runs[s][other]["transient_min_ratio"]) for s in seeds]),
+                                "sigma": read_pair([abl[s][variant]["sigma_frame_max"] for s in seeds],
+                                                   [runs[s][other]["sigma_frame_max"] for s in seeds])}
+                        for other in ("lpi", "kim5", "kim10")}
+    return out
+
+
 # ------------------------------------------------------------------------------------------------ outputs
 
 def accept_summary(data: dict) -> dict:
@@ -599,6 +617,13 @@ def write_macros(data: dict, path: Path) -> None:
           macro("ablSeconds", fmt(sum(r["seconds"] for r in ab["rows"]) / 60.0, 0))]
     total = sum(r[k]["seconds"] for r in ac["runs"] for k in METHODS) + sum(ab_r["seconds"] for ab_r in ab["rows"])
     L.append(macro("mainMinutes", fmt(total / 60.0, 0)))
+    # the two time profiles read against each published sequence (tab_profile.tex)
+    pr = profile_readings(data)
+    L.append(macro("readProfileN", len(pr["seeds"])))
+    for variant, tag in (("full", "Default"), ("linear", "Linear")):
+        for other in ("lpi", "kim5", "kim10"):
+            L.append(macro(f"readProfile{tag}{CAMEL[other]}Dip", pr[variant][other]["dip"]["result"]))
+            L.append(macro(f"readProfile{tag}{CAMEL[other]}Sigma", pr[variant][other]["sigma"]["result"]))
     path.write_text("".join(L), encoding="utf-8")
 
 
@@ -632,7 +657,7 @@ def write_tables(data: dict, out: Path) -> None:
     L = ["\\begin{tabular}{@{}l r l r r r r@{}}\n\\toprule\n", row_cells(["Move", "Frames", "Sequence", "Median", "Range", "Seeds at 0.9 or above", "Reading against the flicker-bounded sequence"]),
          "\\midrule\n"]
     blocks = [(f"lattice, {k} bins", data["long"]["moves"][k]["frames"], data["long"]["moves"][k]["rows"], lambda r: r) for k in ("12", "20")]
-    blocks.append((f"rearrangement C10, {data['c10']['moving']} moving traps", data["c10"]["frames_bound"], data["c10"]["rows"], lambda r: r["bound"]))
+    blocks.append((f"sort of {data['c10']['n_traps']} traps ({data['c10']['moving']} moving)", data["c10"]["frames_bound"], data["c10"]["rows"], lambda r: r["bound"]))
     for name, frames, rows, key in blocks:
         rd = readings(rows, key)
         for k in METHODS:
@@ -656,7 +681,7 @@ def write_tables(data: dict, out: Path) -> None:
     c = data["c10"]
     for tag, frames, peak in (("equal", c["equal_frames"], c["peak_step_equal"]), ("bound", c["frames_bound"], c["peak_step_fu"])):
         v = [r[tag]["b2"]["transient_min_ratio"] for r in c["rows"]]
-        L.append(row_cells([f"C10 sort, {frames} frames", fmt(c["fourier_units"], 2), str(c["frames_bound"]), str(frames), fmt(peak, 3), fmt(statistics.median(v), 3),
+        L.append(row_cells([f"sort of {c['n_traps']} traps ({c['moving']} moving), {frames} frames", fmt(c["fourier_units"], 2), str(c["frames_bound"]), str(frames), fmt(peak, 3), fmt(statistics.median(v), 3),
                             f"{sum(x >= 0.9 for x in v)} of {len(v)}"]))
     L.append("\\bottomrule\n\\end{tabular}\n")
     (out / "tab_bound.tex").write_text("".join(L), encoding="utf-8")
@@ -677,6 +702,21 @@ def write_tables(data: dict, out: Path) -> None:
                             f"{sum(x >= 0.9 for x in vals)} of {len(vals)}", fmt(s[k]["sigma_frame_max"]["median"], 2), fmt(s[k]["phase_step_max"]["median"], 3)]))
     L.append("\\bottomrule\n\\end{tabular}\n")
     (out / "tab_abl_b2.tex").write_text("".join(L), encoding="utf-8")
+    # T6 the time profile of the positions: the default minimal-jerk profile and the baselines' linear profile, read by the rule
+    pr = profile_readings(data)
+    n = len(pr["seeds"])
+    L = ["\\begin{tabular}{@{}l r r r l l l@{}}\n\\toprule\n",
+         row_cells(["Time profile of the sequence", "Transient minimum ratio, mean (95\\% interval)", "Largest phase step (rad)",
+                    "Largest frame $\\sigma$ (\\%)", "Reading against per-frame GS, 5 iterations", "Against 10 iterations",
+                    "Against linear phase interpolation"]),
+         "\\midrule\n"]
+    for variant, name in (("full", "minimal-jerk (the default)"), ("linear", "linear (the baselines' profile)")):
+        v = ab["summary"][variant]
+        L.append(row_cells([name, f"{fmt(v['min']['mean'], 3)} ({fmt(v['min']['ci_lo'], 3)} to {fmt(v['min']['ci_hi'], 3)})",
+                            fmt(v["phase_step_max"]["max"], 3), fmt(v["sigma_frame_max"]["median"], 2)]
+                           + [f"{pr[variant][o]['dip']['result']} ($n$ = {n}, {n})" for o in ("kim5", "kim10", "lpi")]))
+    L.append("\\bottomrule\n\\end{tabular}\n")
+    (out / "tab_profile.tex").write_text("".join(L), encoding="utf-8")
 
 
 def write_all(data: dict, out: Path) -> None:
