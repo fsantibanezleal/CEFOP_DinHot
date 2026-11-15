@@ -365,23 +365,32 @@ None of these is a model judging a model.
 Each component is DinHot's own, grounded in a sourced gap, measured by the benchmark protocol against the strongest baseline,
 and covered by a level 4 notebook in each language.
 
-- BS-1 (engine id B1) device-aware conjugate-gradient refinement (named device-aware weighted GS until 0.02.003): a weighted GS start, then gradient steps through the crosstalk
-  kernel and the quantizer. Measured: the factor over M07 on the crosstalk device varies with the seed, a median of 25.8 times (15.9 to 33.3 over five seeds)
-  against the corrected M07, which equals slmsuite's WGS-Kim, and it is 2.0 times on the full C08 device (the bake, three seeds; 2.2 in notebook 03-04) with 4-bit phase and flicker; in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.06); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds; B1 returns its best
-  iterate that keeps 0.9 of its warm start's efficiency (a safeguard against weight windup, 2026-10-30). Gap: the crosstalk model has been used only with conjugate gradient on shaped potentials (Schroff et
-  al. 2023, https://doi.org/10.1038/s41598-023-30296-6).
+- BS-1 (engine id B1) device-aware conjugate-gradient refinement (named device-aware weighted GS until 0.02.003): a weighted GS start, then
+  conjugate-gradient steps through the crosstalk kernel and the quantizer, the weight update an option off by default since 0.02.004, the
+  best iterate kept while it holds 0.9 of the warm start's efficiency. Measured (0.02.004, its ladder row and the device-aware paper): it
+  meets its ladder criterion against phase-fixed WGS on the crosstalk device (a geometric mean of 201.3 times over five seeds) and on 4 of 6
+  benchmark geometries of the C08 device, and it is reported as a negative result (decision 7 of the 0.02.004 plan): through the same warm
+  start, device model and conjugate gradient, the normalized-error loss of Schroff et al. 2023 gives the same spread within the seed ranges,
+  so the method's own elements (the efficiency-level loss, the weight update, the safeguard) add nothing measurable, and the gain belongs to
+  the device model in the loop. Gap as it stands: Schroff et al. 2023 (https://doi.org/10.1038/s41598-023-30296-6) already put a pixel-crosstalk
+  model in a conjugate-gradient refinement and make a spot array with it (their Fig. 5c); what is DinHot's own is the transposition to
+  point-trap arrays with the efficiency-level loss and the measurement that isolates the loss, the weights, the safeguard and the device model.
 - BS-2 (engine id B2) flicker-bounded phase-continuous sequences: each intermediate hologram optimized with the trap phases locked to a
-  smooth trajectory. Gap: linear phase interpolation does not optimize its intermediate frames (https://arxiv.org/abs/2501.01391).
-  Measured scope: with the frames that keep the peak step per frame at most 0.2 Fourier units (a bound set on C10's sort; the acceptance task itself
-  runs at 0.31) the claim holds on most seeds and not on all, the seeds that miss it missing it on their phase path; on long moves at equal frames linear
-  phase interpolation leads, and B2 needs the end phases and more frames (C10 on M16's plan, six seeds: 137 frames, 0.902 to 0.917 on five against 0.360 to 0.690, and one seed that collapses).
+  smooth trajectory, with a closed-form bound on the frame count. Gap: linear phase interpolation does not optimize its intermediate frames
+  (https://arxiv.org/abs/2501.01391), and the per-frame GS with phase induction of Kim, Kim, Lee and Ahn 2019
+  (https://doi.org/10.1364/OE.27.002184) optimizes every frame without locking a smooth phase trajectory and sets its frame count by an
+  empirical fit. Measured (0.02.004, its ladder row and the flicker-bounded paper, decision 9 of the 0.02.004 plan): the sequence takes phase
+  steps between frames several times smaller than the per-frame GS and beats linear phase interpolation; on the dip of a moving trap it
+  loses to the per-frame GS with its default minimal-jerk time profile at 13 frames (outside its own step bound) and wins against every
+  baseline with the baselines' linear profile (6 seeds); on the 36-trap sort at the frames of its bound the per-frame GS has the higher dip.
 - BS-3 (engine id B3) learned warm start, tested and refuted: a permutation-invariant network over trap coordinates predicting the initial
   trap phases of phase-fixed WGS gives no gain over an early phase fix without a network (measured on held-out geometries); the gap
   it addressed (no source initializes WGS with a network, algorithms dossier D5.1) is answered by the measurement, and the model is
   not released.
 - BS-4 (engine id B4) robust hologram: the expected cost over residual aberrations. Gap: corrections are global or per site, never robust
   (https://arxiv.org/abs/2512.15967). Measured: robustness to pointing errors does not follow (1.04 times), because the spot width
-  bounds it; the benchmark reports that negative result. Against the corrected M07 the aberration claim holds at a median of 1.435 times.
+  bounds it; the benchmark reports that negative result. Against the corrected M07 the aberration claim holds at a median of 1.435 times
+  over three seeds and 1.439 over ten (0.02.004), the interval of a single seed clearing 1.25 on 8 of the 10.
 - BS-5 (engine id B5) the efficiency-uniformity continuation, a weighted-cost continuation of the trade-off whose points are not the Pareto front (its paper finds 4 to 7 of 20 dominated). Gap: methods report single trade-off points (Di Leonardo et
   al. 2007, https://doi.org/10.1364/OE.15.001913).
 
