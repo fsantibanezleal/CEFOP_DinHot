@@ -2,7 +2,9 @@
 physical domain and in the units of the question it answers, in the bake and again over the shipped artifacts.
 
 Observables and their units: efficiency, uniformity and zero-order fraction in [0, 1]; ghost fraction in [0, 1]; relative
-standard deviation in percent (not a fraction); intensities relative to the mean trap (mean 1); positions in micrometres
+standard deviation in percent (not a fraction), in [0, 100 sqrt(N - 1)] for N traps (the population deviation of N
+non-negative intensities is largest with all the light in one trap, and a deadline can leave traps dark; a shaped target,
+with no traps, carries its clipped signal error, so 1000); intensities relative to the mean trap (mean 1); positions in micrometres
 inside the unaliased field of view (a position in metres would be about 1e-5); times in seconds; stiffness in pN per
 micrometre; frequencies in Hz; filling in [0, 1].
 
@@ -23,6 +25,9 @@ from pathlib import Path
 from typing import Any
 
 EPS = 1e-6
+# A shaped target has no traps: its ``rel_std_pct`` slot carries the signal-region RMS error in percent, clipped at 1000
+# (``core/score.py`` ``REL_STD_CAP``, ``score_field``; ``bake.py`` ``_signal_history``), so 1000 is its exact domain.
+SHAPED_REL_STD_CAP = 1000.0
 
 
 class UnitsError(ValueError):
@@ -38,13 +43,24 @@ def _in(name: str, v: Any, lo: float, hi: float, out: list[str], who: str) -> No
         out.append(f"{who}: {name}={v!r} is outside its domain [{lo:g}, {hi:g}]")
 
 
-def check_method_row(row: dict, who: str) -> list[str]:
+def rel_std_bound(n_traps: int) -> float:
+    """Upper bound of ``rel_std_pct`` over ``n_traps`` traps: ``100 sqrt(N - 1)``, the population deviation over the mean of
+    N non-negative intensities with all the light in one trap (0 for one trap). No positive trap count (a shaped
+    target): the clip of its signal error, ``SHAPED_REL_STD_CAP``."""
+    if n_traps is None or n_traps < 1:
+        return SHAPED_REL_STD_CAP
+    return 100.0 * math.sqrt(n_traps - 1)
+
+
+def check_method_row(row: dict, who: str, *, n_traps: int | None = None) -> list[str]:
+    """Units problems of one method row; ``n_traps`` is the trap count its deviation was computed over (None or 0: a shaped
+    target, bounded by its clip)."""
     out: list[str] = []
     for name in ("efficiency", "uniformity", "zero_order", "ghost"):
         if name in row:
             _in(name, row[name], 0.0, 1.0, out, who)
     if "rel_std_pct" in row:
-        _in("rel_std_pct", row["rel_std_pct"], 0.0, 1000.0, out, who)
+        _in("rel_std_pct", row["rel_std_pct"], 0.0, rel_std_bound(n_traps), out, who)
     if "iterations" in row and (not isinstance(row["iterations"], int) or row["iterations"] < 0):
         out.append(f"{who}: iterations={row['iterations']!r} is not a non-negative integer")
     return out
@@ -92,18 +108,20 @@ def check_case(manifest: dict, trace: dict) -> list[str]:
                 out.append(f"{cid}: trap {t['id']} {ax}={v} outside the field of view +-{half:.4g} um")
             if v != 0 and abs(v) < 1e-3:
                 out.append(f"{cid}: trap {t['id']} {ax}={v} looks like metres, not micrometres")
+    n_traps = len(trace["traps"])
     for mid, row in manifest["methods"].items():
-        out += check_method_row(row, f"{cid} {mid}")
+        out += check_method_row(row, f"{cid} {mid}", n_traps=n_traps)
     equal = len({t["weight"] for t in trace["traps"]}) <= 1
     for mid, m in trace["methods"].items():
         who = f"{cid} {mid}"
-        out += check_method_row(m["final"], who)
+        out += check_method_row(m["final"], who, n_traps=n_traps)
         out += _consistency(m, equal, who)
         if trace["traps"] and len(m["trap_intensity"]) != len(trace["traps"]):
             out.append(f"{who}: {len(m['trap_intensity'])} trap intensities for {len(trace['traps'])} traps")
         last = -1
         for h in m["history"]:
-            out += check_method_row({k: h[k] for k in ("efficiency", "uniformity", "rel_std_pct")}, f"{who} history")
+            out += check_method_row({k: h[k] for k in ("efficiency", "uniformity", "rel_std_pct")}, f"{who} history",
+                                    n_traps=n_traps)
             if h["iteration"] < last:
                 out.append(f"{who}: history iterations go down")
             last = h["iteration"]
@@ -117,7 +135,7 @@ def check_case(manifest: dict, trace: dict) -> list[str]:
     fb = trace["feedback"]
     if fb is not None:
         for s in fb["steps"]:
-            _in("rel_std_pct", s["rel_std_pct"], 0.0, 1000.0, out, f"{cid} feedback step {s['step']}")
+            _in("rel_std_pct", s["rel_std_pct"], 0.0, rel_std_bound(n_traps), out, f"{cid} feedback step {s['step']}")
             _in("efficiency", s["efficiency"], 0.0, 1.0, out, f"{cid} feedback step {s['step']}")
     d = trace["dynamics"]
     if d is not None:
@@ -156,6 +174,7 @@ def check_case(manifest: dict, trace: dict) -> list[str]:
 
 
 def _stat_ok(name: str, s: dict, lo: float, hi: float, out: list[str], who: str) -> None:
+    """q1, median and q3 of one statistic in [lo, hi], and q1 <= median <= q3."""
     for k in ("q1", "median", "q3"):
         _in(f"{name}.{k}", s.get(k), lo, hi, out, who)
     if _num(s.get("q1")) and _num(s.get("q3")) and _num(s.get("median")) and not s["q1"] - EPS <= s["median"] <= s["q3"] + EPS:
@@ -165,11 +184,19 @@ def _stat_ok(name: str, s: dict, lo: float, hi: float, out: list[str], who: str)
 def check_benchmark(doc: dict) -> list[str]:
     """Units problems of a benchmark-results document: every statistic in its domain, q1 <= median <= q3."""
     out: list[str] = []
+    counts = {g["id"]: g["n_traps"] for g in doc.get("geometries", [])}
+    unknown: set[str] = set()
     for r in doc.get("rows", []):
         who = f"benchmark {r['method']}/{r['geometry']}/{r['device']}/{r['budget_kind']}={r['budget']}/{r['params']}"
+        if r["geometry"] not in counts:
+            if r["geometry"] not in unknown:
+                unknown.add(r["geometry"])
+                out.append(f"benchmark: unknown geometry {r['geometry']!r} (not in the document's geometries), so the bound of "
+                           f"its relative standard deviation cannot be read")
+            continue
         _stat_ok("efficiency", r["efficiency"], 0.0, 1.0, out, who)
         _stat_ok("uniformity", r["uniformity"], 0.0, 1.0, out, who)
-        _stat_ok("rel_std_pct", r["rel_std_pct"], 0.0, 1000.0, out, who)
+        _stat_ok("rel_std_pct", r["rel_std_pct"], 0.0, rel_std_bound(counts[r["geometry"]]), out, who)
         _stat_ok("time_s", r["time_s"], 0.0, 1e5, out, who)
         _stat_ok("iterations", r["iterations"], 0.0, 1e6, out, who)
     for p in doc.get("pareto", []):
