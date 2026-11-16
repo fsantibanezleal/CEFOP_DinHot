@@ -114,3 +114,28 @@ def test_seed_rule_time_and_converged_rows_run_five_seeds_iteration_rows_keep_th
     assert by["iterations"] == {protocol.MIN_SEEDS}
     assert by["time"] == {protocol.MIN_BOUNDED_SEEDS} and by["converged"] == {protocol.MIN_BOUNDED_SEEDS}
     assert protocol.MIN_BOUNDED_SEEDS == 5 and protocol.MIN_SEEDS == 2
+
+
+# ---- B3 has no benchmark row while its network is not released (plan decision 2; review finding N-M3) ----
+
+def test_b3_is_skipped_with_a_reason_in_both_languages_while_no_network_is_released(real_registry, monkeypatch):
+    from pipeline.model.holo.methods.learned import _slot
+
+    assert _slot.load("warmstart-model") is None                   # the repository releases no warm-start network
+    for geometry in ("G1", "G6a", "G5"):
+        why = protocol.skip_reason("B3", geometry, True)
+        assert why is not None and why["en"].startswith("Not run: the network of this method is not released")
+        assert why["es"].startswith("No ejecutado") and "red" in why["es"]
+    assert protocol.skip_reason("M07", "G1", True) is None          # the fallback it would have run is M07, measured as M07
+
+
+def test_b3_runs_as_before_once_a_network_is_released(real_registry, monkeypatch):
+    monkeypatch.setattr(protocol, "_warm_start_network_released", lambda: True)
+    assert protocol.skip_reason("B3", "G1", True) is None
+
+
+def test_the_protocol_lists_b3_as_skipped_and_keeps_no_row_of_it(tmp_path, real_registry):
+    doc = protocol.run(tmp_path, seeds=2, workers=1, reduced=True, geometries=["G1"], methods=["B3", "M07"])
+    assert not [r for r in doc["rows"] if r["method"] == "B3"] and [r for r in doc["rows"] if r["method"] == "M07"]
+    assert [s for s in doc["skipped"] if s["method"] == "B3" and s["geometry"] == "G1"]
+    assert cs.errors("benchmark-results", doc) == []

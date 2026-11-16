@@ -26,6 +26,8 @@ A cell that cannot run is listed in ``skipped`` with its reason (the method is n
 geometry's target, the method refuses the geometry when it runs, or a device model cannot be read off the focal plane), never
 silently absent (ADR-0069). A refusal is a ``ValueError`` the method raises on the geometry (for example M12's FFT bins, M17's
 trained SLM size, M19's axial pitch): its message is the reason, and no row of that cell is kept. Any other exception stops the run.
+B3 (the learned warm start) is skipped on every geometry while no network is released: its run would be M07's fallback, and a row
+of it would count that as a proposed method (``skip_reason``).
 """
 from __future__ import annotations
 
@@ -95,11 +97,24 @@ def _text(en: str, es: str) -> dict:
     return {"en": en, "es": es}
 
 
+def _warm_start_network_released() -> bool:
+    """True when the slot ``warmstart-model`` holds a released network: the condition B3's ``run`` reads to choose between the
+    network and its fallback (``learned/_slot.load``)."""
+    from ..model.holo.methods.learned import _slot
+
+    return _slot.load("warmstart-model") is not None
+
+
 def skip_reason(mid: str, geometry: str, reduced: bool) -> dict | None:
     """Why the (method, geometry) cell cannot run at all (None when the ideal-device cell can)."""
     known = {s.id: s for s in registry.all_specs()}
     if mid not in known:
         return _text("The method is not registered in this build.", "El método no está registrado en esta versión.")
+    if mid == "B3" and not _warm_start_network_released():
+        return _text("Not run: the network of this method is not released (its candidate was refuted), so a row of it would be "
+                     "phase-fixed WGS (M07) counted as a proposed method.",
+                     "No ejecutado: la red de este método no está publicada (su candidata fue refutada), así que una fila "
+                     "suya sería WGS de fase fija (M07) contada como método propuesto.")
     rec = G.record(geometry, device=False, seed=0, reduced=reduced)
     problem = infer.spec_problem(known[mid], rec)
     if problem:
