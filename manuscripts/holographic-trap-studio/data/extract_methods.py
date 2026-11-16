@@ -44,6 +44,7 @@ def load(path: Path):
 
 WIN_MIN_SEEDS = 5          # seeds behind the best method of each kind
 WIN_MIN_DIFF_PCT = 0.01    # percentage points between the two medians of the relative standard deviation
+OVER_BUDGET_FACTOR = 1.5   # a time row whose median wall clock exceeds this many times its budget is not at equal time (decision 10)
 _EPS = 1e-9
 
 
@@ -52,10 +53,22 @@ def kind_of(method: str) -> str:
     return "proposed" if method.startswith("B") else "published"
 
 
+def is_over_budget(row: dict) -> bool:
+    """A time row whose median ``time_s`` exceeds ``OVER_BUDGET_FACTOR`` times its budget (seconds); a time row without a
+    ``time_s`` (against a declared budget) has no evidence that it kept the budget and is read as over. Iteration and converged rows are never over budget."""
+    if row.get("budget_kind") != "time" or row.get("budget") is None:   # a row that declares no budget is not judged
+        return False
+    t = row.get("time_s")
+    if not t or t.get("median") is None:
+        return True
+    return t["median"] > OVER_BUDGET_FACTOR * row["budget"]
+
+
 def best_of_kind(rows: list[dict], kind: str) -> dict | None:
     """The row of the kind with the lowest median relative standard deviation among those that keep at least half of the best
-    median efficiency of the kind (a method that is uniform by wasting the light never wins); ties by method id."""
-    own = [r for r in rows if kind_of(r["method"]) == kind]
+    median efficiency of the kind (a method that is uniform by wasting the light never wins); ties by method id. A row over its
+    time budget (``is_over_budget``) is not a candidate and does not set the efficiency floor."""
+    own = [r for r in rows if kind_of(r["method"]) == kind and not is_over_budget(r)]
     if not own:
         return None
     top = max(r["efficiency"]["median"] for r in own)
@@ -68,11 +81,13 @@ def cell_result(rows: list[dict]) -> dict:
 
     One kind wins only if the best published and the best proposed method both have at least ``WIN_MIN_SEEDS`` seeds, their
     interquartile ranges of ``rel_std_pct`` do not overlap (touching counts as overlapping) and their medians differ by at least
-    ``WIN_MIN_DIFF_PCT``. Iteration rows never produce a win: a cell that holds one is a tie."""
+    ``WIN_MIN_DIFF_PCT``. Iteration rows never produce a win: a cell that holds one is a tie. A row over its time budget is never a
+    best and never part of a win; when every row of a kind is over budget the cell is a tie that says so."""
     pub, prop = best_of_kind(rows, "published"), best_of_kind(rows, "proposed")
     out = {"published": pub, "proposed": prop, "result": "tie"}
     if pub is None or prop is None:
-        out["reason"] = "one kind has no row"
+        every_over = any(kind_of(r["method"]) == k and is_over_budget(r) for r in rows for k, b in (("published", pub), ("proposed", prop)) if b is None)
+        out["reason"] = "every row of one kind is over its budget" if every_over else "one kind has no row"
     elif any(r.get("budget_kind") == "iterations" for r in rows):
         out["reason"] = "iteration rows run each method at its own work and never produce a win"
     elif min(pub["n_seeds"], prop["n_seeds"]) < WIN_MIN_SEEDS:

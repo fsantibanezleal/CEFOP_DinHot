@@ -1,0 +1,676 @@
+{
+ "description": "Shared fixture of the over-budget rule (plan decision 10 of 0.02.004, unit U8b): a time row whose median time_s exceeds over_budget_factor times its budget is not read; read by tests/manuscripts/test_over_budget_rule.py (Python) and frontend/src/content/benchmark/data.test.ts (TypeScript).",
+ "over_budget_factor": 1.5,
+ "cells": [
+  {
+   "name": "over-budget best proposed is skipped: the next proposed method wins",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "time_s": {
+      "median": 1.6,
+      "q1": 1.6,
+      "q3": 1.6
+     }
+    },
+    {
+     "method": "B5",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 3,
+      "q1": 2.9,
+      "q3": 3.1
+     },
+     "time_s": {
+      "median": 1.2,
+      "q1": 1.2,
+      "q3": 1.2
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B5",
+   "result": "proposed",
+   "reason_contains": "rule holds"
+  },
+  {
+   "name": "the over-budget row would have won; without it the cell is a tie",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "time_s": {
+      "median": 6.4,
+      "q1": 6.4,
+      "q3": 6.4
+     }
+    },
+    {
+     "method": "B5",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 4.99,
+      "q1": 4.9,
+      "q3": 5.3
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B5",
+   "result": "tie",
+   "reason_contains": "interquartile"
+  },
+  {
+   "name": "tie: every row of one kind is over its budget",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "time_s": {
+      "median": 1.6,
+      "q1": 1.6,
+      "q3": 1.6
+     }
+    },
+    {
+     "method": "B5",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 3,
+      "q1": 2.9,
+      "q3": 3.1
+     },
+     "time_s": {
+      "median": 2.0,
+      "q1": 2.0,
+      "q3": 2.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": null,
+   "result": "tie",
+   "reason_contains": "every row of one kind is over its budget"
+  },
+  {
+   "name": "a row at exactly 1.5 times its budget is within it",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "time_s": {
+      "median": 1.5,
+      "q1": 1.5,
+      "q3": 1.5
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "proposed",
+   "reason_contains": "rule holds"
+  },
+  {
+   "name": "a row just over 1.5 times its budget is excluded",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "time_s": {
+      "median": 1.5000001,
+      "q1": 1.5000001,
+      "q3": 1.5000001
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": null,
+   "result": "tie",
+   "reason_contains": "over its budget"
+  },
+  {
+   "name": "a time row without time_s is read as over budget",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     }
+    },
+    {
+     "method": "B5",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 3,
+      "q1": 2.9,
+      "q3": 3.1
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B5",
+   "result": "proposed",
+   "reason_contains": "rule holds"
+  },
+  {
+   "name": "the over-budget row does not set the efficiency floor of its kind",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.99,
+      "q1": 0.99,
+      "q3": 0.99
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "time_s": {
+      "median": 3.0,
+      "q1": 3.0,
+      "q3": 3.0
+     }
+    },
+    {
+     "method": "B5",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 1.0,
+     "efficiency": {
+      "median": 0.4,
+      "q1": 0.4,
+      "q3": 0.4
+     },
+     "rel_std_pct": {
+      "median": 3,
+      "q1": 2.9,
+      "q3": 3.1
+     },
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B5",
+   "result": "proposed",
+   "reason_contains": "rule holds"
+  },
+  {
+   "name": "a fast-budget cell: 0.05 s budget, 0.075 s is within, 0.0751 s is over",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 0.05,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 0.075,
+      "q1": 0.075,
+      "q3": 0.075
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 0.05,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "time_s": {
+      "median": 0.0751,
+      "q1": 0.0751,
+      "q3": 0.0751
+     }
+    },
+    {
+     "method": "B5",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "budget": 0.05,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 3,
+      "q1": 2.9,
+      "q3": 3.1
+     },
+     "time_s": {
+      "median": 0.075,
+      "q1": 0.075,
+      "q3": 0.075
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B5",
+   "result": "proposed",
+   "reason_contains": "rule holds"
+  },
+  {
+   "name": "a time row that declares no budget (a pairwise reading of two samples) is not judged",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "proposed",
+   "reason_contains": "rule holds"
+  },
+  {
+   "name": "iteration rows are untouched by the time rule and stay a tie",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "iterations",
+     "budget": 30,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 99.0,
+      "q1": 99.0,
+      "q3": 99.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "iterations",
+     "budget": 30,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "time_s": {
+      "median": 99.0,
+      "q1": 99.0,
+      "q3": 99.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "tie",
+   "reason_contains": "iteration rows"
+  },
+  {
+   "name": "converged rows are untouched by the time rule",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "converged",
+     "budget": 300.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "time_s": {
+      "median": 900.0,
+      "q1": 900.0,
+      "q3": 900.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "converged",
+     "budget": 300.0,
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 2,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "time_s": {
+      "median": 900.0,
+      "q1": 900.0,
+      "q3": 900.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "proposed",
+   "reason_contains": "rule holds"
+  }
+ ]
+}
