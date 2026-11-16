@@ -46,7 +46,7 @@ outer iterations. Reading the traps off the device's focal field uses the neares
 On the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower:
 `tests/methods/beyond/test_b1_device_wgs.py::test_acceptance_two_times_lower_rel_std_than_phase_fixed_wgs_on_the_crosstalk_device`.
 
-## Measured values (release 0.02.004, `manuscripts/device-aware-flicker-bounded/data/beyond_numbers.tex`, `tab_schroff.tex`, `tab_abl_b1_geo.tex`)
+## Measured values (release 0.02.004, `manuscripts/device-aware-refinement/data/beyond_numbers.tex`, `tab_schroff.tex`, `tab_abl_b1_geo.tex`)
 
 10 by 10 task on 256 by 256 padded 2, 850 nm, focal length 250 mm, pitch 12.5 um, 5 seeds, simulated:
 

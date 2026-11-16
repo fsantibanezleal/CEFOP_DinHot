@@ -3403,7 +3403,7 @@
    "B1",
    "crosstalk device, 10 x 10 task: the spread of the device-aware refinement at its default (no weight update) has median 0.030 percent against 5.21 for phase-fixed weighted GS at 100 iterations; the factor over the better of the two phase-fixed runs is a geometric mean of 201.3 (95 percent interval 132.9 to 304.9) at a median 0.999 of its efficiency; 4-bit device with fill 0.85: spread 0.242 against 5.88, a factor of 23.5 (18.6 to 29.6) at a median 0.997 of its efficiency; the statistic is the companion manuscript's (geometric mean of the per-seed factor with its 95 percent interval), 5 and 5 seeds",
    "5 and 5",
-   "manuscripts/device-aware-flicker-bounded/data/measure.py (beyond.json)"
+   "manuscripts/device-aware-refinement/data/measure.py (beyond.json)"
   ],
   [
    "B2",

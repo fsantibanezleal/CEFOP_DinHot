@@ -98,7 +98,7 @@ was not measured.
 
 ## Measured result
 
-All values are those of the 0.02.004 generation, read from the committed data files of `manuscripts/device-aware-flicker-bounded/data/` (`beyond_numbers.tex`, `tab_schroff.tex`, `tab_abl_b1_geo.tex`) and of `manuscripts/holographic-trap-studio/data/studio_numbers.tex`. The refinement runs with the weight update off (the default), 10x10 task, 256 by 256 padded 2, five seeds, simulated, against the phase-fixed WGS of the ladder (M07).
+All values are those of the 0.02.004 generation, read from the committed data files of `manuscripts/device-aware-refinement/data/` (`beyond_numbers.tex`, `tab_schroff.tex`, `tab_abl_b1_geo.tex`) and of `manuscripts/holographic-trap-studio/data/studio_numbers.tex`. The refinement runs with the weight update off (the default), 10x10 task, 256 by 256 padded 2, five seeds, simulated, against the phase-fixed WGS of the ladder (M07).
 
 | Task | Method | Factor over M07, geometric mean (95 percent interval) | Efficiency ratio | Seconds per hologram |
 |---|---|---|---|---|
@@ -155,7 +155,7 @@ An independent review of the device-aware paper found that its own ablation refu
 (`wip/dinhot/msq-papers-2026-11-10.md`, findings DA-1 and DA-3). The method is therefore redefined and renamed (the id B1 stays):
 
 - **Name.** "Device-aware conjugate-gradient refinement" (Spanish: "Refinamiento por gradiente conjugado con modelo del dispositivo"). What distinguishes it from the ladder's weighted GS is the conjugate-gradient refinement through the device model, not the weights.
-- **Weights off by default.** `weights` defaults to False. The ablation (`manuscripts/device-aware-flicker-bounded/data/tab_abl_b1.tex`, five seeds, crosstalk device, 10 x 10 task): median spread 0.030 percent without the update against 0.205 percent with it, 7 times lower, at an efficiency ratio of 0.999 against 0.995;
+- **Weights off by default.** `weights` defaults to False. The ablation (`manuscripts/device-aware-refinement/data/tab_abl_b1.tex`, five seeds, crosstalk device, 10 x 10 task): median spread 0.030 percent without the update against 0.205 percent with it, 7 times lower, at an efficiency ratio of 0.999 against 0.995;
   on the 4-bit device (`beyond_numbers.tex`, five seeds) 0.242 against 0.729 percent, 3 times lower. On the benchmark lattices the result is mixed (the C08 device at 10 iterations, median over three seeds: square lattice 14 against 29 percent at an efficiency of 0.56 against 0.60; ring of 36: 8.9 against 7.8; the random and quasi-periodic sets unchanged), so `weights=True` stays available and reproduces the 0.02.003 run exactly.
   The measured result above is the 0.02.004 re-measurement with the new default.
 - **The closest published method as a loss option.** `loss='normalized-error'` replaces the efficiency-level loss by the normalized-error cost of Schroff et al. 2023 (Sci. Rep. 13, 3252, eq (3), p. 3), $C = s\sum_{S}(\tilde T - \tilde I)^2$ with $\tilde T = T/\sum_S T$ and $\tilde I = I/\sum_S I$, on the trap intensities through the same device model;
@@ -165,7 +165,7 @@ An independent review of the device-aware paper found that its own ablation refu
 
 ## Update of 2026-11-15 (0.02.004): reported as a negative result against Schroff et al.
 
-Read in full, Schroff et al. 2023 already put a pixel-crosstalk model inside a conjugate-gradient refinement and make a spot array with it (their Fig. 5c). Through the same warm start, device model, conjugate-gradient optimizer and safeguard, the method's own elements add nothing measurable over their normalized-error loss. The numbers are those of `manuscripts/device-aware-flicker-bounded/data/beyond_numbers.tex`, `tab_schroff.tex` and `tab_abl_b1_geo.tex` (5 seeds each, simulated):
+Read in full, Schroff et al. 2023 already put a pixel-crosstalk model inside a conjugate-gradient refinement and make a spot array with it (their Fig. 5c). Through the same warm start, device model, conjugate-gradient optimizer and safeguard, the method's own elements add nothing measurable over their normalized-error loss. The numbers are those of `manuscripts/device-aware-refinement/data/beyond_numbers.tex`, `tab_schroff.tex` and `tab_abl_b1_geo.tex` (5 seeds each, simulated):
 
 | Quantity | Efficiency-level loss (default) | Normalized-error loss of Schroff et al. | Conditions |
 |---|---|---|---|

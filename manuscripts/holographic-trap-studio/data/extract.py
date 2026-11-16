@@ -21,7 +21,7 @@ Sources, all committed with the product:
 
 ``UNIT_ACCEPTANCE`` below is read from ``acceptance.json``, written by ``acceptance.py`` (run it first, same folder), which measures
 the acceptance quantity of each published method and of the aberration-robust hologram and the efficiency-uniformity continuation as
-its gate test computes it, on the current engine. The rows of the device-aware conjugate-gradient refinement and the flicker-bounded sequence come from ``beyond.json``, measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` (``beyond_rows.py``).
+its gate test computes it, on the current engine. The rows of the device-aware conjugate-gradient refinement and the flicker-bounded sequence come from ``beyond.json``, measured by ``manuscripts/device-aware-refinement/data/measure.py`` (``beyond_rows.py``).
 ``QUOTED_LIVE`` holds the browser measurements, which a standard-library script cannot repeat; each names the section of
 ``docs/design/measured-resources.md`` or of the SDD that records it. The count of engine fixtures and their loosest tolerance are
 read from ``tests/fixtures/engine``.

@@ -7,7 +7,7 @@ its row of the acceptance table of the technical report (``extract.py`` reads th
 test each function mirrors is named in its docstring and in the ``source`` field of the row. The script measures, it does not
 assert a pass (ADR-0069): a number that misses its bar is written as measured.
 
-The device-aware conjugate-gradient refinement and the flicker-bounded sequence are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` and are not part of this table.
+The device-aware conjugate-gradient refinement and the flicker-bounded sequence are measured by ``manuscripts/device-aware-refinement/data/measure.py`` and are not part of this table.
 The multi-plane CNN hologram needs the released network, onnxruntime and the held-out file, which the pipeline environment does not have: its row takes
 the values from ``data/derived/models/metrics.json``, the committed artifact its gate test reads, and says so.
 

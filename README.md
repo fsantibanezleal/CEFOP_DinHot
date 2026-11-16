@@ -28,7 +28,7 @@ Every method runs on the product's cases with the same seeds and metrics, and is
   aberration-robust hologram and an efficiency-uniformity continuation, each tested and reported as it came out, with its mixed and negative
   results. Each has a level 4 notebook. What the 0.02.004 data measured (the files are named in each item):
   - Device-aware conjugate-gradient refinement runs without the weight update by default, because on the acceptance task the update makes the
-    spread about 7 times worse (`manuscripts/device-aware-flicker-bounded/data/beyond_numbers.tex`, `ablBWeightsRatio`). Its hypothesis H3 is
+    spread about 7 times worse (`manuscripts/device-aware-refinement/data/beyond_numbers.tex`, `ablBWeightsRatio`). Its hypothesis H3 is
     refuted: on the benchmark device it keeps both thresholds (a spread at least 2 times below phase-fixed WGS at at least 0.9 of its
     efficiency) on 4 of the 6 geometries (the ring, the random set and the two large arrays) and fails on the 10 x 10 lattice (factor 1.90) and on
     the quasi-periodic set (factor 1.05) (`.../data/tab_bench.tex`). At equal wall clock of 1 s the benchmark reads it as the proposed method on 3

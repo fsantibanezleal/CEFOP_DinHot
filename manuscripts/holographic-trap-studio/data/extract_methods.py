@@ -543,7 +543,7 @@ def s3(x: float) -> str:
 def table_b1_weights() -> str:
     """The weight update of B1 (companion manuscript's measurements): the acceptance task and the benchmark lattices, the default
     (no update) against the update and, on the lattices, against the loss of Schroff et al. (0.02.004)."""
-    comp = HERE.parents[1] / "device-aware-flicker-bounded" / "data"
+    comp = HERE.parents[1] / "device-aware-refinement" / "data"
     bj = load(comp / "beyond.json")["ablation"]
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
            "\\caption{The weight update of the device-aware refinement: the method at its default (every weight kept at one), with the "

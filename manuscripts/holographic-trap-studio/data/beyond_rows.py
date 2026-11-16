@@ -1,7 +1,7 @@
 """Acceptance rows of B1 and B2 for the technical report, read from the measurements of the two companion manuscripts.
 
 ``acceptance.py`` measures the published methods, the aberration-robust hologram and the efficiency-uniformity continuation as their gate
-tests do. The device-aware refinement is measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` into ``beyond.json``
+tests do. The device-aware refinement is measured by ``manuscripts/device-aware-refinement/data/measure.py`` into ``beyond.json``
 and the flicker-bounded sequence by ``manuscripts/flicker-bounded-sequences/data/measure.py`` into ``flicker.json`` (more seeds than the
 gate tests use); this module turns the two files into the two rows of the acceptance table, so that the report states every method with a
 measurement and no number is typed. The statistic is the one each companion paper states, and each row names it (review m-5): the
@@ -16,7 +16,7 @@ import statistics
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-BEYOND = HERE.parents[1] / "device-aware-flicker-bounded" / "data" / "beyond.json"
+BEYOND = HERE.parents[1] / "device-aware-refinement" / "data" / "beyond.json"
 FLICKER = HERE.parents[1] / "flicker-bounded-sequences" / "data" / "flicker.json"
 T95 = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228}
 
@@ -58,7 +58,7 @@ def rows() -> list[dict]:
     b2 = (f"4 x 4 lattice, two columns moved by four bins in 13 frames: lowest transient intensity of a moving trap "
           f"{_mean_ci(b, 3)} of its mean against {_mean_ci(l, 3)} for linear phase interpolation; the statistic is the companion "
           f"manuscript's (mean over seeds with its 95 percent interval), {b['n']} seeds")
-    src1 = "manuscripts/device-aware-flicker-bounded/data/measure.py (beyond.json)"
+    src1 = "manuscripts/device-aware-refinement/data/measure.py (beyond.json)"
     src2 = "manuscripts/flicker-bounded-sequences/data/measure.py (flicker.json)"
     return [{"id": "B1", "text": b1, "seeds": f"{n1} and {n2}", "source": src1, "numbers": x},
             {"id": "B2", "text": b2, "seeds": str(b["n"]), "source": src2, "numbers": s13}]

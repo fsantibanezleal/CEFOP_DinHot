@@ -18,7 +18,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 MS = ROOT / "manuscripts"
-DA, FL, EU = (MS / "device-aware-flicker-bounded" / "data", MS / "flicker-bounded-sequences" / "data",
+DA, FL, EU = (MS / "device-aware-refinement" / "data", MS / "flicker-bounded-sequences" / "data",
               MS / "efficiency-uniformity-front" / "data")
 AR, LW, TS = MS / "aberration-robust-hologram" / "data", MS / "learned-warm-start" / "data", MS / "holographic-trap-studio" / "data"
 sys.path.insert(0, str(ROOT / "data-pipeline"))

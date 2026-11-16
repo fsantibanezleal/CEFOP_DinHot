@@ -99,7 +99,7 @@ def _load(name: str, path: Path):
 
 
 # the helpers shared with the device-aware paper's script (setup, lattices, statistics, macros): one definition, never a copy
-DA = _load("da_measure", HERE.parents[1] / "device-aware-flicker-bounded" / "data" / "measure.py")
+DA = _load("da_measure", HERE.parents[1] / "device-aware-refinement" / "data" / "measure.py")
 make_setup, bin_grid, stats, stats2, geo_ci, macro, fmt, row_cells = (DA.make_setup, DA.bin_grid, DA.stats, DA.stats2, DA.geo_ci,
                                                                         DA.macro, DA.fmt, DA.row_cells)
 X = DA._studio_rule()  # extract_methods: the win rule, once

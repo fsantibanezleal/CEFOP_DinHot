@@ -19,7 +19,7 @@ per-hologram time on the device of every method compared; ``tab_schroff.tex``: t
 
 Run from the repository root with the pipeline environment:
 
-    .venv-pipeline/Scripts/python.exe manuscripts/device-aware-flicker-bounded/data/measure.py [--seeds-b1 5] [--seeds-b1-full 5]
+    .venv-pipeline/Scripts/python.exe manuscripts/device-aware-refinement/data/measure.py [--seeds-b1 5] [--seeds-b1-full 5]
 
 Deterministic: every method takes a seed through the portable generator, so a rerun gives the same numbers up to the
 floating point of the machine's FFT (times are wall clock and differ; they are measured on an idle machine).

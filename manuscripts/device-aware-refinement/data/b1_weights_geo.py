@@ -8,8 +8,8 @@ default of 0.02.004, ``weights`` is the weight update on (the 0.02.003 form) and
 2023, the closest published method, through the same warm start, device model, conjugate gradient and safeguard. One geometry takes about half an hour, so the
 geometries run as separate processes:
 
-    python manuscripts/device-aware-flicker-bounded/data/b1_weights_geo.py run G1      # one per geometry, G1 to G4
-    python manuscripts/device-aware-flicker-bounded/data/b1_weights_geo.py write       # table and macros from the JSON files
+    python manuscripts/device-aware-refinement/data/b1_weights_geo.py run G1      # one per geometry, G1 to G4
+    python manuscripts/device-aware-refinement/data/b1_weights_geo.py write       # table and macros from the JSON files
 
 ``run`` writes ``b1_weights_geo_<G>.json``; ``write`` reads them and writes ``tab_abl_b1_geo.tex`` and ``b1geo_numbers.tex``.
 """

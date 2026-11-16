@@ -20,7 +20,7 @@ Macros: ``fig_numbers.tex`` holds the numbers derived from the same files (time 
 the geometry comparison) and the check of Proposition 2 on the engine's two cost classes, so the text types none of them.
 
 Run from the repository root after the measurements, with the pipeline environment:
-  .venv-pipeline/Scripts/python.exe manuscripts/device-aware-flicker-bounded/figures/make_figs.py
+  .venv-pipeline/Scripts/python.exe manuscripts/device-aware-refinement/figures/make_figs.py
 Deps: matplotlib, numpy, and the engine of ``data-pipeline`` for the check of the proposition.
 """
 from __future__ import annotations

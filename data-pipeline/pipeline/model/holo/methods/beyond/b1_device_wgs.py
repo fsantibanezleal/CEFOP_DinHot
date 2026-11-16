@@ -28,7 +28,7 @@ Weights (option ``weights``, default False since 0.02.004). ``weights=True`` run
 before every outer iteration, as 0.02.003 did, and reproduces that run exactly (test
 ``test_weights_true_reproduces_the_run_recorded_before_the_default_changed``). ``weights=False`` keeps every weight at one, so the
 steps fit the current efficiency level with equal targets. Reason for the default, measured by the ablation of the
-device-aware paper (``manuscripts/device-aware-flicker-bounded/data/tab_abl_b1.tex`` and ``tab_abl_b1_full.tex``, five seeds): on
+device-aware paper (``manuscripts/device-aware-refinement/data/tab_abl_b1.tex`` and ``tab_abl_b1_full.tex``, five seeds): on
 the 10 x 10 acceptance task the median spread without the update is 0.030 percent against 0.205 percent with it (7 times
 lower, efficiency ratio 0.999 against 0.995), and on the full device 0.242 against 0.724 percent (3 times lower). On the
 benchmark's lattices the result is mixed (below), so the update stays available.
