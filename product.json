@@ -138,7 +138,15 @@
       "title": "Device-Aware Weighted Gerchberg-Saxton and Flicker-Bounded Phase-Continuous Sequences for Holographic Optical Trap Arrays",
       "version": "0.04",
       "covers": [
-        "BS-1",
+        "BS-1"
+      ]
+    },
+    {
+      "kind": "manuscript",
+      "concept_doi": "10.5281/zenodo.24267369",
+      "title": "Flicker-Bounded Phase-Continuous Hologram Sequences for Moving Optical Traps: Smaller Phase Steps than Per-Frame Gerchberg-Saxton, a Higher Transient Minimum with a Linear Time Profile on the Short Move and a Lower One with the Minimal-Jerk Profile",
+      "version": "0.01",
+      "covers": [
         "BS-2"
       ]
     },
