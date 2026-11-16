@@ -108,10 +108,39 @@ export const skippedIn = (res: BenchmarkResults, geometry?: string) =>
   (res.skipped ?? []).filter((s) => geometry === undefined || s.geometry === geometry).sort((a, b) => orderMethods(a.method, b.method));
 
 /**
+ * A time row whose median wall clock exceeds `OVER_BUDGET_FACTOR` times its budget is not at equal time (plan decision 10, requirement BM-017):
+ * it is shown and labelled, never the best of its kind and never part of a win. A time row without `time_s` has no evidence that it kept its
+ * budget and is read as over; iteration and converged rows are never over budget. The same rule, on the same fixture, as `is_over_budget` of the
+ * report's extract scripts.
+ */
+export const OVER_BUDGET_FACTOR = 1.5;
+export function isOverBudget(row: BenchmarkRow): boolean {
+  if (row.budget_kind !== 'time' || row.budget === undefined || row.budget === null) return false;
+  const t = (row as Partial<BenchmarkRow>).time_s?.median;
+  return t === undefined || t === null || t > OVER_BUDGET_FACTOR * row.budget;
+}
+
+/** The label of an over-budget row, "over budget: 6.4 s for 1 s", with the measured time; null for a row within its budget. */
+export function overBudgetText(row: BenchmarkRow, lang: Lang): string | null {
+  if (!isOverBudget(row)) return null;
+  const num = (v: number) => {
+    const t = String(Math.round(v * 1000) / 1000);
+    return lang === 'es' ? t.replace('.', ',') : t;
+  };
+  const measured = (row as Partial<BenchmarkRow>).time_s?.median;
+  const budget = num(row.budget);
+  if (measured === undefined || measured === null) {
+    return lang === 'es' ? `fuera de presupuesto: sin tiempo medido para ${budget} s` : `over budget: no measured time for ${budget} s`;
+  }
+  return lang === 'es' ? `fuera de presupuesto: ${num(measured)} s para ${budget} s` : `over budget: ${num(measured)} s for ${budget} s`;
+}
+
+/**
  * The method a cell calls the most uniform: the lowest relative standard deviation among the methods that keep at least half of the best
  * efficiency (the rule the bake's case summary uses, so a method that is uniform by wasting the light does not win).
  */
-export function mostUniform(rows: Picked[]): Picked | null {
+export function mostUniform(all: Picked[]): Picked | null {
+  const rows = all.filter((p) => !isOverBudget(p.row)); // an over-budget time row is never a best and does not set the efficiency floor
   if (!rows.length) return null;
   const best = Math.max(...rows.map((p) => p.row.efficiency.median));
   const kept = rows.filter((p) => p.row.efficiency.median >= best / 2);
@@ -143,13 +172,17 @@ export interface CellReading {
  * The reading of one cell (the rows of one geometry, device and budget): the best published and the best proposed method by `bestOfKind`, and a
  * win of one kind only if both have at least `WIN_MIN_SEEDS` seeds, their interquartile ranges of `rel_std_pct` do not overlap (touching counts as
  * overlapping) and their medians differ by at least `WIN_MIN_DIFF_PCT`; otherwise a tie. Iteration rows never produce a win: each method runs its
- * own iterations there, so the cell is a tie. The same rule, on the same fixture, as `cell_result` of the report's extract scripts.
+ * own iterations there, so the cell is a tie. A row over its time budget (`isOverBudget`) is never a best and never part of a win; when every row of
+ * a kind is over budget the cell is a tie that says so. The same rule, on the same fixture, as `cell_result` of the report's extract scripts.
  */
 export function cellReading(rows: Picked[]): CellReading {
   const published = bestOfKind(rows, 'published');
   const proposed = bestOfKind(rows, 'proposed');
   const tie = (reason: string): CellReading => ({ published, proposed, result: 'tie', reason });
-  if (!published || !proposed) return tie('one kind has no row');
+  if (!published || !proposed) {
+    const everyOver = (['published', 'proposed'] as Kind[]).some((k) => (k === 'published' ? !published : !proposed) && rows.some((p) => p.kind === k && isOverBudget(p.row)));
+    return tie(everyOver ? 'every row of one kind is over its budget' : 'one kind has no row');
+  }
   if (rows.some((p) => p.row.budget_kind === 'iterations')) return tie('iteration rows run each method at its own work and never produce a win');
   if (Math.min(published.row.n_seeds, proposed.row.n_seeds) < WIN_MIN_SEEDS) return tie(`fewer than ${WIN_MIN_SEEDS} seeds`);
   const a = published.row.rel_std_pct;

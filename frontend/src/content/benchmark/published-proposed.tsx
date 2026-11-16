@@ -4,7 +4,7 @@
 import { BarChart, Cite, DocSection, PlotCard, useShellLang, type BarDatum } from '@fasl-work/caos-app-shell';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import { bestOfKind, bestPublished, budgetText, cellReading, type Reading, WIN_MIN_DIFF_PCT, KIND_ORDER, KIND_TEXT, mostUniform, nameOf, pickRows, type Lang, type Picked } from './data';
+import { isOverBudget, overBudgetText, OVER_BUDGET_FACTOR, bestOfKind, bestPublished, budgetText, cellReading, type Reading, WIN_MIN_DIFF_PCT, KIND_ORDER, KIND_TEXT, mostUniform, nameOf, pickRows, type Lang, type Picked } from './data';
 import { CellControls, Note, Ready, TableWrap, KIND_LEGEND, KIND_TONE, useBench, useNum, useResolved } from './shared';
 
 /** What the cell is read as: a win only under the rule of `cellReading`, else a tie. */
@@ -34,7 +34,16 @@ function KindBody({ res }: { res: BenchmarkResults }) {
         </span>
       </td>
     ) : (
-      <td key={key} className="caos-col-text">{es ? 'sin filas' : 'no rows'}</td>
+      <td key={key} className="caos-col-text" style={{ whiteSpace: 'normal' }}>
+        {rows.some((p) => p.kind === kind && isOverBudget(p.row))
+          ? es ? 'todas las filas fuera de presupuesto' : 'every row over budget'
+          : es ? 'sin filas' : 'no rows'}
+        {rows.filter((p) => p.kind === kind && isOverBudget(p.row)).map((p) => (
+          <span key={p.method} className="caos-plot-note" style={{ display: 'block' }} data-over-budget="true">
+            {nameOf(p.method, lang)}: {overBudgetText(p.row, lang)}
+          </span>
+        ))}
+      </td>
     );
   };
   // the proposed rows against the strongest published row of the same cell
@@ -59,8 +68,8 @@ function KindBody({ res }: { res: BenchmarkResults }) {
         <table className="caos-table" data-state="ready" data-table="kind-summary">
           <caption>
             {es
-              ? `El método publicado y el método propuesto más uniformes en cada geometría, con ${budgetText(budget).es} sobre el dispositivo ${device === 'ideal' ? 'ideal' : 'C08'}. La regla es la de la pestaña de cada geometría: la menor desviación estándar relativa entre los métodos que conservan al menos la mitad de la mejor eficiencia de su tipo de método. Un método ajustado se rotula como tal. La última columna lee la celda: gana un tipo de método solo si los dos tienen al menos 5 semillas, sus rangos intercuartílicos no se solapan y sus medianas difieren al menos ${esNum(WIN_MIN_DIFF_PCT)} puntos porcentuales; si no, es un empate, y una celda de iteraciones nunca da un ganador (cada método corre sus propias iteraciones).`
-              : `The most uniform published method and proposed method on each geometry, at ${budgetText(budget).en} on the ${device === 'ideal' ? 'ideal' : 'C08'} device. The rule is the one of each geometry tab: the lowest relative standard deviation among the methods that keep at least half of the best efficiency of their kind of method. A tuned method is labelled as such. The last column reads the cell: one kind of method wins only if both have at least 5 seeds, their interquartile ranges do not overlap and their medians differ by at least ${WIN_MIN_DIFF_PCT} percentage points; otherwise it is a tie, and an iteration cell never gives a winner (each method runs its own iterations).`}
+              ? `El método publicado y el método propuesto más uniformes en cada geometría, con ${budgetText(budget).es} sobre el dispositivo ${device === 'ideal' ? 'ideal' : 'C08'}. La regla es la de la pestaña de cada geometría: la menor desviación estándar relativa entre los métodos que conservan al menos la mitad de la mejor eficiencia de su tipo de método. Un método ajustado se rotula como tal. La última columna lee la celda: gana un tipo de método solo si los dos tienen al menos 5 semillas, sus rangos intercuartílicos no se solapan y sus medianas difieren al menos ${esNum(WIN_MIN_DIFF_PCT)} puntos porcentuales; si no, es un empate; una fila de tiempo que pasa de ${esNum(OVER_BUDGET_FACTOR)} veces su presupuesto se rotula como fuera de presupuesto y nunca es el mejor de su tipo ni parte de una victoria, y una celda de iteraciones nunca da un ganador (cada método corre sus propias iteraciones).`
+              : `The most uniform published method and proposed method on each geometry, at ${budgetText(budget).en} on the ${device === 'ideal' ? 'ideal' : 'C08'} device. The rule is the one of each geometry tab: the lowest relative standard deviation among the methods that keep at least half of the best efficiency of their kind of method. A tuned method is labelled as such. The last column reads the cell: one kind of method wins only if both have at least 5 seeds, their interquartile ranges do not overlap and their medians differ by at least ${WIN_MIN_DIFF_PCT} percentage points; otherwise it is a tie; a time row that runs past ${OVER_BUDGET_FACTOR} times its budget is labelled as over budget and is never the best of its kind nor part of a win, and an iteration cell never gives a winner (each method runs its own iterations).`}
           </caption>
           <thead>
             <tr>

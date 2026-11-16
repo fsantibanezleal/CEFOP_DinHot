@@ -6,7 +6,7 @@ import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useState } from 'react';
 import type { BenchmarkResults } from '../../lib/contract.types';
 import { P } from '../bi';
-import { b5Cells, budgetText, frontOf, hypervolume, nonDominated, pickRows, nameOf, KIND_ORDER, KIND_TEXT, verdictOf, type Lang } from './data';
+import { b5Cells, budgetText, frontOf, hypervolume, nonDominated, pickRows, nameOf, isOverBudget, overBudgetText, KIND_ORDER, KIND_TEXT, verdictOf, type Lang } from './data';
 import { CellControls, Note, Ready, TableWrap, useBench, useNum, useResolved } from './shared';
 
 function ParetoBody({ res }: { res: BenchmarkResults }) {
@@ -23,7 +23,7 @@ function ParetoBody({ res }: { res: BenchmarkResults }) {
   const rows = pickRows(res, geometry, device, budget, 'default');
   const front = frontOf(res, geometry);
   const pts = [
-    ...rows.map((p) => ({ kind: p.kind ?? 'none', u: p.row.uniformity.median, e: p.row.efficiency.median, name: nameOf(p.method, lang) })),
+    ...rows.map((p) => ({ kind: p.kind ?? 'none', u: p.row.uniformity.median, e: p.row.efficiency.median, name: isOverBudget(p.row) ? `${nameOf(p.method, lang)} (${overBudgetText(p.row, lang)})` : nameOf(p.method, lang) })),
     ...front.map((p) => ({ kind: 'front' as const, u: p.u, e: p.e, name: `Efficiency-uniformity continuation, lambda ${formatNumber(p.lambda, lang, { digits: 3 })}` })),
   ];
   const xs = pts.map((p) => p.u);

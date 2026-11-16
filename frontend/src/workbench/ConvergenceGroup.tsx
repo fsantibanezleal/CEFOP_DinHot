@@ -4,7 +4,7 @@ import { ChipGroup, PlotCard, SubTabs, ViewsRow } from '@fasl-work/caos-app-shel
 import { UPlotChart } from '@fasl-work/caos-app-shell/chart';
 import { useMemo, useState } from 'react';
 import { loadBenchmark, useArtifact } from '../api/artifacts';
-import { budgetId, budgetsOf, budgetText, frontOf, nameOf, parseBudget, pickRows, type Device } from '../content/benchmark/data';
+import { budgetId, budgetsOf, budgetText, frontOf, nameOf, overBudgetText, parseBudget, pickRows, type Device } from '../content/benchmark/data';
 import type { ChartSeries } from '@fasl-work/caos-app-shell/chart';
 import { ReadinessNote } from '../readiness/ReadinessNote';
 import { cardOf } from './HologramGroup';
@@ -179,7 +179,9 @@ export function ParetoView({ sel }: { sel: Selection }) {
     const name = nameOf(e.method ?? '', lang);
     const seeds = row ? t(`, ${row.row.n_seeds} seeds, spread ${fmt(row.row.rel_std_pct.median, { decimals: 2 })} %`, `, ${row.row.n_seeds} semillas, dispersión ${fmt(row.row.rel_std_pct.median, { decimals: 2 })} %`) : '';
     const where = e.kind === 'case' ? t(' in this case', ' en este caso') : '';
-    return t(`${name}${where}: efficiency ${fmt(e.y * 100, { decimals: 1 })} %, uniformity ${fmt(e.x, { decimals: 3 })}${seeds}`, `${name}${where}: eficiencia ${fmt(e.y * 100, { decimals: 1 })} %, uniformidad ${fmt(e.x, { decimals: 3 })}${seeds}`);
+    const over = row ? overBudgetText(row.row, lang) : null;
+    const flag = over ? ` (${over})` : '';
+    return t(`${name}${where}: efficiency ${fmt(e.y * 100, { decimals: 1 })} %, uniformity ${fmt(e.x, { decimals: 3 })}${seeds}${flag}`, `${name}${where}: eficiencia ${fmt(e.y * 100, { decimals: 1 })} %, uniformidad ${fmt(e.x, { decimals: 3 })}${seeds}${flag}`);
   };
 
   // the geometry's name already states its size; the line under the choices gives the trap count of the one shown (G5: a long option at 390)

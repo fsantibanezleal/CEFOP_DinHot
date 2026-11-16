@@ -1,7 +1,7 @@
 // V6, the Pareto view: which benchmark cell it opens on, which method it recommends and why, and the seed intervals it draws. Pure functions
 // of the benchmark document (`benchmark-results`) and of the case, so the view shows whatever the document holds and a test can plant one.
 import { formatNumber } from '@fasl-work/caos-app-shell';
-import { nameOf, type Budget, type Device, type Picked } from '../content/benchmark/data';
+import { isOverBudget, nameOf, type Budget, type Device, type Picked } from '../content/benchmark/data';
 import type { BenchmarkResults } from '../lib/contract.types';
 
 type Lang = 'en' | 'es';
@@ -91,7 +91,8 @@ export interface Recommendation {
 }
 
 /** The recommended method of a cell (see EFF_WINDOW), or null when the cell has no rows. Computed from the rows, never typed. */
-export function recommend(rows: readonly Picked[]): Recommendation | null {
+export function recommend(all: readonly Picked[]): Recommendation | null {
+  const rows = all.filter((p) => !isOverBudget(p.row)); // a time row past its budget is not at equal time: shown and labelled, never recommended
   if (!rows.length) return null;
   const best = rows.reduce((a, b) => (b.row.efficiency.median > a.row.efficiency.median ? b : a));
   const inside = rows.filter((p) => best.row.efficiency.median - p.row.efficiency.median <= EFF_WINDOW + 1e-12).sort((a, b) => a.row.rel_std_pct.median - b.row.rel_std_pct.median);

@@ -86,6 +86,14 @@ describe('the recommended method', () => {
   it('is null for a cell without rows, never a method typed in', () => {
     expect(recommend([])).toBeNull();
   });
+
+  it('never recommends a time row that ran past 1.5 times its budget, and recommends nothing when every row did', () => {
+    const t = (method: string, eff: number, std: number, time: number): BenchmarkRow => row(method, 'G1', eff, std, { budget_kind: 'time', budget: 1, time_s: stat(time) });
+    const d = doc([t('M04', 0.8, 5, 1.0), t('B1', 0.8, 0.5, 6.4), t('M06', 0.79, 3, 1.5)]);
+    const picked = pickRows(d, 'G1', 'ideal', { kind: 'time', value: 1 }, 'default');
+    expect(recommend(picked)!.pick.method).toBe('M06');
+    expect(recommend(picked.filter((p) => p.method === 'B1'))).toBeNull();
+  });
 });
 
 describe('a cell without rows', () => {

@@ -7,6 +7,9 @@ import type { BenchmarkResults, BenchmarkRow } from '../../lib/contract.types';
 import {
   b5Cells,
   cellReading,
+  isOverBudget,
+  overBudgetText,
+  OVER_BUDGET_FACTOR,
   requireBenchmarkContract,
   WIN_MIN_DIFF_PCT,
   WIN_MIN_SEEDS,
@@ -329,5 +332,53 @@ describe('adversarial: a win is never read without its floors', () => {
     expect(cellReading(picked([row('M06', 8, 0.109, 0.1085, 0.1095), row('B1', 8, 0.1, 0.0995, 0.1005)])).result).toBe('tie');
     const it = picked([row('M06', 8, 5, 4.8, 5.2), row('B1', 8, 2, 1.9, 2.1)]).map((p) => ({ ...p, row: { ...p.row, budget_kind: 'iterations' as const } }));
     expect(cellReading(it).result).toBe('tie');
+  });
+});
+
+// The over-budget rule (plan decision 10, requirement BM-017): the same fixture the Python side reads
+// (tests/manuscripts/test_over_budget_rule.py).
+const overFixture = JSON.parse(readFileSync(new URL('tests/fixtures/benchmark-over-budget.json', root), 'utf8')) as {
+  over_budget_factor: number;
+  cells: (WinCell & { reason_contains: string })[];
+};
+
+describe('the over-budget rule of a time row', () => {
+  it('states the factor of the shared fixture', () => {
+    expect(OVER_BUDGET_FACTOR).toBe(overFixture.over_budget_factor);
+    expect(OVER_BUDGET_FACTOR).toBe(1.5);
+  });
+  for (const c of overFixture.cells) {
+    it(`reads the shared over-budget cell: ${c.name}`, () => {
+      const got = cellReading(picked(c.rows));
+      expect(got.result).toBe(c.result);
+      expect(got.published?.method ?? null).toBe(c.best_published);
+      expect(got.proposed?.method ?? null).toBe(c.best_proposed);
+      expect(got.reason).toContain(c.reason_contains);
+    });
+  }
+  it('isOverBudget: at 1.5 times is within, past it is over, no time_s is over, other budget kinds are untouched', () => {
+    const base = overFixture.cells[3].rows[1] as BenchmarkRow;
+    const withTime = (m: number | null, extra: Partial<BenchmarkRow> = {}) =>
+      ({ ...base, budget_kind: 'time', budget: 1, time_s: m === null ? undefined : { median: m, q1: m, q3: m }, ...extra }) as BenchmarkRow;
+    expect(isOverBudget(withTime(1))).toBe(false);
+    expect(isOverBudget(withTime(1.5))).toBe(false);
+    expect(isOverBudget(withTime(1.51))).toBe(true);
+    expect(isOverBudget(withTime(null))).toBe(true);
+    expect(isOverBudget(withTime(99, { budget_kind: 'iterations', budget: 30 }))).toBe(false);
+    expect(isOverBudget(withTime(900, { budget_kind: 'converged', budget: 300 }))).toBe(false);
+  });
+  it('must refute: an over-budget row is never a best nor part of a win', () => {
+    for (const c of overFixture.cells) {
+      const got = cellReading(picked(c.rows));
+      for (const side of [got.published, got.proposed]) if (side) expect(isOverBudget(side.row)).toBe(false);
+    }
+  });
+  it('labels an over-budget row with its measured time and budget in both languages, and a row within its budget with nothing', () => {
+    const base = overFixture.cells[3].rows[1] as BenchmarkRow;
+    const at = (m: number, budget = 1) => ({ ...base, budget_kind: 'time', budget, time_s: { median: m, q1: m, q3: m } }) as BenchmarkRow;
+    expect(overBudgetText(at(6.4), 'en')).toBe('over budget: 6.4 s for 1 s');
+    expect(overBudgetText(at(6.4), 'es')).toBe('fuera de presupuesto: 6,4 s para 1 s');
+    expect(overBudgetText(at(1.5), 'en')).toBeNull();
+    expect(overBudgetText({ ...at(1), time_s: undefined } as unknown as BenchmarkRow, 'es')).toContain('sin tiempo medido');
   });
 });
