@@ -42,6 +42,7 @@ from pathlib import Path
 import numpy as np
 
 from .. import __version__
+from ..core.power import opt_out_of_power_throttling
 from ..io.formats import read_json, write_json
 from ..model.holo import methods as registry
 from ..model.holo.core.types import Budget
@@ -262,7 +263,8 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
                                      "plane). The converged row runs to 300 iterations or 20 s; every method stops at the deadline of a time row in every "
                                      "phase and every row records its work (iterations and forward plus adjoint evaluations); the time and "
                                      "converged rows run at least 5 seeds, the iteration rows run seeds until 600 s of wall clock "
-                                     "(at least 2, n_seeds says how many). Times are wall-clock "
+                                     "(at least 2, n_seeds says how many). Every worker process opts out of the operating system's power "
+                                     "throttling where the system has it. Times are wall-clock "
                                      "seconds of the machine that ran the benchmark, under shared load, and differ "
                                      "between runs.",
                                      "Ideal, y el dispositivo C08 (fase de 4 bits, diafonía sigma 1,24 q 1,80 en 3 x 3 "
@@ -273,6 +275,7 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
                                      "300 iteraciones o 20 s; todo método se detiene en el plazo de una fila de tiempo en cada fase y cada fila "
                                      "registra su trabajo (iteraciones y evaluaciones directas más adjuntas); las filas de tiempo y "
                                      "convergida corren al menos 5 semillas, las de iteraciones corren semillas hasta 600 s de reloj (al menos 2, n_seeds dice cuántas). "
+                                     "Todo proceso de trabajo se excluye de la limitación de energía del sistema operativo donde el sistema la tiene. "
                                      "Los tiempos son segundos de reloj de la máquina que ejecutó el "
                                      "benchmark, con carga compartida, y difieren entre ejecuciones.")},
         "geometries": [{"id": g, "name": G.GEOMETRIES[g][0], "n_traps": G.n_traps(g, proto.reduced), "dims": G.GEOMETRIES[g][2]}
@@ -337,6 +340,7 @@ def run(derived_root: str | Path, *, seeds: int = 20, workers: int = 12, reduced
         return d
 
     n_workers = max(1, min(int(workers), MAX_WORKERS))
+    opt_out_of_power_throttling()   # the calling process (n_workers == 1 runs here); the pool's workers do it as initializer
 
     refused: set[tuple[str, str]] = set()
 
@@ -365,7 +369,7 @@ def run(derived_root: str | Path, *, seeds: int = 20, workers: int = 12, reduced
         for t in tasks:
             absorb(run_group(t))
     else:
-        with ProcessPoolExecutor(max_workers=n_workers) as pool:
+        with ProcessPoolExecutor(max_workers=n_workers, initializer=opt_out_of_power_throttling) as pool:
             # absorb each group as it finishes, so a slow group never holds back the flush of the others
             for fut in as_completed([pool.submit(run_group, t) for t in tasks]):
                 absorb(fut.result())
