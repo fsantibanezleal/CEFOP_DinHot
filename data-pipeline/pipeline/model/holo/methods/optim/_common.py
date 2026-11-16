@@ -322,6 +322,11 @@ def cg_minimize(fun, x0: np.ndarray, iterations: int, *, callback=None, deadline
     ``callback(i, x, f, aux)`` is called after every accepted step and stops the run when it returns True. The cost
     value never increases.
 
+    ``deadline`` (``deadline_of``) is honoured in every phase: before each iteration and before each trial step of a line
+    search (a search cut by the deadline returns the lowest trial that satisfies the sufficient-decrease condition, or
+    no step). A deadline already past returns the start unevaluated (``f`` NaN, ``aux`` None, zero iterations). With
+    ``deadline=None`` nothing changes.
+
     Straight-through models. Inside ``staircase_search()`` (opt-in: M13), when ``fun`` is a bound method of an object whose
     ``smooth`` attribute is False (a cost on a device that quantizes the phase: the value is evaluated on the rounded phase,
     the backward pass is the identity), the
@@ -340,6 +345,8 @@ def cg_minimize(fun, x0: np.ndarray, iterations: int, *, callback=None, deadline
     if nonsmooth is None:
         nonsmooth = _STAIRCASE.get() and not getattr(getattr(fun, "__self__", None), "smooth", True)
     x = np.array(x0, dtype=np.float64)
+    if expired(deadline):                   # nothing is evaluated past the deadline: the start is the result (``f`` is NaN)
+        return OptResult(x, float("nan"), 0, 0, None)
     f, g, aux = fun(x)
     evals = 1
     d = -g
@@ -362,11 +369,11 @@ def cg_minimize(fun, x0: np.ndarray, iterations: int, *, callback=None, deadline
             else:
                 a0 = 0.1 / max(float(np.abs(d).max()), 1e-300)
             if nonsmooth:
-                step, forced, n_ev = _sufficient_decrease(fun, x, d, f, gd, a0, c1, max_line_evals)
+                step, forced, n_ev = _sufficient_decrease(fun, x, d, f, gd, a0, c1, max_line_evals, deadline)
             else:
-                step, n_ev = _wolfe(fun, x, d, f, gd, a0, c1, c2, max_line_evals)
+                step, n_ev = _wolfe(fun, x, d, f, gd, a0, c1, c2, max_line_evals, deadline)
             evals += n_ev
-            if step is not None:
+            if step is not None or expired(deadline):
                 break
         if step is None and forced is not None:
             step = forced                   # no step lowers a staircase cost: walk on to the lowest trial, keep the best point
@@ -385,14 +392,23 @@ def cg_minimize(fun, x0: np.ndarray, iterations: int, *, callback=None, deadline
     return OptResult(best[0], best[1], it, evals, best[2])
 
 
-def _wolfe(fun, x, d, f0, g0, a1, c1, c2, max_evals):
-    """Strong-Wolfe step along ``d``; returns ``((a, f, grad, aux) | None, evaluations)``."""
+class _Expired(Exception):
+    """The deadline passed before a trial step of a line search (caught inside the search, never raised to a caller)."""
+
+
+def _wolfe(fun, x, d, f0, g0, a1, c1, c2, max_evals, deadline=None):
+    """Strong-Wolfe step along ``d``; returns ``((a, f, grad, aux) | None, evaluations)``.
+
+    A deadline that passes between two trial steps ends the search with the lowest trial that satisfies sufficient decrease
+    (``f(a) <= f0 + c1 a g0``), or with no step."""
     cache: dict[float, tuple] = {0.0: (f0, g0, None, None)}
     evals = 0
 
     def phi(a):
         nonlocal evals
         if a not in cache:
+            if expired(deadline):
+                raise _Expired
             fa, ga, aux = fun(x + a * d)
             evals += 1
             cache[a] = (fa, float(np.sum(ga * d)), ga, aux)
@@ -422,28 +438,32 @@ def _wolfe(fun, x, d, f0, g0, a1, c1, c2, max_evals):
     a_prev, f_prev = 0.0, f0
     a = a1
     result = None
-    for i in range(max_evals):
-        fa, ga = phi(a)[:2]
-        if not math.isfinite(fa) or fa > f0 + c1 * a * g0 or (i > 0 and fa >= f_prev):
-            result = zoom(a_prev, a)
-            break
-        if abs(ga) <= -c2 * g0:
-            result = a
-            break
-        if ga >= 0:
-            result = zoom(a, a_prev)
-            break
-        a_prev, f_prev = a, fa
-        a *= 2.0
-    else:
-        result = a_prev if a_prev > 0 else None
+    try:
+        for i in range(max_evals):
+            fa, ga = phi(a)[:2]
+            if not math.isfinite(fa) or fa > f0 + c1 * a * g0 or (i > 0 and fa >= f_prev):
+                result = zoom(a_prev, a)
+                break
+            if abs(ga) <= -c2 * g0:
+                result = a
+                break
+            if ga >= 0:
+                result = zoom(a, a_prev)
+                break
+            a_prev, f_prev = a, fa
+            a *= 2.0
+        else:
+            result = a_prev if a_prev > 0 else None
+    except _Expired:
+        ok = [t for t, v in cache.items() if t > 0 and math.isfinite(v[0]) and v[0] < f0 and v[0] <= f0 + c1 * t * g0]
+        result = min(ok, key=lambda t: cache[t][0]) if ok else None
     if result is None or result <= 0 or not (cache[result][0] < f0):
         return None, evals
     fa, _, ga, aux = cache[result]
     return (result, fa, ga, aux), evals
 
 
-def _sufficient_decrease(fun, x, d, f0, g0, a1, c1, max_evals):
+def _sufficient_decrease(fun, x, d, f0, g0, a1, c1, max_evals, deadline=None):
     """Ladder search along ``d`` for a staircase cost: ``(step, lowest, evaluations)``, steps as ``_wolfe`` returns them.
 
     A staircase is flat for steps too short to move a pixel across a level and jumps for longer ones, so the ladder goes in
@@ -451,7 +471,7 @@ def _sufficient_decrease(fun, x, d, f0, g0, a1, c1, max_evals):
     the doubling: the useful step may be longer), and when no doubled step satisfied the condition either, halved from ``a1``
     (``DOUBLINGS`` and ``HALVINGS`` trials at most, within ``max_evals``). ``step`` is the lowest trial that satisfies
     ``f(a) <= f0 + c1 a g0`` and ``f(a) < f0`` (``None`` if none does); ``lowest`` is the lowest trial of all, which the caller
-    may walk to when ``step`` is ``None``.
+    may walk to when ``step`` is ``None``. No trial starts after the ``deadline``.
     """
     best: tuple | None = None
     lowest: tuple | None = None
@@ -459,6 +479,8 @@ def _sufficient_decrease(fun, x, d, f0, g0, a1, c1, max_evals):
 
     def trial(a):
         nonlocal best, lowest, evals
+        if expired(deadline):
+            raise _Expired
         fa, ga, aux = fun(x + a * d)
         evals += 1
         if math.isfinite(fa) and (lowest is None or fa < lowest[1]):
@@ -469,18 +491,21 @@ def _sufficient_decrease(fun, x, d, f0, g0, a1, c1, max_evals):
             return True
         return False
 
-    a = a1
-    for _ in range(min(DOUBLINGS + 1, max_evals)):
-        improved = trial(a)
-        if best is not None and not improved:
-            break                           # the value stopped falling after a good step
-        a *= 2.0
-    if best is None:
+    try:
         a = a1
-        for _ in range(min(HALVINGS, max_evals - evals)):
-            a *= 0.5
-            if trial(a):
-                break
+        for _ in range(min(DOUBLINGS + 1, max_evals)):
+            improved = trial(a)
+            if best is not None and not improved:
+                break                       # the value stopped falling after a good step
+            a *= 2.0
+        if best is None:
+            a = a1
+            for _ in range(min(HALVINGS, max_evals - evals)):
+                a *= 0.5
+                if trial(a):
+                    break
+    except _Expired:
+        pass                                # the deadline passed: the best trial so far stands
     return best, lowest, evals
 
 
