@@ -13,6 +13,7 @@ standard library only).
 | `setup.sh` / `setup.ps1` | forwards to numbered initialization: external declared runtimes and locked frontend dependencies; optional `--notebooks` (`-Notebooks`) adds the teaching runtime |
 | `run_notebooks.py` | executes the notebooks top to bottom in a fresh kernel and writes the outputs in place; `--check` runs copies and writes nothing; `--only <path>` runs one (a local release gate, never CI) |
 | `precompute.sh` / `precompute.ps1` | forwards to external generation; `--release` (`-Release`) explicitly promotes the validated staged set, never CI |
+| `extract_manuscripts.py` | after every promoted bake or benchmark: re-extracts every manuscript number that reads them, in dependency order (the device-aware and continuation papers' readings, then the technical report's acceptance, macros and tables); `--dry-run`, `--only`, `--skip-engine` (a local release step, never CI) |
 | `dev.sh` / `dev.ps1`, `smoke.sh` / `smoke.ps1` | local development and a sandboxed smoke run |
 | `instantiate.py` | makes a product from the template (identity, licence, version, deploy place) |
 
