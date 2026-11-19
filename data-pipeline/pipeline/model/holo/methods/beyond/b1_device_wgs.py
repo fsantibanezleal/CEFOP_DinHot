@@ -69,7 +69,9 @@ the square lattice (29 against 14 percent without it, at an efficiency of 0.60 a
 against 8.9), and leaves the random and quasi-periodic sets unchanged: no form dominates there.
 Equal work (2026-11-14). ``budget.time_s`` is a deadline in every phase: the warm start stops at it (``weighted_gs`` takes the
 deadline), the outer loop checks it, and inside a CG run every value-and-gradient evaluation of a line search checks it
-(``deadline_fun``), so a run overruns by at most one evaluation of the device model. A run cut by the deadline keeps the
+(``deadline_fun``), so no phase starts new work once the deadline has passed; the work in progress still finishes, and the
+0.02.004 benchmark's 1 s rows of this method on the C08 device end 0.11 to 0.40 s after the deadline (several evaluations of the
+device model, not one; the over-budget rule of the report reads them). A run cut by the deadline keeps the
 iterates it reached (the last accepted CG point) and the safeguard above still picks the returned one. ``meta['iterations']`` is the
 work done, the warm iterations plus the accepted CG steps, and the benchmark row's ``evaluations`` is the engine's count of
 forward and adjoint evaluations of the run.
