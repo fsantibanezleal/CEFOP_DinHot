@@ -135,8 +135,8 @@
     {
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.23788733",
-      "title": "Device-Aware Weighted Gerchberg-Saxton and Flicker-Bounded Phase-Continuous Sequences for Holographic Optical Trap Arrays",
-      "version": "0.04",
+      "title": "Device-Aware Conjugate-Gradient Refinement of Holographic Optical Trap Arrays: Neither the Efficiency-Level Loss nor the Weight Update Improves on the Normalized-Error Loss of Schroff et al., the Safeguard Never Acts, and the Device Model in the Loop Carries the Gain, in Simulation",
+      "version": "0.05",
       "covers": [
         "BS-1"
       ]
