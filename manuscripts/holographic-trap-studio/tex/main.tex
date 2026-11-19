@@ -31,6 +31,8 @@
 \renewenvironment{figure}[1][]{\origfigure[!htbp]}{\endorigfigure}
 \input{../data/studio_numbers.tex}
 \input{../data/methods_numbers.tex}
+% The deadline reading of the benchmark (the rows over budget, the shaped fields), written by figures/make_figs_more.py from the results file.
+\input{../figures/bench_deadline.tex}
 
 % Generated numbers addressed by an identifier: the measured acceptance text of a method, the keyword default of a parameter,
 % the version of a contract and the test count of a folder (all written by data/extract_methods.py).
@@ -52,8 +54,10 @@
 \newcommand{\ext}[2]{\csname #1:#2\endcsname}
 \importmacros{b5}{../../efficiency-uniformity-front/data/b5_numbers.tex}{nSeeds,nLambda,hvFront,hvFivePub,hvFiveDiff,hvFiveLo,hvFiveHi,hvFiveGe,hvFourPub,hvFourDiff,hvFourLo,hvFourHi,hvRefFiveUNineDiff,hvRefFiveUNineLo,hvRefFiveUNineHi,hvRefFiveUNineShare,domGSWSeeds,domPFSeeds,frontDomMin,frontDomMax}
 \importmacros{da}{../../device-aware-refinement/data/beyond_numbers.tex}{schroffXN,schroffXSig,schroffFN,schroffFSig,ablBFullSig,ablBFFullSig,ablBWeightsRatio,sigmaBOne,sigmaMsevenThirty,sigmaNoModel,ratioOneGm,ratioOneCiLo,ratioOneCiHi}
+\importmacros{b5s}{../../efficiency-uniformity-front/figures/fig_numbers.tex}{spreadBudget,spreadCells,spreadWins,spreadWinList}
+\importmacros{ab}{../../aberration-robust-hologram/data/robust_numbers.tex}{ratioAllMed,ratioAllCiLo,ratioAllCiHi,nSeedsAll}
 \importmacros{wp}{../../learned-warm-start/data/warm_numbers.tex}{ratioRoverNLo,ratioRoverNHi}
-\importmacros{fl}{../../flicker-bounded-sequences/data/flicker_numbers.tex}{accBTransMean,accBTransCiLo,accBTransCiHi,accLpiTransMean,accKimFiveTransMean,accBStepMax,accKimFiveStepMax,readProfileN,readProfileDefaultLpiDip,readProfileDefaultKimFiveDip,readProfileDefaultKimTenDip,readProfileLinearLpiDip,readProfileLinearKimFiveDip,readProfileLinearKimTenDip,ablTLinearMean,accBSigmaMed,accKimFiveSigmaMed,longAMet,longSeeds}
+\importmacros{fl}{../../flicker-bounded-sequences/data/flicker_numbers.tex}{accBTransMean,accBTransCiLo,accBTransCiHi,accLpiTransMean,accKimFiveTransMean,accBStepMax,accKimFiveStepMax,readProfileN,readProfileDefaultLpiDip,readProfileDefaultKimFiveDip,readProfileDefaultKimTenDip,readProfileLinearLpiDip,readProfileLinearKimFiveDip,readProfileLinearKimTenDip,ablTLinearMean,accBSigmaMed,accKimFiveSigmaMed,longAMet,longSeeds,cTenMoving,cTenTraps,cTenFrames,cTenSeeds,cTenMet,cTenMetMin,cTenMetMax,cTenBLeadsKimFive,cTenReadKimFive}
 
 % Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
 % publishing tool when the version DOI is reserved (the version DOI holds the concept DOI as a placeholder until then).
@@ -77,7 +81,7 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 
 \begin{document}
 
-\title{DinHot: A Holographic Optical Trap Studio That Compares Hologram Methods at Equal Wall Clock on a Device Model, Where Most Benchmark Cells Tie}
+\title{DinHot: A Holographic Optical Trap Studio That Compares Hologram Methods at a One-Second Deadline on a Device Model, Where Most Benchmark Cells Tie}
 \author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
 \small CAOS open-research programme, Santiago, Chile\\
 \small \texttt{fsantibanez@gmail.com}}
@@ -87,7 +91,7 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 \headerblock
 
 \begin{abstract}
-A phase-only spatial light modulator (SLM) can form hundreds to thousands of optical traps at once, if its phase pattern is computed well. The largest published neutral-atom array holds \execAtoms{} atoms with a trap-depth spread of \execSpread{} percent. DinHot is an open studio that runs \nLadder{} methods (\nPublished{} published ones and \nProposed{} proposed here) on the same task, with the same seeds and metrics, on a scalar Fourier model with a device model. The report gives twelve data contracts, every method with its equations, \nCases{} cases and a benchmark of \benchRows{} rows. The benchmark gives every method the same wall clock and reads a cell as a win only with five seeds on each side, disjoint interquartile ranges and a gap of 0.01 percentage points: the published methods win \benchWinsIdealPublished{} and the proposed ones \benchWinsIdealProposed{} of \benchGeoIdeal{} geometries on the ideal device, and \benchWinsDevicePublished{} against \benchWinsDeviceProposed{} of \benchGeoDevice{} on a crosstalk device, the other cells tying. On the ring with crosstalk the device-aware refinement buys efficiency, not spread, at about \ringTimeBOneSec{} s per hologram against \ringTimePubSec{} s. Over \hlN{} baked cases, phase-fixed weighted Gerchberg--Saxton leaves a median spread of \hlSigmaMseven{} percent against \hlSigmaMfour{} percent for plain Gerchberg--Saxton. Among the proposed methods, the aberration-robust hologram meets a narrowed criterion, the efficiency-uniformity continuation is not a Pareto front, the learned warm start is refuted by its control, the flicker-bounded sequence has a paper of its own, and the device-aware refinement is a negative result: its own elements add nothing over the normalized-error loss of Schroff et al., and the device model in the loop carries the gain. A three-plane network beats its baseline at equal wall clock on all \cghN{} held-out volumes (median accuracy ratio \cghMed{}). The model is simulated, not a calibrated instrument.
+A phase-only spatial light modulator (SLM) can form hundreds to thousands of optical traps at once. The largest published neutral-atom array holds \execAtoms{} atoms with a trap-depth spread of \execSpread{} percent. DinHot is an open studio that runs \nLadder{} methods (\nPublished{} published ones and \nProposed{} proposed here) on the same task, with the same seeds and metrics, on a scalar Fourier model with a device model. The report gives twelve data contracts, every method with its equations, \nCases{} cases and \benchRows{} benchmark rows. The benchmark gives every method a deadline of \dlReadS{} s; a row whose median wall clock exceeds \dlFactor{} times it (\dlOverRead{} of \dlRowsRead{} rows) is over budget and is never a best or a win. A cell is a win only with five seeds on each side, disjoint interquartile ranges and a gap of 0.01 percentage points: on the ideal device the published methods win \benchWinsIdealPublished{} and the proposed ones \benchWinsIdealProposed{} of \benchGeoIdeal{} geometries (those of the \dlWinIdealProposedMethods{}), and on a crosstalk device \benchWinsDevicePublished{} against \benchWinsDeviceProposed{} of \benchGeoDevice{} (those of the \dlWinDeviceProposedMethods{}, the device model with a weighted-GS warm start, which the warm-started loss of Schroff et al. matches), the other cells tying. Over \hlN{} baked cases, phase-fixed weighted Gerchberg--Saxton leaves a median spread of \hlSigmaMseven{} percent against \hlSigmaMfour{} percent for plain Gerchberg--Saxton. The aberration-robust hologram meets a narrowed criterion (a median ratio of \ext{ab}{ratioAllMed} over \ext{ab}{nSeedsAll} seeds), the continuation is not a Pareto front, the learned warm start is refuted by its control and is out of the benchmark, and the device-aware refinement is a negative result. A three-plane network beats its baseline at equal wall clock on all \cghN{} held-out volumes (median accuracy ratio \cghMed{}). The model is simulated, not a calibrated instrument.
 \end{abstract}
 
 \noindent\textbf{Keywords:} holographic optical tweezers, spatial light modulator, weighted Gerchberg--Saxton, pixel crosstalk, neutral-atom arrays, hologram benchmarking, learned holography.

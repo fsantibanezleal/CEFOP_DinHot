@@ -2,9 +2,7 @@
   "kind": "technical-report",
   "title_support": [
     "tab:benchmark",
-    "tab:benchmethods",
-    "tab:ring",
-    "fig:bench"
+    "tab:ring"
   ],
   "methods": {
     "M01": "sec:m01",
