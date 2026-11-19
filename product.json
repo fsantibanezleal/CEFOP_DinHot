@@ -122,8 +122,8 @@
     {
       "kind": "technical-report",
       "concept_doi": "10.5281/zenodo.23788731",
-      "title": "DinHot: A Holographic Optical Trap Studio Comparing Hologram Methods on a Device Model",
-      "version": "0.02.003",
+      "title": "DinHot: A Holographic Optical Trap Studio That Compares Hologram Methods at a One-Second Deadline on a Device Model, Where Most Benchmark Cells Tie",
+      "version": "0.02.004",
       "covers": [
         "BS-1",
         "BS-2",
