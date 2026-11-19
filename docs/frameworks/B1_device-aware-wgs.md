@@ -58,7 +58,7 @@ On the crosstalk device, relative standard deviation at least two times below M0
 | Normalized-error loss of Schroff et al. through the same warm start, device model and optimizer | 0.031 (0.021 to 0.049); factor 159.9 (107.0 to 239.1) | efficiency-level loss 0.030 | indistinguishable at 5 seeds; the safeguard did not act |
 | Full device (4-bit phase, fill factor 0.85) | efficiency-level 0.242, factor 23.5 (18.6 to 29.6); Schroff loss 0.222, factor 26.1 (20.2 to 33.9) | M07 5.85 | the normalized-error loss has the lower median |
 | Weight update on | 0.205 on the crosstalk device and 0.729 on the full device | off: 0.030 and 0.242 | the update makes the spread 7 and 3 times higher |
-| Time per hologram, median | 34 s on the acceptance task, 106 to 356 s on the benchmark geometries at 10 outer iterations | M07 0.74 s at 30 iterations and 2.42 s at 100; 0.05 to 0.89 s on the benchmark geometries | one CPU, other jobs also running: orders of magnitude |
+| Time per hologram, median | 34 s on the acceptance task, 99 to 399 s on the benchmark geometries at 10 outer iterations | M07 0.74 s at 30 iterations and 2.42 s at 100; 0.05 to 0.99 s on the benchmark geometries | one CPU, other jobs also running: orders of magnitude |
 
 Benchmark geometries on the C08 device (flicker), 100 iterations, 2 seeds per cell for the refinement: factors over M07 of G1 1.90, G2 2.04, G3 4.82, G4 1.05, G6a 2.15 and G6b 2.08; both
 thresholds are met on the ring, the random set and the two large sets, not on the square lattice or the quasi-periodic set. At an equal wall-clock time of 1 s the refinement reads as better on 3 of 6 geometries
