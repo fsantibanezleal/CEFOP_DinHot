@@ -1,6 +1,6 @@
 \section{Reproducibility}\label{sec:repro}
 
-The method, the engine, the benchmark and the scripts of this paper are in the repository named in the header block, at the release that carries the engine module \texttt{b5\_pareto} and the benchmark of \benchRows{} rows. Every number of the text is a macro of the file \texttt{data/b5\_numbers.tex}, every table is a file written by the same script, and every figure is a vector file written by a second script from the same data file. Nothing in the text is typed from a run.
+The method, the engine, the benchmark and the scripts of this paper are in the repository named in the header block, at the release that carries the engine module \texttt{b5\_pareto} and the benchmark of \benchRows{} rows. Every number of the text is a macro of the file \texttt{data/b5\_numbers.tex}, every table is a file written by the same script, and every figure is a vector file written by a second script from the same data file; that second script also reads the benchmark file for the spread cells of Section~\ref{sec:res-bench} and writes their table and macros. Nothing in the text is typed from a run.
 The numbers are rebuilt from the repository root with the pipeline environment of the engine by
 \begin{verbatim}
 .venv-pipeline/Scripts/python.exe \

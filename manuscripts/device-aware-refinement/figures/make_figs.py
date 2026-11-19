@@ -257,6 +257,15 @@ def tex_sci(x: float) -> str:
     return f"${mant}\\times10^{{{int(exp)}}}$"
 
 
+def studio_rule():
+    """The win rule of the benchmark, implemented once in the technical report's ``extract_methods.py`` (``cell_result``, ``is_over_budget``)."""
+    sys.dont_write_bytecode = True
+    sys.path.insert(0, str(HERE.parents[1] / "holographic-trap-studio" / "data"))
+    import extract_methods as X  # noqa: PLC0415
+
+    return X
+
+
 def reference_id() -> str:
     """The engine's key of the reference method (phase-fixed WGS) in the benchmark file, read from the engine."""
     sys.dont_write_bytecode = True
@@ -332,6 +341,29 @@ def write_numbers(d: dict, geo: dict[str, list[dict]]) -> None:
     mac("benchOneSecItersMax", f"{max(its1):.0f}")
     mac("benchOneSecOverrunMin", f"{min(over1):.2f}")
     mac("benchOneSecOverrunMax", f"{max(over1):.2f}")
+    # the reading of the rows of the device at the time budget against every method of the cell (the technical report's reading),
+    # and the rule that sets a row aside when it exceeds its budget (``extract_methods.OVER_BUDGET_FACTOR``)
+    X = studio_rule()
+    mac("benchOverFactor", f"{X.OVER_BUDGET_FACTOR:g}")
+    mac("benchOneSecTimeMax", f"{max(trow('B1', g)['time_s']['median'] for g in geos):.2f}")
+    mac("benchOneSecOverN", sum(1 for g in geos if X.is_over_budget(trow("B1", g))))
+    trows = [x for x in res["rows"] if x["budget_kind"] == "time" and x["budget"] == 1.0 and x["params"] == "default" and x["device"] == "device"]
+    reads = {g: X.cell_result([x for x in trows if x["geometry"] == g]) for g in geos}
+    ref_wins = [g for g in geos if reads[g]["result"] == "proposed" and reads[g]["proposed"]["method"] == "B1"]
+    pub_wins = [g for g in geos if reads[g]["result"] == "published"]
+    mac("benchAllRefWins", len(ref_wins))
+    mac("benchAllRefWinList", " and ".join(ref_wins))
+    mac("benchAllRefWinMinN", min(min(reads[g]["published"]["n_seeds"], reads[g]["proposed"]["n_seeds"]) for g in ref_wins))
+    mac("benchAllPubWins", len(pub_wins))
+    mac("benchAllPubWinList", " and ".join(pub_wins))
+    mac("benchAllTies", sum(1 for g in geos if reads[g]["result"] == "tie"))
+    if pub_wins:   # the first geometry where a published method is read as better than the best proposed one
+        c = reads[pub_wins[0]]
+        mac("benchAllPubName", c["published"]["method"] and X.RUN[c["published"]["method"]])
+        mac("benchAllPubN", c["published"]["n_seeds"])
+        mac("benchAllPubSigma", X.sig(c["published"]["rel_std_pct"]["median"]))
+        mac("benchAllPubRefN", c["proposed"]["n_seeds"])
+        mac("benchAllPubRefSigma", X.sig(c["proposed"]["rel_std_pct"]["median"]))
     same = sum(1 for g in geos if abs(row("B1", g, 10)["rel_std_pct"]["median"] - row("B1", g, 100)["rel_std_pct"]["median"]) < 1e-6
                and abs(row("B1", g, 30)["rel_std_pct"]["median"] - row("B1", g, 100)["rel_std_pct"]["median"]) < 1e-6)
     mac("benchBudgetSameCells", same)
