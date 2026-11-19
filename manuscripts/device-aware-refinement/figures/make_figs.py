@@ -341,14 +341,16 @@ def write_numbers(d: dict, geo: dict[str, list[dict]]) -> None:
     mac("benchOneSecItersMax", f"{max(its1):.0f}")
     mac("benchOneSecOverrunMin", f"{min(over1):.2f}")
     mac("benchOneSecOverrunMax", f"{max(over1):.2f}")
-    # the reading of the rows of the device at the time budget against every method of the cell (the technical report's reading),
-    # and the rule that sets a row aside when it exceeds its budget (``extract_methods.OVER_BUDGET_FACTOR``)
+    # the reading of the refinement's own row of the device at the time budget against the best published row of the cell, by the
+    # technical report's rule (``cell_result`` over the published rows of the cell plus the refinement's row: the report's cell
+    # reading compares the best proposed method of any kind, and another proposed method can set it), and the rule that sets a row
+    # aside when it exceeds its budget (``extract_methods.OVER_BUDGET_FACTOR``)
     X = studio_rule()
     mac("benchOverFactor", f"{X.OVER_BUDGET_FACTOR:g}")
     mac("benchOneSecTimeMax", f"{max(trow('B1', g)['time_s']['median'] for g in geos):.2f}")
     mac("benchOneSecOverN", sum(1 for g in geos if X.is_over_budget(trow("B1", g))))
     trows = [x for x in res["rows"] if x["budget_kind"] == "time" and x["budget"] == 1.0 and x["params"] == "default" and x["device"] == "device"]
-    reads = {g: X.cell_result([x for x in trows if x["geometry"] == g]) for g in geos}
+    reads = {g: X.cell_result([x for x in trows if x["geometry"] == g and X.kind_of(x["method"]) == "published"] + [trow("B1", g)]) for g in geos}
     ref_wins = [g for g in geos if reads[g]["result"] == "proposed" and reads[g]["proposed"]["method"] == "B1"]
     pub_wins = [g for g in geos if reads[g]["result"] == "published"]
     mac("benchAllRefWins", len(ref_wins))

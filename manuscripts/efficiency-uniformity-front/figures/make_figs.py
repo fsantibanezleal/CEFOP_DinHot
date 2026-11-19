@@ -13,8 +13,9 @@
   fig-schedule.pdf  the efficiency along the front for three schedules of lambda and for the cold start.
 
 Also written (``spread_cells``): ``tab_spread.tex`` and ``fig_numbers.tex``, the spread cells of the benchmark in which the continuation
-ran (ideal device, the wall-clock row, the technical report's reading by ``extract_methods.cell_result``), read from
-``data/derived/benchmark/results.json``; the text types none of their numbers.
+ran (the ideal device and the device of the benchmark, the longest wall-clock row), read from ``data/derived/benchmark/results.json``;
+the continuation's own record is its row against the best published row of each cell by ``extract_methods.cell_result``, kept apart from
+the cell reading of the technical report; the text types none of their numbers.
 
 Run from the repository root after the measurement:  python manuscripts/efficiency-uniformity-front/figures/make_figs.py
 Deps: matplotlib, numpy (the notebook environment). Every figure is a vector PDF readable in grayscale: series differ by marker
@@ -206,7 +207,7 @@ def fig_bench(d: dict) -> None:
     ax.set_xticks(range(len(geos)))
     ax.set_xticklabels(geos)
     ax.set_xlabel("benchmark geometry")
-    ax.set_ylabel("continuation minus published union (hypervolume)")
+    ax.set_ylabel("continuation minus published union\n(hypervolume)")
     ax.legend(fontsize=7, frameon=False)
     grid(ax)
     fig.tight_layout()
@@ -255,12 +256,25 @@ def fig_schedule(d: dict) -> None:
     plt.close(fig)
 
 
-def spread_cells() -> None:
-    """The spread cells of the benchmark in which the continuation ran: ideal device, the longest wall-clock row, default parameters.
+def join_and(items: list[str]) -> str:
+    """``G1``, ``G1 and G2``, ``G3, G4 and G6a``; ``none`` for an empty list."""
+    if not items:
+        return "none"
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1]
 
-    Each cell is read by the win rule of the technical report (``extract_methods.cell_result``: at least 5 seeds on both sides,
-    interquartile ranges that do not overlap, a gap of at least 0.01 percentage points, no row over its budget). The continuation is the
-    method B5 of the benchmark file; its result in a time row is the knee hologram of a curve that the deadline cuts."""
+
+def spread_cells() -> None:
+    """The spread cells of the benchmark in which the continuation ran: the longest wall-clock row, default parameters, on the ideal
+    device and on the device of the benchmark (the continuation has no device model; every hologram is scored against its device).
+
+    Two readings of each cell are kept apart.  The cell reading is the technical report's: the best proposed method of any kind against
+    the best published one (``extract_methods.cell_result`` over every row of the cell).  The record of the continuation is its own
+    row against the best published row of the cell, by the same rule (``cell_result`` over the published rows plus the continuation's
+    row): ``proposed`` is a win, ``published`` a loss, ``tie`` a tie.  The text, the abstract, the title and the table print the record
+    of the continuation; the cell reading appears only where it differs and says which proposed method sets it.  The win rule needs at
+    least 5 seeds on both sides, interquartile ranges that do not overlap and a gap of at least 0.01 percentage points; a row whose median
+    time exceeds ``OVER_BUDGET_FACTOR`` times its budget is never a best and never part of a win.  The continuation is the method B5 of the
+    benchmark file; its result in a time row is the knee hologram of a curve that the deadline cuts."""
     sys.dont_write_bytecode = True
     sys.path.insert(0, str(HERE.parents[1] / "holographic-trap-studio" / "data"))
     import extract_methods as X  # noqa: PLC0415
@@ -269,54 +283,80 @@ def spread_cells() -> None:
     X.require_contract(res, "efficiency-uniformity make_figs.py")
     t_read = max(res["protocol"]["budgets"]["time_s"])
     names = {g["id"]: g["name"]["en"] for g in res["geometries"]}
-    rows = [x for x in res["rows"] if x["budget_kind"] == "time" and x["budget"] == t_read and x["params"] == "default" and x["device"] == "ideal"]
-    cells = []
-    for g in names:
-        cell = [x for x in rows if x["geometry"] == g]
-        b5 = next((x for x in cell if x["method"] == "B5"), None)
-        if b5 is None:
-            continue
-        cells.append((g, b5, X.cell_result(cell), {x["method"]: x for x in cell}))
-    wins = [c for c in cells if c[2]["result"] == "proposed" and c[2]["proposed"]["method"] == "B5"]
-    ties = [c for c in cells if c[2]["result"] == "tie"]
+    devices = (("ideal", "Ideal device", ""), ("device", "Device of the benchmark", "Dev"))
+    record: dict[str, list[dict]] = {}
+    for dev, _, _ in devices:
+        rows = [x for x in res["rows"] if x["budget_kind"] == "time" and x["budget"] == t_read and x["params"] == "default" and x["device"] == dev]
+        cells = []
+        for g in names:
+            cell = [x for x in rows if x["geometry"] == g]
+            b5 = next((x for x in cell if x["method"] == "B5"), None)
+            if b5 is None:
+                continue
+            own = X.cell_result([x for x in cell if X.kind_of(x["method"]) == "published"] + [b5])
+            kind = {"proposed": "wins", "published": "loses", "tie": "tie"}[own["result"]]
+            cells.append({"g": g, "b5": b5, "own": own, "kind": kind, "cell": X.cell_result(cell), "by": {x["method"]: x for x in cell}})
+        record[dev] = cells
     L = ["% Generated by figures/make_figs.py from the benchmark results. Do not edit.\n"]
 
     def mac(name: str, value) -> None:
         L.append(f"\\newcommand{{\\{name}}}{{{value}}}\n")
 
     mac("spreadBudget", f"{t_read:g}")
-    mac("spreadCells", len(cells))
-    mac("spreadWins", len(wins))
-    mac("spreadWinList", " and ".join(c[0] for c in wins))
-    mac("spreadTies", len(ties))
-    mac("spreadLosses", sum(1 for c in cells if c[2]["result"] == "published"))
-    mac("spreadOverN", sum(1 for c in cells if X.is_over_budget(c[1])))
     mac("spreadOverFactor", f"{X.OVER_BUDGET_FACTOR:g}")
-    for tag, c in zip(("A", "B"), wins):
-        g, b5, r, by = c
-        pub = r["published"]
-        mac(f"spread{tag}Geo", g)
-        mac(f"spread{tag}Name", names[g])
-        mac(f"spread{tag}N", b5["n_seeds"])
-        mac(f"spread{tag}Sigma", X.sig(b5["rel_std_pct"]["median"]))
-        mac(f"spread{tag}Eff", f"{b5['efficiency']['median']:.3f}")
-        mac(f"spread{tag}Sec", f"{b5['time_s']['median']:.2f}")
-        mac(f"spread{tag}PubName", X.RUN[pub["method"]])
-        mac(f"spread{tag}PubN", pub["n_seeds"])
-        mac(f"spread{tag}PubSigma", X.sig(pub["rel_std_pct"]["median"]))
-        mac(f"spread{tag}PubEff", f"{pub['efficiency']['median']:.3f}")
-        w = by.get("M06")
-        mac(f"spread{tag}WgsEff", f"{w['efficiency']['median']:.3f}" if w else "n/a")
-        mac(f"spread{tag}WgsSigma", X.sig(w["rel_std_pct"]["median"]) if w else "n/a")
+    for dev, _, tag in devices:
+        cells = record[dev]
+        wins = [c for c in cells if c["kind"] == "wins"]
+        losses = [c for c in cells if c["kind"] == "loses"]
+        ties = [c for c in cells if c["kind"] == "tie"]
+        mac(f"spread{tag}Cells", len(cells))
+        mac(f"spread{tag}Wins", len(wins))
+        mac(f"spread{tag}WinList", join_and([c["g"] for c in wins]))
+        mac(f"spread{tag}Losses", len(losses))
+        mac(f"spread{tag}LossList", join_and([c["g"] for c in losses]))
+        mac(f"spread{tag}Ties", len(ties))
+        mac(f"spread{tag}TieList", join_and([c["g"] for c in ties]))
+        mac(f"spread{tag}OverN", sum(1 for c in cells if X.is_over_budget(c["b5"])))
+        # the cell readings of the technical report (best proposed method of any kind), for comparison with the record above
+        mac(f"spread{tag}CellWinList", join_and([c["g"] for c in cells if c["cell"]["result"] == "proposed"]))
+        mac(f"spread{tag}CellLossList", join_and([c["g"] for c in cells if c["cell"]["result"] == "published"]))
+        mac(f"spread{tag}CellTies", sum(1 for c in cells if c["cell"]["result"] == "tie"))
+        # the wins and the losses, each with its numbers (a letter per cell, in the order of the geometries)
+        for label, group in (("Win", wins), ("Loss", losses)):
+            for letter, c in zip("AB", group):
+                b5, pub, by = c["b5"], c["own"]["published"], c["by"]
+                p = f"spread{tag}{label}{letter}"
+                mac(f"{p}Geo", c["g"])
+                mac(f"{p}Name", names[c["g"]])
+                mac(f"{p}N", b5["n_seeds"])
+                mac(f"{p}Sigma", X.sig(b5["rel_std_pct"]["median"]))
+                mac(f"{p}Eff", f"{b5['efficiency']['median']:.3f}")
+                mac(f"{p}Sec", f"{b5['time_s']['median']:.2f}")
+                mac(f"{p}PubName", X.RUN[pub["method"]])
+                mac(f"{p}PubN", pub["n_seeds"])
+                mac(f"{p}PubSigma", X.sig(pub["rel_std_pct"]["median"]))
+                mac(f"{p}PubEff", f"{pub['efficiency']['median']:.3f}")
+                w = by.get("M06")
+                mac(f"{p}WgsEff", f"{w['efficiency']['median']:.3f}" if w else "n/a")
+                mac(f"{p}WgsSigma", X.sig(w["rel_std_pct"]["median"]) if w else "n/a")
+                cprop = c["cell"]["proposed"]
+                mac(f"{p}CellRead", c["cell"]["result"])
+                mac(f"{p}CellBy", X.RUN[cprop["method"]] if cprop else "none")
+                mac(f"{p}CellBySigma", X.sig(cprop["rel_std_pct"]["median"]) if cprop else "n/a")
+                mac(f"{p}CellByN", cprop["n_seeds"] if cprop else "n/a")
     (HERE / "fig_numbers.tex").write_text("".join(L), encoding="utf-8", newline="\n")
     T = ["\\begin{tabular}{@{}l r r r r l r r r l@{}}\n\\toprule\n",
-         "Geometry & $n$ & $\\sigma$ (\\%) & $e$ & $t$ (s) & Best published method & $n$ & $\\sigma$ (\\%) & $e$ & Reading \\\\\n\\midrule\n"]
-    for g, b5, r, by in cells:
-        pub = r["published"]
-        reading = "continuation wins" if (r["result"] == "proposed" and r["proposed"]["method"] == "B5") else r["result"]
-        T.append(f"{g} {names[g]} & {b5['n_seeds']} & {X.sig(b5['rel_std_pct']['median'])} & {b5['efficiency']['median']:.3f} & "
-                 f"{b5['time_s']['median']:.2f} & {X.RUN[pub['method']]} & {pub['n_seeds']} & {X.sig(pub['rel_std_pct']['median'])} & "
-                 f"{pub['efficiency']['median']:.3f} & {reading} \\\\\n")
+         "Geometry & $n$ & $\\sigma$ (\\%) & $e$ & $t$ (s) & Best published method & $n$ & $\\sigma$ (\\%) & $e$ & Record \\\\\n"]
+    for dev, title, _ in devices:
+        T.append(f"\\midrule\n\\multicolumn{{10}}{{@{{}}l}}{{\\textit{{{title}}}}} \\\\\n")
+        for c in record[dev]:
+            g, b5, pub = c["g"], c["b5"], c["own"]["published"]
+            head = f"{g} {names[g]} & {b5['n_seeds']} & {X.sig(b5['rel_std_pct']['median'])} & {b5['efficiency']['median']:.3f} & {b5['time_s']['median']:.2f} & "
+            if pub is None:
+                T.append(head + "none within budget & & & & tie \\\\\n")
+                continue
+            T.append(head + f"{X.RUN[pub['method']]} & {pub['n_seeds']} & {X.sig(pub['rel_std_pct']['median'])} & "
+                     f"{pub['efficiency']['median']:.3f} & {c['kind']} \\\\\n")
     T.append("\\bottomrule\n\\end{tabular}\n")
     (HERE / "tab_spread.tex").write_text("".join(T), encoding="utf-8", newline="\n")
     print("wrote spread_cells")
