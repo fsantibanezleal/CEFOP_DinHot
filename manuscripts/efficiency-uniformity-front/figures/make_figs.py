@@ -321,9 +321,12 @@ def spread_cells() -> None:
         mac(f"spread{tag}CellWinList", join_and([c["g"] for c in cells if c["cell"]["result"] == "proposed"]))
         mac(f"spread{tag}CellLossList", join_and([c["g"] for c in cells if c["cell"]["result"] == "published"]))
         mac(f"spread{tag}CellTies", sum(1 for c in cells if c["cell"]["result"] == "tie"))
-        # the wins and the losses, each with its numbers (a letter per cell, in the order of the geometries)
+        # the wins and the losses, each with its numbers (a letter per cell, in the order of the geometries); the text prints two of each at
+        # most and reads every continuation row as within its budget, so a regeneration that breaks either fails here instead of printing a wrong sentence
+        assert len(wins) <= 2 and len(losses) <= 2, f"{dev}: {len(wins)} wins and {len(losses)} losses; the macros and the text print at most two of each"
+        assert not any(X.is_over_budget(c["b5"]) for c in cells), f"{dev}: a continuation row is over its budget; the text reads every tie as an overlap"
         for label, group in (("Win", wins), ("Loss", losses)):
-            for letter, c in zip("AB", group):
+            for letter, c in zip("AB", group, strict=False):
                 b5, pub, by = c["b5"], c["own"]["published"], c["by"]
                 p = f"spread{tag}{label}{letter}"
                 mac(f"{p}Geo", c["g"])
