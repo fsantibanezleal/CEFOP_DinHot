@@ -68,18 +68,11 @@ Each win has a method behind it. On the ideal device the \benchWinsIdealProposed
 
 The cost in time is part of every reading. At 100 iterations the device-aware refinement takes a median of \benchSecIdealBOne{} s per hologram on the ideal device and \benchSecDeviceBOne{} s on the C08 device, against \benchSecIdealGS{} and \benchSecDeviceGS{} s for GS and \benchSecIdealPF{} and \benchSecDevicePF{} s for phase-fixed weighted GS (Table~\ref{tab:benchmethods}); in the 1~s row it is stopped near that second (a median of \boGoneIter{} iterations on G1 of the C08 device), so that the file records far fewer evaluations of the device model there than in the 100-iteration row. At 100 iterations the refinement has \benchSeedsMin{} seeds per device cell, below the five of the rule, so its 100-iteration columns describe it at its own work and rank nothing. Among the methods that ran on every point-trap geometry that has rows on the device, at 100 iterations and each method at its own work, the lowest median spread on the ideal device is that of \benchBestIdeal{} (\benchBestIdealSigma{} percent at a median efficiency of \benchBestIdealEff{}; the refinement ran on six of the seven geometries and its median there is below 0.001 percent, Table~\ref{tab:benchmethods}), and on the C08 device that of \benchBestDevice{} (\benchBestDeviceSigma{} percent at \benchBestDeviceEff{}, after \benchSecDeviceBOne{} s per hologram); neither is a win, because the rule reads the 1~s row. The medians of the \benchSpreadIdealN{} methods that keep at least half of the best efficiency span \benchSpreadIdealLow{} to \benchSpreadIdealHigh{} percent on the ideal device and \benchSpreadDeviceLow{} to \benchSpreadDeviceHigh{} percent (\benchSpreadDeviceN{} methods) on the C08 device, where every method runs with its default parameters and only the device-aware ones model the device. The times are wall-clock seconds of the machine that ran the benchmark, under shared load. The flicker-bounded sequence is in none of these cells (Section~\ref{sec:protocol-bench}).
 
-\input{../figures/bench_deadline_table.tex}
-{\let\footnotesize\scriptsize\setlength{\tabcolsep}{1pt}\input{../data/table_bench_methods.tex}}
-
-\textbf{The ring on a device with crosstalk.} The ring G2 on the C08 device is the cell where a recommendation of the device-aware refinement would not hold, and Table~\ref{tab:ring} reads it with its seeds and its time. At the 1~s deadline the \ringTimePubMethod{} leaves a spread of \ringTimePubSigma{} percent at an efficiency of \ringTimePubEff{} in \ringTimePubSec{} s ($n=\ringTimePubN{}$), and the \ringTimeBOneMethod{} \ringTimeBOneSigma{} percent at \ringTimeBOneEff{} in \ringTimeBOneSec{} s ($n=\ringTimeBOneN{}$); the rule reads the cell as \ringTimeReading{}. At 100 iterations, each method at its own work, the refinement leaves \ringIterBOneSigma{} percent at an efficiency of \ringIterBOneEff{} in \ringIterBOneSec{} s, on $n=\ringIterBOneN{}$ seeds, which is never read as a win. On the ring the refinement therefore buys efficiency (\ringTimeBOneEff{} against \ringTimePubEff{}) and not spread, at a time that is orders of magnitude larger: a trade-off of light against spread and time, and not the support that the thresholds of the ladder row against phase-fixed weighted GS would suggest.
-
 \begingroup
 \let\origcaption\caption
 \renewcommand{\caption}[1]{\origcaption{The ring on the C08 device: efficiency $e$, relative standard deviation $\sigma$ (\%), wall-clock seconds per hologram and seeds $n$ of the device-aware refinement and of the best published method of the cell, at the equal-time row and at 100 iterations (each method at its own work); reading by the rule of the benchmark.}}
 \input{../data/table_ring.tex}
 \endgroup
-
-Figure~\ref{fig:bench} draws the 100-iteration medians that Table~\ref{tab:benchmethods} summarizes per method as one cell per method and geometry, so that a row of the figure is a method and a column a geometry; like the table it is read at each method's own work, it ranks nothing, and a blank cell is a method that does not accept the geometry or a geometry with no device row.
 
 \begin{figure}[t]
 \centering
@@ -87,6 +80,13 @@ Figure~\ref{fig:bench} draws the 100-iteration medians that Table~\ref{tab:bench
 \caption{Benchmark: median relative standard deviation at 100 iterations with the default parameters, each method at its own work (the reading at the deadline is Table~\ref{tab:benchmark}), every method on every geometry, G6a and G6b apart, on the ideal device (a) and on the C08 device (b). Blank: the method does not accept the geometry or refuses it, or the geometry has no device row.}
 \label{fig:bench}
 \end{figure}
+
+\input{../figures/bench_deadline_table.tex}
+{\let\footnotesize\scriptsize\setlength{\tabcolsep}{1pt}\input{../data/table_bench_methods.tex}}
+
+\textbf{The ring on a device with crosstalk.} The ring G2 on the C08 device is the cell where a recommendation of the device-aware refinement would not hold, and Table~\ref{tab:ring} reads it with its seeds and its time. At the 1~s deadline the \ringTimePubMethod{} leaves a spread of \ringTimePubSigma{} percent at an efficiency of \ringTimePubEff{} in \ringTimePubSec{} s ($n=\ringTimePubN{}$), and the \ringTimeBOneMethod{} \ringTimeBOneSigma{} percent at \ringTimeBOneEff{} in \ringTimeBOneSec{} s ($n=\ringTimeBOneN{}$); the rule reads the cell as \ringTimeReading{}. At 100 iterations, each method at its own work, the refinement leaves \ringIterBOneSigma{} percent at an efficiency of \ringIterBOneEff{} in \ringIterBOneSec{} s, on $n=\ringIterBOneN{}$ seeds, which is never read as a win. On the ring the refinement therefore buys efficiency (\ringTimeBOneEff{} against \ringTimePubEff{}) and not spread, at a time that is orders of magnitude larger: a trade-off of light against spread and time, and not the support that the thresholds of the ladder row against phase-fixed weighted GS would suggest.
+
+Figure~\ref{fig:bench} draws the 100-iteration medians that Table~\ref{tab:benchmethods} summarizes per method as one cell per method and geometry, so that a row of the figure is a method and a column a geometry; like the table it is read at each method's own work, it ranks nothing, and a blank cell is a method that does not accept the geometry or a geometry with no device row.
 
 \clearpage
 
