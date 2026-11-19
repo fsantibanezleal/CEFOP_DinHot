@@ -587,7 +587,7 @@ def measure_B5() -> dict:
     hv_base = B5.hypervolume(np.array(list(base.values())))
     dom = {n: int(np.sum((front[:, 0] >= base[n][0]) & (front[:, 1] > base[n][1]))) for n in (ID["gs"], ID["gaa"])}
     text = (f"hypervolume {res.meta['hypervolume']:.4f} against {hv_base:.4f} for the union of the {nm('gs')}, {nm('gaa')}, {nm('wgs')} and {nm('directsearch')} points; "
-            f"{dom[ID['gs']]} front points dominate {nm('gs')} and {dom[ID['gaa']]} dominate {nm('gaa')}")
+            f"{dom[ID['gs']]} points of the continuation's curve dominate {nm('gs')} and {dom[ID['gaa']]} dominate {nm('gaa')}")
     return row(ID["paretofront"], text, "1", T_BEYOND + "test_b5_pareto.py",
                {"hypervolume": float(res.meta["hypervolume"]), "hypervolume_base": float(hv_base), "dominating_m04": dom["M04"],
                 "dominating_m05": dom["M05"], "front_seconds": elapsed})

@@ -11,7 +11,7 @@
     "efficiency": 0.2806624604421252,
     "uniformity": 0.00027939944446220277
    },
-   "measure_seconds": 0.5
+   "measure_seconds": 0.1
   },
   {
    "id": "M02",
@@ -36,7 +36,7 @@
      0.24062187119395595
     ]
    },
-   "measure_seconds": 0.7
+   "measure_seconds": 0.3
   },
   {
    "id": "M03",
@@ -67,7 +67,7 @@
      0.5897663823956015
     ]
    },
-   "measure_seconds": 18.6
+   "measure_seconds": 19.4
   },
   {
    "id": "M04",
@@ -97,7 +97,7 @@
     ],
     "ceiling": 0.8694892467164173
    },
-   "measure_seconds": 19.5
+   "measure_seconds": 20.9
   },
   {
    "id": "M05",
@@ -134,7 +134,7 @@
      0.816080338852741
     ]
    },
-   "measure_seconds": 30.9
+   "measure_seconds": 31.8
   },
   {
    "id": "M06",
@@ -163,7 +163,7 @@
      27
     ]
    },
-   "measure_seconds": 17.4
+   "measure_seconds": 18.6
   },
   {
    "id": "M07",
@@ -192,7 +192,7 @@
      "60": 0.1429643932172548
     }
    },
-   "measure_seconds": 131.7
+   "measure_seconds": 156.1
   },
   {
    "id": "M08",
@@ -229,7 +229,7 @@
      0.9883139635840629
     ]
    },
-   "measure_seconds": 76.0
+   "measure_seconds": 85.7
   },
   {
    "id": "M09",
@@ -248,7 +248,7 @@
     "quasi_rel_std_percent": 0.022801463032239903,
     "quasi_traps": 119
    },
-   "measure_seconds": 36.1
+   "measure_seconds": 30.0
   },
   {
    "id": "M10",
@@ -268,7 +268,7 @@
      0.5142732066276713
     ]
    },
-   "measure_seconds": 27.8
+   "measure_seconds": 20.8
   },
   {
    "id": "M11",
@@ -312,7 +312,7 @@
      0.7412295193071246
     ]
    },
-   "measure_seconds": 24.0
+   "measure_seconds": 20.6
   },
   {
    "id": "M13",
@@ -325,7 +325,7 @@
     "m10_error": 1.3815438444772867,
     "m10_efficiency": 0.5068204784800376
    },
-   "measure_seconds": 28.7
+   "measure_seconds": 34.3
   },
   {
    "id": "M14",
@@ -339,7 +339,7 @@
      0.0012487462283712928
     ]
    },
-   "measure_seconds": 26.3
+   "measure_seconds": 35.9
   },
   {
    "id": "M15",
@@ -368,7 +368,7 @@
      0.0
     ]
    },
-   "measure_seconds": 1.8
+   "measure_seconds": 2.6
   },
   {
    "id": "M16",
@@ -385,7 +385,7 @@
      0.7799308101923471
     ]
    },
-   "measure_seconds": 31.7
+   "measure_seconds": 43.1
   },
   {
    "id": "M17",
@@ -430,7 +430,7 @@
      0.2283186128907963
     ]
    },
-   "measure_seconds": 37.8
+   "measure_seconds": 55.5
   },
   {
    "id": "M19",
@@ -451,7 +451,7 @@
      ]
     ]
    },
-   "measure_seconds": 31.4
+   "measure_seconds": 39.2
   },
   {
    "id": "B4",
@@ -483,11 +483,11 @@
     "pointing_sigma_p95_b4": 8.152136866320815,
     "pointing_sigma_p95_m07": 8.491858496418697
    },
-   "measure_seconds": 127.1
+   "measure_seconds": 160.9
   },
   {
    "id": "B5",
-   "text": "hypervolume 0.8190 against 0.8018 for the union of the GS, generalized adaptive additive GS, weighted GS and direct search points; 7 front points dominate GS and 8 dominate generalized adaptive additive GS",
+   "text": "hypervolume 0.8190 against 0.8018 for the union of the GS, generalized adaptive additive GS, weighted GS and direct search points; 7 points of the continuation's curve dominate GS and 8 dominate generalized adaptive additive GS",
    "seeds": "1",
    "source": "tests/methods/beyond/test_b5_pareto.py",
    "numbers": {
@@ -495,9 +495,9 @@
     "hypervolume_base": 0.8017842240161852,
     "dominating_m04": 7,
     "dominating_m05": 8,
-    "front_seconds": 20.353358199994545
+    "front_seconds": 32.69401769997785
    },
-   "measure_seconds": 33.8
+   "measure_seconds": 48.2
   }
  ]
 }

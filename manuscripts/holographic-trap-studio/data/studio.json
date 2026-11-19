@@ -166,7 +166,7 @@
    "id": "B5",
    "tier": "beyond",
    "method": "Efficiency-uniformity continuation",
-   "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured, 0.02.004, eight seeds of the continuation's paper: the headline is the union of the five published points, those four and the phase-fixed WGS, M07: 0.8223 for the continuation against 0.8104, a paired difference of 0.0119 with a 95 percent interval of 0.0097 to 0.0141, positive on 8 of 8 seeds; the union of the four points of the criterion gives 0.8071 and a difference of 0.0152 (0.0125 to 0.0179), 8 of 8); the gain is small and shrinks at a stricter reference point: at the efficiency floors (0.5, 0) and (0.7, 0) the difference is 0.0117 and 0.0113, 97.9 and 95.2 percent of the headline, and at the uniformity floors (0, 0.9) and (0, 0.95) it is 0.0015 (0.0008 to 0.0022) and 0.0011 (0.0005 to 0.0018), 12.4 and 9.6 percent of it (31.3 and 29.1 percent against the four points), because the area the curve adds lies where the uniformity is far below one; in the benchmark (0.02.004 run, 20 seeds) the stored continuation curve (B5's converged run of the first seed) reaches that hypervolume on 3 of the 7 geometries with a curve against the medians at 100 iterations on the ideal device, losing on G1 (0.837 against 0.839), G4 (0.771 against 0.772), G6a (0.791 against 0.812) and G6b (0.725 against 0.748), by at most 0.023, and on 5 of 7 against those at 30 iterations",
+   "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured, 0.02.004, eight seeds of the continuation's paper: the headline is the union of the five published points, those four and the phase-fixed WGS, M07: 0.8223 for the continuation against 0.8104, a paired difference of 0.0119 with a 95 percent interval of 0.0097 to 0.0141, positive on 8 of 8 seeds; the union of the four points of the criterion gives 0.8071 and a difference of 0.0152 (0.0125 to 0.0179), 8 of 8); the gain is small and shrinks at a stricter reference point: at the efficiency floors (0.5, 0) and (0.7, 0) the difference is 0.0117 and 0.0113, 97.9 and 95.2 percent of the headline, and at the uniformity floors (0, 0.9) and (0, 0.95) it is 0.0015 (0.0008 to 0.0022) and 0.0011 (0.0005 to 0.0018), 12.4 and 9.6 percent of it (31.3 and 29.1 percent against the four points), because the area the curve adds lies where the uniformity is far below one; in the benchmark (0.02.004 run, 20 seeds) the stored continuation curve (B5's converged run of the first seed) reaches that hypervolume on 3 of the 7 geometries with a curve against the medians at 100 iterations on the ideal device, losing on G1 (0.836 against 0.839), G4 (0.771 against 0.772), G6a (0.791 against 0.813) and G6b (0.725 against 0.748), by at most 0.023, and on 5 of 7 against those at 30 iterations",
    "gate": "tests/methods/beyond/test_b5_pareto.py"
   }
  ],
@@ -3347,7 +3347,7 @@
   ],
   [
    "B5",
-   "hypervolume 0.8190 against 0.8018 for the union of the GS, generalized adaptive additive GS, weighted GS and direct search points; 7 front points dominate GS and 8 dominate generalized adaptive additive GS",
+   "hypervolume 0.8190 against 0.8018 for the union of the GS, generalized adaptive additive GS, weighted GS and direct search points; 7 points of the continuation's curve dominate GS and 8 dominate generalized adaptive additive GS",
    "1",
    "tests/methods/beyond/test_b5_pareto.py"
   ]

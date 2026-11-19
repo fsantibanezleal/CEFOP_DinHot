@@ -478,7 +478,7 @@ def table_ring(bench: dict) -> str:
     """B-2: the ring on the C08 device, the proposed method and the best published one with efficiency, spread, time and seeds."""
     ring = bench["ring"]
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{The ring on the C08 device (B-2): efficiency $e$, relative standard deviation $\\sigma$ (\\%), wall-clock seconds per hologram and seeds $n$ "
+           "\\caption{The ring on the C08 device: efficiency $e$, relative standard deviation $\\sigma$ (\\%), wall-clock seconds per hologram and seeds $n$ "
            "of the device-aware refinement and of the best published method of the cell, at the equal-time row and at 100 iterations "
            "(each method at its own work); reading by the rule of the benchmark.}\\label{tab:ring}\n",
            "\\begin{tabular}{@{}l l r r r r l@{}}\\toprule Row & Method & $e$ & $\\sigma$ & time (s) & $n$ & Reading\\\\\\midrule\n"]
