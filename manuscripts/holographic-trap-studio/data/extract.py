@@ -38,7 +38,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import beyond_rows  # noqa: E402
-from extract_methods import WIN_MIN_DIFF_PCT, WIN_MIN_SEEDS, cell_result, require_contract  # noqa: E402
+from extract_methods import OVER_BUDGET_FACTOR, WIN_MIN_DIFF_PCT, WIN_MIN_SEEDS, cell_result, require_contract  # noqa: E402
 from method_names import ID, NAME, RUN, label_name, named, slug  # noqa: E402,F401
 
 ROOT = HERE.parents[2]
@@ -459,7 +459,7 @@ def table_benchmark(bench: dict) -> str:
     names = {g["id"]: g["name"]["en"] for g in bench["geometries"]}
     t = f"{bench['read_time_s']:g}"
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           f"\\caption{{Benchmark at equal wall clock, per geometry and device: every method stops at the {t}~s deadline in every phase. The published "
+           f"\\caption{{Benchmark at equal wall clock, per geometry and device: every phase of every method checks the {t}~s deadline between units of work, and a row whose median time exceeds {OVER_BUDGET_FACTOR:g} times it is over budget. The published "
            "method and the proposed method with the lowest median relative standard deviation $\\sigma$ (\\%) among those of their kind that reach at "
            "least half of the best median efficiency of the kind, with the seeds behind each ($n$), and the reading of the cell: one kind wins only if both have "
            f"at least {WIN_MIN_SEEDS} seeds, their interquartile ranges do not overlap and their medians differ by at least {WIN_MIN_DIFF_PCT} percentage "
