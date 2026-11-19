@@ -64,9 +64,9 @@
 \newcommand{\accFourFlatUni}{0.604}
 \newcommand{\refLevel}{0.869}
 \newcommand{\gFourBOneSigma}{85}
-\newcommand{\gFourBOneSeeds}{20}
-\newcommand{\gFourPubSigma}{81}
-\newcommand{\gFourPubMethod}{conjugate-gradient minimization}
+\newcommand{\gFourBOneSeeds}{9}
+\newcommand{\gFourPubSigma}{85}
+\newcommand{\gFourPubMethod}{phase-fixed weighted GS}
 \newcommand{\calUOne}{0.000}
 \newcommand{\calEOne}{0.328}
 \newcommand{\calUTwo}{0.183}
@@ -114,10 +114,10 @@
 \newcommand{\benchGrids}{128, 256}
 \newcommand{\benchIters}{10, 30, 100}
 \newcommand{\benchGeometries}{8}
-\newcommand{\benchRows}{1482}
-\newcommand{\benchSkipped}{66}
-\newcommand{\benchMethodsMeasured}{device-aware conjugate-gradient refinement, learned warm start, aberration-robust hologram, efficiency-uniformity continuation, superposition of prisms and lenses, random superposition, random mask, GS, generalized adaptive additive GS, weighted GS, phase-fixed weighted GS, mixed-region amplitude freedom, direct search, conjugate-gradient minimization, Wirtinger gradient descent with Adam, closed-loop weighted GS, device-aware CG with pixel crosstalk, Zernike correction, optimal-transport initialized MRAF, volumetric 3D GS}
-\newcommand{\benchNMeasured}{20}
+\newcommand{\benchRows}{1404}
+\newcommand{\benchSkipped}{73}
+\newcommand{\benchMethodsMeasured}{device-aware conjugate-gradient refinement, aberration-robust hologram, efficiency-uniformity continuation, superposition of prisms and lenses, random superposition, random mask, GS, generalized adaptive additive GS, weighted GS, phase-fixed weighted GS, mixed-region amplitude freedom, direct search, conjugate-gradient minimization, Wirtinger gradient descent with Adam, closed-loop weighted GS, device-aware CG with pixel crosstalk, Zernike correction, optimal-transport initialized MRAF, volumetric 3D GS}
+\newcommand{\benchNMeasured}{19}
 \newcommand{\benchNProtocol}{23}
 \newcommand{\benchOneN}{6}
 \newcommand{\benchOnePass}{4}
@@ -131,61 +131,61 @@
 \newcommand{\benchFiveN}{7}
 \newcommand{\benchFivePass}{3}
 \newcommand{\benchFivePassThirty}{5}
-\newcommand{\benchFiveLost}{G1 (0.837 against 0.839), G4 (0.771 against 0.772), G6a (0.791 against 0.812), G6b (0.725 against 0.748)}
+\newcommand{\benchFiveLost}{G1 (0.836 against 0.839), G4 (0.771 against 0.772), G6a (0.791 against 0.813), G6b (0.725 against 0.748)}
 \newcommand{\benchFiveMargin}{0.023}
-\newcommand{\benchNoRows}{Laguerre-Gaussian vortex traps, Hungarian assignment with phase interpolation, multi-plane CNN hologram}
-\newcommand{\benchNNoRows}{3}
+\newcommand{\benchNoRows}{learned warm start, Laguerre-Gaussian vortex traps, Hungarian assignment with phase interpolation, multi-plane CNN hologram}
+\newcommand{\benchNNoRows}{4}
 \newcommand{\benchSeedsMin}{2}
 \newcommand{\benchSeedsMax}{20}
 \newcommand{\benchNPoint}{7}
 \newcommand{\benchGeoIdeal}{8}
 \newcommand{\benchWinsIdealPublished}{0}
-\newcommand{\benchWinsIdealProposed}{1}
-\newcommand{\benchTiesIdeal}{7}
+\newcommand{\benchWinsIdealProposed}{2}
+\newcommand{\benchTiesIdeal}{6}
 \newcommand{\benchSpreadIdealLow}{$<$0.001}
 \newcommand{\benchSpreadIdealHigh}{25}
-\newcommand{\benchSpreadIdealN}{16}
-\newcommand{\benchBestIdeal}{learned warm start}
-\newcommand{\benchBestIdealSigma}{0.012}
-\newcommand{\benchBestIdealEff}{0.751}
+\newcommand{\benchSpreadIdealN}{15}
+\newcommand{\benchBestIdeal}{direct search}
+\newcommand{\benchBestIdealSigma}{0.068}
+\newcommand{\benchBestIdealEff}{0.639}
 \newcommand{\benchGeoDevice}{7}
 \newcommand{\benchWinsDevicePublished}{1}
 \newcommand{\benchWinsDeviceProposed}{2}
 \newcommand{\benchTiesDevice}{4}
 \newcommand{\benchSpreadDeviceLow}{11}
 \newcommand{\benchSpreadDeviceHigh}{36}
-\newcommand{\benchSpreadDeviceN}{15}
+\newcommand{\benchSpreadDeviceN}{14}
 \newcommand{\benchBestDevice}{device-aware conjugate-gradient refinement}
 \newcommand{\benchBestDeviceSigma}{11}
 \newcommand{\benchBestDeviceEff}{0.491}
 \newcommand{\ringTimePubMethod}{superposition of prisms and lenses}
 \newcommand{\ringTimePubEff}{0.296}
 \newcommand{\ringTimePubSigma}{6.6}
-\newcommand{\ringTimePubSec}{0.00272}
+\newcommand{\ringTimePubSec}{0.00446}
 \newcommand{\ringTimePubN}{20}
 \newcommand{\ringTimeBOneMethod}{device-aware refinement}
-\newcommand{\ringTimeBOneEff}{0.464}
-\newcommand{\ringTimeBOneSigma}{8.2}
-\newcommand{\ringTimeBOneSec}{1.08}
+\newcommand{\ringTimeBOneEff}{0.463}
+\newcommand{\ringTimeBOneSigma}{8.1}
+\newcommand{\ringTimeBOneSec}{1.11}
 \newcommand{\ringTimeBOneN}{5}
 \newcommand{\ringTimeReading}{published}
 \newcommand{\ringIterPubMethod}{superposition of prisms and lenses}
 \newcommand{\ringIterPubEff}{0.296}
 \newcommand{\ringIterPubSigma}{6.6}
-\newcommand{\ringIterPubSec}{0.00339}
+\newcommand{\ringIterPubSec}{0.00447}
 \newcommand{\ringIterPubN}{20}
 \newcommand{\ringIterBOneMethod}{device-aware refinement}
 \newcommand{\ringIterBOneEff}{0.464}
 \newcommand{\ringIterBOneSigma}{8.3}
-\newcommand{\ringIterBOneSec}{810}
+\newcommand{\ringIterBOneSec}{873}
 \newcommand{\ringIterBOneN}{2}
 \newcommand{\ringIterReading}{not read as a win}
-\newcommand{\benchSecIdealBOne}{32.8}
-\newcommand{\benchSecIdealGS}{0.764}
-\newcommand{\benchSecIdealPF}{1.78}
-\newcommand{\benchSecDeviceBOne}{827}
-\newcommand{\benchSecDeviceGS}{1.42}
-\newcommand{\benchSecDevicePF}{1.73}
+\newcommand{\benchSecIdealBOne}{38.5}
+\newcommand{\benchSecIdealGS}{0.7}
+\newcommand{\benchSecIdealPF}{1.68}
+\newcommand{\benchSecDeviceBOne}{892}
+\newcommand{\benchSecDeviceGS}{1.35}
+\newcommand{\benchSecDevicePF}{1.69}
 \newcommand{\wsPaperN}{66}
 \newcommand{\wsPaperRandomIt}{14}
 \newcommand{\wsPaperControlIt}{7.5}
@@ -217,10 +217,10 @@
 \newcommand{\atomOmega}{109092}
 \newcommand{\cghN}{162}
 \newcommand{\cghMed}{1.140}
-\newcommand{\cghQOne}{1.103}
+\newcommand{\cghQOne}{1.102}
 \newcommand{\cghQThree}{1.163}
-\newcommand{\cghNetMs}{14}
-\newcommand{\cghBudgetS}{1.31}
+\newcommand{\cghNetMs}{16}
+\newcommand{\cghBudgetS}{1.99}
 \newcommand{\cghAcHybrid}{0.687}
 \newcommand{\cghAcMnine}{0.599}
 \newcommand{\cghBytes}{4.67}
@@ -228,10 +228,10 @@
 \newcommand{\cghParity}{8.4\times 10^{-6}}
 \newcommand{\cghLatticeRatio}{1.165}
 \newcommand{\cghRingRatio}{1.100}
-\newcommand{\cghRandomRatio}{1.149}
+\newcommand{\cghRandomRatio}{1.148}
 \newcommand{\cghMixedRatio}{1.118}
-\newcommand{\cghGfiveRatio}{1.067}
-\newcommand{\cghPlaneRatio}{1.187}
+\newcommand{\cghGfiveRatio}{1.065}
+\newcommand{\cghPlaneRatio}{1.188}
 \newcommand{\cghShareAbove}{100}
 \newcommand{\cghTwoDMed}{0.9994}
 \newcommand{\cghTwoDN}{219}
@@ -252,4 +252,4 @@
 \newcommand{\maxEffMseven}{0.817}
 \newcommand{\nContracts}{11}
 \newcommand{\nContractsAvailable}{7}
-\newcommand{\readinessOthers}{\texttt{params-record} is partial (1 of 14 records rejected by contract 1); \texttt{benchmark-results} is partial (66 of 184 benchmark cells were skipped); \texttt{warmstart-model} is answered by its baseline, with no released model; \texttt{api} is missing (The API lane is dormant; the site reads the committed documents)}
+\newcommand{\readinessOthers}{\texttt{params-record} is partial (1 of 14 records rejected by contract 1); \texttt{benchmark-results} is partial (73 of 184 benchmark cells were skipped); \texttt{warmstart-model} is answered by its baseline, with no released model; \texttt{api} is missing (The API lane is dormant; the site reads the committed documents)}

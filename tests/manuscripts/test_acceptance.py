@@ -123,3 +123,12 @@ def test_a_planted_typed_string_is_detected():
     planted = src.replace("UNIT_ACCEPTANCE = ", 'UNIT_ACCEPTANCE = [("M01", "efficiency 0.281", "1", "E2 D5")] + ', 1)
     assert planted != src and "efficiency 0.281" in typed_acceptance_strings(planted)
     assert typed_acceptance_strings('UNIT_ACCEPTANCE = [("M01", "efficiency 0.281", "1", "E2 D5")]') != []
+
+
+def test_ladder_table_matches_a_fresh_extraction_from_the_sdd():
+    """``table_ladder.tex`` is printed as the report's ``tab:ladder`` and is generated from the SDD's method ladder. A change of the SDD
+    that is not re-extracted leaves the report printing the earlier criteria (review finding N-B2 of 2026-11-15: the PDF printed the
+    0.02.003 rows of the four proposed methods after the SDD carried the 0.02.004 measurements). Re-run ``extract.py`` when this fails."""
+    ex = load_module(DATA / "extract.py")
+    committed = (DATA / "table_ladder.tex").read_text(encoding="utf-8")
+    assert committed == ex.table_ladder(ex.parse_ladder()), "table_ladder.tex is stale: re-run data/extract.py"

@@ -691,8 +691,10 @@ def main() -> int:
     L.append(macro("benchFiveLost", ", ".join(lost) if lost else "none"))
     L.append(macro("benchFiveMargin", f"{max((b - a for _, a, b in five), default=0.0):.3f}"))
     no_rows = [m for m in bench["methods_in_protocol"] if m not in bench["methods_measured"]]
-    # main.tex names the reasons of these three methods (a vortex charge, a rearrangement block, the learned model's geometry)
-    if bench["rows"] > 100 and set(no_rows) != {ID[x] for x in ("vortex", "rearrange", "cgnet")}:
+    # sec_protocol.tex names the reasons of these methods: three refuse every geometry by their specification (a vortex charge, a
+    # rearrangement block, the learned model's geometry) and the learned warm start is left out (its network is not released;
+    # decision 10 (c) of the 0.02.004 plan)
+    if bench["rows"] > 100 and set(no_rows) != {ID[x] for x in ("vortex", "rearrange", "cgnet", "warmstart")}:
         raise SystemExit(f"the methods without a benchmark row are {no_rows}: revise the sentence of main.tex that names their reasons")
     L.append(macro("benchNoRows", " , ".join(tex_escape(RUN[m]) for m in no_rows).replace(" , ", ", ") or "none"))
     L.append(macro("benchNNoRows", len(no_rows)))

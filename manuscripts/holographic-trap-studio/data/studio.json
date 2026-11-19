@@ -138,14 +138,14 @@
    "id": "B1",
    "tier": "beyond",
    "method": "Device-aware conjugate-gradient refinement",
-   "criterion": "on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; measured against the corrected M07 and against slmsuite's WGS-Kim alike: a median of 25.8 times (15.9 to 33.3 over five seeds) at 0.995 of the efficiency, and 2.0 times on the full C08 device (the bake, three seeds; 2.2 in notebook 03-04) with 4-bit phase and flicker; in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 2 of 5 geometries (G2 ring of 36 traps, 2.28 times at 0.965 of the efficiency, G3 random 100 traps, 4.69 times at 0.938 of the efficiency); lowers the spread without the factor of two on G6 (1.73 times at 1.06); keeps its start on G1 (0.97), G4 (1.05); B1's cells hold 2 seeds",
+   "criterion": "on the crosstalk device, relative standard deviation at least two times below M07, efficiency at most 10 percent lower; measured in the 0.02.004 device-aware paper (10x10 task, simulated, five seeds, the weight update off as the default now is): a geometric mean of 201.3 times (95 percent interval 132.9 to 304.9) at 0.999 of the efficiency on the crosstalk device, 23.5 times (18.6 to 29.6) at 0.997 on the 4-bit device with crosstalk, fill factor and flicker, and 2.0 times on the full C08 device (the bake, three seeds: 1.906, 1.997 and 2.228); against the closest published method the result is negative: the normalized-error loss of Schroff et al. 2023 through the same warm start, device model and conjugate gradient gives 159.9 times (107 to 239.1) at 0.999 on the crosstalk device and 26.1 times (20.2 to 33.9) at 0.997 on the 4-bit device, with overlapping intervals, so the method's own elements (the efficiency-level loss, the weight update, the best-iterate safeguard) add nothing measurable over it, and the weight update, off by default since 0.02.004, raises the spread 7 times on the crosstalk device (24.4 times, 17.5 to 34.1, against 201.3); the gain belongs to the device model in the loop (without it the factor is 1.0); in the benchmark, on the C08 device at 100 iterations with the default parameters, B1 meets both thresholds on 4 of 6 geometries (G2 ring of 36 traps 2.04 times, G3 random 100 traps 4.82, G6a 2.15, G6b 2.08; median factor 2.06 from 1.05 to 4.82 at a median efficiency ratio of 0.969) and not on G1 square 10 x 10 (1.90) or G4 quasi-periodic 119 (1.05); B1's cells hold 2 seeds; a hologram takes 34 s on the crosstalk device (59 s on the 4-bit device)",
    "gate": "tests/methods/beyond/test_b1_device_wgs.py"
   },
   {
    "id": "B2",
    "tier": "beyond",
    "method": "Flicker-bounded phase-continuous sequence",
-   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment: with the frames that keep the peak step per frame at most 0.2 Fourier units (a bound set on C10's sort) it holds on most seeds (acceptance task, 13 frames at 0.31 Fourier units per frame, seeds 1 to 3: B2 0.916 to 0.926, LPI 0.551 to 0.709; long lattice moves: median 0.933 and 0.936, 6 of 8 seeds, and B2 above LPI on 7 of 8 seeds of each); on C10's long sort at 25 frames LPI leads in every seed, and B2 needs the end phases and 137 frames to reach 0.902 to 0.917 on 5 of 6 seeds of M16's plan (median 0.911; LPI 0.360 to 0.690), with one seed collapsing on its phase path",
+   "criterion": "minimum transient intensity of a moving trap at least 0.9 of its mean, against LPI on the same assignment and against the per-frame GS with phase induction of Kim et al. 2019: on the acceptance task (13 frames, 0.31 Fourier units per frame, the six seeds of the 0.02.004 flicker-bounded paper) B2 holds 0.915 to 0.932 (median 0.923) against LPI 0.551 to 0.709, so the criterion holds against LPI, and the per-frame GS reaches 0.918 to 0.965 at five iterations per frame and 0.880 to 0.966 at ten, so against it the result is a trade and not an improvement: B2's largest phase step between frames is smaller (0.077 rad against 0.408 rad) and its per-frame spread lower, the per-frame method keeps the higher transient minimum, and the gate test asserts at least 0.9 on its seeds 1 to 3 (0.916, 0.920 and 0.926 against LPI 0.709, 0.614 and 0.551); with the frames that keep the peak step per frame at most 0.2 Fourier units (a bound set on C10's sort) long lattice moves reach medians of 0.933 and 0.936, 6 of 8 seeds each, and B2 is above LPI on 7 of 8 seeds of each (above the per-frame GS at five iterations on 2 and on 1 of 8); on C10's sort of 16 movers (six seeds of the paper) B2 needs the end phases and 137 frames to reach 0.909 to 0.917 (median 0.914) on 6 of 6 seeds, against LPI 0.044 to 0.738 and the per-frame GS 0.922 to 0.956 at five iterations (B2 above it on 0 of 6), and at 25 frames no method reaches 0.9: B2 is at most 0.412, LPI is above B2 on 4 of 6 seeds and both per-frame sequences are above both of them; the model is DinHot's own and is not calibrated against a measured display",
    "gate": "tests/methods/beyond/test_b2_flicker_bounded.py"
   },
   {
@@ -159,14 +159,14 @@
    "id": "B4",
    "tier": "beyond",
    "method": "Aberration-robust hologram",
-   "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency); robustness to pointing errors is measured and reported, not claimed (1.04 times at the acceptance budget; 1.48 times at 0.10 bins and 0.912 of the efficiency with a displacement prior alone and five times the budget)",
+   "criterion": "over a 200-sample ensemble of residual aberrations, the 95th percentile of the relative standard deviation at least 1.25 times below M07, efficiency at most 10 percent lower (measured, 0.02.004: a median of 1.435 times, 1.42 to 1.57 over three seeds, at 0.982 of the efficiency; over ten seeds a median of 1.439 times, 1.35 to 1.57, at 0.982, 0.981 to 0.983, with every seed's point estimate above 1.25 and the bootstrap interval of a single 200-sample ensemble above it on 8 of 10 seeds); robustness to pointing errors is measured and reported, not claimed (1.04 times at the acceptance budget; 1.48 times at 0.10 bins and 0.912 of the efficiency with a displacement prior alone and five times the budget)",
    "gate": "tests/methods/beyond/test_b4_robust.py"
   },
   {
    "id": "B5",
    "tier": "beyond",
    "method": "Efficiency-uniformity continuation",
-   "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured: 0.8190 against 0.8018); in the benchmark the stored continuation curve (B5's converged run of the first seed) reaches that hypervolume on none of the 6 geometries with a curve against the medians at 100 iterations on the ideal device, below them by at most 0.007, and on all 6 against those at 30 (the count at 100 iterations moves between runs of the benchmark, 3, 4 and 0, because a cell's medians depend on the seeds its wall-clock bound admits), 2026-10-31 run",
+   "criterion": "hypervolume at least that of the M04, M05, M09 and M06 points on the 10x10 task (measured, 0.02.004, eight seeds of the continuation's paper: the headline is the union of the five published points, those four and the phase-fixed WGS, M07: 0.8223 for the continuation against 0.8104, a paired difference of 0.0119 with a 95 percent interval of 0.0097 to 0.0141, positive on 8 of 8 seeds; the union of the four points of the criterion gives 0.8071 and a difference of 0.0152 (0.0125 to 0.0179), 8 of 8); the gain is small and shrinks at a stricter reference point: at the efficiency floors (0.5, 0) and (0.7, 0) the difference is 0.0117 and 0.0113, 97.9 and 95.2 percent of the headline, and at the uniformity floors (0, 0.9) and (0, 0.95) it is 0.0015 (0.0008 to 0.0022) and 0.0011 (0.0005 to 0.0018), 12.4 and 9.6 percent of it (31.3 and 29.1 percent against the four points), because the area the curve adds lies where the uniformity is far below one; in the benchmark (0.02.004 run, 20 seeds) the stored continuation curve (B5's converged run of the first seed) reaches that hypervolume on 3 of the 7 geometries with a curve against the medians at 100 iterations on the ideal device, losing on G1 (0.837 against 0.839), G4 (0.771 against 0.772), G6a (0.791 against 0.812) and G6b (0.725 against 0.748), by at most 0.023, and on 5 of 7 against those at 30 iterations",
    "gate": "tests/methods/beyond/test_b5_pareto.py"
   }
  ],
@@ -251,7 +251,7 @@
      "uniformity": 0.999965,
      "rel_std_pct": 0.00233,
      "iterations": 30,
-     "lane": "baked"
+     "lane": "live"
     },
     "M07": {
      "efficiency": 0.816826,
@@ -312,7 +312,7 @@
    },
    "reference_method": "M06",
    "best_method": "B5",
-   "lane": "precompute",
+   "lane": "live",
    "trace_bytes": 183532,
    "seed": 20261028,
    "feedback": [
@@ -418,14 +418,14 @@
      "uniformity": 0.488107,
      "rel_std_pct": 19.482806,
      "iterations": 30,
-     "lane": "live"
+     "lane": "baked"
     },
     "M05": {
      "efficiency": 0.817815,
      "uniformity": 0.741704,
      "rel_std_pct": 11.932589,
      "iterations": 30,
-     "lane": "live"
+     "lane": "baked"
     },
     "M06": {
      "efficiency": 0.805825,
@@ -453,7 +453,7 @@
      "uniformity": 0.018984,
      "rel_std_pct": 44.419062,
      "iterations": 30,
-     "lane": "baked"
+     "lane": "live"
     },
     "M11": {
      "efficiency": 0.76265,
@@ -666,14 +666,14 @@
      "uniformity": 0.958116,
      "rel_std_pct": 1.276819,
      "iterations": 30,
-     "lane": "live"
+     "lane": "baked"
     },
     "M07": {
      "efficiency": 0.794122,
      "uniformity": 0.994818,
      "rel_std_pct": 0.198701,
      "iterations": 30,
-     "lane": "live"
+     "lane": "baked"
     },
     "M12": {
      "efficiency": 0.809228,
@@ -692,7 +692,7 @@
    },
    "reference_method": "M07",
    "best_method": "M07",
-   "lane": "live",
+   "lane": "precompute",
    "trace_bytes": 233458,
    "seed": 20261028,
    "feedback": [
@@ -1588,7 +1588,7 @@
      "uniformity": 0.642473,
      "rel_std_pct": 11.16774,
      "iterations": 30,
-     "lane": "live"
+     "lane": "baked"
     },
     "M06": {
      "efficiency": 0.735956,
@@ -1602,7 +1602,7 @@
      "uniformity": 0.992333,
      "rel_std_pct": 0.300401,
      "iterations": 30,
-     "lane": "live"
+     "lane": "baked"
     },
     "M12": {
      "efficiency": 0.742994,
@@ -1621,7 +1621,7 @@
    },
    "reference_method": "M07",
    "best_method": "M07",
-   "lane": "live",
+   "lane": "precompute",
    "trace_bytes": 225664,
    "seed": 20261028,
    "feedback": [
@@ -1862,10 +1862,9 @@
    "G6b"
   ],
   "read_time_s": 1.0,
-  "rows": 1482,
+  "rows": 1404,
   "methods_measured": [
    "B1",
-   "B3",
    "B4",
    "B5",
    "M01",
@@ -1910,11 +1909,11 @@
    "M18",
    "M19"
   ],
-  "skipped": 66,
+  "skipped": 73,
   "skipped_reasons": {
    "Method B1 is 2D only; the case has traps off the focal plane.": 1,
    "Method B1 does not accept a field target (spec targets: ['traps']).": 1,
-   "Method B3 does not accept a field target (spec targets: ['traps']).": 1,
+   "Not run: the network of this method is not released (its candidate was refuted), so a row of it would be phase-fixed WGS (M07) counted as a proposed method.": 8,
    "Method B4 is 2D only; the case has traps off the focal plane.": 1,
    "Method B4 does not accept a field target (spec targets: ['traps']).": 1,
    "Method B5 does not accept a field target (spec targets: ['traps']).": 1,
@@ -1951,16 +1950,16 @@
     "result": "proposed",
     "reason": "the rule holds",
     "published": {
-     "method": "M07",
-     "sigma": 0.347317,
-     "eff": 0.813413,
-     "n_seeds": 20
+     "method": "M09",
+     "sigma": 0.708593,
+     "eff": 0.665859,
+     "n_seeds": 5
     },
     "proposed": {
      "method": "B5",
-     "sigma": 1e-06,
-     "eff": 0.813473,
-     "n_seeds": 12
+     "sigma": 1.3e-05,
+     "eff": 0.813891,
+     "n_seeds": 11
     }
    },
    "G1/device": {
@@ -1968,14 +1967,14 @@
     "reason": "the rule holds",
     "published": {
      "method": "M09",
-     "sigma": 23.610379,
-     "eff": 0.484191,
+     "sigma": 23.416165,
+     "eff": 0.482316,
      "n_seeds": 5
     },
     "proposed": {
      "method": "B1",
-     "sigma": 21.264165,
-     "eff": 0.58385,
+     "sigma": 20.601806,
+     "eff": 0.585415,
      "n_seeds": 5
     }
    },
@@ -1992,7 +1991,7 @@
      "method": "B1",
      "sigma": 0.0,
      "eff": 0.692773,
-     "n_seeds": 14
+     "n_seeds": 12
     }
    },
    "G2/device": {
@@ -2006,8 +2005,8 @@
     },
     "proposed": {
      "method": "B1",
-     "sigma": 8.19259,
-     "eff": 0.464141,
+     "sigma": 8.116129,
+     "eff": 0.463319,
      "n_seeds": 5
     }
    },
@@ -2023,8 +2022,8 @@
     "proposed": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.696353,
-     "n_seeds": 10
+     "eff": 0.69536,
+     "n_seeds": 9
     }
    },
    "G3/device": {
@@ -2032,13 +2031,13 @@
     "reason": "the rule holds",
     "published": {
      "method": "M09",
-     "sigma": 20.413068,
-     "eff": 0.387594,
+     "sigma": 20.426615,
+     "eff": 0.387593,
      "n_seeds": 5
     },
     "proposed": {
      "method": "B1",
-     "sigma": 8.916418,
+     "sigma": 8.91704,
      "eff": 0.412245,
      "n_seeds": 5
     }
@@ -2048,62 +2047,62 @@
     "reason": "the interquartile ranges overlap",
     "published": {
      "method": "M07",
-     "sigma": 0.011054,
+     "sigma": 0.011258,
      "eff": 0.751429,
      "n_seeds": 20
     },
     "proposed": {
      "method": "B1",
      "sigma": 0.0,
-     "eff": 0.750773,
-     "n_seeds": 9
+     "eff": 0.751098,
+     "n_seeds": 8
     }
    },
    "G4/device": {
     "result": "tie",
     "reason": "the interquartile ranges overlap",
     "published": {
-     "method": "M10",
-     "sigma": 81.378213,
-     "eff": 0.492902,
+     "method": "M07",
+     "sigma": 85.156683,
+     "eff": 0.503038,
      "n_seeds": 20
     },
     "proposed": {
-     "method": "B3",
-     "sigma": 85.156683,
-     "eff": 0.502998,
-     "n_seeds": 20
+     "method": "B4",
+     "sigma": 84.708697,
+     "eff": 0.501898,
+     "n_seeds": 9
     }
    },
    "G5/ideal": {
-    "result": "tie",
-    "reason": "the interquartile ranges overlap",
+    "result": "proposed",
+    "reason": "the rule holds",
     "published": {
      "method": "M06",
-     "sigma": 0.068101,
-     "eff": 0.895856,
+     "sigma": 0.11622,
+     "eff": 0.896309,
      "n_seeds": 20
     },
     "proposed": {
-     "method": "B3",
+     "method": "B5",
      "sigma": 0.0,
-     "eff": 0.862643,
-     "n_seeds": 20
+     "eff": 0.862644,
+     "n_seeds": 12
     }
    },
    "G6a/ideal": {
     "result": "tie",
     "reason": "the interquartile ranges overlap",
     "published": {
-     "method": "M14",
-     "sigma": 1.387786,
-     "eff": 0.804037,
-     "n_seeds": 5
+     "method": "M07",
+     "sigma": 2.486853,
+     "eff": 0.793612,
+     "n_seeds": 6
     },
     "proposed": {
-     "method": "B4",
-     "sigma": 1.018437,
-     "eff": 0.793671,
+     "method": "B5",
+     "sigma": 4.438592,
+     "eff": 0.789872,
      "n_seeds": 5
     }
    },
@@ -2111,15 +2110,15 @@
     "result": "tie",
     "reason": "the interquartile ranges overlap",
     "published": {
-     "method": "M14",
-     "sigma": 30.093497,
-     "eff": 0.525667,
+     "method": "M06",
+     "sigma": 29.959465,
+     "eff": 0.517667,
      "n_seeds": 5
     },
     "proposed": {
-     "method": "B4",
-     "sigma": 29.872761,
-     "eff": 0.520242,
+     "method": "B1",
+     "sigma": 29.894286,
+     "eff": 0.520585,
      "n_seeds": 5
     }
    },
@@ -2128,14 +2127,14 @@
     "reason": "the interquartile ranges overlap",
     "published": {
      "method": "M07",
-     "sigma": 0.290073,
-     "eff": 0.721493,
+     "sigma": 1.343284,
+     "eff": 0.722564,
      "n_seeds": 7
     },
     "proposed": {
      "method": "B5",
-     "sigma": 0.263981,
-     "eff": 0.72276,
+     "sigma": 1.277946,
+     "eff": 0.722766,
      "n_seeds": 5
     }
    },
@@ -2143,15 +2142,15 @@
     "result": "tie",
     "reason": "the interquartile ranges overlap",
     "published": {
-     "method": "M14",
-     "sigma": 9.035441,
-     "eff": 0.608714,
-     "n_seeds": 6
+     "method": "M07",
+     "sigma": 9.220303,
+     "eff": 0.59644,
+     "n_seeds": 7
     },
     "proposed": {
-     "method": "B4",
-     "sigma": 9.031458,
-     "eff": 0.596966,
+     "method": "B1",
+     "sigma": 9.133446,
+     "eff": 0.596734,
      "n_seeds": 5
     }
    },
@@ -2159,9 +2158,9 @@
     "result": "tie",
     "reason": "one kind has no row",
     "published": {
-     "method": "M04",
-     "sigma": 36.158118,
-     "eff": 0.925496,
+     "method": "M18",
+     "sigma": 10.200997,
+     "eff": 0.514306,
      "n_seeds": 20
     },
     "proposed": null
@@ -2170,9 +2169,9 @@
     "result": "tie",
     "reason": "one kind has no row",
     "published": {
-     "method": "M04",
-     "sigma": 40.920654,
-     "eff": 0.790696,
+     "method": "M18",
+     "sigma": 27.307136,
+     "eff": 0.447315,
      "n_seeds": 20
     },
     "proposed": null
@@ -2186,10 +2185,10 @@
      "sigma": 0.0,
      "q1": 0.0,
      "q3": 0.0,
-     "eff": 0.737749,
-     "evals": 10533.5,
+     "eff": 0.7379115,
+     "evals": 10533.0,
      "its": 25.5,
-     "time_s": 32.757697
+     "time_s": 38.474410000000006
     },
     "device": {
      "n": 6,
@@ -2199,53 +2198,30 @@
      "eff": 0.4907765,
      "evals": 11083.0,
      "its": 27.25,
-     "time_s": 826.65873
-    }
-   },
-   "B3": {
-    "group": "proposed",
-    "ideal": {
-     "n": 7,
-     "sigma": 0.011994,
-     "q1": 0.0,
-     "q3": 0.165447,
-     "eff": 0.751429,
-     "evals": 202.0,
-     "its": 100.0,
-     "time_s": 0.619266
-    },
-    "device": {
-     "n": 6,
-     "sigma": 23.553361,
-     "q1": 22.6636425,
-     "q3": 24.1875095,
-     "eff": 0.5116305,
-     "evals": 202.0,
-     "its": 100.0,
-     "time_s": 0.628851
+     "time_s": 891.6796715
     }
    },
    "B4": {
     "group": "proposed",
     "ideal": {
      "n": 6,
-     "sigma": 0.44336949999999997,
-     "q1": 0.4227085,
-     "q3": 0.4525595,
-     "eff": 0.7257925000000001,
-     "evals": 8180.0,
+     "sigma": 0.4426465,
+     "q1": 0.43049899999999997,
+     "q3": 0.45416650000000003,
+     "eff": 0.7256545000000001,
+     "evals": 8164.0,
      "its": 100.0,
-     "time_s": 25.977809
+     "time_s": 32.168662999999995
     },
     "device": {
      "n": 6,
-     "sigma": 22.3906775,
-     "q1": 21.9457815,
-     "q3": 22.6552715,
-     "eff": 0.504796,
-     "evals": 8180.0,
+     "sigma": 22.509949,
+     "q1": 22.007158500000003,
+     "q3": 22.757401,
+     "eff": 0.5042715,
+     "evals": 8164.0,
      "its": 100.0,
-     "time_s": 26.343255
+     "time_s": 31.556295
     }
    },
    "B5": {
@@ -2254,21 +2230,21 @@
      "n": 7,
      "sigma": 0.297986,
      "q1": 0.243915,
-     "q3": 0.364998,
-     "eff": 0.768835,
-     "evals": 7272.0,
-     "its": 1976.0,
-     "time_s": 23.605737
+     "q3": 0.352056,
+     "eff": 0.769132,
+     "evals": 7269.0,
+     "its": 1977.0,
+     "time_s": 26.596613
     },
     "device": {
      "n": 6,
      "sigma": 23.5333335,
      "q1": 22.822814,
      "q3": 24.3160325,
-     "eff": 0.522049,
-     "evals": 7195.0,
-     "its": 1961.5,
-     "time_s": 24.644149
+     "eff": 0.5188524999999999,
+     "evals": 7198.5,
+     "its": 1962.0,
+     "time_s": 27.1463435
     }
    },
    "M01": {
@@ -2281,17 +2257,17 @@
      "eff": 0.426205,
      "evals": 2.0,
      "its": 1.0,
-     "time_s": 0.005318
+     "time_s": 0.008282
     },
     "device": {
      "n": 6,
      "sigma": 100.7326285,
-     "q1": 100.46841500000001,
-     "q3": 100.96043850000001,
+     "q1": 100.46284700000001,
+     "q3": 100.966053,
      "eff": 0.281477,
      "evals": 2.0,
      "its": 1.0,
-     "time_s": 0.005165
+     "time_s": 0.009087
     }
    },
    "M02": {
@@ -2304,17 +2280,17 @@
      "eff": 0.705685,
      "evals": 2.0,
      "its": 1.0,
-     "time_s": 0.004643
+     "time_s": 0.008087
     },
     "device": {
      "n": 6,
      "sigma": 35.655682999999996,
      "q1": 34.021757,
-     "q3": 36.492824,
+     "q3": 36.484841,
      "eff": 0.48383149999999997,
      "evals": 2.0,
      "its": 1.0,
-     "time_s": 0.0065404999999999994
+     "time_s": 0.008175
     }
    },
    "M03": {
@@ -2327,17 +2303,17 @@
      "eff": 0.014987,
      "evals": 1.0,
      "its": 1.0,
-     "time_s": 0.09802
+     "time_s": 0.107093
     },
     "device": {
      "n": 6,
-     "sigma": 97.7042935,
-     "q1": 93.67296400000001,
-     "q3": 102.465404,
+     "sigma": 95.832998,
+     "q1": 93.14829950000001,
+     "q3": 100.86797250000001,
      "eff": 0.0126445,
      "evals": 1.0,
      "its": 1.0,
-     "time_s": 0.0950165
+     "time_s": 0.0998165
     }
    },
    "M04": {
@@ -2350,7 +2326,7 @@
      "eff": 0.775472,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 0.763711
+     "time_s": 0.700249
     },
     "device": {
      "n": 6,
@@ -2360,7 +2336,7 @@
      "eff": 0.533327,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 1.423226
+     "time_s": 1.3521975
     }
    },
    "M05": {
@@ -2373,17 +2349,17 @@
      "eff": 0.774278,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 0.661543
+     "time_s": 0.738816
     },
     "device": {
      "n": 6,
      "sigma": 24.895115500000003,
      "q1": 24.1888255,
      "q3": 25.963631,
-     "eff": 0.527955,
+     "eff": 0.52778,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 1.330842
+     "time_s": 1.43734
     }
    },
    "M06": {
@@ -2396,17 +2372,17 @@
      "eff": 0.768982,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 0.721434
+     "time_s": 0.785733
     },
     "device": {
      "n": 6,
      "sigma": 23.42857,
      "q1": 22.9550005,
      "q3": 24.16997,
-     "eff": 0.5237305,
+     "eff": 0.5239995,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 1.6200955000000001
+     "time_s": 1.5406115
     }
    },
    "M07": {
@@ -2419,7 +2395,7 @@
      "eff": 0.7374095,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 1.782735
+     "time_s": 1.6841409999999999
     },
     "device": {
      "n": 6,
@@ -2429,7 +2405,7 @@
      "eff": 0.5119165,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 1.7260395
+     "time_s": 1.692057
     }
    },
    "M08": {
@@ -2441,23 +2417,23 @@
     "group": "published",
     "ideal": {
      "n": 7,
-     "sigma": 0.067724,
+     "sigma": 0.06802,
      "q1": 0.063652,
-     "q3": 0.068315,
-     "eff": 0.637625,
+     "q3": 0.069942,
+     "eff": 0.638709,
      "evals": 102.0,
      "its": 100.0,
-     "time_s": 83.193148
+     "time_s": 105.334425
     },
     "device": {
      "n": 6,
-     "sigma": 22.0348005,
-     "q1": 21.717380499999997,
-     "q3": 22.812267,
-     "eff": 0.43357,
+     "sigma": 22.41508,
+     "q1": 21.870903,
+     "q3": 22.9258635,
+     "eff": 0.43057049999999997,
      "evals": 102.0,
      "its": 100.0,
-     "time_s": 82.6211225
+     "time_s": 103.719897
     }
    },
    "M10": {
@@ -2468,9 +2444,9 @@
      "q1": 1.946015,
      "q3": 2.667961,
      "eff": 0.737237,
-     "evals": 335.0,
+     "evals": 338.0,
      "its": 100.0,
-     "time_s": 0.726317
+     "time_s": 0.914313
     },
     "device": {
      "n": 6,
@@ -2480,43 +2456,43 @@
      "eff": 0.5056055,
      "evals": 336.5,
      "its": 100.0,
-     "time_s": 0.7908845
+     "time_s": 0.9726925
     }
    },
    "M11": {
     "group": "published",
     "ideal": {
      "n": 7,
-     "sigma": 1.198389,
+     "sigma": 1.200171,
      "q1": 1.049431,
      "q3": 1.279079,
      "eff": 0.765851,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 0.877308
+     "time_s": 0.821564
     },
     "device": {
      "n": 6,
-     "sigma": 13.6133775,
-     "q1": 12.9055415,
-     "q3": 14.415442500000001,
-     "eff": 0.50969,
+     "sigma": 13.699316,
+     "q1": 12.932043499999999,
+     "q3": 14.3837495,
+     "eff": 0.509383,
      "evals": 202.0,
      "its": 100.0,
-     "time_s": 19.6564645
+     "time_s": 17.187075999999998
     }
    },
    "M12": {
     "group": "published",
     "ideal": {
      "n": 3,
-     "sigma": 19.206091,
-     "q1": 19.166146,
+     "sigma": 19.26218,
+     "q1": 19.176133,
      "q3": 19.433439,
-     "eff": 0.812235,
+     "eff": 0.812519,
      "evals": 362.0,
      "its": 100.0,
-     "time_s": 16.903888
+     "time_s": 16.532491
     },
     "device": {
      "n": 3,
@@ -2526,7 +2502,7 @@
      "eff": 0.609005,
      "evals": 362.0,
      "its": 100.0,
-     "time_s": 17.239146
+     "time_s": 17.227936
     }
    },
    "M13": {
@@ -2536,20 +2512,20 @@
      "sigma": 2.215581,
      "q1": 1.9533445,
      "q3": 2.641531,
-     "eff": 0.7335625,
+     "eff": 0.733622,
      "evals": 338.0,
      "its": 100.0,
-     "time_s": 1.079471
+     "time_s": 1.3371205000000002
     },
     "device": {
      "n": 6,
      "sigma": 16.2390875,
      "q1": 15.2721655,
      "q3": 17.162819,
-     "eff": 0.493462,
+     "eff": 0.488618,
      "evals": 1242.5,
      "its": 100.0,
-     "time_s": 127.017688
+     "time_s": 147.686738
     }
    },
    "M14": {
@@ -2559,20 +2535,20 @@
      "sigma": 0.718001,
      "q1": 0.674785,
      "q3": 0.769023,
-     "eff": 0.736742,
+     "eff": 0.736576,
      "evals": 114.0,
      "its": 2.0,
-     "time_s": 0.778276
+     "time_s": 0.851661
     },
     "device": {
      "n": 6,
      "sigma": 23.847029499999998,
      "q1": 22.8176785,
      "q3": 24.251102500000002,
-     "eff": 0.5183964999999999,
+     "eff": 0.518815,
      "evals": 101.5,
      "its": 1.5,
-     "time_s": 0.784197
+     "time_s": 0.862344
     }
    },
    "M18": {
@@ -2584,13 +2560,13 @@
     "group": "published",
     "ideal": {
      "n": 1,
-     "sigma": 16.557069,
-     "q1": 14.966408,
-     "q3": 17.362204,
-     "eff": 0.891281,
+     "sigma": 16.438965,
+     "q1": 15.008166,
+     "q3": 17.308641,
+     "eff": 0.890691,
      "evals": 101.0,
      "its": 100.0,
-     "time_s": 17.616709
+     "time_s": 13.990756
     },
     "device": null
    }
@@ -2604,45 +2580,45 @@
      "method": "M01",
      "sigma": 6.552854,
      "eff": 0.295953,
-     "time_s": 0.002722,
+     "time_s": 0.004463,
      "n_seeds": 20
     },
     "proposed": {
      "method": "B1",
-     "sigma": 8.19259,
-     "eff": 0.464141,
-     "time_s": 1.082571,
+     "sigma": 8.116129,
+     "eff": 0.463319,
+     "time_s": 1.113744,
      "n_seeds": 5
     },
     "B1": {
-     "sigma": 8.19259,
-     "eff": 0.464141,
-     "time_s": 1.082571,
+     "sigma": 8.116129,
+     "eff": 0.463319,
+     "time_s": 1.113744,
      "n_seeds": 5
     }
    },
    "iterations_100": {
     "geometry": "G2",
-    "result": "tie",
-    "reason": "fewer than 5 seeds",
+    "result": "published",
+    "reason": "the rule holds",
     "published": {
      "method": "M01",
      "sigma": 6.552854,
      "eff": 0.295953,
-     "time_s": 0.003393,
+     "time_s": 0.004469,
      "n_seeds": 20
     },
     "proposed": {
-     "method": "B1",
-     "sigma": 8.314638,
-     "eff": 0.463908,
-     "time_s": 809.518141,
-     "n_seeds": 2
+     "method": "B4",
+     "sigma": 17.254669,
+     "eff": 0.468756,
+     "time_s": 20.129396,
+     "n_seeds": 12
     },
     "B1": {
      "sigma": 8.314638,
      "eff": 0.463908,
-     "time_s": 809.518141,
+     "time_s": 872.972902,
      "n_seeds": 2
     }
    }
@@ -2671,16 +2647,6 @@
       "lambda": 0.15789473684210525,
       "efficiency": 0.836216,
       "uniformity": 0.978576
-     },
-     {
-      "lambda": 0.21052631578947367,
-      "efficiency": 0.836686,
-      "uniformity": 0.968765
-     },
-     {
-      "lambda": 0.2631578947368421,
-      "efficiency": 0.837185,
-      "uniformity": 0.958202
      }
     ]
    },
@@ -2732,26 +2698,6 @@
       "lambda": 0.47368421052631576,
       "efficiency": 0.70828,
       "uniformity": 0.983845
-     },
-     {
-      "lambda": 0.5263157894736842,
-      "efficiency": 0.708302,
-      "uniformity": 0.979907
-     },
-     {
-      "lambda": 0.5789473684210527,
-      "efficiency": 0.70833,
-      "uniformity": 0.975013
-     },
-     {
-      "lambda": 0.631578947368421,
-      "efficiency": 0.708365,
-      "uniformity": 0.968755
-     },
-     {
-      "lambda": 0.6842105263157894,
-      "efficiency": 0.708411,
-      "uniformity": 0.960452
      }
     ]
    },
@@ -2791,8 +2737,8 @@
      },
      {
       "lambda": 0.3157894736842105,
-      "efficiency": 0.716101,
-      "uniformity": 0.987044
+      "efficiency": 0.715786,
+      "uniformity": 0.987383
      }
     ]
    },
@@ -2827,13 +2773,8 @@
      },
      {
       "lambda": 0.2631578947368421,
-      "efficiency": 0.771218,
-      "uniformity": 0.972747
-     },
-     {
-      "lambda": 0.3157894736842105,
-      "efficiency": 0.771409,
-      "uniformity": 0.963608
+      "efficiency": 0.771217,
+      "uniformity": 0.972746
      }
     ]
    },
@@ -2914,40 +2855,27 @@
    "B1/G6a/ideal": 0.0,
    "B1/G6b/device": 4.393168,
    "B1/G6b/ideal": 0.0,
-   "B3/G1/device": 26.440886,
-   "B3/G1/ideal": 1.493359,
-   "B3/G2/device": 16.958594,
-   "B3/G2/ideal": 0.0,
-   "B3/G3/device": 20.665836,
-   "B3/G3/ideal": 0.0,
-   "B3/G4/device": 85.156683,
-   "B3/G4/ideal": 0.011994,
-   "B3/G5/ideal": 0.0,
-   "B3/G6a/device": 30.069345,
-   "B3/G6a/ideal": 1.250217,
-   "B3/G6b/device": 9.031152,
-   "B3/G6b/ideal": 0.264311,
-   "B4/G1/device": 24.335278,
-   "B4/G1/ideal": 0.399789,
+   "B4/G1/device": 24.443102,
+   "B4/G1/ideal": 0.397163,
    "B4/G2/device": 17.254669,
-   "B4/G2/ideal": 0.302162,
-   "B4/G3/device": 20.446077,
-   "B4/G3/ideal": 0.48695,
-   "B4/G4/device": 87.480584,
-   "B4/G4/ideal": 0.36307,
+   "B4/G2/ideal": 0.299961,
+   "B4/G3/device": 20.576796,
+   "B4/G3/ideal": 0.48813,
+   "B4/G4/device": 83.632532,
+   "B4/G4/ideal": 0.367027,
    "B4/G6a/device": 29.824897,
    "B4/G6a/ideal": 0.701026,
    "B4/G6b/device": 9.112265,
    "B4/G6b/ideal": 1.373675,
    "B5/G1/device": 26.39392,
-   "B5/G1/ideal": 0.23717,
-   "B5/G2/device": 17.746993,
-   "B5/G2/ideal": 0.203889,
+   "B5/G1/ideal": 0.232593,
+   "B5/G2/device": 18.141278,
+   "B5/G2/ideal": 0.202181,
    "B5/G3/device": 20.672747,
    "B5/G3/ideal": 0.218176,
-   "B5/G4/device": 105.921967,
-   "B5/G4/ideal": 0.304651,
-   "B5/G5/ideal": 0.307085,
+   "B5/G4/device": 91.351584,
+   "B5/G4/ideal": 0.389717,
+   "B5/G5/ideal": 0.319488,
    "B5/G6a/device": 30.228407,
    "B5/G6a/ideal": 0.297986,
    "B5/G6b/device": 8.896505,
@@ -2974,10 +2902,10 @@
    "M02/G4/device": 99.580597,
    "M02/G4/ideal": 25.035385,
    "M02/G5/ideal": 43.506738,
-   "M02/G6a/device": 50.519329,
-   "M02/G6a/ideal": 39.219813,
-   "M02/G6b/device": 17.065124,
-   "M02/G6b/ideal": 14.26394,
+   "M02/G6a/device": 50.175225,
+   "M02/G6a/ideal": 39.40804,
+   "M02/G6b/device": 16.847415,
+   "M02/G6b/ideal": 14.231301,
    "M03/G1/device": 89.056219,
    "M03/G1/ideal": 78.558194,
    "M03/G2/device": 46.265452,
@@ -2987,10 +2915,10 @@
    "M03/G4/device": 934.468881,
    "M03/G4/ideal": 85.738596,
    "M03/G5/ideal": 64.348175,
-   "M03/G6a/device": 106.352368,
-   "M03/G6a/ideal": 101.987135,
+   "M03/G6a/device": 102.609777,
+   "M03/G6a/ideal": 101.102842,
    "M03/G6b/device": 230.199133,
-   "M03/G6b/ideal": 96.351888,
+   "M03/G6b/ideal": 98.964532,
    "M04/G1/device": 31.151263,
    "M04/G1/ideal": 15.901322,
    "M04/G2/device": 18.106752,
@@ -3001,7 +2929,7 @@
    "M04/G4/ideal": 12.992229,
    "M04/G5/ideal": 16.047028,
    "M04/G6a/device": 37.136978,
-   "M04/G6a/ideal": 16.136381,
+   "M04/G6a/ideal": 16.350842,
    "M04/G6b/device": 15.031941,
    "M04/G6b/ideal": 10.535384,
    "M04/G7/device": 39.935941,
@@ -3015,10 +2943,10 @@
    "M05/G4/device": 83.725655,
    "M05/G4/ideal": 8.727893,
    "M05/G5/ideal": 11.647107,
-   "M05/G6a/device": 35.673478,
+   "M05/G6a/device": 35.566538,
    "M05/G6a/ideal": 11.784607,
    "M05/G6b/device": 12.170579,
-   "M05/G6b/ideal": 7.195902,
+   "M05/G6b/ideal": 7.194998,
    "M06/G1/device": 26.127162,
    "M06/G1/ideal": 0.474697,
    "M06/G2/device": 17.675019,
@@ -3028,8 +2956,8 @@
    "M06/G4/device": 96.374438,
    "M06/G4/ideal": 0.291944,
    "M06/G5/ideal": 0.301277,
-   "M06/G6a/device": 30.201625,
-   "M06/G6a/ideal": 0.515659,
+   "M06/G6a/device": 30.473708,
+   "M06/G6a/ideal": 0.494244,
    "M06/G6b/device": 8.845632,
    "M06/G6b/ideal": 0.25933,
    "M07/G1/device": 26.440886,
@@ -3046,15 +2974,15 @@
    "M07/G6b/ideal": 0.264144,
    "M08/G7/device": 160.415681,
    "M08/G7/ideal": 5.147515,
-   "M09/G1/device": 23.656533,
+   "M09/G1/device": 24.015868,
    "M09/G1/ideal": 0.068537,
-   "M09/G2/device": 16.930569,
-   "M09/G2/ideal": 0.014616,
-   "M09/G3/device": 20.413068,
-   "M09/G3/ideal": 0.051397,
-   "M09/G4/device": 97.421422,
-   "M09/G4/ideal": 0.067724,
-   "M09/G5/ideal": 0.046447,
+   "M09/G2/device": 16.853881,
+   "M09/G2/ideal": 0.014836,
+   "M09/G3/device": 20.814292,
+   "M09/G3/ideal": 0.051334,
+   "M09/G4/device": 88.335134,
+   "M09/G4/ideal": 0.06802,
+   "M09/G5/ideal": 0.047627,
    "M09/G6a/device": 27.997825,
    "M09/G6a/ideal": 0.18313,
    "M09/G6b/device": 9.089108,
@@ -3069,31 +2997,31 @@
    "M10/G4/ideal": 2.197729,
    "M10/G5/ideal": 3.064608,
    "M10/G6a/device": 30.61912,
-   "M10/G6a/ideal": 1.416877,
-   "M10/G6b/device": 9.255791,
+   "M10/G6a/ideal": 1.410869,
+   "M10/G6b/device": 9.374399,
    "M10/G6b/ideal": 1.553599,
    "M10/G7/device": 62.304848,
    "M10/G7/ideal": 21.506757,
-   "M11/G1/device": 12.776655,
+   "M11/G1/device": 12.968511,
    "M11/G1/ideal": 1.198389,
-   "M11/G2/device": 9.003923,
+   "M11/G2/device": 8.878911,
    "M11/G2/ideal": 0.489876,
-   "M11/G3/device": 14.4501,
+   "M11/G3/device": 14.430121,
    "M11/G3/ideal": 0.827269,
-   "M11/G4/device": 20.46461,
+   "M11/G4/device": 20.558963,
    "M11/G4/ideal": 1.261049,
    "M11/G5/ideal": 2.20729,
    "M11/G6a/device": 18.141015,
-   "M11/G6a/ideal": 1.303068,
-   "M11/G6b/device": 8.787776,
-   "M11/G6b/ideal": 1.189916,
-   "M11/G7/device": 30.48124,
+   "M11/G6a/ideal": 1.213761,
+   "M11/G6b/device": 8.563618,
+   "M11/G6b/ideal": 1.200171,
+   "M11/G7/device": 31.131033,
    "M11/G7/ideal": 22.458902,
    "M12/G1/device": 32.32957,
    "M12/G1/ideal": 18.933279,
-   "M12/G6a/device": 36.262996,
-   "M12/G6a/ideal": 19.206091,
-   "M12/G6b/device": 21.276065,
+   "M12/G6a/device": 35.999988,
+   "M12/G6a/ideal": 19.26218,
+   "M12/G6b/device": 21.190864,
    "M12/G6b/ideal": 19.339137,
    "M13/G1/device": 15.342465,
    "M13/G1/ideal": 2.233433,
@@ -3101,12 +3029,12 @@
    "M13/G2/ideal": 6.410018,
    "M13/G3/device": 17.13571,
    "M13/G3/ideal": 3.1221,
-   "M13/G4/device": 21.647218,
+   "M13/G4/device": 22.775631,
    "M13/G4/ideal": 2.197729,
    "M13/G6a/device": 26.481785,
    "M13/G6a/ideal": 1.410869,
    "M13/G6b/device": 7.392934,
-   "M13/G6b/ideal": 1.538476,
+   "M13/G6b/ideal": 1.553599,
    "M13/G7/device": 32.851579,
    "M13/G7/ideal": 21.506757,
    "M14/G1/device": 27.217624,
@@ -3118,44 +3046,44 @@
    "M14/G4/device": 89.40675,
    "M14/G4/ideal": 0.718001,
    "M14/G5/ideal": 65.879985,
-   "M14/G6a/device": 30.093497,
-   "M14/G6a/ideal": 1.387786,
-   "M14/G6b/device": 9.035301,
-   "M14/G6b/ideal": 0.693337,
+   "M14/G6a/device": 30.238541,
+   "M14/G6a/ideal": 1.402628,
+   "M14/G6b/device": 9.057698,
+   "M14/G6b/ideal": 0.705167,
    "M18/G7/device": 49.014082,
    "M18/G7/ideal": 5.586486,
-   "M19/G5/ideal": 16.557069
+   "M19/G5/ideal": 16.438965
   }
  },
  "models": {
   "cgh_net": {
    "held_out_n": 162,
    "ratio": {
-    "median": 1.1402656591163374,
-    "q1": 1.1025536735252979,
-    "q3": 1.163101820688243
+    "median": 1.1404364306822061,
+    "q1": 1.1023794332039107,
+    "q3": 1.1628564565275732
    },
    "time_ms": {
-    "median": 1343.3048500010045,
-    "q1": 1331.2702250004804,
-    "q3": 1354.10595000576
+    "median": 2028.7189000082435,
+    "q1": 2014.9224000051618,
+    "q3": 2042.8855499994825
    },
    "onnx_bytes": 4671540,
    "grid": 128,
    "steps": 16000,
    "batch": 32,
    "ratio_by_kind": {
-    "G5_lattice": 1.0671514691725028,
-    "M19_three_plane": 1.187085133240562,
-    "lattice": 1.1654834032851338,
-    "mixed": 1.1184327044299984,
-    "random": 1.1489190300145902,
-    "ring": 1.1003814478686562
+    "G5_lattice": 1.064826111444816,
+    "M19_three_plane": 1.1883012425393649,
+    "lattice": 1.1649139303627443,
+    "mixed": 1.1181037913263956,
+    "random": 1.1478832949493678,
+    "ring": 1.1002948537854376
    },
    "ac_hybrid": 0.6868902630956331,
-   "ac_m19": 0.5992658153007968,
-   "network_ms": 14.472599999862723,
-   "budget_ms": 1305.818900000304,
+   "ac_m19": 0.5993934390563183,
+   "network_ms": 16.273449989967048,
+   "budget_ms": 1987.7332000178285,
    "share_above": 1.0,
    "parity_intensity": 8.417985554842744e-06,
    "params_note": "U-Net of 14 channels"
@@ -3244,7 +3172,7 @@
     "id": "benchmark-results",
     "state": "partial",
     "provenance": "real",
-    "reason": "66 of 184 benchmark cells were not run."
+    "reason": "73 of 184 benchmark cells were not run."
    },
    {
     "id": "cgh-net",
@@ -3383,7 +3311,7 @@
   ],
   [
    "M17",
-   "three-plane network refined by volumetric 3D GS: median accuracy ratio 1.140 (quartiles 1.103 and 1.163) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
+   "three-plane network refined by volumetric 3D GS: median accuracy ratio 1.140 (quartiles 1.102 and 1.163) on 162 held-out volumes; taken from the committed metrics.json, not remeasured here",
    "162 volumes",
    "tests/learned/test_m17_cgh_net.py; data/derived/models/metrics.json"
   ],
