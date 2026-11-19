@@ -153,8 +153,8 @@
     {
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.24022462",
-      "title": "A Weighted-Cost Continuation Adds the Efficient Side of the Efficiency-Uniformity Trade-off of Holographic Optical Trap Arrays: Larger Hypervolume on One Lattice, No Better Uniform End, Mixed Margins on the Benchmark",
-      "version": "0.01",
+      "title": "A Weighted-Cost Continuation Adds the Efficient Side of the Efficiency-Uniformity Trade-off of Holographic Optical Trap Arrays: Larger Hypervolume on One Lattice, No Better Uniform End, Two Spread Wins and One Loss on the Ideal Device and Two Losses on the Benchmark's Device at One Second, No Hypervolume Win on the Benchmark",
+      "version": "0.02",
       "covers": [
         "BS-5"
       ]
