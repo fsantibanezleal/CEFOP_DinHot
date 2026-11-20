@@ -145,7 +145,7 @@
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.24267369",
       "title": "Flicker-Bounded Phase-Continuous Hologram Sequences for Moving Optical Traps: Smaller Phase Steps than Per-Frame Gerchberg-Saxton, a Higher Transient Minimum with a Linear Time Profile on the Short Move and a Lower One with the Minimal-Jerk Profile",
-      "version": "0.01",
+      "version": "0.02",
       "covers": [
         "BS-2"
       ]
@@ -172,7 +172,7 @@
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.24022470",
       "title": "A Learned Warm Start for Phase-Fixed Weighted Gerchberg-Saxton Does Not Beat an Early Phase Freeze: A Measured Negative Result on Holographic Optical Trap Arrays",
-      "version": "0.02",
+      "version": "0.03",
       "covers": [
         "BS-3"
       ]
