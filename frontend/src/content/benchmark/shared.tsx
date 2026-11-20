@@ -6,7 +6,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 import { loadBenchmark, loadIndex, loadManifest, loadModelMetrics, useArtifact, type Loaded } from '../../api/artifacts';
 import type { BenchmarkResults, CaseIndex, CaseManifest, ModelMetrics } from '../../lib/contract.types';
 import { ReadinessNote } from '../../readiness/ReadinessNote';
-import { budgetId, budgetsOf, budgetText, ladderOf, nameIds, parseBudget, type Budget, type Device, type Lang, type ParamsView, type Picked, KIND_TEXT } from './data';
+import { budgetId, budgetsOf, budgetText, ladderOf, nameIds, parseBudget, requireBenchmarkContract, type Budget, type Device, type Lang, type ParamsView, type Picked, KIND_TEXT } from './data';
 import type { Kind } from '../methodology/ladder';
 
 export interface BenchData {
@@ -56,7 +56,7 @@ export function defaultBudget(res: BenchmarkResults): Budget | null {
 
 /** Loads every document of the page once and hands it down with the reader's selection. */
 export function BenchProvider({ children }: { children: ReactNode }) {
-  const results = useArtifact((s) => loadBenchmark(s), []);
+  const results = useArtifact((s) => loadBenchmark(s).then(requireBenchmarkContract), []);
   const metrics = useArtifact((s) => loadModelMetrics(s), []);
   const index = useArtifact(() => theIndex(), []);
   const c08 = useArtifact((s) => loadManifest('C08_device_limited', s), []);

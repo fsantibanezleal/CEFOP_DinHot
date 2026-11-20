@@ -23,6 +23,7 @@ from ..core import score as scoring
 from ..core.gate import method_lane
 from ..io.schema import MethodFailure, MethodOutcome
 from ..model.holo import methods as registry
+from ..model.holo.core import forward as _forward
 from ..model.holo.core.rng import Rng
 from ..model.holo.core.types import Budget, Target
 
@@ -100,7 +101,9 @@ def run_method(rec: dict, mid: str, *, budget: Budget | None = None, init: np.nd
         kwargs.update(extra)
     t0 = time.perf_counter()
     shown = target if target is not None else (rearrangement_target(rec) if mid in ATOM_METHODS else ctx["target"])
+    _forward.reset_evaluations()
     result = method.run(ctx["setup"], shown, **kwargs)
+    work = _forward.evaluations()            # read before the run is scored: the work the method did
     seconds = time.perf_counter() - t0
     if result.phi.shape != (ctx["setup"].n_pix,) * 2:
         raise ValueError(f"method {mid} returned a phase of shape {result.phi.shape}")
@@ -111,7 +114,7 @@ def run_method(rec: dict, mid: str, *, budget: Budget | None = None, init: np.nd
     if not isinstance(its, int) or isinstance(its, bool):
         its = int(hist[-1]["iteration"]) if hist else 0
     return MethodOutcome(mid, method.spec.lane, result.phi, hist, final, its, _converged(hist, result.meta), seconds,
-                         dict(result.meta))
+                         {**result.meta, "forward_adjoint_evaluations": work})
 
 
 def case_context(rec: dict) -> dict:

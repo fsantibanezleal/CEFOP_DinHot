@@ -1,33 +1,35 @@
 \begin{table}[t]\centering\scriptsize\setlength{\tabcolsep}{4pt}
 \caption{Keyword defaults of every method, read from the signature of its \texttt{run} function by \texttt{params.py}, in two blocks; a default of \texttt{unset} is chosen at run time from the target, as the method section states, and methods with no keyword take only the interface arguments.}\label{tab:defaults}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth} l l @{\hskip 1.2em} >{\raggedright\arraybackslash}p{0.17\textwidth} l l@{}}\toprule Method & Keyword & Default & Method & Keyword & Default\\\midrule
-device-aware weighted GS & \texttt{steps} & 3 & direct search & \texttt{f} & 0.5\\
+device-aware conjugate-gradient refinement & \texttt{steps} & 3 & direct search & \texttt{f} & 0.5\\
  & \texttt{warm} & 12 &  & \texttt{levels} & 8\\
- & \texttt{weights} & true &  & \texttt{max\_trials} & unset\\
-flicker-bounded phase-continuous sequence & \texttt{destination} & unset & conjugate-gradient minimization & \texttt{t} & unset\\
+ & \texttt{weights} & false &  & \texttt{max\_trials} & unset\\
+ & \texttt{loss} & efficiency-level & conjugate-gradient minimization & \texttt{t} & unset\\
+ & \texttt{steepness} & unset &  & \texttt{efficiency} & unset\\
+flicker-bounded phase-continuous sequence & \texttt{destination} & unset & Wirtinger gradient descent with Adam & \texttt{lr} & 1\\
  & \texttt{frames} & 13 &  & \texttt{efficiency} & unset\\
- & \texttt{frame\_iterations} & 10 & Wirtinger gradient descent with Adam & \texttt{lr} & 1\\
- & \texttt{end\_phases} & unset &  & \texttt{efficiency} & unset\\
- & \texttt{phase\_velocity\_max} & 0.3 & closed-loop weighted GS & \texttt{variant} & nogrette\\
- & \texttt{n\_fix} & 12 &  & \texttt{gain} & 0.7\\
-learned warm start & \texttt{n\_fix} & 12 &  & \texttt{camera} & unset\\
- & \texttt{form} & point &  & \texttt{n\_inner} & unset\\
- & \texttt{models\_dir} & unset &  & \texttt{n\_start} & 30\\
-aberration-robust hologram & \texttt{q} & 8 &  & \texttt{start} & gsw\\
- & \texttt{lr} & 0.02 & device-aware CG with pixel crosstalk & \texttt{t} & unset\\
- & \texttt{warm} & 30 &  & \texttt{efficiency} & unset\\
- & \texttt{aberration} & 0.02 & Zernike correction & \texttt{mode} & recover\\
- & \texttt{pointing\_bins} & 0 &  & \texttt{injected} & unset\\
- & \texttt{design} & unset &  & \texttt{known} & unset\\
- & \texttt{level\_fraction} & 0.9 &  & \texttt{camera} & unset\\
-efficiency-uniformity Pareto front & \texttt{n\_lambda} & 20 &  & \texttt{modes} & 4 to 11\\
- & \texttt{warm} & 30 &  & \texttt{trial\_waves} & 0.06\\
-superposition of prisms and lenses & (none) &  &  & \texttt{base\_iterations} & 30\\
-random superposition & (none) &  & Laguerre-Gaussian vortex traps & \texttt{charge} & unset\\
-random mask & (none) &  & Hungarian assignment with phase interpolation & \texttt{atoms} & unset\\
-GS & \texttt{form} & unset &  & \texttt{alpha} & 1.5\\
- & \texttt{start\_waves} & 20 &  & \texttt{max\_step\_bins} & unset\\
-generalized adaptive additive GS & \texttt{alpha} & 0.5 &  & \texttt{n\_fix} & 12\\
+ & \texttt{frame\_iterations} & 10 & closed-loop weighted GS & \texttt{variant} & nogrette\\
+ & \texttt{end\_phases} & unset &  & \texttt{gain} & 0.7\\
+ & \texttt{phase\_velocity\_max} & 0.3 &  & \texttt{camera} & unset\\
+ & \texttt{n\_fix} & 12 &  & \texttt{n\_inner} & unset\\
+learned warm start & \texttt{n\_fix} & 12 &  & \texttt{n\_start} & 30\\
+ & \texttt{form} & point &  & \texttt{start} & gsw\\
+ & \texttt{models\_dir} & unset & device-aware CG with pixel crosstalk & \texttt{t} & unset\\
+aberration-robust hologram & \texttt{q} & 8 &  & \texttt{efficiency} & unset\\
+ & \texttt{lr} & 0.02 & Zernike correction & \texttt{mode} & recover\\
+ & \texttt{warm} & 30 &  & \texttt{injected} & unset\\
+ & \texttt{aberration} & 0.02 &  & \texttt{known} & unset\\
+ & \texttt{pointing\_bins} & 0 &  & \texttt{camera} & unset\\
+ & \texttt{design} & unset &  & \texttt{modes} & 4 to 11\\
+ & \texttt{level\_fraction} & 0.9 &  & \texttt{trial\_waves} & 0.06\\
+efficiency-uniformity continuation & \texttt{n\_lambda} & 20 &  & \texttt{base\_iterations} & 30\\
+ & \texttt{warm} & 30 & Laguerre-Gaussian vortex traps & \texttt{charge} & unset\\
+superposition of prisms and lenses & (none) &  & Hungarian assignment with phase interpolation & \texttt{atoms} & unset\\
+random superposition & (none) &  &  & \texttt{alpha} & 1.5\\
+random mask & (none) &  &  & \texttt{max\_step\_bins} & unset\\
+GS & \texttt{form} & unset &  & \texttt{n\_fix} & 12\\
+ & \texttt{start\_waves} & 20 &  & \texttt{sequence} & lpi\\
+generalized adaptive additive GS & \texttt{alpha} & 0.5 &  & \texttt{frame\_iterations} & 5\\
  & \texttt{form} & auto & multi-plane CNN hologram & \texttt{models\_dir} & unset\\
  & \texttt{scale} & mean &  & \texttt{refine} & true\\
 weighted GS & \texttt{form} & auto & optimal-transport initialized MRAF & \texttt{mix} & 0.4\\

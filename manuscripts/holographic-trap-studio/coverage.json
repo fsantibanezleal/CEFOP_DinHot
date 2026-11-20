@@ -2,9 +2,7 @@
   "kind": "technical-report",
   "title_support": [
     "tab:benchmark",
-    "tab:bake-sigma",
-    "fig:bench",
-    "fig:geometry"
+    "tab:ring"
   ],
   "methods": {
     "M01": "sec:m01",

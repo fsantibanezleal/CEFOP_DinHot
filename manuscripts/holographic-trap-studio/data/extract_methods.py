@@ -39,6 +39,79 @@ def load(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+# ---- the win rule of a benchmark cell (0.02.004, plan decision 2; the app reads the same rule in
+# frontend/src/content/benchmark/data.ts and both are tested on tests/fixtures/benchmark-win-rule.json) ----------------------
+
+WIN_MIN_SEEDS = 5          # seeds behind the best method of each kind
+WIN_MIN_DIFF_PCT = 0.01    # percentage points between the two medians of the relative standard deviation
+OVER_BUDGET_FACTOR = 1.5   # a time row whose median wall clock exceeds this many times its budget is not at equal time (decision 10)
+_EPS = 1e-9
+
+
+def kind_of(method: str) -> str:
+    """Published (an id starting with M) or proposed (an id starting with B)."""
+    return "proposed" if method.startswith("B") else "published"
+
+
+def is_over_budget(row: dict) -> bool:
+    """A time row whose median ``time_s`` exceeds ``OVER_BUDGET_FACTOR`` times its budget (seconds); a time row without a
+    ``time_s`` (against a declared budget) has no evidence that it kept the budget and is read as over. Iteration and converged rows are never over budget."""
+    if row.get("budget_kind") != "time" or row.get("budget") is None:   # a row that declares no budget is not judged
+        return False
+    t = row.get("time_s")
+    if not t or t.get("median") is None:
+        return True
+    return t["median"] > OVER_BUDGET_FACTOR * row["budget"]
+
+
+def best_of_kind(rows: list[dict], kind: str) -> dict | None:
+    """The row of the kind with the lowest median relative standard deviation among those that keep at least half of the best
+    median efficiency of the kind (a method that is uniform by wasting the light never wins); ties by method id. A row over its
+    time budget (``is_over_budget``) is not a candidate and does not set the efficiency floor."""
+    own = [r for r in rows if kind_of(r["method"]) == kind and not is_over_budget(r)]
+    if not own:
+        return None
+    top = max(r["efficiency"]["median"] for r in own)
+    kept = [r for r in own if r["efficiency"]["median"] >= top / 2]
+    return min(kept, key=lambda r: (r["rel_std_pct"]["median"], r["method"]))
+
+
+def cell_result(rows: list[dict]) -> dict:
+    """The reading of one cell (geometry, device, time budget): ``published``, ``proposed`` or ``tie``.
+
+    One kind wins only if the best published and the best proposed method both have at least ``WIN_MIN_SEEDS`` seeds, their
+    interquartile ranges of ``rel_std_pct`` do not overlap (touching counts as overlapping) and their medians differ by at least
+    ``WIN_MIN_DIFF_PCT``. Iteration rows never produce a win: a cell that holds one is a tie. A row over its time budget is never a
+    best and never part of a win; when every row of a kind is over budget the cell is a tie that says so."""
+    pub, prop = best_of_kind(rows, "published"), best_of_kind(rows, "proposed")
+    out = {"published": pub, "proposed": prop, "result": "tie"}
+    if pub is None or prop is None:
+        every_over = any(kind_of(r["method"]) == k and is_over_budget(r) for r in rows for k, b in (("published", pub), ("proposed", prop)) if b is None)
+        out["reason"] = "every row of one kind is over its budget" if every_over else "one kind has no row"
+    elif any(r.get("budget_kind") == "iterations" for r in rows):
+        out["reason"] = "iteration rows run each method at its own work and never produce a win"
+    elif min(pub["n_seeds"], prop["n_seeds"]) < WIN_MIN_SEEDS:
+        out["reason"] = f"fewer than {WIN_MIN_SEEDS} seeds"
+    else:
+        a, b = pub["rel_std_pct"], prop["rel_std_pct"]
+        if not (a["q3"] < b["q1"] or b["q3"] < a["q1"]):
+            out["reason"] = "the interquartile ranges overlap"
+        elif abs(a["median"] - b["median"]) < WIN_MIN_DIFF_PCT - _EPS:
+            out["reason"] = f"the medians differ by less than {WIN_MIN_DIFF_PCT} percentage points"
+        else:
+            out["result"] = "proposed" if b["median"] < a["median"] else "published"
+            out["reason"] = "the rule holds"
+    return out
+
+
+def require_contract(doc: dict, who: str) -> None:
+    """Refuse a benchmark-results file older than contract 2.0.0 (no ``evaluations``, a pooled G6): never guess the field."""
+    old = any("evaluations" not in r for r in doc["rows"]) or any(g["id"] == "G6" for g in doc.get("geometries", []))
+    if old:
+        raise SystemExit(f"{who}: data/derived/benchmark/results.json is of contract benchmark-results 1.x (rows without "
+                         "'evaluations' or the pooled geometry G6); this reader needs benchmark-results 2.0.0: run the 0.02.004 benchmark")
+
+
 def esc(s: str) -> str:
     return (str(s).replace("\\", "\\textbackslash{}").replace("_", "\\_").replace("&", "\\&").replace("%", "\\%")
             .replace("#", "\\#").replace("$", "\\$").replace("{", "\\{").replace("}", "\\}"))
@@ -104,7 +177,7 @@ NOTATION = [
     (r"$\alpha$", "exponent of the assignment cost of the Hungarian rearrangement or weight of the generalized adaptive additive GS", "1"),
     (r"$m$ (mixing)", "mixing parameter of the mixed-region rule", "1"),
     (r"$G,\ \rho_m$", "feedback gain and measured intensity relative to its target", "1"),
-    (r"$\lambda_{\mathrm{EU}}$", "trade-off parameter of the efficiency-uniformity Pareto front", "1"),
+    (r"$\lambda_{\mathrm{EU}}$", "trade-off parameter of the efficiency-uniformity continuation", "1"),
     (r"$\mathrm{AC}$", "accuracy of a volume hologram, mean over planes of the overlap of unit-sum intensities", "1"),
     (r"$z_{R,\mathrm{SLM}}$", r"SLM-limited Rayleigh range of the volume network (Eq.~\eqref{eq:m17-zr}), the depth unit of its planes", "mm"),
     (r"$\kappa,\ \gamma,\ f_c$", "trap stiffness, drag coefficient and corner frequency of a bead", r"pN/$\mu$m, kg/s, Hz"),
@@ -468,26 +541,28 @@ def s3(x: float) -> str:
 
 
 def table_b1_weights() -> str:
-    """The ablation of the weight update of B1 (companion manuscript's measurements): the acceptance task and the benchmark lattices."""
-    comp = HERE.parents[1] / "device-aware-flicker-bounded" / "data"
+    """The weight update of B1 (companion manuscript's measurements): the acceptance task and the benchmark lattices, the default
+    (no update) against the update and, on the lattices, against the loss of Schroff et al. (0.02.004)."""
+    comp = HERE.parents[1] / "device-aware-refinement" / "data"
     bj = load(comp / "beyond.json")["ablation"]
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Ablation of the weight update of the device-aware weighted GS, the method run with its weight update and with every "
-           "weight kept at one. First block: the $10\\times10$ acceptance task, median [min, max] of the relative standard deviation "
+           "\\caption{The weight update of the device-aware refinement: the method at its default (every weight kept at one), with the "
+           "weight update and, on the lattices, with the loss of Schroff et al. First block: the $10\\times10$ acceptance task, median [min, max] of the relative standard deviation "
            "$\\sigma$ (\\%) over the seeds. Second block: the four benchmark geometries on the C08 device at 10 outer iterations, median over "
-           "three seeds of $\\sigma$ and of the efficiency $e$.}\\label{tab:b1-weights}\n",
-           "\\begin{tabular}{@{}l r r r r@{}}\\toprule Task & $\\sigma$ with weights & $\\sigma$ no weights & $e$ with & $e$ no weights"
+           "the seeds of $\\sigma$ and of the efficiency $e$ (seeds in the row).}\\label{tab:b1-weights}\n",
+           "\\begin{tabular}{@{}l r r r r r r@{}}\\toprule Task & $\\sigma$ with weights & $\\sigma$ default & $\\sigma$ Schroff & $e$ with & $e$ default & $e$ Schroff"
            "\\\\\\midrule\n"]
     for key, label in (("b1_crosstalk", "acceptance task, crosstalk device"), ("b1_full", "acceptance task, 4-bit device")):
         v = bj[key]["summary"]
-        out.append(f"{label} ({v['full']['sigma']['n']} seeds) & {s3(v['full']['sigma']['median'])} "
-                   f"[{s3(v['full']['sigma']['min'])}, {s3(v['full']['sigma']['max'])}] & {s3(v['no_weights']['sigma']['median'])} "
-                   f"[{s3(v['no_weights']['sigma']['min'])}, {s3(v['no_weights']['sigma']['max'])}] & & \\\\\n")
+        out.append(f"{label} ({v['full']['sigma']['n']} seeds) & {s3(v['weights']['sigma']['median'])} "
+                   f"[{s3(v['weights']['sigma']['min'])}, {s3(v['weights']['sigma']['max'])}] & {s3(v['full']['sigma']['median'])} "
+                   f"[{s3(v['full']['sigma']['min'])}, {s3(v['full']['sigma']['max'])}] & & & & \\\\\n")
     for g, nm in GEO_NAMES.items():
         rows = [r for r in load(comp / f"b1_weights_geo_{g}.json") if r["device"]]
         med = lambda k, q: statistics.median(r[k][q] for r in rows)  # noqa: E731
         out.append(f"{g} {nm} (C08 device, {len(rows)} seeds) & {sig(med('weights', 'sigma'))} & {sig(med('no_weights', 'sigma'))} & "
-                   f"{fmt(med('weights', 'eff'), 3)} & {fmt(med('no_weights', 'eff'), 3)}\\\\\n")
+                   f"{sig(med('schroff', 'sigma'))} & {fmt(med('weights', 'eff'), 3)} & {fmt(med('no_weights', 'eff'), 3)} & "
+                   f"{fmt(med('schroff', 'eff'), 3)}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
@@ -554,6 +629,7 @@ def main() -> int:
     cases = {c["short"]: c for c in studio["cases"] if c["status"] == "baked"}
     measured = load(ROOT / "data-pipeline" / "pipeline" / "cases" / "measured_ranges.json")["measured"]
     bench = load(DERIVED / "benchmark" / "results.json")
+    require_contract(bench, "extract_methods.py")
     catalog = parse_catalog()
 
     L = ["% Generated by data/extract_methods.py from the committed files. Do not edit.\n"]

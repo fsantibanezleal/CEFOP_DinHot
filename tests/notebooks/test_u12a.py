@@ -28,7 +28,7 @@ ROWS = {
     "03-gerchberg-saxton/01-the-gs-loop": (1, []),
     "03-gerchberg-saxton/02-weights-for-uniformity": (2, []),
     "03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite": (3, []),
-    "03-gerchberg-saxton/04-device-aware-wgs": (4, ["BS-1"]),
+    "03-gerchberg-saxton/04-device-aware-refinement": (4, ["BS-1"]),
     "04-shaped-potentials/03-mraf-and-the-signal-region": (3, []),
     "04-shaped-potentials/04-optimal-transport-start": (3, []),
 }

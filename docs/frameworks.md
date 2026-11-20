@@ -62,11 +62,11 @@ The other pinned packages (the shell and its UI libraries, the build and test to
 | [M17](frameworks/M17_unsupervised-cnn-hologram.md) | Unsupervised CNN hologram | learned | baked training, live inference | Eybposh 2020 |
 | [M18](frameworks/M18_ot-initialized-mraf.md) | Optimal-transport initialized MRAF | optimization | baked | Swan 2024 |
 | [M19](frameworks/M19_volumetric-3d-gs.md) | Volumetric 3D GS (multi-plane) | GS | both | Whyte and Courtial 2005 |
-| [B1](frameworks/B1_device-aware-wgs.md) | Device-aware weighted GS | beyond | baked | gap: Schroff 2023 |
+| [B1](frameworks/B1_device-aware-wgs.md) | Device-aware conjugate-gradient refinement | beyond | baked | gap: Schroff 2023 |
 | [B2](frameworks/B2_flicker-bounded-sequence.md) | Flicker-bounded phase-continuous sequence | beyond | baked | gap: arXiv 2501.01391 |
 | [B3](frameworks/B3_learned-warm-start.md) | Learned warm start for phase-fixed WGS | beyond, learned | live inference | gap: no source |
 | [B4](frameworks/B4_aberration-robust-hologram.md) | Aberration-robust hologram | beyond | baked | gap: per-site or global correction only |
-| [B5](frameworks/B5_pareto-front.md) | Efficiency-uniformity Pareto front | beyond | baked | gap: single trade-off points only |
+| [B5](frameworks/B5_pareto-front.md) | Efficiency-uniformity continuation | beyond | baked | gap: single trade-off points only |
 
 The lane column is the `lane` of each method's `SPEC`. "Live" means the TypeScript engine computes it on the reader's input; "baked" means the Python engine bakes it and the
 site replays it; "both" means a small size runs live and the full size is baked. Every method is also run by the benchmark protocol in Python

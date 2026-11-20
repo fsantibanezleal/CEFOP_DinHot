@@ -28,6 +28,7 @@ from pathlib import Path
 from . import __version__, registry
 from .bake import BakeFailed, bake_case
 from .core import readiness, units
+from .core.power import opt_out_of_power_throttling
 from .core.manifest import build_index, index_entry_baked, index_entry_refused
 from .io.contract import REPO_ROOT
 from .io.formats import read_json, write_json
@@ -137,13 +138,14 @@ def bake_jobs(jobs: list[dict], workers: int = MAX_WORKERS, fn=_bake_job) -> lis
     """Bake the jobs in parallel, one case per process (methods within a case run in sequence), at most ``MAX_WORKERS``
     processes; the results come back in the order of ``jobs`` whatever the completion order, so the outputs are the same
     as a sequential bake's. One BLAS thread per process keeps the warm timings that decide the lane stable under load."""
+    opt_out_of_power_throttling()   # the calling process (the sequential path runs here); the pool's workers do it as initializer
     n = max(1, min(int(workers), MAX_WORKERS, len(jobs)))
     if n == 1 or len(jobs) <= 1:
         return [fn(j) for j in jobs]
     saved = {k: os.environ.get(k) for k in SINGLE_THREAD}
     os.environ.update({k: "1" for k in SINGLE_THREAD})   # inherited by the spawned workers
     try:
-        with ProcessPoolExecutor(max_workers=n) as pool:
+        with ProcessPoolExecutor(max_workers=n, initializer=opt_out_of_power_throttling) as pool:
             return list(pool.map(fn, jobs))
     finally:
         for k, v in saved.items():

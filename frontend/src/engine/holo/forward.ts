@@ -104,10 +104,18 @@ function xTable(setup: Setup, c: Float64Array, g: XGroups, sign: number): { re: 
 }
 
 /**
+ * The most values (vortex traps times SLM pixels) whose dense kernels a plan keeps: 2^21 cosines and as many sines, about 34 MB.
+ * Above it each call recomputes them. Case C06 (sixteen vortex traps on 256 x 256 pixels) keeps 2^20.
+ */
+export const DENSE_CACHE_MAX = 2 ** 21;
+
+/**
  * A trap set prepared for repeated projection and back-projection (an iterative method calls both every iteration with the
  * same traps): the x factors of the column groups and the y factors of every trap are computed once. The y factors are cached
  * when `M n <= 2e6` values, else recomputed per call. `V_m = (1 / N_pix) sum_j f_j exp(-i Delta_j^m)` and its adjoint
- * `F_j = sum_m c_m exp(+i Delta_j^m)`; a vortex trap uses the dense form.
+ * `F_j = sum_m c_m exp(+i Delta_j^m)`; a vortex trap uses the dense form, whose kernel `cos Delta^m`, `sin Delta^m` the plan computes
+ * once per trap when the vortex traps hold at most `denseCacheMax` values (the same arithmetic, so the same result to the bit; it
+ * had been recomputed in both directions on every iteration, most of a vortex case's run time).
  */
 export class PointPlan {
   private readonly c: Float64Array;
@@ -116,8 +124,10 @@ export class PointPlan {
   /** the same factors laid out `[ix][l]` interleaved (re, im), conjugated (sign +1): contiguous in the group index */
   private readonly gxT: Float64Array;
   private readonly gy: { re: Float64Array; im: Float64Array } | null;
+  /** `cos Delta^m` and `sin Delta^m` of the vortex traps, filled on first use; null when they would exceed `denseCacheMax` values */
+  private readonly dense: Map<number, { cs: Float64Array; sn: Float64Array }> | null;
 
-  constructor(readonly setup: Setup, readonly traps: TrapSet) {
+  constructor(readonly setup: Setup, readonly traps: TrapSet, denseCacheMax: number = DENSE_CACHE_MAX) {
     checkInField(setup, traps);
     this.c = slmAxis(setup);
     this.g = groupByX(traps);
@@ -141,6 +151,23 @@ export class PointPlan {
       }
       this.gy = { re, im };
     } else this.gy = null;
+    let vortices = 0;
+    for (let m = 0; m < traps.length; m++) if (traps.charge[m] !== 0) vortices++;
+    this.dense = vortices > 0 && vortices * n * n <= denseCacheMax ? new Map() : null;
+  }
+
+  /** `cos Delta^m` and `sin Delta^m` of vortex trap `m` (the dense delay), kept for the plan's life when the cache holds them. */
+  private denseKernel(m: number): { cs: Float64Array; sn: Float64Array } {
+    const kept = this.dense?.get(m);
+    if (kept) return kept;
+    const d = denseDelay(this.setup, this.traps, m);
+    const cs = new Float64Array(d.length), sn = new Float64Array(d.length);
+    for (let i = 0; i < d.length; i++) {
+      cs[i] = Math.cos(d[i]);
+      sn[i] = Math.sin(d[i]);
+    }
+    this.dense?.set(m, { cs, sn });
+    return { cs, sn };
   }
 
   /** The y factor (sign -1) of trap `m` as `re`, `im` views. */
@@ -191,10 +218,10 @@ export class PointPlan {
     }
     for (let m = 0; m < traps.length; m++) {
       if (traps.charge[m] === 0) continue;
-      const d = denseDelay(setup, traps, m);
+      const k = this.denseKernel(m);
       let vr = 0, vi = 0;
       for (let i = 0; i < n2; i++) {
-        const cs = Math.cos(d[i]), sn = -Math.sin(d[i]);
+        const cs = k.cs[i], sn = -k.sn[i];
         vr += field[2 * i] * cs - field[2 * i + 1] * sn;
         vi += field[2 * i] * sn + field[2 * i + 1] * cs;
       }
@@ -243,9 +270,9 @@ export class PointPlan {
     for (let m = 0; m < traps.length; m++) {
       if (traps.charge[m] === 0) continue;
       const cr = coeffs[2 * m], ci = coeffs[2 * m + 1];
-      const d = denseDelay(setup, traps, m);
+      const k = this.denseKernel(m);
       for (let i = 0; i < n * n; i++) {
-        const cs = Math.cos(d[i]), sn = Math.sin(d[i]);
+        const cs = k.cs[i], sn = k.sn[i];
         out[2 * i] += cr * cs - ci * sn;
         out[2 * i + 1] += cr * sn + ci * cs;
       }

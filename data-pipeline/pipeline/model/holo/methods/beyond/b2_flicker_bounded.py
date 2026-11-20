@@ -65,6 +65,12 @@ below with twice the frames as well (0.023 and 0.768 at 12 bins, 0.584 and 0.847
 end phases prescribe and not the frame count. LPI does not reach 0.9 in any row. Measured 2026-10-29 after the GS family was
 made the ladder methods' own rules (``optim/_gs_family.py``); the transient model is not calibrated in absolute terms.
 
+Equal work (2026-11-14). ``budget.time_s`` is a deadline in every phase: frame 0 (``weighted_gs`` takes the deadline), every
+iteration of every later frame, and the frame loop. A frame cut by the deadline is kept with the iterations it ran.
+``meta['iterations']`` is the work done: the frame-0 iterations plus the frame iterations run. In a static benchmark cell
+the sequence is not a method of its own (its frame 0 is the phase-fixed WGS the table already holds), so the benchmark does
+not run it (``benchmark/protocol.py``); its experiments are the sequence ones.
+
 ``run(setup, target, ..., destination=None, frames=13)``: ``target`` holds the initial traps, ``destination`` the final
 positions with the same ids (``None``: the traps hold still, a static sequence). 13 holograms are the dossier's
 6x6 to 4x4 sort. Point-trap form (any trap position, not only bins), ideal device.
@@ -179,8 +185,9 @@ def run(setup: Setup, target: Target, *, device=None, budget: Budget, rng: Rng, 
     deadline = C.deadline_of(budget.time_s)
     a = np.sqrt(start.weight / np.mean(start.weight))
     # frame 0: cold phase-fixed WGS on the initial traps
-    phi0, _ = weighted_gs(setup, start, budget.iterations, rng, variant="pfwgs", n_fix=min(n_fix, budget.iterations),
-                          init=init)
+    phi0, hist0 = weighted_gs(setup, start, budget.iterations, rng, variant="pfwgs", n_fix=min(n_fix, budget.iterations),
+                              init=init, deadline=deadline)
+    work = len(hist0)
     v0 = point_trap_projection(slm_field(phi0, setup), setup, start)
     theta0 = np.angle(v0)
     theta_end = theta0 if end_phases is None else np.asarray(end_phases, dtype=np.float64)
@@ -201,6 +208,9 @@ def run(setup: Setup, target: Target, *, device=None, budget: Budget, rng: Rng, 
         traps_s = at(float(s))
         theta = np.exp(1j * (theta0 + dtheta * float(min_jerk(s / (frames - 1)))))
         for _ in range(frame_iterations):
+            if C.expired(deadline):
+                break
+            work += 1
             v = point_trap_projection(slm_field(phi, setup), setup, traps_s)
             r = np.maximum(np.abs(v), 1e-300) / a
             w = w * np.mean(r) / r
@@ -213,4 +223,4 @@ def run(setup: Setup, target: Target, *, device=None, budget: Budget, rng: Rng, 
                        zip(start, destination if destination is not None else start)])
     return Result(phi=phis[-1], history=history, fields=v,
                   meta={"frames": np.array(phis), "transient_ratio": ratio, "moving": moving,
-                        "theta0": theta0, "frame_iterations": frame_iterations, "n_frames": len(phis)})
+                        "theta0": theta0, "iterations": work, "frame_iterations": frame_iterations, "n_frames": len(phis)})

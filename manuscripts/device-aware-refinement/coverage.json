@@ -1,0 +1,15 @@
+{
+  "kind": "manuscript",
+  "title_support": [
+    "tab:b1",
+    "tab:schroff",
+    "fig:schroff",
+    "tab:ablb1",
+    "fig:ablation",
+    "tab:bench",
+    "fig:bench"
+  ],
+  "claims": {
+    "BS-1": "sec:method"
+  }
+}

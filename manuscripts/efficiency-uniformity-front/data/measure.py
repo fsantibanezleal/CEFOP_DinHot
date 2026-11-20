@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure the efficiency-uniformity Pareto front by continuation of a weighted cost (the proposed method of this
+"""Measure the efficiency-uniformity continuation, a continuation of a weighted cost (the proposed method of this
 manuscript) and write ``b5.json``, ``b5_numbers.tex`` and the table files.
 
 The method runs here with the real engine module ``data-pipeline/pipeline/model/holo/methods/beyond/b5_pareto.py`` on the
@@ -73,7 +73,12 @@ BASE_ITERS = 30          # iterations of the published points (the acceptance te
 CG_ITERS = 15            # conjugate-gradient iterations per value of lambda (the acceptance test)
 N_LAMBDA = B5.DEFAULT_LAMBDAS
 WARM = B5.DEFAULT_WARM
-REFS = {"origin": (0.0, 0.0), "e05": (0.5, 0.0), "e07": (0.7, 0.0)}   # reference points of the hypervolume sensitivity
+# reference points (efficiency, uniformity) of the hypervolume sensitivity: the origin, two efficiency floors and, since 0.02.004
+# (review EU-2), two uniformity floors, where the front's added area lies (u falls to 0.015 on the efficient side)
+REFS = {"origin": (0.0, 0.0), "e05": (0.5, 0.0), "e07": (0.7, 0.0), "u09": (0.0, 0.9), "u095": (0.0, 0.95)}
+REF_NAME = {"origin": "Zero", "e05": "Half", "e07": "Seven", "u09": "UNine", "u095": "UNineFive"}
+REF_LABEL = {"origin": r"$(0,0)$", "e05": r"$(0.5,0)$", "e07": r"$(0.7,0)$", "u09": r"$(0,0.9)$", "u095": r"$(0,0.95)$"}
+WIN_MIN_SEEDS = 5   # the benchmark's floor (extract_methods.WIN_MIN_SEEDS): a cell with fewer seeds on either side is a tie
 
 
 # ------------------------------------------------------------------------------------------------ the task
@@ -346,8 +351,13 @@ def stored() -> dict:
             front = [(p["efficiency"], p["uniformity"]) for p in f["points"]]
             rec = {"budget": budget, "geometry": g, "name": names[g], "hv_front": hv_of(front), "hv_published": hv_of(pts),
                    "n_front": len(front), "lam_max": max(p["lambda"] for p in f["points"]),
-                   "n_published": len(pts), "seeds_b5": cells[("B5", g)]["n_seeds"] if ("B5", g) in cells else None}
+                   "n_published": len(pts), "seeds_b5": cells[("B5", g)]["n_seeds"] if ("B5", g) in cells else None,
+                   # the stored front is the converged run of one seed (the pareto record), the points are medians over the seeds of their rows
+                   "seeds_front": 1, "seeds_points_min": min(cells[(m, g)]["n_seeds"] for m in (ID_GS, ID_GAA, ID_GSW, ID_DS) if (m, g) in cells)}
             rec["margin"] = rec["hv_front"] - rec["hv_published"]
+            # a margin is read as a difference only with at least WIN_MIN_SEEDS seeds on both sides (decision 2 of the 0.02.004 plan); else a tie
+            rec["reading"] = ("tie (fewer than %d seeds)" % WIN_MIN_SEEDS if min(rec["seeds_front"], rec["seeds_points_min"]) < WIN_MIN_SEEDS
+                              else ("front larger" if rec["margin"] > 0 else "front not larger"))
             out["geometries"].append(rec)
     mr = json.loads((ROOT / "data-pipeline" / "pipeline" / "cases" / "measured_ranges.json").read_text(encoding="utf-8"))
     bake = {}
@@ -381,6 +391,7 @@ def analyse(data: dict) -> dict:
     any_dom_all = []
     refs_f = {k: [] for k in REFS}
     refs_b = {k: [] for k in REFS}
+    refs_b5 = {k: [] for k in REFS}
     knee_e, knee_u, knee_s, secs, npar, emin, emax, umin = [], [], [], [], [], [], [], []
     mono_e_viol, mono_E_viol, mono_u_viol, sig_slack, e0s = [], [], [], [], []
     u_slack, u_informative, u_total = [], [], []
@@ -395,6 +406,7 @@ def analyse(data: dict) -> dict:
         for k, ref in REFS.items():
             refs_f[k].append(f["hv_refs"][k])
             refs_b[k].append(hv_of(base, ref))
+            refs_b5[k].append(hv_of(base + [p[ID_PF]], ref))
         for n in (*names, ID_PF):
             dom[n].append(dominating(f, p[n]))
         any_dom_all.append(all(dominating(f, p[n]) > 0 for n in (ID_GS, ID_GAA)))
@@ -426,7 +438,12 @@ def analyse(data: dict) -> dict:
     a["hv_ge_count_m07"] = int(sum(1 for x, y in zip(hv_f, hv_b7) if x >= y))
     a["refs"] = {k: {"front": stats(refs_f[k]), "published": stats(refs_b[k]),
                      "diff": stats([x - y for x, y in zip(refs_f[k], refs_b[k])]),
-                     "ge": int(sum(1 for x, y in zip(refs_f[k], refs_b[k]) if x >= y))} for k in REFS}
+                     "ge": int(sum(1 for x, y in zip(refs_f[k], refs_b[k]) if x >= y)),
+                     "published5": stats(refs_b5[k]), "diff5": stats([x - y for x, y in zip(refs_f[k], refs_b5[k])]),
+                     "ge5": int(sum(1 for x, y in zip(refs_f[k], refs_b5[k]) if x >= y)), "n": len(refs_f[k])} for k in REFS}
+    for k in REFS:  # the share of the headline (the five-point margin at the origin) that each reference keeps
+        a["refs"][k]["share5"] = a["refs"][k]["diff5"]["mean"] / a["refs"]["origin"]["diff5"]["mean"]
+        a["refs"][k]["share4"] = a["refs"][k]["diff"]["mean"] / a["refs"]["origin"]["diff"]["mean"]
     a["dominating"] = {n: {"stats": stats(v), "seeds_with_any": int(sum(1 for x in v if x > 0))} for n, v in dom.items()}
     a["both_ms_dominated_seeds"] = int(sum(any_dom_all))
     a["knee"] = {"e": stats(knee_e), "u": stats(knee_u), "sigma": stats(knee_s),
@@ -594,7 +611,28 @@ def write_outputs(data: dict) -> None:
     m(macro("hvDiffSevenLo", f(a["hv_diff_m07"]["ci_lo"], 4))); m(macro("hvDiffSevenHi", f(a["hv_diff_m07"]["ci_hi"], 4)))
     m(macro("hvDiffSeven", f(a["hv_diff_m07"]["mean"], 4)))
     m(macro("hvGeCountSeven", a["hv_ge_count_m07"]))
-    for k, nm in (("origin", "Zero"), ("e05", "Half"), ("e07", "Seven")):
+    # the headline (EU-1): the union of the five published points, phase-fixed WGS (the curve's own start) included; the union of the
+    # four points of 0.02.003 is the secondary row
+    m(macro("hvFivePub", f(a["hv_published_with_m07"]["mean"], 4))); m(macro("hvFivePubCi", ci(a["hv_published_with_m07"], 4)))
+    m(macro("hvFiveDiff", f(a["hv_diff_m07"]["mean"], 4)))
+    m(macro("hvFiveLo", f(a["hv_diff_m07"]["ci_lo"], 4))); m(macro("hvFiveHi", f(a["hv_diff_m07"]["ci_hi"], 4)))
+    m(macro("hvFiveMin", f(a["hv_diff_m07"]["min"], 4))); m(macro("hvFiveMax", f(a["hv_diff_m07"]["max"], 4)))
+    m(macro("hvFiveGe", a["hv_ge_count_m07"]))
+    m(macro("hvFiveRatio", f(a["hv_front"]["mean"] / a["hv_published_with_m07"]["mean"], 4)))
+    m(macro("hvFiveRatioPct", f(100 * (a["hv_front"]["mean"] / a["hv_published_with_m07"]["mean"] - 1), 2)))
+    m(macro("hvFourPub", f(a["hv_published"]["mean"], 4))); m(macro("hvFourDiff", f(a["hv_diff"]["mean"], 4)))
+    m(macro("hvFourLo", f(a["hv_diff"]["ci_lo"], 4))); m(macro("hvFourHi", f(a["hv_diff"]["ci_hi"], 4)))
+    m(macro("hvFourGe", a["hv_ge_count"]))
+    # every reference of the sensitivity with the five-point union (headline) and the share of the origin's margin that it keeps
+    for k, nm in REF_NAME.items():
+        r = a["refs"][k]
+        m(macro(f"hvRefFive{nm}Front", f(r["front"]["mean"], 4))); m(macro(f"hvRefFive{nm}Pub", f(r["published5"]["mean"], 4)))
+        m(macro(f"hvRefFive{nm}Diff", f(r["diff5"]["mean"], 4)))
+        m(macro(f"hvRefFive{nm}Lo", f(r["diff5"]["ci_lo"], 4))); m(macro(f"hvRefFive{nm}Hi", f(r["diff5"]["ci_hi"], 4)))
+        m(macro(f"hvRefFive{nm}Ge", r["ge5"])); m(macro(f"hvRefFive{nm}N", r["n"]))
+        m(macro(f"hvRefFive{nm}Share", f(100 * r["share5"], 1)))   # percent of the origin's five-point margin
+        m(macro(f"hvRefFour{nm}Share", f(100 * r["share4"], 1)))
+    for k, nm in REF_NAME.items():
         r = a["refs"][k]
         m(macro(f"hvRef{nm}Front", f(r["front"]["mean"], 4))); m(macro(f"hvRef{nm}Pub", f(r["published"]["mean"], 4)))
         m(macro(f"hvRef{nm}Diff", f(r["diff"]["mean"], 4)))
@@ -710,6 +748,10 @@ def write_outputs(data: dict) -> None:
         m(macro(f"benchWorst{nm}", f(min(g["margin"] for g in cells), 3)))
         m(macro(f"benchBest{nm}", f(max(g["margin"] for g in cells), 3)))
         m(macro(f"benchWorstAbs{nm}", f(abs(min(g["margin"] for g in cells)), 3)))
+        m(macro(f"benchTie{nm}", sum(1 for g in cells if g["reading"].startswith("tie"))))
+        m(macro(f"benchRead{nm}", sum(1 for g in cells if not g["reading"].startswith("tie"))))
+        m(macro(f"benchSeedsPoints{nm}", f"{min(g['seeds_points_min'] for g in cells)} to {max(g['seeds_points_min'] for g in cells)}"))
+        m(macro(f"benchSeedsFront{nm}", max(g["seeds_front"] for g in cells)))
     m(macro("benchRows", st["n_rows"])); m(macro("benchSeeds", st["seeds"])); m(macro("benchEngine", st["engine_version"]))
     m(macro("bakeSeeds", st["bake_seeds"]))
     (HERE / "b5_numbers.tex").write_text("".join(L), encoding="utf-8")
@@ -730,24 +772,26 @@ def write_outputs(data: dict) -> None:
         hv = stats([e * u for e, u in zip([r["published"][n][0] for r in data["main"]], [r["published"][n][1] for r in data["main"]])])
         T.append(row([names[n], pm(p["e"]), pm(p["u"]), pm(hv, 3)]))
     T.append("\\midrule\n")
-    T.append(row(["Union of the four published points", "", "", pm(a["hv_published"], 4)]))
-    T.append(row(["Front (knee point)", pm(a["knee"]["e"]), pm(a["knee"]["u"]), ""]))
-    T.append(row(["Front (whole)", f"{f(a['e_min']['mean'])} to {f(a['e_max']['mean'])}", f"{f(a['u_min']['mean'])} to 1", pm(a["hv_front"], 4)]))
+    T.append(row(["Union of the five published points (headline)", "", "", pm(a["hv_published_with_m07"], 4)]))
+    T.append(row(["Union of the four points of 0.02.003 (secondary)", "", "", pm(a["hv_published"], 4)]))
+    T.append(row(["Continuation (knee point)", pm(a["knee"]["e"]), pm(a["knee"]["u"]), ""]))
+    T.append(row(["Continuation (whole)", f"{f(a['e_min']['mean'])} to {f(a['e_max']['mean'])}", f"{f(a['u_min']['mean'])} to 1", pm(a["hv_front"], 4)]))
     T.append("\\bottomrule\n\\end{tabular}\n")
     (HERE / "tab_main.tex").write_text("".join(T), encoding="utf-8")
 
-    T = ["\\begin{tabular}{@{}lrrr@{}}\n\\toprule\n"]
-    T.append(row(["Reference of the hypervolume", "Front", "Published union", "Difference, 95\\% interval"]))
+    T = ["\\begin{tabular}{@{}lrrrrr@{}}\n\\toprule\n"]
+    T.append(row(["Reference", "Continuation", "Five-point union", "Difference", "Kept (\\%)",
+                  "Four-point difference"]))
     T.append("\\midrule\n")
-    for k, lab in (("origin", "$(0,0)$"), ("e05", "$(0.5,0)$"), ("e07", "$(0.7,0)$")):
+    for k, lab in REF_LABEL.items():
         r = a["refs"][k]
-        T.append(row([lab, pm(r["front"], 4), pm(r["published"], 4), pm(r["diff"], 4)]))
+        T.append(row([lab, pm(r["front"], 4), pm(r["published5"], 4), pm(r["diff5"], 4), f(100 * r["share5"], 1), pm(r["diff"], 4)]))
     T.append("\\bottomrule\n\\end{tabular}\n")
     (HERE / "tab_refs.tex").write_text("".join(T), encoding="utf-8")
 
     if "rivals" in a:
         T = ["\\begin{tabular}{@{}lrrr@{}}\n\\toprule\n"]
-        T.append(row(["One-parameter front of a published method", "Hypervolume", "Front minus it", "Seeds front $\\ge$"]))
+        T.append(row(["One-parameter curve of a published method", "Hypervolume", "Continuation minus it", "Seeds continuation $\\ge$"]))
         T.append("\\midrule\n")
         lab = {"gsw_path": "Weighted GS, iterates 1 to 100", "pfwgs_path": "Phase-fixed WGS, iterates 1 to 100",
                "gaa_sweep": "Adaptive additive, exponent 0 to 1", "union": "Union of all of them and the five points"}
@@ -776,12 +820,14 @@ def write_outputs(data: dict) -> None:
         T.append("\\bottomrule\n\\end{tabular}\n")
         (HERE / "tab_ablation.tex").write_text("".join(T), encoding="utf-8")
 
-    T = ["\\begin{tabular}{@{}llrrrrr@{}}\n\\toprule\n"]
-    T.append(row(["Geometry", "Iter.", "Points", "Largest $\\lambda$", "Front", "Union", "Difference"]))
+    T = ["\\begin{tabular}{@{}llrrrrrrr@{}}\n\\toprule\n"]
+    T.append(row(["Geometry", "Iter.", "Points", "Largest $\\lambda$", "Continuation", "Union", "Difference", "$n$ curve, points", "Reading"]))
     T.append("\\midrule\n")
     for g in st["geometries"]:
         T.append(row([g["geometry"] + " " + SHORT.get(g["geometry"], g["name"]), str(g["budget"]), str(g["n_front"]),
-                      f(g["lam_max"], 3), f(g["hv_front"], 4), f(g["hv_published"], 4), f"{g['margin']:+.4f}"]))
+                      f(g["lam_max"], 3), f(g["hv_front"], 4), f(g["hv_published"], 4), f"{g['margin']:+.4f}",
+                      f"{g['seeds_front']}, {g['seeds_points_min']}",
+                      g["reading"].replace("tie (fewer than %d seeds)" % WIN_MIN_SEEDS, "tie, $n<%d$" % WIN_MIN_SEEDS)]))
     T.append("\\bottomrule\n\\end{tabular}\n")
     (HERE / "tab_bench.tex").write_text("".join(T), encoding="utf-8")
 

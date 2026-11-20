@@ -1,0 +1,115 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\Urlmuskip=0mu plus 2mu\relax
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[hidelinks]{hyperref}
+\usepackage{orcidlink}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\graphicspath{{../figures/}}
+\input{../data/beyond_numbers.tex}
+\input{../data/b1geo_numbers.tex}
+\input{../figures/fig_numbers.tex}
+
+% Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
+% publishing tool when the version DOI is reserved; until then the version DOI holds the concept DOI.
+\newcommand{\doctype}{Preprint}
+\newcommand{\docversion}{v0.05}
+\newcommand{\docdate}{19 November 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.24381813}
+\newcommand{\conceptdoi}{10.5281/zenodo.23788733}
+\newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
+\newcommand{\headerblock}{%
+\begin{center}
+\fbox{\parbox{0.94\textwidth}{\small\raggedright
+\textbf{\doctype} \quad$\cdot$\quad \docversion, \docdate \quad$\cdot$\quad Licence CC BY 4.0\\[2pt]
+CAOS open-research programme \quad$\cdot$\quad CEFOP\_DinHot, holographic optical trap studio\\[2pt]
+Version DOI \href{https://doi.org/\versiondoi}{\texttt{\versiondoi}} \quad$\cdot$\quad
+concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptdoi}}\\[2pt]
+Not peer reviewed. Source code, data and computational records: \href{https://\docrepo}{\texttt{\docrepo}}
+}}
+\end{center}
+\vspace{4pt}}
+
+\begin{document}
+
+\title{Device-Aware Conjugate-Gradient Refinement of Holographic Optical Trap Arrays: Neither the Efficiency-Level Loss nor the Weight Update Improves on the Normalized-Error Loss of Schroff et al., the Safeguard Never Acts, and the Device Model in the Loop Carries the Gain, in Simulation}
+\author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
+\small CAOS open-research programme, Santiago, Chile\\
+\small \texttt{fsantibanez@gmail.com}}
+\date{}
+\maketitle
+\vspace{-1.2em}
+\headerblock
+
+\begin{abstract}
+Optical trap arrays are computed on an ideal model of the spatial light modulator (SLM) with phase-fixed weighted Gerchberg--Saxton (WGS), and the device displays something else. Schroff et al.\ put a pixel-crosstalk model inside a conjugate-gradient minimization of a normalized intensity error. We transpose it to point-trap arrays as a device-aware conjugate-gradient refinement with an efficiency-level loss, an optional weight update and a best-iterate safeguard, and we test whether these elements add anything. Through the same warm start, device model and conjugate gradient, the normalized-error loss of Schroff et al.\ gives \schroffXSig{} percent against \ablBFullSig{} percent for the efficiency-level loss on a $10\times10$ lattice behind a crosstalk device, and a lower median on the full device (\schroffFSig{} against \ablBFFullSig{} percent): the efficiency-level loss adds nothing measurable, the safeguard did not act, and the weight update raises the spread \ablBWeightsRatio{} times. The gain belongs to the device model in the loop: the spread falls from a median of \sigmaMsevenThirty{} percent for phase-fixed WGS to \sigmaBOne{} percent, a factor of \ratioOneGm{} (95 percent interval \ratioOneCiLo{} to \ratioOneCiHi{}), and returns to \sigmaNoModel{} percent without the model. On the benchmark's device the gain is partial: at an equal time of \benchOneTimeBudget{} s it reads as better than phase-fixed WGS on \benchOneDevTimeProposed{} of \benchOneDevCells{} geometries and ties on \benchOneDevTimeTie{} (against the best published method of each cell, better on \benchAllRefWins{} and behind on \benchAllPubWins{}), and a hologram takes \benchTenSecRefMin{} to \benchTenSecRefMax{} s against \benchTenSecMsevenMin{} to \benchTenSecMsevenMax{} s. All results are simulated.
+\end{abstract}
+
+\noindent\textbf{Keywords:} holographic optical tweezers, weighted Gerchberg--Saxton, conjugate gradient, pixel crosstalk, phase quantization.
+
+\input{sec-intro}
+\input{sec-related}
+\input{sec-problem}
+\input{sec-method}
+\input{sec-theory}
+\input{sec-design}
+\input{sec-results}
+\input{sec-ablation}
+\input{sec-discussion}
+\input{sec-end}
+
+\begin{thebibliography}{99}\small
+\bibitem{dileonardo} R.~Di Leonardo, F.~Ianni and G.~Ruocco, ``Computer generation of optimal holograms for optical trap arrays,'' \emph{Opt. Express} 15(4), 1913, 2007. \url{https://doi.org/10.1364/OE.15.001913}.
+\bibitem{bianchi} S.~Bianchi and R.~Di Leonardo, ``Real-time optical micro-manipulation using optimized holograms generated on the GPU,'' \emph{Comput. Phys. Commun.} 181(8), 1444--1448, 2010. \url{https://doi.org/10.1016/j.cpc.2010.04.012}; preprint arXiv:0907.4027.
+\bibitem{polin} M.~Polin, K.~Ladavac, S.-H.~Lee, Y.~Roichman and D.~G.~Grier, ``Optimized holographic optical traps,'' \emph{Opt. Express} 13(15), 5831, 2005. \url{https://doi.org/10.1364/OPEX.13.005831}.
+\bibitem{kim2019} D.~Kim \emph{et al.}, ``Large-scale uniform optical focus array generation with a phase spatial light modulator,'' \emph{Opt. Lett.} 44(12), 3178, 2019. \url{https://doi.org/10.1364/OL.44.003178}.
+\bibitem{ebadi} S.~Ebadi \emph{et al.}, ``Quantum phases of matter on a 256-atom programmable quantum simulator,'' \emph{Nature} 595, 227--232, 2021. \url{https://doi.org/10.1038/s41586-021-03582-4}.
+\bibitem{manetsch} H.~J.~Manetsch, G.~Nomura, E.~Bataille, X.~Lv, K.~H.~Leung and M.~Endres, ``A tweezer array with 6,100 highly coherent atomic qubits,'' \emph{Nature} 647, 60--67, 2025. \url{https://doi.org/10.1038/s41586-025-09641-4}.
+\bibitem{slmsuite} slmsuite developers (Holodyne), ``slmsuite: Python package for high-performance spatial light modulator (SLM) control and holography,'' software, MIT licence. \url{https://github.com/holodyne/slmsuite}.
+\bibitem{nogrette} F.~Nogrette \emph{et al.}, ``Single-atom trapping in holographic 2D arrays of microtraps with arbitrary geometries,'' \emph{Phys. Rev. X} 4(2), 021034, 2014. \url{https://doi.org/10.1103/PhysRevX.4.021034}.
+\bibitem{chew} Y.~T.~Chew \emph{et al.}, ``Ultraprecise holographic optical tweezer array,'' \emph{Phys. Rev. A} 110(5), 053518, 2024. \url{https://doi.org/10.1103/PhysRevA.110.053518}.
+\bibitem{wang} S.~Wang, Y.~Hu, Y.~Zhou, P.~Lan and Z.~Xu, ``Feedback intensity equalization algorithm for multi-spots holographic tweezer,'' arXiv:2407.17049, 2024 (preprint; no journal version found). \url{https://arxiv.org/abs/2407.17049}.
+\bibitem{pasienski} M.~Pasienski and B.~DeMarco, ``A high-accuracy algorithm for designing arbitrary holographic atom traps,'' \emph{Opt. Express} 16(3), 2176, 2008. \url{https://doi.org/10.1364/OE.16.002176}.
+\bibitem{harte} T.~Harte, G.~D.~Bruce, J.~Keeling and D.~Cassettari, ``Conjugate gradient minimisation approach to generating holographic traps for ultracold atoms,'' \emph{Opt. Express} 22(22), 26548, 2014. \url{https://doi.org/10.1364/OE.22.026548}.
+\bibitem{bowman} D.~Bowman \emph{et al.}, ``High-fidelity phase and amplitude control of phase-only computer generated holograms using conjugate gradient minimisation,'' \emph{Opt. Express} 25(10), 11692, 2017. \url{https://doi.org/10.1364/OE.25.011692}.
+\bibitem{swan} H.~Swan, A.~Torchylo, M.~J.~Van de Graaff, J.~Rudolph and J.~M.~Hogan, ``High-fidelity holographic beam shaping with optimal transport and phase diversity,'' \emph{Opt. Express} 33(3), 6290--6303, 2025. \url{https://doi.org/10.1364/OE.540901}.
+\bibitem{torchylo} A.~Torchylo, H.~Swan, L.~Tellez and J.~M.~Hogan, ``A fast, large-scale optimal transport algorithm for holographic beam shaping,'' \emph{Opt. Express} 34(4), 6796--6803, 2026. \url{https://doi.org/10.1364/OE.588337}.
+\bibitem{chakravarthula} P.~Chakravarthula, Y.~Peng, J.~Kollin, H.~Fuchs and F.~Heide, ``Wirtinger holography for near-eye displays,'' \emph{ACM Trans. Graph.} 38(6), 1--13, 2019. \url{https://doi.org/10.1145/3355089.3356539}.
+\bibitem{peng} Y.~Peng, S.~Choi, N.~Padmanaban and G.~Wetzstein, ``Neural holography with camera-in-the-loop training,'' \emph{ACM Trans. Graph.} 39(6), 1--14, 2020. \url{https://doi.org/10.1145/3414685.3417802}.
+\bibitem{eybposh} M.~H.~Eybposh, N.~W.~Caira, M.~Atisa, P.~Chakravarthula and N.~C.~P\'egard, ``DeepCGH: 3D computer-generated holography using deep learning,'' \emph{Opt. Express} 28(18), 26636, 2020. \url{https://doi.org/10.1364/OE.399624}.
+\bibitem{shi} L.~Shi, B.~Li, C.~Kim, P.~Kellnhofer and W.~Matusik, ``Towards real-time photorealistic 3D holography with deep neural networks,'' \emph{Nature} 591, 234--239, 2021. \url{https://doi.org/10.1038/s41586-020-03152-0}.
+\bibitem{ren} Z.~Ren \emph{et al.}, ``Creation of a tweezer array for cold atoms utilizing a generative neural network,'' \emph{APL Quantum} 1(4), 046111, 2024. \url{https://doi.org/10.1063/5.0219170}.
+\bibitem{schroff} P.~Schroff, A.~La Rooij, E.~Haller and S.~Kuhr, ``Accurate holographic light potentials using pixel crosstalk modelling,'' \emph{Sci. Rep.} 13, 3252, 2023. \url{https://doi.org/10.1038/s41598-023-30296-6}.
+\bibitem{persson} M.~Persson, D.~Engstr\"om and M.~Goks\"or, ``Reducing the effect of pixel crosstalk in phase only spatial light modulators,'' \emph{Opt. Express} 20(20), 22334, 2012. \url{https://doi.org/10.1364/OE.20.022334}.
+\bibitem{ronzitti} E.~Ronzitti, M.~Guillon, V.~de Sars and V.~Emiliani, ``LCoS nematic SLM characterization and modeling for diffraction efficiency optimization, zero and ghost orders suppression,'' \emph{Opt. Express} 20(16), 17843--17855, 2012. \url{https://doi.org/10.1364/OE.20.017843} (cited as listed in Schroff et al., reference 19).
+\bibitem{moreno} I.~Moreno, M.~D.~M.~S\'anchez-L\'opez, J.~A.~Davis and D.~M.~Cottrell, ``Simple method to evaluate the pixel crosstalk caused by fringing field effect in liquid-crystal spatial light modulators,'' \emph{J. Eur. Opt. Soc.-Rapid Publ.} 17, 27, 2021. \url{https://doi.org/10.1186/s41476-021-00174-7} (cited as listed in Schroff et al., reference 33).
+\bibitem{lizana} A.~Lizana \emph{et al.}, ``Time fluctuations of the phase modulation in a liquid crystal on silicon display: characterization and effects in diffractive optics,'' \emph{Opt. Express} 16(21), 16711, 2008. \url{https://doi.org/10.1364/OE.16.016711}.
+\bibitem{machu} Y.~Machu, G.~Creutzer, C.~Sayrin and M.~Brune, ``Full-field-of-view aberration correction for large arrays of focused beams,'' \emph{Opt. Express}, 2026. \url{https://doi.org/10.1364/OE.595662}; preprint arXiv:2512.15967.
+\bibitem{christen} I.~Christen, C.~Panuski, T.~Propson and D.~Englund, ``Full-volume aberration-space holography,'' arXiv:2505.08777, 2025 (preprint). \url{https://arxiv.org/abs/2505.08777}.
+\bibitem{chiu} N.-C.~Chiu \emph{et al.}, ``Continuous operation of a coherent 3,000-qubit system,'' \emph{Nature} 646(8087), 1075--1080, 2025. \url{https://doi.org/10.1038/s41586-025-09596-6}.
+\bibitem{bluvstein} D.~Bluvstein \emph{et al.}, ``Logical quantum processor based on reconfigurable atom arrays,'' \emph{Nature} 626, 58--65, 2024. \url{https://doi.org/10.1038/s41586-023-06927-3}.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,79 @@
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{case-manifest}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-case-manifest}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = dinhot.manifest/v1\\
+\texttt{case\_id} & string & yes & - & length >= 1\\
+\texttt{title} & object & yes & - & -\\
+\texttt{title.en} & string & yes & - & length >= 1\\
+\texttt{title.es} & string & yes & - & length >= 1\\
+\texttt{category} & object & yes & - & -\\
+\texttt{category.en} & string & yes & - & length >= 1\\
+\texttt{category.es} & string & yes & - & length >= 1\\
+\texttt{real\_or\_synthetic} & enum & yes & - & \{real, synthetic\}\\
+\texttt{expected\_band} & object & yes & - & -\\
+\texttt{expected\_band.en} & string & yes & - & length >= 1\\
+\texttt{expected\_band.es} & string & yes & - & length >= 1\\
+\texttt{engine} & object & yes & - & -\\
+\texttt{engine.package} & const & yes & - & = dinhot-holo\\
+\texttt{engine.version} & string & yes & - & pattern\\
+\texttt{engine.model} & const & yes & - & = scalar-fourier\\
+\texttt{params} & object & yes & - & -\\
+\texttt{params.setup} & object & yes & - & -\\
+\texttt{params.setup.wavelength\_nm} & number & yes & nm & 300 to 2000\\
+\texttt{params.setup.focal\_mm} & number & yes & mm & 0.5 to 1000\\
+\texttt{params.setup.na} & number & yes & - & 0.05 to 1.5\\
+\texttt{params.setup.n\_imm} & number & yes & - & 1.0 to 1.6\\
+\texttt{params.setup.n\_pix} & enum & yes & - & \{64, 128, 256, 512, 1024\}\\
+\texttt{params.setup.pitch\_um} & number & yes & $\mu$m & 1 to 50\\
+\texttt{params.setup.pad} & integer & yes & - & 1 to 4\\
+\texttt{params.setup.beam} & object & yes & - & -\\
+\texttt{params.device} & object or null & yes & - & -\\
+\texttt{params.target} & object & yes & - & -\\
+\texttt{params.aberration} & object or null & yes & - & -\\
+\texttt{params.methods} & array of string & yes & - & 1 to 24 items\\
+\texttt{params.reference\_method} & string & yes & - & pattern\\
+\texttt{params.budget} & object & yes & - & -\\
+\texttt{params.budget.iterations} & integer & yes & - & 1 to 5000\\
+\texttt{params.budget.time\_s} & number or null & yes & s & 0.01 to 3600\\
+\texttt{params.seed} & integer & yes & - & 0 to 2147483647\\
+\texttt{params.feedback} & object or null & yes & - & -\\
+\texttt{params.dynamics} & object or null & yes & - & -\\
+\texttt{params.rearrangement} & object or null & yes & - & -\\
+\texttt{params.expect} & object & yes & - & -\\
+\texttt{seed} & integer & yes & - & -\\
+\texttt{artifact} & object & yes & - & -\\
+\texttt{artifact.path} & string & yes & - & pattern\\
+\texttt{artifact.format} & const & yes & - & = json\\
+\texttt{artifact.trace\_schema} & const & yes & - & = dinhot.trace/v1\\
+\texttt{artifact.bytes} & integer & yes & - & 1 to\\
+\texttt{lane} & enum & yes & - & \{live, precompute\}\\
+\texttt{gate} & object & yes & - & -\\
+\texttt{gate.lane} & enum & yes & - & \{live, precompute\}\\
+\texttt{gate.pure\_python} & boolean & yes & - & -\\
+\texttt{gate.wheels} & array of string & yes & - & -\\
+\texttt{gate.trace\_bytes} & integer & yes & bytes & 1 to\\
+\texttt{gate.run\_ms\_budget} & number & yes & - & >0 to\\
+\texttt{gate.trace\_bytes\_budget} & integer & yes & - & 1 to\\
+\texttt{gate.reasons} & array of string & yes & - & -\\
+\texttt{flags} & array of object & yes & - & -\\
+\texttt{methods} & object & yes & - & -\\
+\texttt{methods\{id\}.lane} & enum & yes & - & \{live, baked\}\\
+\texttt{methods\{id\}.efficiency} & number & yes & fraction & -\\
+\texttt{methods\{id\}.uniformity} & number & yes & fraction & -\\
+\texttt{methods\{id\}.rel\_std\_pct} & number & yes & percent & -\\
+\texttt{methods\{id\}.zero\_order} & number & yes & fraction & -\\
+\texttt{methods\{id\}.ghost} & number & yes & fraction & -\\
+\texttt{methods\{id\}.iterations} & integer & yes & - & -\\
+\texttt{methods\{id\}.converged} & boolean & yes & - & -\\
+\texttt{models} & object & yes & - & -\\
+\texttt{expect} & object & yes & - & -\\
+\texttt{anchor} & object & yes & - & -\\
+\texttt{anchor.source} & object & yes & - & -\\
+\texttt{anchor.source.en} & string & yes & - & length >= 1\\
+\texttt{anchor.source.es} & string & yes & - & length >= 1\\
+\texttt{anchor.url} & string or null & yes & - & pattern\\
+\bottomrule\end{longtable}
+\endgroup
+

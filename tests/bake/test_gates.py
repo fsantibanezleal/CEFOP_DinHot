@@ -185,6 +185,6 @@ def test_benchmark_units():
     stat = {"median": 0.5, "q1": 0.4, "q3": 0.6}
     row = {"method": "M04", "geometry": "G1", "device": "ideal", "budget_kind": "iterations", "budget": 10, "params": "default",
            "n_seeds": 2, "efficiency": stat, "uniformity": stat, "rel_std_pct": stat, "time_s": stat, "iterations": stat}
-    assert units.check_benchmark({"rows": [row], "pareto": []}) == []
+    assert units.check_benchmark({"geometries": [{"id": "G1", "n_traps": 100}], "rows": [row], "pareto": []}) == []
     bad = {**row, "efficiency": {"median": 1.5, "q1": 0.4, "q3": 0.6}}
-    assert units.check_benchmark({"rows": [bad], "pareto": []})
+    assert units.check_benchmark({"geometries": [{"id": "G1", "n_traps": 100}], "rows": [bad], "pareto": []})

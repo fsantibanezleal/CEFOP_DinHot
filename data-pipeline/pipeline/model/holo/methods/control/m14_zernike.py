@@ -22,6 +22,10 @@ $10^{-4}$ waves). Cost: $3 \times 8 + 1$ camera frames per sweep. ``history`` ha
 fields of the corrected system, plus ``coef_rms_error`` (waves, over the searched modes) when ``injected`` is known.
 ``meta``: ``coefficients`` (length 21, zeros outside ``modes``), ``base_efficiency`` (no aberration),
 ``uncorrected_efficiency``. Defaults: ``mode='recover'``, ``modes=range(4, 12)``, ``trial_waves=0.06``.
+
+A wall-clock budget bounds every phase from the start of the run: the weighted GS base takes the time that remains (at least one
+iteration), the modal search checks the deadline before each mode and each sweep (a mode is the unit: its three frames and its
+step are never cut), and the run returns the coefficients it reached. Without a time budget nothing changes.
 """
 from __future__ import annotations
 
@@ -39,6 +43,7 @@ from ...core.types import Budget, MethodSpec, Result, Target
 from ...core.zernike import J_MAX, wavefront_waves
 from ..baseline import m06_gsw
 from ..baseline._common import Recorder, require_kinds
+from ..optim._common import deadline_of, expired
 
 SPEC = MethodSpec(id="M14", name="Zernike correction and sensorless modal recovery", family="control", lane="live",
                   targets=("traps",), dims=(2, 3))
@@ -74,12 +79,14 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
         raise ValueError("mode='correct' needs the known coefficients (known=...)")
     traps = target.traps
     t0 = time.perf_counter()
+    deadline = deadline_of(budget.time_s)
     # the basis of the modes on the SLM grid, once
     basis = {j: wavefront_waves(np.eye(J_MAX)[j - 1], setup) for j in range(1, J_MAX + 1)
              if inj[j - 1] != 0.0 or j in modes or (known is not None and _vector(known, "known")[j - 1] != 0.0)}
     w_inj = sum((inj[j - 1] * b for j, b in basis.items()), np.zeros((setup.n_pix, setup.n_pix)))
 
-    base = m06_gsw.run(setup, target, budget=Budget(base_iterations), rng=rng, init=init, form="point") \
+    base_s = None if deadline is None else max(deadline - time.perf_counter(), 1e-9)
+    base = m06_gsw.run(setup, target, budget=Budget(base_iterations, base_s), rng=rng, init=init, form="point") \
         if init is None else None
     phi_base = base.phi if base is not None else np.asarray(init, dtype=np.float64)
 
@@ -122,6 +129,8 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
         k += 1
         biggest = 0.0
         for j in modes:
+            if expired(deadline):
+                break
             y = []
             for off in (-d, 0.0, d):
                 trial = c_hat.copy()
@@ -138,7 +147,7 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
         v = true_v(c_hat)
         err = float(np.sqrt(np.sum((c_hat[[j - 1 for j in modes]] - inj[[j - 1 for j in modes]]) ** 2)))
         rec.add(k, v, coef_rms_error=err)
-        if rec.done(k) or biggest < 1e-4:
+        if rec.done(k) or biggest < 1e-4 or expired(deadline):
             break
     w_corr = sum((c_hat[j - 1] * basis[j] for j in modes), np.zeros_like(w_inj))
     phi = wrap_phase(phi_base - 2.0 * math.pi * w_corr)

@@ -1,0 +1,537 @@
+{
+ "description": "Shared fixture of the benchmark win rule (plan decision 2 of 0.02.004): read by tests/test_benchmark_win_rule.py (Python, manuscripts/holographic-trap-studio/data/extract_methods.py) and by frontend/src/content/benchmark/data.test.ts (TypeScript, data.ts). Rule: the best of each kind is the lowest median rel_std_pct among the methods that keep at least half of the best efficiency of their kind; one kind wins only if both bests have at least 5 seeds, their interquartile ranges of rel_std_pct do not overlap (touching overlaps) and their medians differ by at least 0.01 percentage points; otherwise tie; iteration rows never win.",
+ "min_seeds": 5,
+ "min_diff_pct": 0.01,
+ "cells": [
+  {
+   "name": "proposed wins: 8 seeds, disjoint IQRs, 3 points apart",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5.0,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "M04",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 9.0,
+      "q1": 8.0,
+      "q3": 10.0
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.85,
+      "q1": 0.85,
+      "q3": 0.85
+     },
+     "rel_std_pct": {
+      "median": 2.0,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B5",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.5,
+      "q1": 0.5,
+      "q3": 0.5
+     },
+     "rel_std_pct": {
+      "median": 3.0,
+      "q1": 2.9,
+      "q3": 3.1
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "proposed"
+  },
+  {
+   "name": "published wins",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 6,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 1.0,
+      "q1": 0.9,
+      "q3": 1.1
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 6,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.85,
+      "q1": 0.85,
+      "q3": 0.85
+     },
+     "rel_std_pct": {
+      "median": 2.0,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "published"
+  },
+  {
+   "name": "tie: 4 seeds on one side",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5.0,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 4,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.85,
+      "q1": 0.85,
+      "q3": 0.85
+     },
+     "rel_std_pct": {
+      "median": 2.0,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "tie"
+  },
+  {
+   "name": "tie: overlapping IQRs",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5.0,
+      "q1": 4.0,
+      "q3": 6.0
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.85,
+      "q1": 0.85,
+      "q3": 0.85
+     },
+     "rel_std_pct": {
+      "median": 4.5,
+      "q1": 4.4,
+      "q3": 5.5
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "tie"
+  },
+  {
+   "name": "tie: IQRs touch",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5.0,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.85,
+      "q1": 0.85,
+      "q3": 0.85
+     },
+     "rel_std_pct": {
+      "median": 4.0,
+      "q1": 3.8,
+      "q3": 4.8
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "tie"
+  },
+  {
+   "name": "tie: medians 0.009 apart with disjoint IQRs",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 0.109,
+      "q1": 0.1085,
+      "q3": 0.1095
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.85,
+      "q1": 0.85,
+      "q3": 0.85
+     },
+     "rel_std_pct": {
+      "median": 0.1,
+      "q1": 0.0995,
+      "q3": 0.1005
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "tie"
+  },
+  {
+   "name": "win at exactly 0.01 apart",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 0.2,
+      "q1": 0.199,
+      "q3": 0.201
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.85,
+      "q1": 0.85,
+      "q3": 0.85
+     },
+     "rel_std_pct": {
+      "median": 0.21,
+      "q1": 0.209,
+      "q3": 0.211
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "published"
+  },
+  {
+   "name": "efficiency floor: the uniform method that wastes the light is not the best of its kind",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5.0,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "M04",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.2,
+      "q1": 0.2,
+      "q3": 0.2
+     },
+     "rel_std_pct": {
+      "median": 0.1,
+      "q1": 0.09,
+      "q3": 0.11
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.85,
+      "q1": 0.85,
+      "q3": 0.85
+     },
+     "rel_std_pct": {
+      "median": 2.0,
+      "q1": 1.9,
+      "q3": 2.1
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "proposed"
+  },
+  {
+   "name": "tie: no proposed row",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "time",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5.0,
+      "q1": 4.8,
+      "q3": 5.2
+     },
+     "budget": 1.0,
+     "time_s": {
+      "median": 1.0,
+      "q1": 1.0,
+      "q3": 1.0
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": null,
+   "result": "tie"
+  },
+  {
+   "name": "tie: iteration rows never produce a win",
+   "rows": [
+    {
+     "method": "M06",
+     "n_seeds": 8,
+     "budget_kind": "iterations",
+     "efficiency": {
+      "median": 0.9,
+      "q1": 0.9,
+      "q3": 0.9
+     },
+     "rel_std_pct": {
+      "median": 5.0,
+      "q1": 4.8,
+      "q3": 5.2
+     }
+    },
+    {
+     "method": "B1",
+     "n_seeds": 8,
+     "budget_kind": "iterations",
+     "efficiency": {
+      "median": 0.85,
+      "q1": 0.85,
+      "q3": 0.85
+     },
+     "rel_std_pct": {
+      "median": 2.0,
+      "q1": 1.9,
+      "q3": 2.1
+     }
+    }
+   ],
+   "best_published": "M06",
+   "best_proposed": "B1",
+   "result": "tie"
+  }
+ ]
+}

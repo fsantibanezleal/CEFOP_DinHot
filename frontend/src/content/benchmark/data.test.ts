@@ -3,9 +3,16 @@
 // arithmetic and the verdicts behave on planted documents (a tuned row is never taken for a default one; a cell with no data is never a pass).
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { BenchmarkResults } from '../../lib/contract.types';
+import type { BenchmarkResults, BenchmarkRow } from '../../lib/contract.types';
 import {
   b5Cells,
+  cellReading,
+  isOverBudget,
+  overBudgetText,
+  OVER_BUDGET_FACTOR,
+  requireBenchmarkContract,
+  WIN_MIN_DIFF_PCT,
+  WIN_MIN_SEEDS,
   budgetsOf,
   budgetText,
   CRITERIA,
@@ -274,5 +281,104 @@ describe('a spread below the resolution of the document', () => {
     expect(spreadText(0, 'en')).toBe('<\u00a00.001\u00a0%');
     expect(spreadText(0.0004, 'es')).toBe('<\u00a00,001\u00a0%');
     expect(spreadText(0.0657, 'en')).toBe('0.0657\u00a0%');
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------- the win rule (0.02.004)
+// The same fixture the Python side reads (tests/test_benchmark_win_rule.py): one rule, two implementations, one file.
+interface WinCell {
+  name: string;
+  rows: BenchmarkRow[];
+  best_published: string | null;
+  best_proposed: string | null;
+  result: 'published' | 'proposed' | 'tie';
+}
+const winFixture = JSON.parse(readFileSync(new URL('tests/fixtures/benchmark-win-rule.json', root), 'utf8')) as {
+  min_seeds: number;
+  min_diff_pct: number;
+  cells: WinCell[];
+};
+const picked = (rows: BenchmarkRow[]) =>
+  rows.map((row) => ({ method: row.method, kind: kindOf(row.method), row, params: 'default' as const, noTunedRow: false, hasTuned: false }));
+
+describe('the win rule of a benchmark cell', () => {
+  it('states the constants of the shared fixture', () => {
+    expect(WIN_MIN_SEEDS).toBe(winFixture.min_seeds);
+    expect(WIN_MIN_DIFF_PCT).toBe(winFixture.min_diff_pct);
+  });
+  for (const c of winFixture.cells) {
+    it(`reads the shared fixture cell: ${c.name}`, () => {
+      const got = cellReading(picked(c.rows));
+      expect(got.result).toBe(c.result);
+      expect(got.published?.method ?? null).toBe(c.best_published);
+      expect(got.proposed?.method ?? null).toBe(c.best_proposed);
+    });
+  }
+  it('refuses a document of contract 1.x naming the contract version, and accepts 2.0.0', () => {
+    const old = { ...fixture, rows: fixture.rows.map(({ evaluations: _e, ...r }) => r) } as unknown as BenchmarkResults;
+    expect(() => requireBenchmarkContract(old)).toThrow(/benchmark-results 1\.x.*2\.0\.0/);
+    const pooled = { ...fixture, geometries: [{ ...fixture.geometries[0], id: 'G6' }] } as BenchmarkResults;
+    expect(() => requireBenchmarkContract(pooled)).toThrow(/1\.x/);
+    expect(requireBenchmarkContract(fixture)).toBe(fixture);
+  });
+});
+
+describe('adversarial: a win is never read without its floors', () => {
+  const row = (method: string, n: number, med: number, q1: number, q3: number): BenchmarkRow =>
+    ({ ...fixture.rows[0], method, n_seeds: n, budget_kind: 'time', efficiency: { median: 0.9, q1: 0.9, q3: 0.9 }, rel_std_pct: { median: med, q1, q3 } }) as BenchmarkRow;
+  it('adversarial: four seeds, overlapping ranges, a 0.009 point gap and iteration rows are ties', () => {
+    expect(cellReading(picked([row('M06', 8, 5, 4.8, 5.2), row('B1', 4, 2, 1.9, 2.1)])).result).toBe('tie');
+    expect(cellReading(picked([row('M06', 8, 5, 4, 6), row('B1', 8, 4.5, 4.4, 5.5)])).result).toBe('tie');
+    expect(cellReading(picked([row('M06', 8, 0.109, 0.1085, 0.1095), row('B1', 8, 0.1, 0.0995, 0.1005)])).result).toBe('tie');
+    const it = picked([row('M06', 8, 5, 4.8, 5.2), row('B1', 8, 2, 1.9, 2.1)]).map((p) => ({ ...p, row: { ...p.row, budget_kind: 'iterations' as const } }));
+    expect(cellReading(it).result).toBe('tie');
+  });
+});
+
+// The over-budget rule (plan decision 10, requirement BM-017): the same fixture the Python side reads
+// (tests/manuscripts/test_over_budget_rule.py).
+const overFixture = JSON.parse(readFileSync(new URL('tests/fixtures/benchmark-over-budget.json', root), 'utf8')) as {
+  over_budget_factor: number;
+  cells: (WinCell & { reason_contains: string })[];
+};
+
+describe('the over-budget rule of a time row', () => {
+  it('states the factor of the shared fixture', () => {
+    expect(OVER_BUDGET_FACTOR).toBe(overFixture.over_budget_factor);
+    expect(OVER_BUDGET_FACTOR).toBe(1.5);
+  });
+  for (const c of overFixture.cells) {
+    it(`reads the shared over-budget cell: ${c.name}`, () => {
+      const got = cellReading(picked(c.rows));
+      expect(got.result).toBe(c.result);
+      expect(got.published?.method ?? null).toBe(c.best_published);
+      expect(got.proposed?.method ?? null).toBe(c.best_proposed);
+      expect(got.reason).toContain(c.reason_contains);
+    });
+  }
+  it('isOverBudget: at 1.5 times is within, past it is over, no time_s is over, other budget kinds are untouched', () => {
+    const base = overFixture.cells[3].rows[1] as BenchmarkRow;
+    const withTime = (m: number | null, extra: Partial<BenchmarkRow> = {}) =>
+      ({ ...base, budget_kind: 'time', budget: 1, time_s: m === null ? undefined : { median: m, q1: m, q3: m }, ...extra }) as BenchmarkRow;
+    expect(isOverBudget(withTime(1))).toBe(false);
+    expect(isOverBudget(withTime(1.5))).toBe(false);
+    expect(isOverBudget(withTime(1.51))).toBe(true);
+    expect(isOverBudget(withTime(null))).toBe(true);
+    expect(isOverBudget(withTime(99, { budget_kind: 'iterations', budget: 30 }))).toBe(false);
+    expect(isOverBudget(withTime(900, { budget_kind: 'converged', budget: 300 }))).toBe(false);
+  });
+  it('must refute: an over-budget row is never a best nor part of a win', () => {
+    for (const c of overFixture.cells) {
+      const got = cellReading(picked(c.rows));
+      for (const side of [got.published, got.proposed]) if (side) expect(isOverBudget(side.row)).toBe(false);
+    }
+  });
+  it('labels an over-budget row with its measured time and budget in both languages, and a row within its budget with nothing', () => {
+    const base = overFixture.cells[3].rows[1] as BenchmarkRow;
+    const at = (m: number, budget = 1) => ({ ...base, budget_kind: 'time', budget, time_s: { median: m, q1: m, q3: m } }) as BenchmarkRow;
+    expect(overBudgetText(at(6.4), 'en')).toBe('over budget: 6.4 s for 1 s');
+    expect(overBudgetText(at(6.4), 'es')).toBe('fuera de presupuesto: 6,4 s para 1 s');
+    expect(overBudgetText(at(1.5), 'en')).toBeNull();
+    expect(overBudgetText({ ...at(1), time_s: undefined } as unknown as BenchmarkRow, 'es')).toContain('sin tiempo medido');
   });
 });

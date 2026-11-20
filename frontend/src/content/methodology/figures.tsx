@@ -318,7 +318,7 @@ export function WarmFigure({ t }: { t: Tr }) {
   );
 }
 
-/** B5: the published efficiency and uniformity points and the front the continuation will trace. */
+/** B5: the published efficiency and uniformity points and the curve the continuation will trace. */
 export function ParetoFigure({ t }: { t: Tr }) {
   const X0 = 70;
   const Y0 = 190;
@@ -332,7 +332,7 @@ export function ParetoFigure({ t }: { t: Tr }) {
     ['SR', 0.69, 0.01],
   ];
   return (
-    <Svg h={250} label={t('Published efficiency and uniformity points of the 10 by 10 task and the schematic front a continuation traces', 'Puntos publicados de eficiencia y uniformidad de la tarea 10 por 10 y el frente esquemático que traza una continuación')}>
+    <Svg h={250} label={t('Published efficiency and uniformity points of the 10 by 10 task and the schematic curve a continuation traces', 'Puntos publicados de eficiencia y uniformidad de la tarea 10 por 10 y la curva esquemática que traza una continuación')}>
       <line x1={X0} y1={Y0} x2={X0 + 500} y2={Y0} className="dg-axis" />
       <line x1={X0} y1={Y0} x2={X0} y2={20} className="dg-axis" />
       <Label x={X0 + 250} y={Y0 + 34}>{t('efficiency e', 'eficiencia e')}</Label>
@@ -344,7 +344,7 @@ export function ParetoFigure({ t }: { t: Tr }) {
         </g>
       ))}
       <path d={`M ${sx(0.68)} ${sy(1.0)} C ${sx(0.85)} ${sy(1.0)} ${sx(0.93)} ${sy(0.99)} ${sx(0.96)} ${sy(0.9)}`} className="dg-curve-faint" />
-      <Label x={sx(0.68) - 4} y={sy(1.0) - 12} anchor="start" kind="note">{t('schematic front, not a result', 'frente esquemático, no un resultado')}</Label>
+      <Label x={sx(0.68) - 4} y={sy(1.0) - 12} anchor="start" kind="note">{t('schematic curve, not a result', 'curva esquemática, no un resultado')}</Label>
       {pts.map(([n, e, u]) => (
         <g key={n}>
           <circle cx={sx(e)} cy={sy(u)} r={5} className="dg-node" />
@@ -360,7 +360,7 @@ export function ParetoFigure({ t }: { t: Tr }) {
 export function DeviceWgsFigure({ t }: { t: Tr }) {
   const id = 'ah-b1';
   return (
-    <Svg h={230} label={t('One step of device-aware weighted GS through the crosstalk operator', 'Un paso de GS ponderado consciente del dispositivo a través del operador de diafonía')}>
+    <Svg h={230} label={t('One step of the device-aware conjugate-gradient refinement through the crosstalk operator', 'Un paso del refinamiento por gradiente conjugado con modelo del dispositivo a través del operador de diafonía')}>
       <ArrowDefs id={id} />
       <Box x={10} y={30} w={90} h={50} lines={[t('phase φ', 'fase φ')]} />
       <Box x={125} y={30} w={110} h={50} lines={[t('upsample U', 'sobremuestreo U'), t('blur K', 'difuminado K')]} tone="accent" />

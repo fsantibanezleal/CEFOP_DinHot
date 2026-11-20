@@ -252,13 +252,17 @@ def test_disordered_set_that_cannot_fit_is_an_error():
         library.disordered_set(500, 5, 4, 1, library.ATOM)
 
 
-def test_g6_pools_the_lattice_and_the_disordered_set_by_seed_parity():
-    even = G.record("G6", device=False, seed=0)
-    odd = G.record("G6", device=False, seed=1)
-    assert len(even["target"]["traps"]) == 1024 and len(odd["target"]["traps"]) == 819
-    ctx = infer.case_context(odd)
+def test_g6_is_two_geometries_the_lattice_and_the_disordered_set():
+    """0.02.004 (BM, change fragment of U1): the large-array geometry is G6a (lattice 32 x 32) and G6b (disordered 819), and every
+    seed runs both; before it was one geometry G6 that took the lattice for even seeds and the disordered set for odd ones."""
+    lattice = G.record("G6a", device=False, seed=0)
+    disordered = G.record("G6b", device=False, seed=1)
+    assert len(lattice["target"]["traps"]) == 1024 and len(disordered["target"]["traps"]) == 819
+    ctx = infer.case_context(disordered)
     assert _gs.on_bins(ctx["setup"], ctx["target"].traps)
-    assert len(G.record("G6", device=False, seed=1, reduced=True)["target"]["traps"]) == 20
+    assert len(G.record("G6b", device=False, seed=1, reduced=True)["target"]["traps"]) == 20
+    with pytest.raises(KeyError):
+        G.record("G6", device=False, seed=0)
 
 
 # ---- F6 and the manifest being a pure function of the inputs ----------------------------------------------------------

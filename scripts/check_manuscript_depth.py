@@ -48,6 +48,8 @@ SHORT_SECTIONS = ("conclusion", "reproducib", "availability", "acknowledg", "dec
 SUBSECTION_WORDS = 150
 CAPTION_WORDS = 15
 REGION = {"methods": (600, 2), "claims": (1500, 6), "contracts": (120, 0)}  # (words, display equations) per covered item
+# The abstract's length, by kind (content bar section 4: a report's abstract 200 to 300 words; section 5: a manuscript's 150 to 250).
+ABSTRACT_WORDS = {"technical-report": (200, 300), "manuscript": (150, 250)}
 
 # Required sections, by kind: each entry is (what the rule calls it, the heading words that satisfy it).
 REQUIRED = {
@@ -183,6 +185,23 @@ def plain(text: str) -> str:
 
 def words(text: str) -> int:
     return len(WORD.findall(plain(text)))
+
+
+def abstract_words(text: str) -> int:
+    """The words of an abstract as it prints: every token with a letter or a digit, a number printed by a macro and an inline
+    formula each one word; citations, references and labels print no words of their own."""
+    t = re.sub(r"\\(?:cite[a-z]*|ref|eqref|cref|Cref|autoref|label)\*?(?:\[[^\]]*\])?\{[^}]*\}", " ", text)
+    t = re.sub(r"\\\(.*?\\\)|(?<!\\)\$.*?(?<!\\)\$", " X ", t, flags=re.S)
+    t = re.sub(r"\\[A-Za-z]+\*?(?=\s*[\[{])", " ", t)   # a command with an argument: its argument is the text
+    t = re.sub(r"\\[A-Za-z]+\*?", " X ", t)             # a bare macro prints a value or a word
+    t = re.sub(r"\\.", " ", t)                          # escaped symbols and spacing commands
+    t = re.sub(r"[{}\[\]~]", " ", t)
+    return sum(1 for w in t.split() if re.search(r"[A-Za-z0-9]", w))
+
+
+def abstract_of(doc: "Doc") -> str | None:
+    m = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", doc.source, re.S)
+    return m.group(1) if m else None
 
 
 def clean_title(text: str) -> str:
@@ -344,6 +363,12 @@ def check_doc(root: Path, doc: Doc, cov: dict, methods: list[str], claims: set[s
     for key, floor in FLOORS[kind].items():
         if have[key] < floor:
             out.append(f"{at}: {have[key]} {key}, the {kind} floor is {floor}")
+    abstract = abstract_of(doc)
+    low, high = ABSTRACT_WORDS[kind]
+    if abstract is None:
+        out.append(f"{at}: no abstract (\\begin{{abstract}} ... \\end{{abstract}}); the {kind} abstract is {low} to {high} words")
+    elif not low <= (n := abstract_words(abstract)) <= high:
+        out.append(f"{at}: abstract of {n} words, the {kind} abstract is {low} to {high} words")
     for name, needles in REQUIRED[kind]:
         heads = [s.title.lower() for s in doc.sections if not s.appendix]
         if not any(any(n in h for n in needles) for h in heads):

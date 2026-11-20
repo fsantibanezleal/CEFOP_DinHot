@@ -3,7 +3,7 @@
 
   fig-pipeline.pdf  the computation chain of a case (schematic, no data).
   fig-cases.pdf     relative standard deviation of the trap intensities, every method on every point-trap case (baked).
-  fig-maps.pdf      phase mask and focal intensity of the phase-fixed WGS on C02, and of the device-aware weighted GS on the device-limited C08.
+  fig-maps.pdf      phase mask and focal intensity of the phase-fixed WGS on C02, and of the device-aware conjugate-gradient refinement on the device-limited C08.
   fig-feedback.pdf  emulated camera feedback: relative standard deviation against step, four cases.
   fig-learned.pdf   the learned models: cgh-net ratio by target kind, and the warm-start control.
   fig-bench.pdf     the benchmark: relative standard deviation at 100 iterations, every method on every geometry, ideal and C08.
@@ -165,17 +165,19 @@ def fig_learned() -> None:
     axs[0].set_ylim(0.9, 1.22)
     axs[0].set_ylabel("accuracy ratio, network / baseline\nat equal wall-clock")
     axs[0].set_title("(a) cgh-net: volume (blue, green) and plane (red)", fontsize=8)
-    ctl = d["warmstart"]["control"]
+    # panel (b) is read from the warm-start paper's own data (warm.json: one set of geometries for every arm, the paper's statistics)
+    wj = json.loads((HERE.parents[1] / "learned-warm-start" / "data" / "warm.json").read_text(encoding="utf-8"))
+    arms = wj["arms"]
     names = ["random start\nfreeze 12", "random start\nfreeze 3", "network start\nfreeze 3"]
-    meds = [ctl["random_nfix12"][0], ctl["random_nfix3"][0], ctl["model_nfix3"][0]]
+    keys = ("R12", "R3", "N3")
+    meds = [arms[k]["iters_median"] for k in keys]
     axs[1].bar(range(3), meds, color=[GRID, ORANGE, PURPLE], edgecolor=INK, lw=0.6)
-    never = d["warmstart"]["control_never"]
-    for i, k in enumerate(("random_nfix12", "random_nfix3", "model_nfix3")):
-        axs[1].text(i, meds[i] + 0.5, f"{meds[i]:g}\n({100 * never[k]:.0f}% never)", ha="center", fontsize=6.6)
+    for i, k in enumerate(keys):
+        axs[1].text(i, meds[i] + 0.5, f"{meds[i]:g}\n({100 * arms[k]['never_runs']:.0f}% never)", ha="center", fontsize=6.6)
     axs[1].set_xticks(range(3), names, fontsize=6.6)
     axs[1].set_ylim(0, 26)
     axs[1].set_ylabel("median iterations to 1 percent")
-    axs[1].set_title("(b) warm start: control subset", fontsize=8)
+    axs[1].set_title(f"(b) warm start: {len(wj['geometries'])} held-out geometries", fontsize=8)
     fig.tight_layout()
     fig.savefig(HERE / "fig-learned.pdf", bbox_inches="tight")
     plt.close(fig)

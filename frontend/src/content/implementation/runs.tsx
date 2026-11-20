@@ -36,8 +36,8 @@ export function LanesTopic() {
             es: 'En vivo: 15 métodos, los que su especificación declara live o both. Cualquier otro id levanta NotLive y la vista muestra la reproducción: no hay recurso silencioso a otro método.',
           },
           {
-            en: 'Baked and replayed: direct search, device-aware CG, optimal-transport MRAF, device-aware WGS, flicker-bounded sequence, the aberration-robust hologram method and efficiency-uniformity front, and the learned slots, unsupervised CNN and learned warm start (their inference runs in the browser, described under Models and slots).',
-            es: 'Precalculados y reproducidos: búsqueda directa, CG con modelo del dispositivo, MRAF con transporte óptimo, WGS con modelo del dispositivo, secuencia acotada por parpadeo, el método de holograma robusto a aberraciones y frente eficiencia-uniformidad, y los espacios aprendidos, CNN no supervisada y arranque aprendido (su inferencia corre en el navegador, descrita en Modelos y espacios).',
+            en: 'Baked and replayed: direct search, device-aware CG, optimal-transport MRAF, device-aware WGS, flicker-bounded sequence, the aberration-robust hologram method and efficiency-uniformity continuation, and the learned slots, unsupervised CNN and learned warm start (their inference runs in the browser, described under Models and slots).',
+            es: 'Precalculados y reproducidos: búsqueda directa, CG con modelo del dispositivo, MRAF con transporte óptimo, WGS con modelo del dispositivo, secuencia acotada por parpadeo, el método de holograma robusto a aberraciones y continuación eficiencia-uniformidad, y los espacios aprendidos, CNN no supervisada y arranque aprendido (su inferencia corre en el navegador, descrita en Modelos y espacios).',
           },
           {
             en: 'The trace carries the phase mask and the focal map of the reference method only. For another method the maps stay the reference\'s and the card says so; its metrics, history and per-trap intensities are its own.',

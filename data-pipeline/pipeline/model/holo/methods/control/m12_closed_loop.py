@@ -43,6 +43,9 @@ History per feedback iteration: ``uniformity`` and ``rel_std`` of the MEASURED $
 ``efficiency`` of the true fields, ``rel_std_true`` of the true $|V_m|^2 / w_m$. ``meta['open_loop_rel_std']`` is the measured
 spread of the starting hologram. FFT form; traps on bins with z = 0 and no vortex. ``n_inner`` defaults to 1 for ``nogrette``, the measured optimum: with more inner GS iterations the algorithm's own intensity spread is
 re-introduced between measurements and the loop settles at 3 to 10 percent instead of 1 to 2 (20 iterations, G = 0.7).
+A wall-clock budget bounds every phase: the open-loop start, each feedback iteration and its inner iterations stop at the
+deadline of ``Budget.time_s`` counted from the start of the run, and the run returns the hologram it reached (the open-loop
+start when the deadline passes before the first feedback iteration, with an empty ``history``).
 Defaults: ``variant='nogrette'``,
 ``gain=0.7``, ``n_inner=None`` (1 for nogrette, 3 for kim: step 3 reaches 0.5 to 0.8 percent from 22 to 24, against 3.9 to 5.6 with 1),
 ``n_start=30``, ``start='gsw'``.
@@ -58,6 +61,7 @@ from ...core.metrics import efficiency, rel_std, trap_intensities, uniformity
 from ...core.rng import Rng
 from ...core.types import Budget, MethodSpec, Result, Target
 from ..baseline import _gs
+from ..optim._common import deadline_of, expired
 from ..baseline._common import amp_targets, fft_backproject, fft_fields, require_kinds, start_phase
 
 SPEC = MethodSpec(id="M12", name="Closed-loop weighted GS on an emulated camera", family="control", lane="live",
@@ -87,6 +91,7 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
     w = traps.weight
     a_base = amp_targets(traps)
     t0 = time.perf_counter()
+    deadline = deadline_of(budget.time_s)
 
     # open-loop start
     phi = start_phase(setup, traps, rng, init)
@@ -94,6 +99,8 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
         rule = _gs.rule_gsw if start == "gsw" else _gs.rule_gs
         state = {"a": a_base.copy(), "w": a_base.copy() if start == "gsw" else np.ones(len(traps))}
         for k in range(1, n_start + 1):
+            if expired(deadline):
+                break
             _, v = fft_fields(phi, setup, traps)
             phi = np.angle(fft_backproject(rule(state, v, k), setup, traps))
     e, v = fft_fields(phi, setup, traps)
@@ -103,12 +110,16 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
     a = a_base.copy()
     history = []
     for k in range(1, budget.iterations + 1):
+        if expired(deadline):
+            break
         rho = np.maximum((meas / w) / np.mean(meas / w), 1e-3)
         if variant in ("nogrette", "nogrette-printed"):
             factor = np.sqrt(1.0 / (1.0 - gain * (1.0 - rho)))
             a = a * factor if variant == "nogrette" else a_base * factor
             state = {"a": a.copy(), "w": np.ones(len(traps))}
             for j in range(1, n_inner + 1):
+                if j > 1 and expired(deadline):
+                    break
                 _, v = fft_fields(phi, setup, traps)
                 phi = np.angle(fft_backproject(_gs.rule_gs(state, v, j), setup, traps))
         else:
@@ -116,6 +127,8 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
             g = np.ones(len(traps))
             psi = None
             for j in range(1, n_inner + 1):
+                if j > 1 and expired(deadline):
+                    break
                 _, v = fft_fields(phi, setup, traps)
                 if psi is None:
                     psi = np.angle(v)                       # the focal phase of the current hologram, frozen
@@ -131,7 +144,7 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
             "time_s": time.perf_counter() - t0,
             "rel_std_true": rel_std(trap_intensities(v, w)),
         })
-        if budget.time_s is not None and history[-1]["time_s"] >= budget.time_s:
+        if expired(deadline):
             break
     return Result(phi=phi, history=history, fields=v,
                   meta={"method": SPEC.id, "variant": variant, "gain": float(gain), "open_loop_rel_std": open_loop,

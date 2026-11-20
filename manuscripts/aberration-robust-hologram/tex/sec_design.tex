@@ -40,7 +40,7 @@ Proposition 4 is the finite-difference quantity $\kappa=-\big[I(\delta)+I(-\delt
 
 For each seed of the holograms ($1,\dots,\nSeedsAll$) the protocol is the following. The baseline hologram is computed by 30 iterations of phase-fixed WGS from the random start of the seed; the robust hologram is computed by $\parIters$ conjugate-gradient iterations of Algorithm~\ref{alg:robust} from that same hologram; both are scored on the ensemble of seed \parEnsSeed. The ten seeds are the unit of replication for the main comparison; the first three
 seeds, which are the seeds of the acceptance test of the method, feed all the other parts (the held-out ensembles, the published methods, the ablation, the theory check, the mismatch and the pointing experiments), because each of those costs a full run of the optimizer per configuration. All methods take their seed through the portable generator, the runs are deterministic and a rerun gives the same numbers up to the floating point of the machine's FFT.
-The main measurement ran \workersUsed{} processes in parallel and took \totalMinutes{} minutes; the pointing-only part, run afterwards on the stored holograms with \pointonlyWorkers{} processes, took \pointonlyMinutes{} minutes. The script that runs it is the only source of the numbers, tables and figures of this paper.
+The main measurement ran \workersUsed{} processes in parallel and took \totalMinutes{} minutes; the pointing-only part ran afterwards on the stored holograms. The script that runs it is the only source of the numbers, tables and figures of this paper.
 
 \subsection{Planned ablations}
 

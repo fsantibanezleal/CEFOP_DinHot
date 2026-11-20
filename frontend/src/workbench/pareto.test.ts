@@ -86,6 +86,14 @@ describe('the recommended method', () => {
   it('is null for a cell without rows, never a method typed in', () => {
     expect(recommend([])).toBeNull();
   });
+
+  it('never recommends a time row that ran past 1.5 times its budget, and recommends nothing when every row did', () => {
+    const t = (method: string, eff: number, std: number, time: number): BenchmarkRow => row(method, 'G1', eff, std, { budget_kind: 'time', budget: 1, time_s: stat(time) });
+    const d = doc([t('M04', 0.8, 5, 1.0), t('B1', 0.8, 0.5, 6.4), t('M06', 0.79, 3, 1.5)]);
+    const picked = pickRows(d, 'G1', 'ideal', { kind: 'time', value: 1 }, 'default');
+    expect(recommend(picked)!.pick.method).toBe('M06');
+    expect(recommend(picked.filter((p) => p.method === 'B1'))).toBeNull();
+  });
 });
 
 describe('a cell without rows', () => {
@@ -142,6 +150,12 @@ describe('the chart rows of the Pareto view: one row per uniformity value', () =
   it('keeps two entries of one kind at one uniformity on separate rows (one column cannot hold two values)', () => {
     const rows = mergeTies([e(0.5, 0.4, 'published', 'M01'), e(0.5, 0.41, 'published', 'M02')]);
     expect(rows).toHaveLength(2);
+  });
+
+  it('puts two entries of one kind at the same point on one row, so the keyboard reads both (G20, case C03: M10 and M13 on G6a)', () => {
+    const rows = mergeTies([e(0.956388, 0.80234, 'published', 'M10'), e(0.956388, 0.80234, 'published', 'M13'), e(0.957499, 0.809649, 'published', 'M11')]);
+    expect(rows.map((r) => r.x)).toEqual([0.956388, 0.957499]);
+    expect(rows[0]!.items.map((i) => i.method)).toEqual(['M10', 'M13']);
   });
 
   it('sorts by uniformity and keeps every entry', () => {

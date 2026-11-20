@@ -6,12 +6,13 @@
 | Lane | baked |
 | Targets, dimensions | traps with destination positions, 2D |
 | Module and entrypoint | `data-pipeline/pipeline/model/holo/methods/beyond/b2_flicker_bounded.py`, `SPEC` line 52, `run` line 107 |
-| Gap | linear phase interpolation does not optimise its intermediate frames |
+| Gap | linear phase interpolation does not optimise its intermediate frames; per-frame Gerchberg-Saxton with phase induction (Kim, Kim, Lee and Ahn 2019) does, but prescribes no phase trajectory and has no closed-form frame count |
 
 ## Purpose
 
 When traps move, the intermediate holograms decide whether a moving trap flickers dark. B2 optimises every intermediate frame, with the trap phases locked to
-a smooth trajectory, so the minimum transient intensity of a moving trap stays high.
+a smooth trajectory, so the minimum transient intensity of a moving trap stays high. Result of the 0.02.004 measurement: better than linear phase interpolation, and a trade against
+per-frame Gerchberg-Saxton with phase induction (phase steps about 5 times smaller, a higher transient minimum for the per-frame method).
 
 ## The gap
 
@@ -19,6 +20,9 @@ Linear phase interpolation (LPI, https://arxiv.org/abs/2501.01391 ) interpolates
 holograms and inverts the transform at each step, so the intermediate holograms are never individually optimised; their trap intensities are uneven and the
 interference of the transient spots makes the intensity dip. The paper observes that at 11 kHz sampling the WGS spot nearly vanished several times while the LPI
 spot stayed above 70 percent.
+
+Kim, Kim, Lee and Ahn 2019 (Opt. Express 27, 2184, https://doi.org/10.1364/OE.27.002184) compute every frame by Gerchberg-Saxton with phase induction (each frame starts from the phase of the previous one). Their paper has no
+equation that says where the trap phases should go along the trajectory and sets the number of frames by an empirical fit of the minimum intensity against the step; B2 adds a prescribed, locked phase trajectory and a closed-form frame count.
 
 ## Method
 
@@ -55,6 +59,20 @@ Minimum transient intensity of a moving trap at least 0.9 of its mean, against L
 
 The LPI baseline in the test is written from the text of arXiv 2501.01391 (independent endpoint holograms, wrapped phase interpolation, superposition at every step) and scored
 by the same function. The paper reports above 0.70 for LPI on hardware; the test's LPI scores lower under the DinHot transient model above, so the two numbers are not the same measurement.
+
+## Measured values of release 0.02.004 (`manuscripts/flicker-bounded-sequences/data/flicker_numbers.tex`)
+
+Acceptance task (4 by 4 lattice, 8 traps moved, 13 frames), 6 seeds, simulated:
+
+| Quantity | B2 | Linear phase interpolation | Per-frame GS with phase induction (5 iterations per frame) |
+|---|---|---|---|
+| Lowest transient ratio of the moving traps, mean | 0.923 (95 percent interval 0.916 to 0.930) | 0.644 | 0.948 (higher on every seed; 0.925 at 10 iterations per frame) |
+| Largest phase step between frames (rad) | 0.077 | 0.476 | 0.408 (5.3 times B2's) |
+| Largest per-frame spread, median (percent) | 0.240 | 23.497 | 2.228 |
+| Seconds per sequence, mean | 1.18 | not listed here | 0.60 |
+
+The paired difference against linear phase interpolation is 0.279 (0.218 to 0.340). Against the per-frame method the result is a trade: B2 has the smaller phase step and the lower spread, the per-frame method the higher transient minimum, a tie at equal work and at 25 frames,
+and it is clearly better with 7 frames. On long moves with the frames of the bound B2 reaches 0.9 on 6 of 8 seeds of each lattice move and 6 of 6 seeds of the sort, where the per-frame method reaches it on every seed of the lattice moves. The novelty that survives the comparison is the prescribed and locked phase trajectory with a derived frame count, and it buys a controlled phase step, not a higher dip.
 
 ## Limits
 

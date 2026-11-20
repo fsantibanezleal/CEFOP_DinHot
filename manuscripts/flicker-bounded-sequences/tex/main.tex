@@ -1,0 +1,107 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{adjustbox}
+\usepackage{url}
+\Urlmuskip=0mu plus 2mu\relax
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[hidelinks]{hyperref}
+\usepackage{orcidlink}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\graphicspath{{../figures/}}
+% Numbers measured by data/measure.py (never typed): macros and the result tables.
+% The macro file defines a few names twice with the same value (\longALpiMin, \longBLpiMin): read it with \providecommand.
+\let\newcommandOriginal\newcommand
+\let\newcommand\providecommand
+\input{../data/flicker_numbers.tex}
+\let\newcommand\newcommandOriginal
+% Quantities computed from those macros only (TeX arithmetic), so that no derived number is typed either.
+\newcommand{\stepRatio}{\fpeval{round(\accKimFiveStepMax/\accBStepMax,1)}}
+\newcommand{\stepRatioTen}{\fpeval{round(\accKimTenStepMax/\accBStepMax,1)}}
+\newcommand{\stepRatioLpi}{\fpeval{round(\accLpiStepMax/\accBStepMax,1)}}
+\newcommand{\sigmaRatio}{\fpeval{round(\accKimFiveSigmaMed/\accBSigmaMed,1)}}
+\newcommand{\dipGap}{\fpeval{round(\accKimFiveTransMean-\accBTransMean,3)}}
+\newcommand{\secRatio}{\fpeval{round(\accBSecMean/\accKimFiveSecMean,1)}}
+\newcommand{\lockStepRatio}{\fpeval{round(\ablTNoLockStep/\ablTFullStep,1)}}
+\newcommand{\linearGap}{\fpeval{round(\ablTLinearMean-\accKimFiveTransMean,3)}}
+% Design constants of the simulated setup (data/measure.py, make_setup): not results.
+\newcommand{\setupLambda}{850}
+\newcommand{\setupFocal}{250}
+\newcommand{\setupPitch}{12.5}
+\newcommand{\setupNpix}{256}
+\newcommand{\setupPad}{2}
+\newcommand{\setupNa}{0.5}
+\newcommand{\setupCold}{30}
+
+% Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
+% publishing tool when the version DOI is reserved.
+\newcommand{\doctype}{Preprint}
+\newcommand{\docversion}{v0.02}
+\newcommand{\docdate}{2026-11-20}
+\newcommand{\versiondoi}{10.5281/zenodo.24385662}
+\newcommand{\conceptdoi}{10.5281/zenodo.24267369}
+\newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
+\newcommand{\headerblock}{%
+\begin{center}
+\fbox{\parbox{0.94\textwidth}{\small\raggedright
+\textbf{\doctype} \quad$\cdot$\quad \docversion, \docdate \quad$\cdot$\quad Licence CC BY 4.0\\[2pt]
+CAOS open-research programme \quad$\cdot$\quad CEFOP\_DinHot, holographic optical trap studio\\[2pt]
+Version DOI \href{https://doi.org/\versiondoi}{\texttt{\versiondoi}} \quad$\cdot$\quad
+concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptdoi}}\\[2pt]
+Not peer reviewed. Source code, data and computational records: \href{https://\docrepo}{\texttt{\docrepo}}
+}}
+\end{center}
+\vspace{4pt}}
+
+\begin{document}
+
+\title{Flicker-Bounded Phase-Continuous Hologram Sequences for Moving Optical Traps: Smaller Phase Steps than Per-Frame Gerchberg-Saxton, a Higher Transient Minimum with a Linear Time Profile on the Short Move and a Lower One with the Minimal-Jerk Profile}
+\author{Felipe Santib\'a\~nez-Leal~\orcidlink{0000-0002-0150-3246}\\
+\small CAOS open-research programme, Santiago, Chile\\
+\small \texttt{fsantibanez@gmail.com}}
+\date{}
+\maketitle
+\vspace{-1.2em}
+\headerblock
+
+\begin{abstract}
+Atoms in optical tweezer arrays are rearranged by moving the traps with a sequence of holograms on a spatial light modulator. Published sequences either compute every frame by Gerchberg--Saxton iterations started from the previous frame's phase (phase induction), or interpolate the trap phases linearly between two endpoint holograms. We propose a flicker-bounded phase-continuous sequence: every frame is a weighted Gerchberg--Saxton step whose trap phases are locked to a smooth prescribed trajectory, and a frame-count equation bounds the shift of the pattern between frames. On a $4\times4$ lattice with eight traps moved over \parFrames{} frames and \nSeedsTwo{} seeds, the lowest transient intensity of a moving trap is \accBTransMean{} of its mean with the default minimal-jerk time profile, against \accLpiTransMean{} for linear phase interpolation and \accKimFiveTransMean{} for the per-frame sequence with phase induction, which the benchmark rule reads as better on the dip. With the linear profile that the baselines use, a comparison added after the results and run on this move only, the sequence reaches \ablTLinearMean{} and the rule reads it as better than every baseline. Its largest phase step stays below that of the per-frame sequence in both profiles (\accBStepMax{} against \accKimFiveStepMax{} rad at the default profile). On a sort of 36 traps the per-frame sequence is higher on every seed, and on long lattice moves with the frames of the bound the default sequence reaches 0.9 on \longAMet{} of \longSeeds{} seeds and the per-frame sequence on all. All results are simulated on a scalar model.
+\end{abstract}
+
+\noindent\textbf{Keywords:} holographic optical tweezers, atom rearrangement, Gerchberg--Saxton algorithm, phase continuity, linear phase interpolation, spatial light modulator.
+
+\input{sec-intro}
+\input{sec-related}
+\input{sec-problem}
+\input{sec-method}
+\input{sec-theory}
+\input{sec-design}
+\input{sec-results}
+\input{sec-ablation}
+\input{sec-discussion}
+\input{sec-limits}
+\input{sec-repro}
+\input{sec-conclusions}
+
+\input{refs}
+
+\end{document}

@@ -30,9 +30,9 @@
 % Page-1 header block (conventions/manuscript-header-standard.md). The four document macros are set by the
 % publishing tool when the version DOI is reserved.
 \newcommand{\doctype}{Preprint}
-\newcommand{\docversion}{v0.01}
-\newcommand{\docdate}{3 November 2026}
-\newcommand{\versiondoi}{10.5281/zenodo.24022471}
+\newcommand{\docversion}{v0.03}
+\newcommand{\docdate}{2026-11-20}
+\newcommand{\versiondoi}{10.5281/zenodo.24385659}
 \newcommand{\conceptdoi}{10.5281/zenodo.24022470}
 \newcommand{\docrepo}{github.com/fsantibanezleal/CEFOP\_DinHot}
 \newcommand{\headerblock}{%
@@ -65,16 +65,14 @@ Not peer reviewed. Source code, data and computational records: \href{https://\d
 
 \begin{abstract}
 Phase-fixed weighted Gerchberg--Saxton (WGS) is the practical method for large arrays of optical traps, and its cost is the number of iterations
-before the trap intensities are uniform. We tested whether a small permutation-equivariant network that predicts the initial phase of every trap
-(a learned warm start, $\nParams$ parameters) lets phase-fixed WGS reach a relative standard deviation of 1 percent in at least two times
-fewer iterations than a random start on geometries held out from training, with the final efficiency within 1 percent. On $\nGeo$ held-out geometries
+before the trap intensities are uniform. We tested whether a permutation-equivariant network of $\nParams$ parameters that predicts the initial phase of every trap
+(a learned warm start) lets phase-fixed WGS reach a relative standard deviation of 1 percent in at least two times
+fewer iterations than a random start on held-out geometries, with the final efficiency within 1 percent. On $\nGeo$ held-out geometries
 ($\nGen$ generated, $\nBench$ benchmark; $\nSeeds$ seeds, a budget of $\budget$ iterations) the network start needs a median of \itNThree{} iterations
 (bootstrap 95\% interval \itNThreeLo{} to \itNThreeHi) against \itRTwelve{} from a random start, a factor of \ratioRoverN{} (interval \ratioRoverNLo{} to \ratioRoverNHi), below the factor of two required, and
-the final efficiency differs by \effdNThree{} percent, above the 1 percent allowed. A control with no network (a random start with the same early freeze of the phase)
-needs \itRThree{} iterations (factor \ratioRoverRThree{}, interval \ratioRoverRThreeLo{} to \ratioRoverRThreeHi), so the gain belongs to the freeze index and not to the network; the network
-with the engine's own freeze index needs \itNTwelve{} iterations, as the random start does. The shorter freeze has a price: \neverRThree{} percent of its runs
-never reach 1 percent within $\budget$ iterations, against \neverRTwelve{} percent for the default. In a sweep of the freeze index the median iterations to 1 percent lie \swTwelveEx{} to \swFourEx{} above the freeze index for freeze indices 4 to 12 and \swThreeEx{} above at 3, where \swThreeNever{} percent of the runs never converge; at 1 and 2 the median is the cap of \swOne{} iterations (\swOneNever{} and \swTwoNever{} percent of the runs never converge); the phases of a converged
-run save \OTwelveGain{} iteration at the default freeze and lower the median from \ORThreeMed{} to \OThreeMed{} at a freeze of three (ten geometries, one seed). The model is not released. The results hold on a scalar Fourier model and one trained network, not on hardware.
+the final efficiency differs by \effdNThree{} percent, above the 1 percent allowed. A control with no network (a random start with the same early freeze)
+needs \itRThree{} iterations (factor \ratioRoverRThree{}), so the gain belongs to the freeze index, not the network; the network
+with the engine's default freeze index needs \itNTwelve{} iterations, as the random start does. In a sweep of the freeze index the median iterations to 1 percent lie \swTwelveEx{} to \swFourEx{} above the freeze index for freeze indices 4 to 12 and \swThreeEx{} above at 3, where \swThreeNever{} percent of the runs never converge; at 1 and 2 the median is the cap of \swOne{} iterations. Results are simulated on a scalar Fourier model.
 \end{abstract}
 
 \noindent\textbf{Keywords:} holographic optical tweezers, weighted Gerchberg--Saxton, learned initialization, warm start, negative result.

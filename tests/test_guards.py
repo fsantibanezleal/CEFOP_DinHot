@@ -101,10 +101,11 @@ def test_residue_marker_flags_the_example_variants_and_not_a_hyphenated_id():
     import check_template_residue as r
 
     marker = dict(r.MARKERS)["the example immunisation variants"]
-    assert marker.search("export const COVERAGE = [")
-    assert marker.search("import { COVERAGE, type Selection } from './model';")
-    assert marker.search("return COVERAGE.map((v) => ({ v }));")
     assert marker.search("the herd threshold is 1 - 1/R0")
+    assert not marker.search("export const COVERAGE = [")
+    assert not marker.search("import { COVERAGE, type Selection } from './model';")
+    assert not marker.search("return COVERAGE.map((v) => ({ v }));")
+    assert not marker.search("coverage of the ray fan")
     assert not marker.search('{"id": "F-SCALED-COVERAGE", "severity": "S3"}')
     assert not marker.search("COVERAGE-LEVELS")
     assert not marker.search("UNCONDITIONAL_COVERAGE = 0.99")

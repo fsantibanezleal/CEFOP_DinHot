@@ -20,9 +20,9 @@
     "sha256": "4cbf13625708994211c5fc5b3701351cad3fc3cc1013975220c144fd64c69701"
   },
   "benchmark-results": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "schema": "docs/contracts/schemas/benchmark-results.schema.json",
-    "sha256": "1aad5fa721fb25a6c04c4d0ea2c84fa79eb569b53f9526d4687ed12362659c5e"
+    "sha256": "321021ab692b6396f6e415ef15547396a06022dbda30ec5301259d4d905ef0aa"
   },
   "cgh-net": {
     "version": "1.0.1",

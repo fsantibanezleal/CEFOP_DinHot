@@ -1,4 +1,4 @@
-# B5, Efficiency-uniformity Pareto front (beyond the published state of the art)
+# B5, Efficiency-uniformity continuation (beyond the published state of the art; the file name keeps the identifier `pareto-front`)
 
 | Item | Value |
 |---|---|
@@ -6,17 +6,17 @@
 | Lane | baked |
 | Targets, dimensions | traps, 2D and 3D |
 | Module and entrypoint | `data-pipeline/pipeline/model/holo/methods/beyond/b5_pareto.py`, `SPEC` line 40, `run` line 94 |
-| Gap | methods report single trade-off points, never a front on the same task |
+| Gap | methods report single trade-off points, never a whole curve on the same task |
 
 ## Purpose
 
-Every method trades efficiency against uniformity and publishes one point of that trade-off. B5 computes the whole front by continuation, so a reader sees what each extra percent of
-uniformity costs in light, and where the other methods sit relative to it.
+Every method trades efficiency against uniformity and publishes one point of that trade-off. B5 computes a whole curve of the trade-off by continuation over a weight, so a reader sees what each extra percent of
+uniformity costs in light, and where the other methods sit relative to it. Its points are not the non-dominated set of the trade-off: 4 to 7 of its 20 points are dominated by iterates of weighted GS. Result of the 0.02.004 measurement: a small hypervolume gain that shrinks at a stricter reference point.
 
 ## The gap
 
 Di Leonardo et al. 2007 report direct search at $f = 0.5$ and $0.25$ and GAA at 0.5 (https://doi.org/10.1364/OE.15.001913 ); Polin et al. 2005 use one scalar weight $f$
-(https://doi.org/10.1364/OPEX.13.005831 ); MRAF has one mixing parameter. No source read reports a whole front on the same task.
+(https://doi.org/10.1364/OPEX.13.005831 ); MRAF has one mixing parameter. No source read reports a whole curve on the same task.
 
 ## Method
 
@@ -31,27 +31,43 @@ form $G_m = [2(1-\lambda)(I_m - T_m)/\sum T^2 - \lambda/e_0]\,V_m$ pulled back b
 
 ## Implementation
 
-Defaults (`b5_pareto.py`, lines 42 and 43): `n_lambda = 20`, `warm = 30`. `run` returns the point with the largest $e\cdot u$ (the knee of the front) as `phi`, and in `meta`: `lambdas`,
-`front` (the $(e, u, \sigma)$ of every $\lambda$), `pareto` (indices of the non-dominated points), `hypervolume` against the reference point $(0, 0)$ and `phis` (all holograms).
+Defaults (`b5_pareto.py`, lines 42 and 43): `n_lambda = 20`, `warm = 30`. `run` returns the point with the largest $e\cdot u$ (the knee of the curve) as `phi`, and in `meta`: `lambdas`,
+`front` (the $(e, u, \sigma)$ of every $\lambda$, the curve), `pareto` (indices of the non-dominated points of the curve), `hypervolume` against the reference point $(0, 0)$ and `phis` (all holograms).
 `hypervolume` and `pareto_indices` are public for the benchmark.
 
 ## Acceptance criterion and test
 
-Hypervolume at least that of the M04, M05, M09 and M06 points on the 10 by 10 task, with the front dominating M04 and M05 and computed in under 60 s:
+Hypervolume at least that of the M04, M05, M09 and M06 points on the 10 by 10 task, with the curve dominating M04 and M05 and computed in under 60 s:
 `tests/methods/beyond/test_b5_pareto.py::test_acceptance_hypervolume_and_domination_on_the_10x10_task`.
 
 ## Measured values (DinHot measurement, acceptance run of 2026-10-28)
 
 | Quantity | Measured | Conditions |
 |---|---|---|
-| Front, uniform end to efficient end (efficiency, uniformity) | from (0.790, 1.000) to (0.8305, 0.094) | 20 values of lambda, 15 CG iterations each, 1 seed, measured before the 2026-10-29 rule corrections |
+| Curve, uniform end to efficient end (efficiency, uniformity) | from (0.790, 1.000) to (0.8305, 0.094) | 20 values of lambda, 15 CG iterations each, 1 seed, measured before the 2026-10-29 rule corrections |
 | Hypervolume | 0.8190 against 0.8018 for the union of the M04, M05, M09 and M06 points (0.8201 against 0.8033 before the corrections) | re-measured 2026-10-29 |
 | Domination | 7 front points dominate M04 (0.8114, 0.5503) and 8 dominate M05 (0.8086, 0.7093) | re-measured 2026-10-29 |
 | Time | 16.6 s | under contention on the development workstation, 2026-10-29; limit 60 s |
 
+## Measured values of release 0.02.004 (`manuscripts/efficiency-uniformity-front/data/b5_numbers.tex`)
+
+10 by 10 lattice of 100 traps, 8 seeds, 20 values of $\lambda$, 15 CG iterations each, ideal device, simulated:
+
+| Quantity | Measured |
+|---|---|
+| Hypervolume of the curve and of the union of the five published points (GS, GAA, weighted GS, phase-fixed WGS, direct search) | 0.8223 against 0.8104 |
+| Paired difference (95 percent interval) | 0.0119 (0.0097 to 0.0141), positive in 8 of 8 seeds, 1.47 percent of the union |
+| Against the four-point union without phase-fixed WGS | 0.0152 (0.0125 to 0.0179) |
+| Difference at a reference point demanding a uniformity of 0.9 | 0.0015 (0.0008 to 0.0022), 12.4 percent of the headline |
+| Efficiency gain along the curve | at most 5.4 percent over the start while the uniformity falls from one to near zero |
+| Domination | the curve dominates the weighted GS point in 2 of 8 seeds and the phase-fixed point in 3 of 8; 4 to 7 of its 20 points are dominated by iterates of weighted GS |
+| Benchmark | the stored curves hold one seed, so all 14 cells (7 geometries at 30 and at 100 iterations) are ties by the win rule; at 100 iterations the stored curve is above the union on 3 of 7 geometries and below it by at most 0.023 on the others |
+
+The gain lies on the efficient side of the trade-off, where the uniformity falls far below one, and it shrinks at a stricter reference point.
+
 ## Limits
 
-The loss scaling is DinHot's, part of the method's definition; the front is computed with the ideal device; the hypervolume depends on the reference point.
+The loss scaling is DinHot's, part of the method's definition; the curve is computed with the ideal device; the hypervolume depends on the reference point.
 
 ## References
 

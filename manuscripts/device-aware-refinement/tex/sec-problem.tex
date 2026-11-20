@@ -1,0 +1,72 @@
+\section{Problem formulation}\label{sec:problem}
+
+\subsection{Forward model of the traps}
+
+The SLM has $n_{\mathrm{pix}}\times n_{\mathrm{pix}}$ pixels of pitch $p$ and a Gaussian input beam of amplitude $A_j$ normalized so that $\sum_jA_j^2=n_{\mathrm{pix}}^2$. A hologram is a phase $\phi_j\in[0,2\pi)$ per pixel $j$ at
+position $(x_j,y_j)$. For a trap $m$ at $(x_m,y_m)$ in the focal plane of a lens of focal length $f$ at wavelength $\lambda$, with $z_m=0$ and no vortex, the field and the intensity are
+\begin{equation}
+V_m=\frac1{n_{\mathrm{pix}}^2}\sum_jA_je^{\,i(\phi_j-\Delta_j^m)},\qquad \Delta_j^m=\frac{2\pi}{\lambda f}(x_jx_m+y_jy_m),\qquad I_m=|V_m|^2,\label{eq:forward}
+\end{equation}
+following Di Leonardo et al.~\cite{dileonardo}. For traps on the bins of the zero-padded fast Fourier transform (FFT) of the SLM field, $V_m$ is the corresponding entry of that transform. The traps are on bins throughout: the lattices
+are spaced a whole number of bins apart, and the focal bin is $\lambda f/(\mathrm{pad}\,n_{\mathrm{pix}}\,p)$ with a padding factor $\mathrm{pad}$. Each trap has a design weight $\omega_m$ (equal for all traps in every task of the paper), a design amplitude $a_m=\sqrt{\omega_m/\langle\omega\rangle}$ and a relative amplitude $r_m=|V_m|/a_m$. Equation~\ref{eq:forward} is the model that every hologram of the paper is computed on in the ideal case and scored on when the device is the ideal one; the device of the next subsection changes what is displayed and leaves the equation as the definition of what a displayed phase produces at a trap. The equation is linear in the unit phasors $e^{i\phi_j}$, which is what makes the gradient of the intensity loss available in closed form later.
+
+\subsection{The device}
+
+A real SLM displays something other than the hologram that is computed. The displayed phase is wrapped, quantized to $2^b$ levels and blurred by the crosstalk between neighbouring pixels, and the pixel covers only part of its area. We use the device model
+of Schroff et al.~\cite{schroff}: each SLM pixel is $u\times u$ computational pixels, and the phase is convolved with the kernel
+\begin{equation}
+K=\mathcal F^{-1}\Big\{\exp\Big[-\frac{|k_x|^q+|k_y|^q}{\sigma_K^q}\Big]\Big\},\qquad \sigma_K=\parXtSigma,\ q=\parXtQ,\label{eq:kernel}
+\end{equation}
+the values that Schroff et al.\ fitted on one device, with $\sigma_K$ in inverse pixels as they write it (Fig.~\ref{fig:b1model}a). The source does not define the unit of $k$ further; the engine reads it as cycles per SLM pixel on the upsampled grid, which is an assumption of the implementation and not a statement of the source. With $U$ the replication of each pixel into $u\times u$ blocks and $\tilde\phi=K*(U\phi)$ the blurred phase on the fine grid, the focal field of what the device displays is
+\begin{equation}
+E=\mathrm{crop}\,\mathcal F\{\tilde A\,e^{i\tilde\phi}\}\cdot\mathcal E_{\mathrm{fill}},\qquad V_m=E[\text{bin of }m]/\mathrm{scale},\label{eq:devicefield}
+\end{equation}
+where $\tilde A$ is the amplitude on the fine grid, the crop returns the field to the window of the ideal FFT and $\mathcal E_{\mathrm{fill}}$ is the field envelope of a square pixel of fill factor $\mathrm{fill}$. Two devices are used for the lattice task. The
+\emph{crosstalk device} has the kernel above, no quantization and a fill factor of one. The \emph{full device} adds a \parBits{}-bit quantizer and a fill factor of \parFill. The device of the studio's benchmark and of case C08 adds a random flicker of \bakeCeightFlicker{} rad rms
+to the displayed phase. Every hologram in the paper is scored on the device with the same function, whatever model it was optimized on, so a method is never scored on its own model unless the device and the model coincide.
+
+\subsection{Figures of merit}
+
+The efficiency is the light in the traps, and the spread is the relative standard deviation of the intensities divided by the design weights, in percent:
+\begin{equation}
+e=\sum_mI_m,\qquad \sigma=100\,\frac{\operatorname{std}_m(I_m/\omega_m)}{\operatorname{mean}_m(I_m/\omega_m)}.\label{eq:metrics}
+\end{equation}
+The comparison of a method with the reference solver on the same seed uses two ratios, the factor on the spread and the ratio of the efficiencies,
+\begin{equation}
+F=\frac{\min\{\sigma_{30},\sigma_{100}\}}{\sigma_{\mathrm{DA}}},\qquad R_e=\frac{e_{\mathrm{DA}}}{\max\{e_{30},e_{100}\}},\label{eq:factor}
+\end{equation}
+where the subscripts 30 and 100 name the iteration budgets of phase-fixed WGS and $\sigma_{\mathrm{DA}}$ is the spread of the method under test, so the reference is the best of the two runs on the spread and on the efficiency, and the comparison is never taken against a baseline that more iterations would improve. The spread of Eq.~\ref{eq:metrics} is the quantity that the experiments of the sources report as non-uniformity or as relative standard deviation, which makes the numbers of the paper comparable in kind with theirs; the uniformity defined through the maximum and the minimum intensity is not used, because it depends on two traps only. Dividing the intensity by the design weight lets the same formula serve arrays whose traps are meant to differ, although every task here has equal traps. The efficiency ratio of Eq.~\ref{eq:factor} protects the factor from a trivial gain: a hologram that sent light to the zero order would flatten the traps at a low efficiency, and the ratio would show it.
+
+The cost is the third figure of merit. The time per hologram $t$ is the wall-clock seconds of one run on the machine that produced the data, read from the run itself, and the cost ratio of two methods is the ratio of their medians. A recommendation of the paper always carries it, because a method that takes minutes per hologram answers a different question than one that takes seconds.
+
+\subsection{Notation and assumptions}
+
+Table~\ref{tab:notation} collects the symbols. The assumptions are the following. The model is scalar and monochromatic; the traps lie on FFT bins in one plane; the crosstalk parameters are those fitted by the source on another device; the quantizer is differentiated as the identity (straight-through) in the optimization, and the random flicker is scored but not modelled by the optimizer. Each of these limits is revisited in Section~\ref{sec:limits}. A further assumption concerns the baselines: phase-fixed WGS is run on the ideal model and scored on the device, which is the practice of the large-array experiments, where the solver is not given a device model and the device is corrected afterwards by camera feedback. The comparison is therefore the one that matters before feedback, and the weights, the starts and the random numbers of every method come from the same seeded generator.
+
+\begin{table}[t]
+\centering\small
+\caption{Notation: every symbol of the formulation with its meaning and unit. Dimensionless quantities are marked as such.}
+\label{tab:notation}
+\begin{tabular}{@{}l p{8.2cm} l@{}}
+\toprule
+Symbol & Meaning & Unit\\
+\midrule
+$n_{\mathrm{pix}}$, $p$ & SLM pixels per side, pixel pitch & 1, m\\
+$\lambda$, $f$ & wavelength, focal length of the lens & m\\
+$A_j$, $\phi_j$ & input amplitude and displayed phase of pixel $j$ & 1, rad\\
+$\Delta_j^m$ & delay from pixel $j$ to trap $m$ & rad\\
+$V_m$, $I_m=|V_m|^2$ & trap field and intensity (fraction of the SLM flux) & 1\\
+$\omega_m$, $a_m$, $r_m$ & design weight, design amplitude, relative amplitude $|V_m|/a_m$ & 1\\
+$w_m$ & multiplicative weight of the optional weight update & 1\\
+$e$, $\sigma$ & efficiency, relative standard deviation of the intensities & 1, percent\\
+$F$, $R_e$ & spread factor and efficiency ratio against phase-fixed WGS & 1\\
+$t$ & wall-clock time per hologram & s\\
+$K$, $\sigma_K$, $q$, $u$ & crosstalk kernel, its width and exponent, upsampling factor & 1\\
+$\tilde\phi$ & blurred phase on the fine grid & rad\\
+$L$, $T_m$, $\eta$ & efficiency-level loss, its target intensity, current efficiency & 1\\
+$C$, $s$, $\tilde I_m$, $\tilde T_m$ & normalized-error loss, its steepness, normalized intensity and target & 1\\
+$K_{\mathrm{cg}}$, $K_{\mathrm{out}}$, $K_{\mathrm{warm}}$ & conjugate-gradient steps per outer iteration, outer iterations, warm-start iterations & 1\\
+$\gamma$ & efficiency floor of the safeguard & 1\\
+\bottomrule
+\end{tabular}
+\end{table}

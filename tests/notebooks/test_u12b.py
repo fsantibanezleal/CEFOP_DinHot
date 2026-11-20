@@ -27,7 +27,7 @@ ROWS = {
     "05-optimization/02-the-wirtinger-gradient-and-adams-step": (2, [], []),
     "05-optimization/03-conjugate-gradient-against-weighted-gs": (3, [], ["M10"]),
     "05-optimization/04-wirtinger-adam-against-gerchberg-saxton": (3, [], ["M11"]),
-    "05-optimization/05-the-efficiency-uniformity-front": (4, ["BS-5"], []),
+    "05-optimization/05-the-efficiency-uniformity-continuation": (4, ["BS-5"], []),
     "06-device-and-aberrations/01-what-the-device-costs": (1, [], []),
     "06-device-and-aberrations/02-zernike-correction": (2, [], []),
     "06-device-and-aberrations/03-crosstalk-aware-cg-against-cg": (3, [], ["M13"]),
@@ -42,7 +42,7 @@ ROWS = {
 LEVEL3 = {"M10": "m10_cg", "M11": "m11_wirtinger_adam", "M12": "m12_closed_loop", "M13": "m13_crosstalk_cg", "M16": "m16_rearrangement"}
 # the product methods a level 4 notebook must run, as the baseline and as the claimed method
 LEVEL4 = {
-    "05-optimization/05-the-efficiency-uniformity-front": ("m06_gsw", "b5_pareto", "m09_direct_search"),
+    "05-optimization/05-the-efficiency-uniformity-continuation": ("m06_gsw", "b5_pareto", "m09_direct_search"),
     "06-device-and-aberrations/04-robust-holograms": ("m07_phase_fixed_wgs", "b4_robust", "ensemble_stats"),
     "07-feedback-and-dynamics/05-flicker-bounded-moves": ("m16_rearrangement", "b2_flicker_bounded", "transient_min_ratio"),
 }
@@ -257,7 +257,7 @@ def plant_method_handed_over_as_a_callback(nb: dict) -> None:
 PLANTS = [
     (plant_long_line, "characters", "05-optimization/01-the-cost-and-its-gradient"),
     (plant_unprinted_answer, "answer quotes no number", "05-optimization/02-the-wirtinger-gradient-and-adams-step"),
-    (plant_no_figure_under_beyond, "Evidence", "05-optimization/05-the-efficiency-uniformity-front"),
+    (plant_no_figure_under_beyond, "Evidence", "05-optimization/05-the-efficiency-uniformity-continuation"),
     (plant_copied_template_sentence, "generic filler sentence", "06-device-and-aberrations/01-what-the-device-costs"),
     (plant_method_handed_over_as_a_callback, "method cells", "07-feedback-and-dynamics/02-assigning-atoms-to-sites"),
 ]

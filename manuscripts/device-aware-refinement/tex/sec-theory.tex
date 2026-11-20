@@ -1,0 +1,66 @@
+\section{Theory}\label{sec:theory}
+
+The propositions below explain why the method should work, what its two losses have in common and under which conditions its guarantees hold; where a statement could not be proved we state it as a conjecture with the evidence for it. They are used in the experiments: Proposition~\ref{prop:floor} predicts the floor that the baseline meets on the device, Proposition~\ref{prop:losses} predicts that the normalized-error loss of Schroff et al.\ and the efficiency-level loss behave alike for equal traps, and Propositions~\ref{prop:weights} to~\ref{prop:guard} define what the weight update, the conjugate-gradient steps and the safeguard guarantee.
+
+\subsection{Why an ideal-model solver leaves a floor on the device}
+
+\begin{proposition}\label{prop:floor}
+Let $\phi$ be a hologram whose ideal-model trap fields are exactly equal, $|V_m^0|=a_m$, and let the device display the phase $U\phi+\delta$ on the fine grid, with $\delta=K*(U\phi)-U\phi$ the residual of the blur. To first order in $\delta$ the relative intensity error of trap $m$ on the device is
+\begin{equation}
+\varepsilon_m=\frac{I_m-I_m^0}{I_m^0}=2\operatorname{Re}\frac{\Delta V_m}{V_m^0},\qquad \Delta V_m=i\sum_pG_{mp}\,e^{iU\phi_p}\,\delta_p,\label{eq:firstorder}
+\end{equation}
+and $\varepsilon_m=0$ for all traps if and only if $\operatorname{Re}(\Delta V_m/V_m^0)=0$ for all $m$, that is, if the blur leaves the trap intensities unchanged to first order, in particular if $K$ is the identity.
+\end{proposition}
+\begin{proof}
+With the linear form of Eq.~\ref{eq:linear}, $V_m=\sum_pG_{mp}e^{i(U\phi_p+\delta_p)}=\sum_pG_{mp}e^{iU\phi_p}(1+i\delta_p+O(\delta^2))=V_m^0+\Delta V_m+O(\delta^2)$. Then $I_m=|V_m^0|^2+2\operatorname{Re}(\overline{V_m^0}\Delta V_m)+O(\delta^2)$, and dividing by $I_m^0$ gives Eq.~\ref{eq:firstorder}. The error vanishes for every trap exactly when
+$\operatorname{Re}(\Delta V_m/V_m^0)=0$ for all $m$, which holds for $\delta=0$. The expansion treats $\delta$ as small, and a wrapped phase violates that at its jumps between $0$ and $2\pi$, where the blur is of the order of the jump; Eq.~\ref{eq:firstorder} is therefore a local statement about where the floor comes from, and the claims of the paper rest on the measured spreads and not on the first-order value.
+\end{proof}
+
+The proposition has two consequences. First, an ideal-model solver cannot remove $\varepsilon_m$: the weights of weighted GS are computed from $|V_m^0|$, which is already equal, so the iteration has converged on the ideal model and has no information about $\varepsilon_m$. More iterations improve the ideal-model spread and leave $\varepsilon_m$ unchanged, which is the control that
+the baseline at 100 iterations provides. Second, the size of $\delta$ is set by the spectrum of the hologram: in the Fourier domain the blur multiplies the phase spectrum by the transfer function of Eq.~\ref{eq:kernel}, $\hat\delta(k)=(\hat K(k)-1)\widehat{U\phi}(k)$, which is small where the hologram is smooth and large where it carries
+pixel-scale structure. A lattice of traps far from the zero order needs a hologram with such structure, so the floor is expected to depend on the geometry of the array; the measured spreads of the baseline on the lattice and on the other geometries are read against this expectation in Section~\ref{sec:results}.
+
+\subsection{The two losses for equal traps}
+
+\begin{proposition}\label{prop:losses}
+Let all traps have equal design weights, let the weight update be off, and let the steepness of Eq.~\ref{eq:nel} be its default $s=1/\sum_m\tilde T_m^2$. At the phase $\phi$ where an outer iteration sets its target, so that $\eta=P(\phi)=\sum_kI_k$, the two losses have the same value, which is the relative variance of the trap intensities, and their gradients differ by a term proportional to that value along the gradient of the total light:
+\begin{equation}
+C(\phi)=L(\phi)=\Big(\frac{\sigma}{100}\Big)^2,\qquad \nabla_\phi C=\nabla_\phi L-\frac{2L}{P}\,\nabla_\phi P.\label{eq:losses}
+\end{equation}
+\end{proposition}
+\begin{proof}
+With $M$ traps of equal weight, $T_m=\eta/M=P/M$ and $\tilde T_m=1/M$, so $s=1/\sum_m\tilde T_m^2=M$. Write $\Delta_m=\tilde T_m-\tilde I_m=1/M-I_m/P$; then $\sum_m\Delta_m=0$ and $I_m-P/M=-P\Delta_m$. Hence $L=\sum_m(I_m-P/M)^2/(P^2/M)=M\sum_m\Delta_m^2$ and $C=s\sum_m\Delta_m^2=M\sum_m\Delta_m^2$, which are equal; and $M\sum_m\Delta_m^2=\operatorname{var}_m(I_m)/\langle I\rangle^2=(\sigma/100)^2$ for equal weights. For the gradients with respect to the intensity $I_k$, the target of $L$ is held fixed, so $\partial L/\partial I_k=2(I_k-T_k)/\sum_mT_m^2=-2M\Delta_k/P$. Eq.~\ref{eq:nelgrad} gives $\partial C/\partial I_k=(2M/P)(\sum_m\Delta_m\tilde I_m-\Delta_k)$, and $\sum_m\Delta_m\tilde I_m=\sum_m\Delta_m(1/M-\Delta_m)=-\sum_m\Delta_m^2=-L/M$. Therefore $\partial C/\partial I_k=\partial L/\partial I_k-2L/P$ for every $k$. The same constant shift of every $\partial/\partial I_k$ passes through the adjoint of Eqs.~\ref{eq:gradfine} and~\ref{eq:gradphi} as the gradient of $\sum_kI_k=P$, which gives the second statement of Eq.~\ref{eq:losses}.
+\end{proof}
+
+The proposition says that, for equal traps and the default steepness, the normalized-error loss is the efficiency-level loss with one change: its gradient carries an extra push along $\nabla P$ whose weight is the loss itself, so the push is negligible where the spread is small and it raises the light in the traps where the spread is large, a behaviour that the efficiency-level loss gets from its target level. The identity holds at the first point of an outer iteration; inside the iteration the efficiency-level target stays fixed at $\eta$ while $P$ moves, so the two functions separate by the change of $P$ along the steps, which is small when the efficiency ratio of a run stays near one. Two limits keep the statement from being a proof that the two methods return the same hologram: the conjugate-gradient path depends on the gradient at every step, and the targets of unequal traps break the identity $\tilde T_m=1/M$. We checked Eq.~\ref{eq:losses} on the engine's two cost classes, on a small array behind the crosstalk device, to the precision of the arithmetic (Section~\ref{sec:repro}). The proposition is a reading of the measured result of Section~\ref{sec:results}, derived after the first runs of the normalized-error loss, and not a prediction that preceded them.
+
+\subsection{What the weights, the steps and the safeguard guarantee}
+
+\begin{proposition}\label{prop:weights}
+The weight update of Eq.~\ref{eq:weights} is an integrator of the logarithmic relative amplitude: $\log w_m^{k+1}=\log w_m^k-(\log r_m^k-\log\langle r^k\rangle)$. A fixed point $w^\star$ of the update satisfies $r_m(w^\star)=\langle r\rangle$ for every trap, that is, equal relative amplitudes on the device, and conversely.
+\end{proposition}
+\begin{proof}
+Taking logarithms of Eq.~\ref{eq:weights} gives the first statement. The update leaves $w_m$ unchanged if and only if $\langle r\rangle/r_m=1$, which is $r_m=\langle r\rangle$ for every $m$; equal relative amplitudes mean $\sigma=0$ for equal design weights.
+\end{proof}
+
+The proposition says what the weights can do and what they cannot: they drive the device to equal amplitudes if the iteration converges, and they act with the memory of an integrator, which is the reason why they are prone to overshoot when the plant that they control, a hologram that moves by a few gradient steps per iteration, does not follow. The next two statements make this precise for the loop of the method.
+
+\begin{proposition}\label{prop:descent}
+Within one outer iteration, with $T$ fixed, every accepted conjugate-gradient step lowers $L$, so $L(\phi^k)\le L(\phi^{k-1};T^k)$. Across outer iterations nothing bounds $L$ when the target changes: with the weight update on, $T^{k+1}$ differs from $T^k$ through the weights and through $\eta$, and $L(\phi^k;T^{k+1})$ may exceed $L(\phi^k;T^k)$; with the update off, the target changes only through the level $\eta$.
+\end{proposition}
+\begin{proof}
+The strong-Wolfe line search accepts a step only under the sufficient-decrease condition of Eq.~\ref{eq:cg}, so $L$ decreases along the steps for a fixed $T$. The target is a function of the weights and of $\eta$, both of which are updated between outer iterations; the loss with the new target is a different function.
+\end{proof}
+
+\begin{proposition}\label{prop:guard}
+The iterate returned by Eq.~\ref{eq:safeguard} satisfies $\sigma(\phi^{k^\star})\le\sigma(\phi^0)$ and $e(\phi^{k^\star})\ge\gamma\,e(\phi^0)$, both measured on the model of the method. If the model of the method is the scoring device, as for the crosstalk device and the full device, the same holds on the score.
+\end{proposition}
+\begin{proof}
+The start belongs to $\mathcal A$ by definition, so the set is not empty and the minimum is over a set that contains the start. The minimizer has a spread no larger than the start's and, being in $\mathcal A$, an efficiency of at least $\gamma e(\phi^0)$. When the scoring device differs from the model, for example by random flicker that is scored and not modelled, the
+statement holds on the model and not on the score.
+\end{proof}
+
+\begin{conjecture}\label{conj:windup}
+When the conjugate-gradient steps per outer iteration cannot follow the change of the target, the weights wind up and the loss rises across outer iterations; leaving the weights at one, or giving the steps more freedom, removes the windup.
+\end{conjecture}
+The evidence for the conjecture is of two kinds. A run on the square lattice of the benchmark on the device with flicker, recorded in the engine's documentation of the method, ran away on one seed in two inside the method's own model with the update on: the loss rose between the second and the fourth outer iteration, the weights spread to a ratio of about 1000 and the efficiency collapsed; that run is the reason of the safeguard and is not repeated here. A test of the engine on a small array reproduces the collapse with the update on and shows a flat efficiency with it off. The ablation of Section~\ref{sec:ablation} measures the second kind: with the weight update on the spread on the crosstalk device is \ablBWeightsRatio{} times higher than without it, and six steps per outer iteration do not raise it. The conjecture is not proved, and the conditions under which the weights help are not characterized: on the lattices of the benchmark neither form dominates (Section~\ref{sec:ablation}).

@@ -1,0 +1,20 @@
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{model-metrics}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-model-metrics}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = dinhot.model-metrics/v1\\
+\texttt{engine\_version} & string & yes & - & pattern\\
+\texttt{slots} & object & yes & - & -\\
+\texttt{slots.cgh-net} & object & no & - & -\\
+\texttt{slots.cgh-net.held\_out\_n} & integer & yes & - & -\\
+\texttt{slots.cgh-net.accuracy\_vs\_gs} & object & yes & - & -\\
+\texttt{slots.cgh-net.time\_ms} & object & yes & ms & -\\
+\texttt{slots.cgh-net.baseline} & const & yes & - & = volumetric 3D GS\\
+\texttt{slots.warmstart-model} & object & no & - & -\\
+\texttt{slots.warmstart-model.held\_out\_n} & integer & yes & - & -\\
+\texttt{slots.warmstart-model.iterations\_to\_1pct} & object & yes & - & -\\
+\texttt{slots.warmstart-model.final\_rel\_std\_pct} & object & yes & percent & -\\
+\bottomrule\end{longtable}
+\endgroup
+

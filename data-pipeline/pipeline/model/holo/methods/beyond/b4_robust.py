@@ -22,7 +22,8 @@ strong-Wolfe line search converges on it (``_common.cg_minimize``). Design ``"sa
 (``lr = 0.02``), with independent trap displacements ``d_m ~ N(0, s_p^2)`` in x and y added to each draw. Gradients are the
 closed form of ``_common.TrapCost`` (the aberration is a phase offset, so ``dL/dphi`` is the unperturbed formula at the
 shifted phase). The inner solver is phase-fixed WGS (``warm`` = 30 iterations, Kim's 12 fixed phases; ``level_fraction`` = 0.9 sets the target level), whose hologram
-starts the expected-cost steps.
+starts the expected-cost steps. A wall-clock budget bounds the warm start too: it stops at the deadline (after at least one
+iteration) and the expected-cost steps then start from the iterate it reached, or do not run when the deadline has passed.
 
 Measured (10x10 task, 256 pixels, 200-sample ensemble, seed 999; ``ensemble_stats``): see the E3 report D4 and
 ``test_b4_robust.py``. Aberration-only (0.02 waves per mode, rms 0.057 waves, Strehl about 0.88): p95 sigma of the
@@ -127,7 +128,7 @@ def run(setup: Setup, target: Target, *, device: Device | None = None, budget: B
     if init is not None:
         phi0 = C.start_phase(setup, rng, init)
     else:
-        phi0, _ = weighted_gs(setup, traps, warm, rng, variant="pfwgs")
+        phi0, _ = weighted_gs(setup, traps, warm, rng, variant="pfwgs", deadline=deadline)
     v0 = point_trap_projection(slm_field(phi0, setup), setup, traps)
     level = level_fraction * efficiency(trap_intensities(v0))
     history: list = []
