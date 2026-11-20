@@ -71,8 +71,8 @@ fewer iterations than a random start on held-out geometries, with the final effi
 ($\nGen$ generated, $\nBench$ benchmark; $\nSeeds$ seeds, a budget of $\budget$ iterations) the network start needs a median of \itNThree{} iterations
 (bootstrap 95\% interval \itNThreeLo{} to \itNThreeHi) against \itRTwelve{} from a random start, a factor of \ratioRoverN{} (interval \ratioRoverNLo{} to \ratioRoverNHi), below the factor of two required, and
 the final efficiency differs by \effdNThree{} percent, above the 1 percent allowed. A control with no network (a random start with the same early freeze)
-needs \itRThree{} iterations (factor \ratioRoverRThree{}), so the gain belongs to the freeze index and not to the network; the network
-with the engine's own freeze index needs \itNTwelve{} iterations, as the random start does. In a sweep of the freeze index the median iterations to 1 percent lie \swTwelveEx{} to \swFourEx{} above the freeze index for freeze indices 4 to 12 and \swThreeEx{} above at 3, where \swThreeNever{} percent of the runs never converge; at 1 and 2 the median is the cap of \swOne{} iterations. The results hold on a scalar Fourier model, not on hardware.
+needs \itRThree{} iterations (factor \ratioRoverRThree{}), so the gain belongs to the freeze index, not the network; the network
+with the engine's default freeze index needs \itNTwelve{} iterations, as the random start does. In a sweep of the freeze index the median iterations to 1 percent lie \swTwelveEx{} to \swFourEx{} above the freeze index for freeze indices 4 to 12 and \swThreeEx{} above at 3, where \swThreeNever{} percent of the runs never converge; at 1 and 2 the median is the cap of \swOne{} iterations. Results are simulated on a scalar Fourier model.
 \end{abstract}
 
 \noindent\textbf{Keywords:} holographic optical tweezers, weighted Gerchberg--Saxton, learned initialization, warm start, negative result.
