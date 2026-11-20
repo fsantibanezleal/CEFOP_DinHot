@@ -2,7 +2,6 @@
 over, 100 sqrt(N - 1) (the population deviation of N non-negative intensities, all the light in one trap); BM-006, BK-009."""
 from __future__ import annotations
 
-import copy
 import math
 
 import numpy as np
