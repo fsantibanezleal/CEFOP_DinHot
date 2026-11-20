@@ -55,12 +55,21 @@ def _bench_setup(n_pix: int) -> Setup:
                  pitch_m=r["pitch_um"] * 1e-6, pad=r["pad"])
 
 
+# The held-out files were written before the benchmark split its large array (0.02.004): their name G6 is the 32 x 32 lattice of
+# 1024 traps that the benchmark now calls G6a. The name stays G6 so that the files keep their recorded hashes.
+HELDOUT_GEOMETRY = {"G6": "G6a"}
+
+
+def _geometry(name: str) -> str:
+    return HELDOUT_GEOMETRY.get(name, name)
+
+
 def bench_trap_sets() -> dict[str, tuple[np.ndarray, int]]:
-    """``{G1..G6: (traps (M, 4) in bins and Rayleigh ranges, native n_pix)}`` from the benchmark geometry records."""
+    """``{G1..G6: (traps (M, 4) in bins and Rayleigh ranges, native n_pix)}`` from the benchmark geometry records (G6 is G6a)."""
     out = {}
     for g in ("G1", "G2", "G3", "G4", "G5", "G6"):
-        rec = bg.record(g, device=False, seed=0)
-        n = bg.grid_of(g, False)
+        rec = bg.record(_geometry(g), device=False, seed=0)
+        n = bg.grid_of(_geometry(g), False)
         s = _bench_setup(n)
         b, zr = focal_bin_m(s), convert.rayleigh_range_m(s)
         arr = np.array([[t["x_um"] * 1e-6 / b, t["y_um"] * 1e-6 / b, t["z_um"] * 1e-6 / zr, t["weight"]] for t in rec["target"]["traps"]])
@@ -72,8 +81,8 @@ def bench_targets() -> dict[str, np.ndarray]:
     """Unit-energy amplitudes of the benchmark geometries on the 128 x 128 crop (see the module docstring)."""
     out = {}
     for g in ("G1", "G2", "G3", "G4", "G6"):
-        rec = bg.record(g, device=False, seed=0)
-        n = bg.grid_of(g, False)
+        rec = bg.record(_geometry(g), device=False, seed=0)
+        n = bg.grid_of(_geometry(g), False)
         u = bg.unit_um(n)
         xy = np.array([[t["x_um"] / u, t["y_um"] / u] for t in rec["target"]["traps"]])
         ext = np.abs(xy).max()
