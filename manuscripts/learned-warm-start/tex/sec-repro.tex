@@ -5,7 +5,7 @@ The code, the committed records and the scripts that regenerate every number, ta
 
 \textbf{Commands.} From the repository root, with the GPU environment of the product (it holds PyTorch; only the CPU is used by the measurement):
 \begin{itemize}
-\item \texttt{python manuscripts/learned-warm-start/data/measure.py --workers 12} runs every arm, the sweep, the oracle start and the weight accounting, and writes \texttt{warm.json}, \texttt{warm\_numbers.tex} and the table files; it took \runtimeMin{} minutes with \nWorkers{} worker processes on the workstation of Section~\ref{sec:hardware}. With \texttt{--emit-only} it rewrites the macro and table files from \texttt{warm.json} without rerunning.
+\item \texttt{python manuscripts/learned-warm-start/data/measure.py --workers \nWorkers{}} runs every arm, the sweep, the oracle start and the weight accounting, and writes \texttt{warm.json}, \texttt{warm\_numbers.tex} and the table files; it took \runtimeMin{} minutes with \nWorkers{} worker processes on the workstation of Section~\ref{sec:hardware}. With \texttt{--emit-only} it rewrites the macro and table files from \texttt{warm.json} without rerunning.
 \item \texttt{python manuscripts/learned-warm-start/figures/make\_figs.py} regenerates the nine vector figures from \texttt{warm.json}.
 \item Three passes of \texttt{pdflatex} in \texttt{manuscripts/learned-warm-start/tex/} build the paper.
 \end{itemize}

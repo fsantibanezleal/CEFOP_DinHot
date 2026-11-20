@@ -19,7 +19,7 @@ and the notebooks cover the methods like this:
 - The baselines (plain Gerchberg-Saxton, the weighted loop) are taught in the level 1 and level 2 notebooks of topics 01 to 03 and in the baselines of the later topics.
 - The published methods are the level 3 notebooks, a comparison with the method as published or as slmsuite implements it: each names the method it runs in its `caos.methods` metadata (phase-fixed weighted GS in
   03, MRAF and optimal-transport MRAF in 04, conjugate gradient and Wirtinger gradient with Adam in 05, device-aware CG in 06, closed-loop WGS and Hungarian rearrangement in 07, unsupervised CNN in 08).
-- The proposed methods are the level 4 notebooks, each named by the claim it tests in `caos.beyond` (device-aware WGS in 03, efficiency-uniformity front
+- The proposed methods are the level 4 notebooks, each named by the claim it tests in `caos.beyond` (device-aware conjugate-gradient refinement in 03, efficiency-uniformity continuation
   in 05, aberration-robust hologram in 06, flicker-bounded sequence in 07, learned warm start in 08, a measured negative).
 
 ## Coverage of the whole tool
@@ -60,7 +60,7 @@ A topic without a level 3 notebook says why on its row.
 | [03-gerchberg-saxton/01-the-gs-loop.ipynb](03-gerchberg-saxton/01-the-gs-loop.ipynb) | 1 | the two halves of a Gerchberg-Saxton iteration done by hand on nine traps (case C01), checked against Gerchberg-Saxton |
 | [03-gerchberg-saxton/02-weights-for-uniformity.ipynb](03-gerchberg-saxton/02-weights-for-uniformity.ipynb) | 2 | what weighted and adaptive GS gain over plain GS on C12: the first weights, iterations to 5, 2 and 1 percent, the alpha sweep, seed dependence |
 | [03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb](03-gerchberg-saxton/03-phase-fixed-wgs-against-slmsuite.ipynb) | 3 | how weighted GS and phase-fixed weighted GS compare with slmsuite 0.5.0 WGS-Leonardo and WGS-Kim on the 1024 traps of C03 under one set of metrics |
-| [03-gerchberg-saxton/04-device-aware-wgs.ipynb](03-gerchberg-saxton/04-device-aware-wgs.ipynb) | 4 | whether device-aware WGS beats phase-fixed WGS and the crosstalk conjugate gradient on the device of case C08, and at which crosstalk strength |
+| [03-gerchberg-saxton/04-device-aware-refinement.ipynb](03-gerchberg-saxton/04-device-aware-refinement.ipynb) | 4 | whether device-aware conjugate-gradient refinement beats phase-fixed WGS and the crosstalk conjugate gradient on the device of case C08, whether its gain is owed to the weight update or to its loss against the normalized-error loss of Schroff et al., and at which crosstalk strength |
 | [04-shaped-potentials/01-what-a-shaped-potential-asks.ipynb](04-shaped-potentials/01-what-a-shaped-potential-asks.ipynb) | 1 | what a disc potential asks of the hologram that nine point traps do not, the error scored by hand, and where plain Gerchberg-Saxton stops on the disc of case C04 |
 | [04-shaped-potentials/02-the-signal-and-the-noise-region.ipynb](04-shaped-potentials/02-the-signal-and-the-noise-region.ipynb) | 2 | how much of the focal plane a shaped hologram must give up to be accurate: hand-built signal regions, the power split, MRAF against plain Gerchberg-Saxton, the dark margin |
 | [04-shaped-potentials/03-mraf-and-the-signal-region.ipynb](04-shaped-potentials/03-mraf-and-the-signal-region.ipynb) | 3 | how MRAF compares with GS on a disc and a ring, the mixing parameter, the start, and slmsuite's MRAF on the same targets |
@@ -69,7 +69,7 @@ A topic without a level 3 notebook says why on its row.
 | [05-optimization/02-the-wirtinger-gradient-and-adams-step.ipynb](05-optimization/02-the-wirtinger-gradient-and-adams-step.ipynb) | 2 | the Wirtinger pull-back through the ideal and crosstalk models, what Adam does to a gradient of unknown scale, the learning-rate sweep |
 | [05-optimization/03-conjugate-gradient-against-weighted-gs.ipynb](05-optimization/03-conjugate-gradient-against-weighted-gs.ipynb) | 3 | how conjugate gradient compares with the weighted GS loop: the refinement that lowers the cost and raises the spread, and the efficiency that conjugate gradient returns exactly |
 | [05-optimization/04-wirtinger-adam-against-gerchberg-saxton.ipynb](05-optimization/04-wirtinger-adam-against-gerchberg-saxton.ipynb) | 3 | how Wirtinger gradient with Adam compares with plain and weighted GS at equal iterations on three seeds and at 100 iterations |
-| [05-optimization/05-the-efficiency-uniformity-front.ipynb](05-optimization/05-the-efficiency-uniformity-front.ipynb) | 4 | the whole efficiency-uniformity front by continuation against six single-point methods on C12 |
+| [05-optimization/05-the-efficiency-uniformity-continuation.ipynb](05-optimization/05-the-efficiency-uniformity-continuation.ipynb) | 4 | the curve that the efficiency-uniformity continuation traces against six single-point methods on C12, where iterates of published methods dominate it, and why it is not the Pareto front |
 | [06-device-and-aberrations/01-what-the-device-costs.ipynb](06-device-and-aberrations/01-what-the-device-costs.ipynb) | 1 | what the pixel aperture, quantization and crosstalk each cost the hologram of C08 |
 | [06-device-and-aberrations/02-zernike-correction.ipynb](06-device-and-aberrations/02-zernike-correction.ipynb) | 2 | Zernike modes in Noll order, the Strehl estimate against the measured loss on C09, and the sensorless modal recovery of the Zernike correction |
 | [06-device-and-aberrations/03-crosstalk-aware-cg-against-cg.ipynb](06-device-and-aberrations/03-crosstalk-aware-cg-against-cg.ipynb) | 3 | how device-aware CG compares with conjugate gradient on the C08 device, the early stop of the line search, and device-aware CG without a device |
@@ -86,6 +86,6 @@ A topic without a level 3 notebook says why on its row.
 
 ## Proposed methods
 
-Five claims of the product's SDD, each with a level 4 notebook in both languages: device-aware WGS (03-04), the flicker-bounded
+Five claims of the product's SDD, each with a level 4 notebook in both languages: device-aware conjugate-gradient refinement (03-04), the flicker-bounded
 sequence (07-05), the learned warm start, tested and refuted (08-04), the aberration-robust hologram (06-04) and the
-efficiency-uniformity front (05-05). Two of them, the learned warm start and the pointing part of the aberration-robust hologram, are measured negatives and the notebooks say so.
+efficiency-uniformity continuation (05-05). Two of them, the learned warm start and the pointing part of the aberration-robust hologram, are measured negatives and the notebooks say so.

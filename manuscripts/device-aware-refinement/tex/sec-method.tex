@@ -1,0 +1,129 @@
+\section{Proposed method: the device-aware conjugate-gradient refinement}\label{sec:method}
+
+The method refines a hologram that weighted GS has computed on the ideal model, by conjugate-gradient steps on a loss that is evaluated on the device model and differentiated through it. It shares the point-trap model of Section~\ref{sec:problem}, the weighted update of Di Leonardo et al.~\cite{dileonardo} that supplies its start, and the phase-fixed rule of Kim et al.~\cite{kim2019} that fixes the length of that start. It runs offline: it is baked into the studio's artifacts, and the live engine of the studio does not carry it, because the cost of one iteration exceeds the budget of an interactive frame. Two components are options of the same optimizer and are measured as such: the multiplicative weight update of weighted GS, off by default, and the normalized-error loss of Schroff et al., which replaces the default loss. Each subsection gives one part of the method: the idea, the derivation, the closest published loss as an option, the algorithm, the parameters with their values and the way they were chosen, the complexity and the implementation.
+
+\subsection{Idea}\label{sec:idea}
+
+Weighted GS equalizes the trap intensities because its weights integrate the relative error of each trap: a trap that is too bright has its weight lowered at the next iteration, and the fixed point of the update is the set of equal amplitudes. On an ideal SLM the equalization is exact to the precision of the arithmetic. On a device the intensities that the weights see are those of the ideal model, so the weights equalize a field that the device does not produce, and the projection that produces the new phase from the weighted trap fields is an ideal-model operation: no choice of weights can make that projection invert the crosstalk. The refinement replaces the projection by a few conjugate-gradient steps on a loss that is evaluated on the device and differentiated through it. The loss compares the trap intensities of the device with a target of equal level, and the level is the current efficiency, so that the steps redistribute the light among the traps and do not trade efficiency for uniformity. A safeguard keeps the method from ever returning a hologram worse than its start. The weights of weighted GS are not part of the default method, because the ablation of Section~\ref{sec:ablation} shows that they raise the spread; they remain an option, with their derivation in the next subsection, so that the measured effect is the effect of the module and not of a re-implementation.
+
+\subsection{Derivation}\label{sec:derivation}
+
+Let $V_m(\phi)$ be the trap fields of the device (Eq.~\ref{eq:devicefield}) as a function of the SLM phase. Writing the blurred phase on the fine grid as $\tilde\phi=K*(U\phi)$, the field of trap $m$ is linear in the unit phasors $e^{i\tilde\phi_p}$ of the fine pixels $p$,
+\begin{equation}
+V_m=\sum_pG_{mp}\,e^{i\tilde\phi_p},\qquad G_{mp}=c_m\tilde A_p\,e^{-i\tilde\Delta_p^m},\label{eq:linear}
+\end{equation}
+where $\tilde\Delta_p^m$ is the delay of Eq.~\ref{eq:forward} on the fine grid and $c_m$ collects the readout scale and the pixel envelope of trap $m$. The loss compares the trap intensities with a target $T_m$,
+\begin{equation}
+L(\phi)=\frac{\sum_m\big(|V_m(\phi)|^2-T_m\big)^2}{\sum_mT_m^2},\label{eq:loss}
+\end{equation}
+\begin{equation}
+T_m=\eta\,\frac{(w_ma_m)^2}{\sum_k(w_ka_k)^2},\qquad \eta=\sum_m|V_m|^2.\label{eq:target}
+\end{equation}
+The level $\eta$ is the current efficiency, so the target has the same total light as the hologram. With the weights at one, as in the default method, $T_m=\eta a_m^2/\sum_ka_k^2$, which is the design intensity of trap $m$ scaled to the light the hologram carries; $\eta$ is read at the start of each outer iteration and held fixed inside it. The optional weight update follows the rule of Di Leonardo et al., with the relative amplitudes read on the device,
+\begin{equation}
+w_m\leftarrow w_m\frac{\langle r\rangle}{r_m},\qquad r_m=\frac{|V_m|}{a_m},\label{eq:weights}
+\end{equation}
+and enters the loss only through Eq.~\ref{eq:target}. The gradient of $L$ is obtained in two steps. Let $N_T=\sum_mT_m^2$, $d_m=|V_m|^2-T_m$ and $h_p=\sum_mG_{mp}d_m\overline{V_m}$. Differentiating $L$ with respect to the blurred phase of the fine pixel $p$ gives
+\begin{equation}
+\tilde g_p=\frac{\partial L}{\partial\tilde\phi_p}=\frac{4}{N_T}\operatorname{Re}\!\big(i\,e^{i\tilde\phi_p}\,h_p\big),\label{eq:gradfine}
+\end{equation}
+and the chain rule through the replication and the blur gives the gradient with respect to the SLM phase,
+\begin{equation}
+\nabla_\phi L=U^{\top}\!\big(\bar K*\tilde g\big),\qquad (U^{\top}z)_j=\sum_{p\in\text{block }j}z_p,\label{eq:gradphi}
+\end{equation}
+with $\bar K$ the reversed kernel. The matrix $G$ never needs to be formed: $h$ is one inverse transform of the readout of the weighted residual, and Eq.~\ref{eq:gradphi} is a convolution followed by a sum over each $u\times u$ block. This is the adjoint of the crosstalk operator, which the engine tests against the inner-product identity to $10^{-12}$, so no automatic differentiation is needed and the gradient is exact for the smooth part of the model. The quantizer is treated as the identity in the backward pass and is applied in the forward pass (straight-through), and the random flicker is not modelled. The minimization of $L$ over $\phi$ with $T$ fixed uses the Fletcher--Reeves conjugate-gradient recursion with a strong-Wolfe line search,
+\begin{equation}
+d_i=-g_i+\beta_id_{i-1},\quad \beta_i=\frac{g_i^{\top}g_i}{g_{i-1}^{\top}g_{i-1}},\quad \phi_{i+1}=\phi_i+\alpha_id_i,\label{eq:cg}
+\end{equation}
+with $\alpha_i$ satisfying $L(\phi_i+\alpha_id_i)\le L(\phi_i)+c_1\alpha_ig_i^{\top}d_i$ and $|g(\phi_i+\alpha_id_i)^{\top}d_i|\le c_2|g_i^{\top}d_i|$ for $c_1=10^{-4}$ and $c_2=0.1$; the choice $c_2<1/2$ keeps the Fletcher--Reeves direction a descent direction.
+The recursion restarts at every outer iteration, because the target of Eq.~\ref{eq:target} is set again at each of them and the conjugacy of the old directions no longer holds.
+
+The iterates of the outer loop need a guard. The method keeps every iterate $\phi^k$, $k=0,\dots,K_{\mathrm{out}}$, with $\phi^0$ the start, and returns the iterate of lowest spread on its own device model among those that keep a fraction $\gamma$ of the start's efficiency,
+\begin{equation}
+k^\star=\arg\min_{k\in\mathcal A}\sigma\big(\phi^k\big),\qquad \mathcal A=\{k:\ e(\phi^k)\ge\gamma\,e(\phi^0)\}\ni0,\label{eq:safeguard}
+\end{equation}
+with $\gamma=\parFloor$, the efficiency bound of the hypotheses of Section~\ref{sec:design}. Because the start belongs to $\mathcal A$, the returned hologram is never worse than the start on the model of the method.
+
+Three remarks read the equations. First, Eq.~\ref{eq:loss} is a loss on intensities, not on amplitudes: the intensities are what the scoring of Eq.~\ref{eq:metrics} compares, and the loss does not change under a global phase of the field, so the optimization has no gauge freedom to fix. Second, the normalization by $\sum_mT_m^2$ makes the loss independent of the scale of the target, so the line search can start from a step that moves the largest pixel by a fixed fraction of a radian whatever the number of traps. Third, Eq.~\ref{eq:target} fixes the total of the target to the current efficiency $\eta$: when a step lowers the light in the traps the next target is lower, so the loss never rewards efficiency that is lost to the zero order or to ghost orders, and the efficiency is guarded only by the floor of Eq.~\ref{eq:safeguard}. In the ideal model, with $K$ the identity, $u=1$ and no quantizer, Eq.~\ref{eq:gradphi} reduces to the gradient of the intensity-error cost that conjugate-gradient hologram generation minimizes~\cite{harte}, so the refinement contains that cost as its special case without a device.
+
+The construction has limits that follow from the equations. The quantizer is a staircase: its derivative vanishes almost everywhere, so the straight-through gradient is a good direction for the smooth part of the model and carries no information about the steps of the staircase, and the full device gains less than the crosstalk device (Section~\ref{sec:results}). The readout takes the nearest FFT bin, so a trap off a bin would be read with an error, and the method refuses traps off the focal plane and vortex traps. The loss is not convex, the conjugate-gradient steps find a local descent and the result depends on the start; the start is therefore fixed to the weighted iterations from the random superposition of the seed, and the seeds of the experiments sample it.
+
+\subsection{The normalized-error loss of Schroff et al.\ as an option}\label{sec:nel}
+
+The closest published method minimizes the mean-squared error between the normalized simulated and target intensities, Eq.~(3) of Schroff et al.~\cite{schroff}. On the trap intensities $I_m=|V_m|^2$ of the target traps, read through the same device model, it is
+\begin{equation}
+C(\phi)=s\sum_m\big(\tilde T_m-\tilde I_m\big)^2,\qquad \tilde I_m=\frac{I_m}{\sum_kI_k},\quad \tilde T_m=\frac{T_m}{\sum_kT_k},\label{eq:nel}
+\end{equation}
+with $s$ the steepness that the source introduces to aid convergence; the source sets $s=10^{12}$ on its pixel grid. The refinement accepts this loss in place of Eq.~\ref{eq:loss} through one option, so the two losses run through the same warm start, device model, conjugate-gradient optimizer, outer-iteration structure and safeguard, and differ only in the loss and its gradient. With $\Delta_m=\tilde T_m-\tilde I_m$ and $P=\sum_kI_k$, the gradient with respect to the intensity of trap $k$ is
+\begin{equation}
+\frac{\partial C}{\partial I_k}=\frac{2s}{P}\Big(\sum_m\Delta_m\tilde I_m-\Delta_k\Big),\label{eq:nelgrad}
+\end{equation}
+and it enters the same adjoint as Eq.~\ref{eq:gradphi}; the engine tests it against finite differences. The default steepness is $s=1/\sum_m\tilde T_m^2$, so that $C$ is the relative squared error and has the scale of $L$; the constant of the source is a scale of its pixel grid and only rescales $C$ and its gradient (a test of the engine). Two properties of the source do not carry over and are not part of the comparison: its target is a continuous light potential convolved with the point-spread function, and its protocol closes the loop with camera feedback, whereas the targets here are points and no camera is in the loop. The loss is invariant to the total power, so unlike Eq.~\ref{eq:loss} it does not hold the efficiency up by itself; the safeguard does. Proposition~\ref{prop:losses} relates the two losses for equal traps.
+
+\subsection{Algorithm}\label{sec:algorithm}
+
+Algorithm~\ref{alg:b1} states the procedure. The start is $K_{\mathrm{warm}}$ iterations of weighted GS on the ideal model from the random superposition of prisms and lenses, which is the number of weighted iterations that Kim et al.\ run before they freeze the phases~\cite{kim2019}.
+Each outer iteration reads the trap fields on the device, sets the target and takes $K_{\mathrm{cg}}$ steps; the weight update of Eq.~\ref{eq:weights} is the optional first line of the loop.
+
+Lines 1 and 2 build the start and record its efficiency and spread on the device, the reference against which every later iterate is judged. Lines 4 to 6 prepare one outer iteration: they read the trap fields on the device, apply the optional weight update and set the target at the current efficiency, so that the loss of line 7 has the same total light as the hologram it starts from. Line 7 is the only expensive line, the conjugate-gradient steps through the device model and its adjoint. Lines 8 and 9 score the new iterate on the device and keep it only if it is admissible, that is, if it holds the efficiency floor, and better, that is, if its spread is lower than that of the best so far. The returned phase is therefore the best admissible iterate, which is the start when no iterate improves on it.
+
+\begin{algorithm}[t]
+\caption{Device-aware conjugate-gradient refinement. The device model $\mathcal D$ is the composition of replication, blur, FFT on the fine grid, crop and pixel envelope; $\mathcal D=\mathrm{id}$ gives the ideal model. The weight update (line 5) runs only when the option is on.}
+\label{alg:b1}
+\begin{algorithmic}[1]
+\Require traps $\{x_m,\omega_m\}$ on FFT bins, device $\mathcal D$, outer iterations $K_{\mathrm{out}}$, steps $K_{\mathrm{cg}}$, warm iterations $K_{\mathrm{warm}}$, floor $\gamma$, loss (Eq.~\ref{eq:loss} or Eq.~\ref{eq:nel}), seed
+\Ensure phase $\phi^\star\in[0,2\pi)$ per SLM pixel
+\State $\phi^0\gets K_{\mathrm{warm}}$ iterations of weighted GS on the ideal model from the random superposition (seeded)
+\State $w_m\gets1$; compute $V(\phi^0)$ on $\mathcal D$; $e_0\gets e(\phi^0)$; $\sigma_0\gets\sigma(\phi^0)$; best $\gets(\phi^0,\sigma_0)$
+\For{$k=1,\dots,K_{\mathrm{out}}$}
+  \State $V\gets V(\phi^{k-1})$ on $\mathcal D$; $r_m\gets|V_m|/a_m$
+  \State \textbf{if} weight update \textbf{then} $w_m\gets w_m\langle r\rangle/r_m$ \Comment{Eq.~\ref{eq:weights}}
+  \State $T_m\gets\eta(w_ma_m)^2/\sum_l(w_la_l)^2$ with $\eta=\sum|V_m|^2$ \Comment{Eq.~\ref{eq:target}}
+  \State $\phi^k\gets K_{\mathrm{cg}}$ Fletcher--Reeves steps on the loss from $\phi^{k-1}$ with strong-Wolfe search \Comment{Eqs.~\ref{eq:gradphi},~\ref{eq:cg}}
+  \State compute $e(\phi^k)$, $\sigma(\phi^k)$ on $\mathcal D$
+  \If{$e(\phi^k)\ge\gamma e_0$ \textbf{and} $\sigma(\phi^k)<\sigma_{\mathrm{best}}$} best $\gets(\phi^k,\sigma(\phi^k))$ \EndIf
+\EndFor
+\State \Return the phase of best, wrapped to $[0,2\pi)$ \Comment{Eq.~\ref{eq:safeguard}}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Parameters}\label{sec:parameters}
+
+Table~\ref{tab:params} lists the values of the method and of the tasks and where each came from. The weighted-GS warm start of \parWarm{} iterations is the number that Kim et al.\ use before freezing the phase. The number of conjugate-gradient steps per outer iteration, \parCgSteps, is a choice of the engine: few steps keep the hologram close to the previous one. The number of outer iterations, \parOuter, is the budget of the acceptance test of the engine. The floor $\gamma=\parFloor$ is the efficiency bound of the hypotheses, so that an iterate that the hypotheses would reject is never returned.
+The crosstalk parameters $\sigma_K$ and $q$ are the values that Schroff et al.\ fitted on one device, and the upsampling factor $u$ is the one of that fit; the source reports no improvement from finer upsampling. The sensitivity to the number of steps is measured in the ablation (Section~\ref{sec:ablation}): one step is not enough, six steps are as good as three on the median and the interval is wider, so the default is a compromise of cost and not an optimum. The sensitivity to the crosstalk parameters themselves is not measured.
+
+\begin{table}[t]
+\centering\small
+\caption{Parameters of the method and of the tasks, with their values as the engine uses them, and the origin of each value. The device values are those of the crosstalk device and the full device; the flicker belongs to the benchmark's device.}
+\label{tab:params}
+\begin{tabular}{@{}p{4.3cm} p{3.4cm} p{7.2cm}@{}}
+\toprule
+Parameter & Value & Origin\\
+\midrule
+SLM pixels, padding & $\parNpix^2$, \parPad & acceptance tasks of the engine\\
+Wavelength, focal length, pitch, NA & \parLambda{} nm, \parFocal{} mm, \parPitch{} $\mu$m, \parNa & acceptance tasks of the engine\\
+Crosstalk $\sigma_K$, $q$, upsampling $u$ & \parXtSigma, \parXtQ, \parUp & fit of Schroff et al.~\cite{schroff}\\
+Quantizer, fill factor (full device) & \parBits{} bits, \parFill & parameters of the studio's device cases, no published fit\\
+Flicker (benchmark device) & \bakeCeightFlicker{} rad rms & parameter of the studio's device case, no published fit\\
+Warm iterations $K_{\mathrm{warm}}$ & \parWarm & number of weighted iterations before the phase freeze of Kim et al.\\
+Steps $K_{\mathrm{cg}}$ per outer iteration & \parCgSteps & engine choice; sensitivity in Section~\ref{sec:ablation}\\
+Outer iterations $K_{\mathrm{out}}$ & \parOuter & budget of the acceptance test\\
+Efficiency floor $\gamma$ & \parFloor & efficiency bound of the hypotheses\\
+Line search & $c_1=10^{-4}$, $c_2=0.1$, at most 25 evaluations & strong-Wolfe conditions of Eq.~\ref{eq:cg}; cap of the engine\\
+Weight update & off & default of the engine, measured in Section~\ref{sec:ablation}\\
+Loss & efficiency level & Eq.~\ref{eq:loss}; the option of Eq.~\ref{eq:nel} is the baseline of the comparison\\
+Steepness of Eq.~\ref{eq:nel} & $1/\sum_m\tilde T_m^2$ & scale of $L$; the constant of the source only rescales $C$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Complexity}\label{sec:complexity}
+
+One conjugate-gradient step evaluates the forward model on the fine grid and its adjoint once per line-search trial, about $u^2$ times the pixels of the plain FFT, and the readout at the traps is a pass over them. With $N_{\mathrm{fine}}=u^2n_{\mathrm{pad}}^2$ the number of fine samples, a step costs
+$O(N_{\mathrm{fine}}\log N_{\mathrm{fine}})$ in the FFT form, and the readout at the traps is $O(M)$. An outer iteration costs $K_{\mathrm{cg}}$ steps plus the line-search trials, and a run costs $K_{\mathrm{warm}}$ ideal iterations plus $K_{\mathrm{out}}$ outer iterations. The line search dominates the cost of a step: each trial evaluates the forward model once, the strong-Wolfe search may use several trials per step, and the engine caps the evaluations of one search at 25, so the cost of an outer iteration is $K_{\mathrm{cg}}$ steps times a number of evaluations between one and the cap. The evaluations are counted and returned in the metadata of a run, so the cost of a hologram can be read afterwards and not only estimated. Phase-fixed weighted GS costs one forward and one inverse transform per iteration on the plain grid, so the refinement is more expensive per hologram by a factor that the experiments measure and report in Section~\ref{sec:results}: on the acceptance task it is a median of \secBXMedian{} s against \secMXSevenHundred{} s for the baseline at 100 iterations, and on the geometries of the benchmark it is minutes to half an hour. The source of the crosstalk model reports that the model alone makes a hologram about six times slower~\cite{schroff}; the deadline of the engine bounds a run at the equal time of the benchmark, which Section~\ref{sec:results} uses.
+
+\subsection{Implementation}\label{sec:implementation}
+
+The method is the module \texttt{b1\_device\_wgs.py} of the engine in the repository of the studio, release \engineRelease, registered under the name device-aware conjugate-gradient refinement. The device model is the module \texttt{device.py}, whose adjoint passes the inner-product identity to $10^{-12}$ for three devices, and the conjugate-gradient routine is shared with the other
+optimization methods of the studio. The traps must lie on FFT bins with $z=0$ and no vortex when a device is given, and the method refuses a shaped-field target. The options are \texttt{weights} (default off), \texttt{loss} (the efficiency-level loss by default, or the normalized-error loss) and \texttt{steepness}; a test of the engine checks that with the option on the module reproduces the run that the earlier default recorded, so the weight update measured here is the module's own. The ablation script of Section~\ref{sec:ablation} re-implements the loop with switchable components and checks that, with the default components, it returns the
+phase of the module to a difference of \ablBCheck{} on the spread for every seed, and the same for the weight update (\ablBWeightsCheck{}), so the ablated variants are the module with parts removed and not a second method. The result of a run carries the phase, a history with one entry per outer iteration (the loss, the efficiency and the spread), the trap fields on the device and the metadata of the run: the number of steps, the warm iterations, the evaluations, the final weights, the iteration that was returned, the floor and the spread and efficiency of the start. The history keeps every iterate so that a run that winds up can be inspected, and the convergence curve of Fig.~\ref{fig:b1model}b is read from it. A deadline in seconds bounds every phase of a run, the warm start, the outer loop and every line-search evaluation, so a run overruns by at most one evaluation of the device model; the benchmark's equal-time rows use it. The routine accepts an initial phase that replaces the warm start and raises an error for fewer than one step or a negative number of warm iterations. The random superposition of the start is drawn from the portable generator of the engine, so the result is a function of the seed.

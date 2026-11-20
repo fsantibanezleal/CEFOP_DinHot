@@ -26,6 +26,8 @@ A cell that cannot run is listed in ``skipped`` with its reason (the method is n
 geometry's target, the method refuses the geometry when it runs, or a device model cannot be read off the focal plane), never
 silently absent (ADR-0069). A refusal is a ``ValueError`` the method raises on the geometry (for example M12's FFT bins, M17's
 trained SLM size, M19's axial pitch): its message is the reason, and no row of that cell is kept. Any other exception stops the run.
+B3 (the learned warm start) is skipped on every geometry while no network is released: its run would be M07's fallback, and a row
+of it would count that as a proposed method (``skip_reason``).
 """
 from __future__ import annotations
 
@@ -40,13 +42,17 @@ from pathlib import Path
 import numpy as np
 
 from .. import __version__
+from ..core.power import opt_out_of_power_throttling
 from ..io.formats import read_json, write_json
 from ..model.holo import methods as registry
 from ..model.holo.core.types import Budget
 from ..stages import infer
 from . import geometries as G
 
-LADDER = [f"M{k:02d}" for k in range(1, 20)] + [f"B{k}" for k in range(1, 6)]
+# B2 is not in the static ladder (0.02.004): its frame 0 is phase-fixed WGS (M07's rule) and the rest of the run is a
+# frame sequence for moving traps, so a static cell would rank M07 plus a refinement against the methods it is built on
+# (review finding B-1 of the technical report); its sequence experiments (rearrangement, transient ratio) are unaffected.
+LADDER = [f"M{k:02d}" for k in range(1, 20)] + [f"B{k}" for k in (1, 3, 4, 5)]
 TUNING_CANDIDATES = 4
 TUNING_SEEDS = 3
 TUNING_SEED_OFFSET = 1000
@@ -56,6 +62,10 @@ MAX_WORKERS = 12
 # seeds it ran (n_seeds), so a group that stopped early says so instead of holding the whole run.
 GROUP_BUDGET_S = 600.0
 MIN_SEEDS = 2
+# Rows bounded by a deadline (time and converged) cost at most converged_s + sum(times) a seed, so they always run at least
+# MIN_BOUNDED_SEEDS seeds whatever the group has spent; only the iteration rows, whose cost is the method's own, keep the
+# 600 s group budget with MIN_SEEDS (a cell read as a win needs 5 seeds on both sides: ``manuscripts/.../extract.py``).
+MIN_BOUNDED_SEEDS = 5
 # the dossier's tuned parameters (D4.3 item 5); applied only when the method's run accepts the name
 FALLBACK_TUNING: dict[str, list[dict]] = {
     "M05": [{"alpha": a} for a in (0.25, 0.5, 0.75, 1.0)],
@@ -88,11 +98,24 @@ def _text(en: str, es: str) -> dict:
     return {"en": en, "es": es}
 
 
+def _warm_start_network_released() -> bool:
+    """True when the slot ``warmstart-model`` holds a released network: the condition B3's ``run`` reads to choose between the
+    network and its fallback (``learned/_slot.load``)."""
+    from ..model.holo.methods.learned import _slot
+
+    return _slot.load("warmstart-model") is not None
+
+
 def skip_reason(mid: str, geometry: str, reduced: bool) -> dict | None:
     """Why the (method, geometry) cell cannot run at all (None when the ideal-device cell can)."""
     known = {s.id: s for s in registry.all_specs()}
     if mid not in known:
         return _text("The method is not registered in this build.", "El método no está registrado en esta versión.")
+    if mid == "B3" and not _warm_start_network_released():
+        return _text("Not run: the network of this method is not released (its candidate was refuted), so a row of it would be "
+                     "phase-fixed WGS (M07) counted as a proposed method.",
+                     "No ejecutado: la red de este método no está publicada (su candidata fue refutada), así que una fila "
+                     "suya sería WGS de fase fija (M07) contada como método propuesto.")
     rec = G.record(geometry, device=False, seed=0, reduced=reduced)
     problem = infer.spec_problem(known[mid], rec)
     if problem:
@@ -131,7 +154,8 @@ def _row(mid, geometry, device, kind, budget, params, outs) -> dict:
             "budget": budget, "params": params, "n_seeds": len(outs),
             "efficiency": _stat([o.score["efficiency"] for o in outs]), "uniformity": _stat([o.score["uniformity"] for o in outs]),
             "rel_std_pct": _stat([o.score["rel_std_pct"] for o in outs]), "time_s": _stat([o.seconds for o in outs]),
-            "iterations": _stat([float(o.iterations) for o in outs])}
+            "iterations": _stat([float(o.iterations) for o in outs]),
+            "evaluations": _stat([float(o.meta["forward_adjoint_evaluations"]) for o in outs])}
 
 
 def _record(geometry: str, device: bool, seed: int, reduced: bool) -> dict:
@@ -164,8 +188,9 @@ def refusal_reason(message: str) -> dict:
 
 
 def pareto_points(meta: dict) -> list[dict] | None:
-    """B5's non-dominated points from its ``meta``: ``pareto`` holds the indices into ``front`` (rows of efficiency, uniformity,
-    relative std) and ``lambdas`` the weight of each row. None when the result carries no front."""
+    """B5's continuation points that no other point of the same curve dominates, from its ``meta``: ``pareto`` holds the
+    indices into ``front`` (rows of efficiency, uniformity, relative std) and ``lambdas`` the weight of each row. None when
+    the result carries no curve."""
     idx, front, lambdas = meta.get("pareto"), meta.get("front"), meta.get("lambdas")
     if idx is None or front is None or lambdas is None or len(idx) == 0:
         return None
@@ -200,11 +225,12 @@ def _run_group(task: dict) -> dict:
     pareto = None
     t_group = time.perf_counter()
     for seed in range(proto.seeds):
-        if seed >= MIN_SEEDS and not proto.reduced and time.perf_counter() - t_group > GROUP_BUDGET_S:
+        spent = time.perf_counter() - t_group > GROUP_BUDGET_S
+        if spent and seed >= max(MIN_SEEDS, MIN_BOUNDED_SEEDS):
             break
         rec = _record(geometry, device, seed, proto.reduced)
         ctx = infer.case_context(rec)
-        runs = [("iterations", n, Budget(n)) for n in proto.iterations]
+        runs = [] if spent and seed >= MIN_SEEDS else [("iterations", n, Budget(n)) for n in proto.iterations]
         runs += [("time", t, Budget(proto.cap, t)) for t in proto.times]
         runs += [("converged", float(proto.cap), Budget(proto.cap, proto.converged_s))]
         for bk, b, budget in runs:
@@ -234,8 +260,11 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
                                      "fill factor 0.85, flicker 0.05 rad). Every hologram is scored against its device. The "
                                      "device rows run with the default parameters only (the tuning is done on the ideal "
                                      "model) and not on the multi-plane geometries (a device model is read at one focal "
-                                     "plane). The converged row runs to 300 iterations or 20 s; a group runs its seeds until 600 s of wall clock "
-                                     "(at least 2, n_seeds says how many). Times are wall-clock "
+                                     "plane). The converged row runs to 300 iterations or 20 s; every phase of every method checks the deadline of a time row "
+                                     "between units of work, a row whose median time exceeds 1.5 times its budget is labelled over budget, and every row records its work (iterations and forward plus adjoint evaluations); the time and "
+                                     "converged rows run at least 5 seeds, the iteration rows run seeds until 600 s of wall clock "
+                                     "(at least 2, n_seeds says how many). Every worker process opts out of the operating system's power "
+                                     "throttling where the system has it. Times are wall-clock "
                                      "seconds of the machine that ran the benchmark, under shared load, and differ "
                                      "between runs.",
                                      "Ideal, y el dispositivo C08 (fase de 4 bits, diafonía sigma 1,24 q 1,80 en 3 x 3 "
@@ -243,7 +272,10 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
                                      "su dispositivo. Las filas con dispositivo usan solo los parámetros por defecto (el ajuste "
                                      "se hace sobre el modelo ideal) y no se ejecutan en las geometrías de varios planos (el "
                                      "modelo del dispositivo se lee en un solo plano focal). La fila convergida corre hasta "
-                                     "300 iteraciones o 20 s; un grupo corre semillas hasta 600 s de reloj (al menos 2, n_seeds dice cuántas). "
+                                     "300 iteraciones o 20 s; cada fase de todo método comprueba el plazo de una fila de tiempo entre unidades de trabajo, una fila cuya mediana de tiempo supera 1,5 veces su presupuesto se marca como fuera de presupuesto, y cada fila "
+                                     "registra su trabajo (iteraciones y evaluaciones directas más adjuntas); las filas de tiempo y "
+                                     "convergida corren al menos 5 semillas, las de iteraciones corren semillas hasta 600 s de reloj (al menos 2, n_seeds dice cuántas). "
+                                     "Todo proceso de trabajo se excluye de la limitación de energía del sistema operativo donde el sistema la tiene. "
                                      "Los tiempos son segundos de reloj de la máquina que ejecutó el "
                                      "benchmark, con carga compartida, y difieren entre ejecuciones.")},
         "geometries": [{"id": g, "name": G.GEOMETRIES[g][0], "n_traps": G.n_traps(g, proto.reduced), "dims": G.GEOMETRIES[g][2]}
@@ -256,7 +288,7 @@ def document(proto: Protocol, rows: list[dict], pareto: list[dict], skipped: lis
 
 
 def _load_done(path: Path, proto: Protocol) -> tuple[list[dict], list[dict]]:
-    """Rows and Pareto fronts of an earlier run of this version with this protocol (for ``--resume``)."""
+    """Rows and B5 continuation points of an earlier run of this version with this protocol (for ``--resume``)."""
     if not path.is_file():
         return [], []
     old = read_json(path)
@@ -308,6 +340,7 @@ def run(derived_root: str | Path, *, seeds: int = 20, workers: int = 12, reduced
         return d
 
     n_workers = max(1, min(int(workers), MAX_WORKERS))
+    opt_out_of_power_throttling()   # the calling process (n_workers == 1 runs here); the pool's workers do it as initializer
 
     refused: set[tuple[str, str]] = set()
 
@@ -336,7 +369,7 @@ def run(derived_root: str | Path, *, seeds: int = 20, workers: int = 12, reduced
         for t in tasks:
             absorb(run_group(t))
     else:
-        with ProcessPoolExecutor(max_workers=n_workers) as pool:
+        with ProcessPoolExecutor(max_workers=n_workers, initializer=opt_out_of_power_throttling) as pool:
             # absorb each group as it finishes, so a slow group never holds back the flush of the others
             for fut in as_completed([pool.submit(run_group, t) for t in tasks]):
                 absorb(fut.result())

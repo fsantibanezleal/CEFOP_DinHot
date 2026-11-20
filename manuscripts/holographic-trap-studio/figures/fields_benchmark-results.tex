@@ -1,0 +1,71 @@
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{benchmark-results}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-benchmark-results}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = dinhot.benchmark/v1\\
+\texttt{engine\_version} & string & yes & - & pattern\\
+\texttt{protocol} & object & yes & - & -\\
+\texttt{protocol.grids} & array of integer & yes & - & -\\
+\texttt{protocol.seeds} & integer & yes & - & -\\
+\texttt{protocol.budgets} & object & yes & - & -\\
+\texttt{protocol.budgets.iterations} & array of integer & yes & - & -\\
+\texttt{protocol.budgets.time\_s} & array of number & yes & s & -\\
+\texttt{protocol.device} & object & yes & - & -\\
+\texttt{protocol.device.en} & string & yes & - & length >= 1\\
+\texttt{protocol.device.es} & string & yes & - & length >= 1\\
+\texttt{geometries} & array of object & yes & - & -\\
+\texttt{geometries[].id} & string & yes & - & pattern\\
+\texttt{geometries[].name} & object & yes & - & -\\
+\texttt{geometries[].name.en} & string & yes & - & length >= 1\\
+\texttt{geometries[].name.es} & string & yes & - & length >= 1\\
+\texttt{geometries[].n\_traps} & integer & yes & - & -\\
+\texttt{geometries[].dims} & enum & yes & - & \{2, 3\}\\
+\texttt{rows} & array of object & yes & - & -\\
+\texttt{rows[].method} & string & yes & - & pattern\\
+\texttt{rows[].geometry} & string & yes & - & pattern\\
+\texttt{rows[].device} & enum & yes & - & \{ideal, device\}\\
+\texttt{rows[].budget\_kind} & enum & yes & - & \{iterations, time, converged\}\\
+\texttt{rows[].budget} & number & yes & - & -\\
+\texttt{rows[].params} & enum & yes & - & \{default, tuned\}\\
+\texttt{rows[].n\_seeds} & integer & yes & - & -\\
+\texttt{rows[].efficiency} & object & yes & fraction & -\\
+\texttt{rows[].efficiency.median} & number & yes & - & -\\
+\texttt{rows[].efficiency.q1} & number & yes & - & -\\
+\texttt{rows[].efficiency.q3} & number & yes & - & -\\
+\texttt{rows[].uniformity} & object & yes & fraction & -\\
+\texttt{rows[].uniformity.median} & number & yes & - & -\\
+\texttt{rows[].uniformity.q1} & number & yes & - & -\\
+\texttt{rows[].uniformity.q3} & number & yes & - & -\\
+\texttt{rows[].rel\_std\_pct} & object & yes & percent & -\\
+\texttt{rows[].rel\_std\_pct.median} & number & yes & - & -\\
+\texttt{rows[].rel\_std\_pct.q1} & number & yes & - & -\\
+\texttt{rows[].rel\_std\_pct.q3} & number & yes & - & -\\
+\texttt{rows[].time\_s} & object & yes & s & -\\
+\texttt{rows[].time\_s.median} & number & yes & - & -\\
+\texttt{rows[].time\_s.q1} & number & yes & - & -\\
+\texttt{rows[].time\_s.q3} & number & yes & - & -\\
+\texttt{rows[].iterations} & object & yes & - & -\\
+\texttt{rows[].iterations.median} & number & yes & - & -\\
+\texttt{rows[].iterations.q1} & number & yes & - & -\\
+\texttt{rows[].iterations.q3} & number & yes & - & -\\
+\texttt{rows[].evaluations} & object & yes & - & -\\
+\texttt{rows[].evaluations.median} & number & yes & - & -\\
+\texttt{rows[].evaluations.q1} & number & yes & - & -\\
+\texttt{rows[].evaluations.q3} & number & yes & - & -\\
+\texttt{pareto} & array of object & yes & - & -\\
+\texttt{pareto[].geometry} & string & yes & - & pattern\\
+\texttt{pareto[].method} & const & yes & - & = efficiency-uniformity continuation\\
+\texttt{pareto[].points} & array of object & yes & - & -\\
+\texttt{pareto[].points[].lambda} & number & yes & - & -\\
+\texttt{pareto[].points[].efficiency} & number & yes & fraction & -\\
+\texttt{pareto[].points[].uniformity} & number & yes & fraction & -\\
+\texttt{skipped} & array of object & no & - & -\\
+\texttt{skipped[].method} & string & yes & - & pattern\\
+\texttt{skipped[].geometry} & string & yes & - & pattern\\
+\texttt{skipped[].reason} & object & yes & - & -\\
+\texttt{skipped[].reason.en} & string & yes & - & length >= 1\\
+\texttt{skipped[].reason.es} & string & yes & - & length >= 1\\
+\bottomrule\end{longtable}
+\endgroup
+

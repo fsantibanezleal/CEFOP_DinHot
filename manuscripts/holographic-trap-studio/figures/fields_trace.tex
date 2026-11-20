@@ -1,0 +1,53 @@
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{trace}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-trace}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = dinhot.trace/v1\\
+\texttt{case\_id} & string & yes & - & length >= 1\\
+\texttt{grid} & object & yes & - & -\\
+\texttt{grid.n\_pix} & integer & yes & - & -\\
+\texttt{grid.pad} & integer & yes & - & -\\
+\texttt{grid.bin\_um} & number & yes & $\mu$m & -\\
+\texttt{grid.half\_field\_um} & number & yes & $\mu$m & -\\
+\texttt{traps} & array of object & yes & - & 0 to 4096 items\\
+\texttt{traps[].id} & integer & yes & - & 0 to 4095\\
+\texttt{traps[].x\_um} & number & yes & $\mu$m & -100000.0 to 100000.0\\
+\texttt{traps[].y\_um} & number & yes & $\mu$m & -100000.0 to 100000.0\\
+\texttt{traps[].z\_um} & number & yes & $\mu$m & -100000.0 to 100000.0\\
+\texttt{traps[].weight} & number & yes & fraction & 0.01 to 100\\
+\texttt{traps[].charge} & integer & yes & - & -20 to 20\\
+\texttt{shape} & object or null & yes & - & -\\
+\texttt{methods} & object & yes & - & -\\
+\texttt{methods\{id\}.history} & array of object & yes & - & 0 to 200 items\\
+\texttt{methods\{id\}.history[].iteration} & integer & yes & - & -\\
+\texttt{methods\{id\}.history[].efficiency} & number & yes & fraction & -\\
+\texttt{methods\{id\}.history[].uniformity} & number & yes & fraction & -\\
+\texttt{methods\{id\}.history[].rel\_std\_pct} & number & yes & percent & -\\
+\texttt{methods\{id\}.final} & object & yes & - & -\\
+\texttt{methods\{id\}.final.efficiency} & number & yes & fraction & -\\
+\texttt{methods\{id\}.final.uniformity} & number & yes & fraction & -\\
+\texttt{methods\{id\}.final.rel\_std\_pct} & number & yes & percent & -\\
+\texttt{methods\{id\}.final.zero\_order} & number & yes & fraction & -\\
+\texttt{methods\{id\}.final.ghost} & number & yes & fraction & -\\
+\texttt{methods\{id\}.trap\_intensity} & array of number & yes & - & -\\
+\texttt{reference} & object & yes & - & -\\
+\texttt{reference.method} & string & yes & - & pattern\\
+\texttt{reference.phase\_u8} & string & yes & - & pattern\\
+\texttt{reference.focal} & object & yes & - & -\\
+\texttt{reference.focal.size} & integer & yes & - & 1 to 192\\
+\texttt{reference.focal.bin\_um} & number & yes & $\mu$m & -\\
+\texttt{reference.focal.db\_floor} & number & yes & - & -\\
+\texttt{reference.focal.intensity\_db\_u8} & string & yes & - & pattern\\
+\texttt{reference.axial} & object or null & yes & - & -\\
+\texttt{feedback} & object or null & yes & - & -\\
+\texttt{dynamics} & object or null & yes & - & -\\
+\texttt{rearrangement} & object or null & yes & - & -\\
+\texttt{summary} & object & yes & - & -\\
+\texttt{summary.best\_method} & string & yes & - & pattern\\
+\texttt{summary.notes} & object & yes & - & -\\
+\texttt{summary.notes.en} & string & yes & - & length >= 1\\
+\texttt{summary.notes.es} & string & yes & - & length >= 1\\
+\bottomrule\end{longtable}
+\endgroup
+

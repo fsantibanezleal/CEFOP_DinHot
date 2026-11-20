@@ -84,7 +84,7 @@ export function Methodology() {
                 { id: 'flicker-bounded', label: t('Flicker-bounded sequence', 'Secuencia acotada en parpadeo'), content: <Bs2Topic /> },
                 { id: 'learned-warm-start', label: t('Learned warm start, refuted', 'Arranque aprendido, refutado'), content: <Bs3Topic /> },
                 { id: 'robust-hologram', label: t('Aberration-robust hologram', 'Holograma robusto a aberraciones'), content: <Bs4Topic /> },
-                { id: 'pareto-front', label: t('Efficiency-uniformity front', 'Frente eficiencia-uniformidad'), content: <Bs5Topic /> },
+                { id: 'pareto-front', label: t('Efficiency-uniformity continuation', 'Continuación eficiencia-uniformidad'), content: <Bs5Topic /> },
               ],
             },
           ]}

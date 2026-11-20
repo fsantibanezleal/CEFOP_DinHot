@@ -1,0 +1,15 @@
+\begin{tabular}{@{}l r r r r r@{}}
+\toprule
+Variant & Minimum ratio, mean $\pm$ s.d. & Range & Seeds at 0.9 or above & Largest frame $\sigma$ (\%) & Largest phase step (rad) \\
+\midrule
+flicker-bounded sequence, all components & 0.923 $\pm$ 0.007 & 0.915 to 0.932 & 6 of 6 & 0.24 & 0.069 \\
+without the trajectory lock & 0.884 $\pm$ 0.055 & 0.776 to 0.924 & 4 of 6 & 2.45 & 0.455 \\
+without the per-frame optimization & 0.789 $\pm$ 0.038 & 0.724 to 0.830 & 0 of 6 & 17.67 & 0.064 \\
+1 iteration per frame & 0.747 $\pm$ 0.069 & 0.676 to 0.823 & 0 of 6 & 18.62 & 0.063 \\
+3 iterations per frame & 0.918 $\pm$ 0.010 & 0.905 to 0.933 & 6 of 6 & 3.50 & 0.066 \\
+linear time profile for the positions & 0.967 $\pm$ 0.006 & 0.959 to 0.974 & 6 of 6 & 0.21 & 0.041 \\
+linear phase interpolation (reference) & 0.644 $\pm$ 0.057 & 0.551 to 0.709 & 0 of 6 & 23.50 & 0.409 \\
+per-frame GS with phase induction, 5 iterations (reference) & 0.948 $\pm$ 0.017 & 0.918 to 0.965 & 6 of 6 & 2.23 & 0.302 \\
+per-frame GS with phase induction, 10 iterations (reference) & 0.925 $\pm$ 0.034 & 0.880 to 0.966 & 4 of 6 & 1.29 & 0.499 \\
+\bottomrule
+\end{tabular}

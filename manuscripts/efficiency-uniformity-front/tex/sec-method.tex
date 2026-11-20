@@ -1,20 +1,20 @@
 \section{Proposed method: continuation of a weighted cost}\label{sec:method}
 
-The method computes the front of the bi-objective problem of Section~\ref{sec:problem} for one array and one start, in the engine of the studio, as a sequence of smooth minimizations. It replaces the two objectives by two dimensionless functions of the intensities with closed-form gradients,
-combines them with a weight, and follows the solution of the combination as the weight grows. The start is the output of phase-fixed weighted GS, the optimizer is the conjugate-gradient iteration of Harte et al.~\cite{harte}, and the new ingredients are the normalization, the warm start along the weights and the readout of the front
+The method computes the curve of the bi-objective problem of Section~\ref{sec:problem} for one array and one start, in the engine of the studio, as a sequence of smooth minimizations. It replaces the two objectives by two dimensionless functions of the intensities with closed-form gradients,
+combines them with a weight, and follows the solution of the combination as the weight grows. The start is the output of phase-fixed weighted GS, the optimizer is the conjugate-gradient iteration of Harte et al.~\cite{harte}, and the new ingredients are the normalization, the warm start along the weights and the readout of the curve
 (its non-dominated points, its hypervolume and its knee). Each subsection gives the idea, the derivation, the algorithm, the parameters with their values and the way they were chosen, the complexity and the implementation.
 
 \subsection{Idea}\label{sec:idea}
 
 Every solver of Section~\ref{sec:related} stops at one point of the plane $(e,u)$, and the only knob that moves the point is a parameter fixed in advance: the weight of direct search, the mixing parameter of the amplitude-freedom method, the number of iterations. Consider instead a single loss
 that contains both quantities and a weight $\lambda$ between them. At $\lambda=0$ the loss asks only for equal traps, and a hologram that minimizes it is a flat hologram of whatever efficiency the start already had. At $\lambda=1$ it asks only for light in the traps, and the minimizer ignores the uniformity.
-In between, each value of $\lambda$ has a minimizer, and if the minimizers change smoothly with $\lambda$ they trace a curve in the plane $(e,u)$: the front. Two observations make this practical. First, the minimizer at a value $\lambda_{k+1}$ is close to the minimizer at $\lambda_k$ when the values are close, so each
+In between, each value of $\lambda$ has a minimizer, and if the minimizers change smoothly with $\lambda$ they trace a curve in the plane $(e,u)$: the curve. Two observations make this practical. First, the minimizer at a value $\lambda_{k+1}$ is close to the minimizer at $\lambda_k$ when the values are close, so each
 minimization can start from its neighbour and needs only a few conjugate-gradient steps (a quantitative statement is Proposition~\ref{prop:warm}). Second, the two terms must be scaled so that one weight means the same on every array: the squared error of the intensities without division is $E\sum_kT_k^2$, and $\sum_kT_k^2=e_0^2/M$ is of the order of $6\times10^{-3}$ for a hundred traps, while the light is of order one,
-so a loss without scaling asks for a raise of every trap that is $M/e_0$ times larger than the scaled loss asks for the same weight (Proposition~\ref{prop:shift}) and the front collapses toward the efficient end at the first weights; the ablation of Section~\ref{sec:ablation} measures this collapse. The scaling divides the error by the squared norm of the target and the light by the efficiency of the start, so both terms are of order one and
+so a loss without scaling asks for a raise of every trap that is $M/e_0$ times larger than the scaled loss asks for the same weight (Proposition~\ref{prop:shift}) and the curve collapses toward the efficient end at the first weights; the ablation of Section~\ref{sec:ablation} measures this collapse. The scaling divides the error by the squared norm of the target and the light by the efficiency of the start, so both terms are of order one and
 the weight $\lambda=1/2$ is a balanced choice by construction.
 
 The weight has a physical reading that the derivation exposes. Completing the square shows that, up to a constant, the loss at weight $\lambda$ is the squared error against a flat target whose every trap is raised by a fixed amount $\delta_\lambda$ that grows with $\lambda$ (Proposition~\ref{prop:shift}).
-The weight therefore sets how much more light than the start the hologram is asked to put in each trap while keeping the traps equal. The front is then the set of best approximations to a family of flat targets of increasing brightness, and it ends where the requested brightness exceeds what the optics allow, a weight that the proposition computes
+The weight therefore sets how much more light than the start the hologram is asked to put in each trap while keeping the traps equal. The curve is then the set of best approximations to a family of flat targets of increasing brightness, and it ends where the requested brightness exceeds what the optics allow, a weight that the proposition computes
 from the efficiency of the start and the largest efficiency reached (it restates that measurement and is not a prediction).
 
 \subsection{Derivation}\label{sec:derivation}
@@ -62,11 +62,11 @@ The continuation is the repeated use of this minimization along an increasing se
 \begin{equation}
 \phi^{(k+1)}=\mathrm{CG}_K\big(L_{\lambda_{k+1}},\,\phi^{(k)}\big),\qquad \phi^{(0)}=\mathrm{CG}_K\big(L_{\lambda_0},\,\phi_{\mathrm{start}}\big).\label{eq:continuation}
 \end{equation}
-The points of the front are $F_k=\big(e(\phi^{(k)}),u(\phi^{(k)})\big)$, with the relative standard deviation $\sigma_k$ of Eq.~\ref{eq:sigma} recorded as a third column. The readout of the front keeps the non-dominated points of the set $\{F_k\}$, their hypervolume (Eq.~\ref{eq:hv}), and a representative point, the knee,
+The points of the curve are $F_k=\big(e(\phi^{(k)}),u(\phi^{(k)})\big)$, with the relative standard deviation $\sigma_k$ of Eq.~\ref{eq:sigma} recorded as a third column. The readout of the curve keeps the non-dominated points of the set $\{F_k\}$, their hypervolume (Eq.~\ref{eq:hv}), and a representative point, the knee,
 \begin{equation}
 k^{\star}=\arg\max_k\,e(\phi^{(k)})\,u(\phi^{(k)}),\label{eq:knee}
 \end{equation}
-which is the point whose rectangle against the origin has the largest area. The knee is the hologram that the engine returns as the single result of the method, and the front is returned alongside it. In the two-dimensional case the hypervolume is computed by a sweep over the points sorted by decreasing efficiency,
+which is the point whose rectangle against the origin has the largest area. The knee is the hologram that the engine returns as the single result of the method, and the curve is returned alongside it. In the two-dimensional case the hypervolume is computed by a sweep over the points sorted by decreasing efficiency,
 \begin{equation}
 \mathrm{HV}=\sum_{k}\big(e_{(k)}-e_{(k+1)}\big)\,\max_{l\le k}u_{(l)},\qquad e_{(M'+1)}=r_e,\label{eq:hvsweep}
 \end{equation}
@@ -75,15 +75,15 @@ where $(e_{(k)},u_{(k)})$ are the points of $F$ above the reference, sorted so t
 \subsection{Algorithm}\label{sec:algorithm}
 
 Algorithm~\ref{alg:front} states the continuation and Algorithm~\ref{alg:hv} the readout. The start is $K_{\mathrm{warm}}$ iterations of phase-fixed weighted GS from the seeded random superposition, with the phases of the traps frozen at iteration $n_{\mathrm{fix}}=12$ as in the rule of Kim et al.~\cite{kim2019};
-this is the engine's own implementation of that method, the same code that produces the published point of phase-fixed WGS in the comparison, so that the point of that method on a seed is exactly the start of the front on that seed. The first weight $\lambda_0=0$ asks only for equal traps at the total light of the start, and its minimizer differs from the start by the small refinement that $K$ conjugate-gradient iterations on $E$ make; every later weight raises the target.
-In line~4 of Algorithm~\ref{alg:front} the weights are linear in the index, which is the default of the module, and the ablation replaces the line by two other schedules. The phases stored in line~6 are the ones returned by the engine; the front itself is the list of the points $F_k$, and the holograms are kept so that any point of the front can be displayed or refined.
+this is the engine's own implementation of that method, the same code that produces the published point of phase-fixed WGS in the comparison, so that the point of that method on a seed is exactly the start of the curve on that seed. The first weight $\lambda_0=0$ asks only for equal traps at the total light of the start, and its minimizer differs from the start by the small refinement that $K$ conjugate-gradient iterations on $E$ make; every later weight raises the target.
+In line~4 of Algorithm~\ref{alg:front} the weights are linear in the index, which is the default of the module, and the ablation replaces the line by two other schedules. The phases stored in line~6 are the ones returned by the engine; the curve itself is the list of the points $F_k$, and the holograms are kept so that any point of the curve can be displayed or refined.
 
 \begin{algorithm}[t]
-\caption{Front by continuation of the weighted cost. Inputs are the traps with their weights, the number of weights $n_\lambda$, the conjugate-gradient iterations $K$ per weight, the start iterations $K_{\mathrm{warm}}$ and a seed.}
+\caption{Curve by continuation of the weighted cost. Inputs are the traps with their weights, the number of weights $n_\lambda$, the conjugate-gradient iterations $K$ per weight, the start iterations $K_{\mathrm{warm}}$ and a seed.}
 \label{alg:front}
 \begin{algorithmic}[1]
 \Require traps $\{x_m,w_m\}$ on FFT bins, $n_\lambda\ge2$, $K$, $K_{\mathrm{warm}}$, seed
-\Ensure front $\{F_k\}$, non-dominated indices, hypervolume, knee hologram
+\Ensure curve $\{F_k\}$, non-dominated indices, hypervolume, knee hologram
 \State $\phi\gets K_{\mathrm{warm}}$ iterations of phase-fixed weighted GS from the random superposition of the seed
 \State $e_0\gets e(\phi)$; build $T_m$ by Eq.~\ref{eq:target}
 \For{$k=0,\dots,n_\lambda-1$}
@@ -141,16 +141,16 @@ Device & ideal; a device argument is accepted and ignored & scope of the method\
 
 \subsection{Complexity}\label{sec:complexity}
 
-One evaluation of the loss and its gradient is one forward projection and one back-projection, $O(n_{\mathrm{pix}}^2M)$ each for $M$ traps in the separable form of the engine. A conjugate-gradient iteration takes one to a few evaluations in its line search, bounded by 25, so with $c$ the mean number of evaluations per iteration the cost of the front is
+One evaluation of the loss and its gradient is one forward projection and one back-projection, $O(n_{\mathrm{pix}}^2M)$ each for $M$ traps in the separable form of the engine. A conjugate-gradient iteration takes one to a few evaluations in its line search, bounded by 25, so with $c$ the mean number of evaluations per iteration the cost of the curve is
 \begin{equation}
-T_{\mathrm{front}}\approx K_{\mathrm{warm}}\,c_{\mathrm{GS}}\,n_{\mathrm{pix}}^2M\;+\;n_\lambda K\,c\,n_{\mathrm{pix}}^2M,\label{eq:cost}
+T_{\mathrm{cont}}\approx K_{\mathrm{warm}}\,c_{\mathrm{GS}}\,n_{\mathrm{pix}}^2M\;+\;n_\lambda K\,c\,n_{\mathrm{pix}}^2M,\label{eq:cost}
 \end{equation}
-where $c_{\mathrm{GS}}$ is the cost of one iteration of phase-fixed WGS in units of one evaluation. The front is $n_\lambda$ times the cost of one conjugate-gradient run of $K$ iterations, which is the cost quoted in the research record as the number of weights times a warm-started run.
+where $c_{\mathrm{GS}}$ is the cost of one iteration of phase-fixed WGS in units of one evaluation. The curve is $n_\lambda$ times the cost of one conjugate-gradient run of $K$ iterations, which is the cost quoted in the research record as the number of weights times a warm-started run.
 The cost is linear in $n_\lambda K$; Section~\ref{sec:results} fits the measured seconds against $n_\lambda K$ over the runs of the ablation. The memory is $O(n_{\mathrm{pix}}^2+n_{\mathrm{pix}}\,c_{\mathrm{ch}})$ with $c_{\mathrm{ch}}$ the chunk of traps of the separable product, plus the $n_\lambda$ stored holograms. The sweep of Algorithm~\ref{alg:hv} costs
 $O(n_\lambda\log n_\lambda)$, and the non-dominated filter of the engine, which compares every point with every other, $O(n_\lambda^2)$; both are negligible against Eq.~\ref{eq:cost}.
 
 \subsection{Implementation}\label{sec:implementation}
 
-The method is the module \texttt{b5\_pareto} of the beyond-methods package of the engine, with the entry \texttt{run} and the public functions \texttt{pareto\_indices} and \texttt{hypervolume}. The cost and its gradient are the class \texttt{\_FrontCost}, which uses the trap forward model and the conjugate-gradient routine of the shared optimization module of the engine, so the line search of Eq.~\ref{eq:wolfe} is the routine's own. The result carries the knee hologram, one history entry per weight with the weight, the trap fields of the knee, and in its metadata the weights, the front, the indices of the non-dominated points, the hypervolume, the knee index, all holograms and $e_0$. A target that is a shaped field is refused with an error that names the supported kind, and fewer than two weights is refused.
-When a wall-clock budget is given, the iteration in progress stops at the deadline and no further weight is started, so the front is shorter; the benchmark of the studio runs its converged row with 300 iterations per weight and a limit of 20 s, and the stored fronts end at weights below one, as Section~\ref{sec:results} lists. The method has no live port: its lane is baked, and the studio's browser engine does not run it. The unit tests of the module check the hypervolume on known values,
-the non-dominated indices, the gradient against finite differences, the monotone direction of the front on a small array, the refusal of a shaped field, determinism for a seed, and the acceptance criterion on the ten by ten task. The numbers of this paper do not come from the tests: they come from the script of Section~\ref{sec:repro}, which calls the module and checks that its own loop reproduces the module's front for the first seed.
+The method is the module \texttt{b5\_pareto} of the beyond-methods package of the engine, with the entry \texttt{run} and the public functions \texttt{pareto\_indices} and \texttt{hypervolume}. The cost and its gradient are the class \texttt{\_FrontCost}, which uses the trap forward model and the conjugate-gradient routine of the shared optimization module of the engine, so the line search of Eq.~\ref{eq:wolfe} is the routine's own. The result carries the knee hologram, one history entry per weight with the weight, the trap fields of the knee, and in its metadata the weights, the curve, the indices of the non-dominated points, the hypervolume, the knee index, all holograms and $e_0$. A target that is a shaped field is refused with an error that names the supported kind, and fewer than two weights is refused.
+When a wall-clock budget is given, the iteration in progress stops at the deadline and no further weight is started, so the curve is shorter; the benchmark of the studio runs its converged row with 300 iterations per weight and a limit of 20 s, and the stored curves end at weights below one, as Section~\ref{sec:results} lists. The method has no live port: its lane is baked, and the studio's browser engine does not run it. The unit tests of the module check the hypervolume on known values,
+the non-dominated indices, the gradient against finite differences, the monotone direction of the curve on a small array, the refusal of a shaped field, determinism for a seed, and the acceptance criterion on the ten by ten task. The numbers of this paper do not come from the tests: they come from the script of Section~\ref{sec:repro}, which calls the module and checks that its own loop reproduces the module's curve for the first seed.

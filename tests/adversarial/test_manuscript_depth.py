@@ -44,9 +44,10 @@ def floats(kind: str, n: int, tag: str) -> str:
 HEADER = "\n".join(f"\\newcommand{{\\{m}}}{{x}}" for m in depth.HEADER_MACROS)
 
 
-def tex(title: str, sections: list[str], refs: int) -> str:
+def tex(title: str, sections: list[str], refs: int, abstract: str | None = None) -> str:
     items = "\n".join(f"\\bibitem{{r{i}}} A. Author{i}, A paper on solvers, 20{i % 25:02d}." for i in range(refs))
-    return (f"\\documentclass{{article}}\n{HEADER}\n\\title{{{title}}}\n\\begin{{document}}\n\\maketitle\n"
+    head = f"\\begin{{abstract}}\n{abstract}\n\\end{{abstract}}\n" if abstract is not None else ""
+    return (f"\\documentclass{{article}}\n{HEADER}\n\\title{{{title}}}\n\\begin{{document}}\n\\maketitle\n{head}"
             + "\n".join(sections)
             + f"\n\\begin{{thebibliography}}{{99}}\n{items}\n\\end{{thebibliography}}\n\\end{{document}}\n")
 
@@ -55,7 +56,7 @@ def sec(title: str, text: str, label: str = "") -> str:
     return f"\\section{{{title}}}" + (f"\\label{{{label}}}" if label else "") + "\n" + text
 
 
-def report_tex(title: str = REPORT_TITLE) -> str:
+def report_tex(title: str = REPORT_TITLE, abstract: str | None = prose(250)) -> str:
     cites = "\\cite{" + ",".join(f"r{i}" for i in range(30)) + "}"
     algos = "\n".join(f"\\begin{{algorithm}}\\caption{{{prose(20)}}}\\label{{alg:a{i}}}\\end{{algorithm}} See \\ref{{alg:a{i}}}."
                       for i in range(3))
@@ -76,10 +77,11 @@ def report_tex(title: str = REPORT_TITLE) -> str:
         sec("Limitations", prose(500)),
         sec("Reproducibility", prose(300)),
         sec("Conclusions", prose(400)),
-    ], 30)
+    ], 30, abstract)
 
 
-def paper_tex(title: str = PAPER_TITLE, *, ablation: bool = True, uncertainty: bool = True) -> str:
+def paper_tex(title: str = PAPER_TITLE, *, ablation: bool = True, uncertainty: bool = True,
+              abstract: str | None = prose(200)) -> str:
     cites = "\\cite{" + ",".join(f"r{i}" for i in range(25)) + "}"
     results = prose(600) + floats("fig", 6, "p") + floats("tab", 4, "p") + (" The error is $0.12 \\pm 0.01$." if uncertainty else "")
     return tex(title, [
@@ -96,7 +98,7 @@ def paper_tex(title: str = PAPER_TITLE, *, ablation: bool = True, uncertainty: b
         sec("Limitations", prose(400)),
         sec("Reproducibility", prose(200)),
         sec("Conclusions", prose(200)),
-    ], 25)
+    ], 25, abstract)
 
 
 SDD = ("# SDD\n\n## Method ladder\n\n| id | tier | method | acceptance criterion | gate |\n|---|---|---|---|---|\n"
@@ -140,6 +142,35 @@ def test_a_product_at_the_bar_passes(tmp_path):
     assert findings == [], findings
     r = subprocess.run([sys.executable, str(SCRIPT), str(tmp_path)], capture_output=True, text=True)
     assert r.returncode == 0, r.stdout
+
+
+@pytest.mark.parametrize("which, words, ok", [
+    ("paper", 150, True), ("paper", 250, True), ("paper", 149, False), ("paper", 251, False), ("paper", 337, False),
+    ("report", 200, True), ("report", 300, True), ("report", 199, False), ("report", 301, False),
+])
+def test_adversarial_an_abstract_out_of_its_range_fails(tmp_path, which, words, ok):
+    # content bar: a manuscript's abstract is 150 to 250 words (section 5), a technical report's 200 to 300 (section 4)
+    if which == "paper":
+        root = product(tmp_path, paper=paper_tex(abstract=prose(words)))
+    else:
+        root = product(tmp_path, report=report_tex(abstract=prose(words)))
+    findings = depth.check(root)
+    assert (findings == []) is ok, findings
+    if not ok:
+        assert has(findings, "abstract", f"{words} words"), findings
+
+
+def test_adversarial_a_document_without_an_abstract_fails(tmp_path):
+    findings = depth.check(product(tmp_path, paper=paper_tex(abstract=None)))
+    assert has(findings, "manuscripts/step-policy", "no abstract"), findings
+
+
+def test_adversarial_printed_values_and_inline_math_count_as_abstract_words(tmp_path):
+    # numbers printed by macros (a value generated from the data) and inline math are words of the printed abstract
+    abstract = prose(240) + " " + " ".join(f"\\valueOf{chr(65 + i)}" for i in range(6)) + " $\\sigma = 0.2$ and $e$ 0.95 1.44"
+    findings = depth.check(product(tmp_path, paper=paper_tex(abstract=abstract)))
+    # 240 words of prose, 6 printed values, the inline formulas $\sigma = 0.2$ and $e$, "and", 0.95 and 1.44: 251
+    assert has(findings, "abstract", "251 words"), findings
 
 
 def test_adversarial_a_manuscript_not_in_latex_fails(tmp_path):

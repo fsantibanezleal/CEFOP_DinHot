@@ -9,7 +9,7 @@
 | Gate | `tests/methods/beyond/test_b4_robust.py` |
 | Live port | none (lane `baked`; `getMethod('B4')` raises `NotLive`) |
 | Card | [B4](../../frameworks/B4_aberration-robust-hologram.md) |
-| Outcome | confirmed for residual aberrations (a median of 1.435 times over three seeds, 1.42 to 1.57, criterion 1.25; 1.55 on one seed before the 2026-10-29 rule corrections); not obtained for pointing errors (1.04 times, a reported negative; 1.02 before the corrections); the first claim of 2 times for both was not reached |
+| Outcome (0.02.004) | met for residual aberrations: a median of 1.435 times over three seeds (1.42 to 1.57, criterion 1.25) at 0.982 of the efficiency, and 1.439 times over ten seeds (1.35 to 1.57) at 0.982, every seed's point estimate above the criterion and the bootstrap interval of a single 200-sample ensemble above it on 8 of 10 seeds, so the claim rests on the median over seeds and not on every single-ensemble interval; not obtained for pointing errors (1.04 times at the acceptance budget, a reported negative; 1.48 times at 0.10 bins and 0.912 of the efficiency with a displacement prior alone and five times the budget); the first claim of 2 times for both was not reached |
 
 ## Tier and role
 
@@ -60,7 +60,7 @@ Default design `sigma`: the expectation is replaced by a deterministic sigma-poi
 | `q` | 8 | line 60 | the research record: 8 to 32 samples per iteration |
 | `lr` | 0.02 | line 61 | Adam rate of the `sample` design |
 | `warm` | 30 | line 62 | iterations of the phase-fixed WGS start |
-| `level_fraction` $\ell$ | 0.9 | line 63 | measured trade-off: 0.9 gave 1.55 times with 40 CG iterations; 0.937 gave 1.28 times and 0.95 with 80 iterations 1.23 times (the level trades efficiency for robustness) |
+| `level_fraction` $\ell$ | 0.9 | line 63 | measured trade-off (0.02.004, paper's ablation, `ablLevel*` and `ablDefault*` in `robust_numbers.tex`): the median factor and the efficiency ratio are 0.71 and 0.849 at 0.80, 1.25 and 0.929 at 0.85, 1.43 and 0.982 at 0.90, 1.27 and 1.006 at 0.937, 1.19 and 1.009 at 0.95, 1.06 and 1.014 at 1.00 (the level trades efficiency for robustness) |
 | acceptance budget | 40 CG iterations | `tests/methods/beyond/test_b4_robust.py` (`ensemble_pair`) | the test's budget |
 
 ## Complexity and lane
@@ -85,19 +85,18 @@ different distribution (other amplitudes, other modes, a measured instrument) is
 
 ## Measured result
 
-Acceptance run of 2026-10-28 (E3 report D4 and D5, and the module docstring), 10x10 task, 256 by 256 padded 2, test setup (850 nm, focal length 250 mm, pitch 12.5 um), 200-sample ensemble, seed 999,
-0.02 waves per mode (rms 0.057 waves, Strehl about 0.88), 1 seed for the holograms, 40 CG iterations, level 0.9:
+Values of the 0.02.004 generation, from `manuscripts/aberration-robust-hologram/data/robust_numbers.tex` (the paper's measurement of the acceptance task): 10x10 task, 256 by 256 padded 2, test setup (850 nm, focal length 250 mm, pitch 12.5 um), a 200-sample ensemble (seed 999) of 0.02 waves per mode (rms 0.057 waves, Strehl about 0.88), 40 conjugate-gradient iterations, level 0.9. Seed 1 of the acceptance test (`sigmaNomOne`, `sigmaBfourOne`, `ratioOne`, `ratioOneLo`, `ratioOneHi`):
 
 | Quantity | Nominal (M07-equivalent) | B4 | Ratio |
 |---|---|---|---|
-| p95 relative standard deviation (percent), aberration only | 6.268 | 4.045 | 1.55 times (criterion 1.25) |
-| Mean efficiency | 0.7169 | 0.7031 | minus 1.9 percent (criterion at most minus 10) |
-| p95 relative standard deviation with a 0.15 bin pointing error added (`sample` design, 20 samples, B4 at 3 iterations and q = 2; re-measured 2026-10-29 by the studio report's `acceptance.py`, 7.457, 7.309 and 1.02 before the rule corrections) | 8.492 | 8.152 | 1.04 times |
+| p95 relative standard deviation (percent), aberration only, seed 1 | 6.192 | 3.947 | 1.57 times (bootstrap interval of this one ensemble 1.34 to 1.73; criterion 1.25) |
+| p95 relative standard deviation with a 0.15 bin pointing error added (`sample` design, 20 samples, B4 at 3 iterations and q = 2; `ptAccNomOne`, `ptAccBfourOne`, `ptAccOne`) | 8.492 | 8.152 | 1.04 times |
 
-Level sensitivity: a level of 0.937 gave 4.89 percent (1.28 times), 0.95 with 80 iterations gave 5.10 percent (1.23 times), 0.9 with 80 iterations 1.55 times. Tried and not adopted: ensemble WGS with per-iteration samples (worse),
-Adam on random samples (1.0 to 1.1 times), CG on 16 fixed random samples (1.05 times).
+Over seeds: three seeds of the acceptance test give a median of 1.435 times (1.42 to 1.57) at 0.982 of M07's efficiency (0.981 to 0.983) (`ratioHeadThree`, `ratioMin`, `ratioMax`, `effRatioMed`, `effRatioMin`, `effRatioMax`); the paper's ten seeds give a median of 1.439 times (1.35 to 1.57) at 0.982 (0.981 to 0.983) (`ratioHeadAll`, `ratioAllMin`, `ratioAllMax`, `effAllMed`, `effAllMin`, `effAllMax`), with all 10 point estimates above 1.25 (`seedsPassing`) and the bootstrap interval of a single seed above 1.25 on 8 of 10 (`ciClearN`, `nSeedsAll`; the interval of a single 200-draw ensemble measures that finite ensemble and is wide, from about 1.34 to 1.73 for seed 1). The ratios of three and of ten seeds differ because the seeds differ; each is written with its seeds.
 
-The pointing result depends on the budget (measured in the method's manuscript, `manuscripts/aberration-robust-hologram`, 2026-11-03): the acceptance configuration (3 steps of 2 draws, 0.15 bin) gives 1.04 times (0.85 to 1.05 over three seeds), and 20 steps with the aberration prior at most about 1.07; with a displacement prior alone and 100 steps of Adam the ratio is 1.11 at 0.05 bins, 1.48 at 0.10 bins (1.44 to 1.50) and 1.37 at 0.15 bins, at 0.90 to 0.92 of the efficiency. The spread under displacement is dominated by a first-order slope term, which the design lowers (fivefold at 0.10 bins), over a second-order curvature floor that the spot width fixes; the earlier reading that the curvature alone bounds pointing robustness is incomplete. Outcome: the aberration claim is confirmed (1.435 times); pointing robustness stays an option, not claimed, measured negative at the acceptance budget and positive at five times that budget with a displacement prior alone; the original 2 times is not reached.
+Variants tried and not adopted, level sensitivity and the budget are in the paper's ablation (`robust_numbers.tex`, `abl*` macros); at the chosen level the design reaches a median of 1.43 times (1.42 to 1.57) at 0.982 (`ablDefaultMed`, `ablDefaultMin`, `ablDefaultMax`, `ablDefaultEff`).
+
+The pointing result depends on the budget (`robust_numbers.tex`): the acceptance configuration (3 steps of 2 draws, 0.15 bin) gives 1.04 times (0.85 to 1.05 over three seeds: `ptAccMed`, `ptAccMin`, `ptAccMax`), and 20 steps with a displacement prior added at most 1.12 times (`ptASampleMax`); with a displacement prior alone and 100 steps of Adam the ratio is 1.11 at 0.05 bins (`poALong`), 1.48 at 0.10 bins (1.44 to 1.50, `poBLong`, `poBLongMin`, `poBLongMax`, at 0.912 of the efficiency, `poBLongEff`) and 1.37 at 0.15 bins (`poCLong`), at 0.90 to 0.92 of the efficiency. The spread under displacement is dominated by a first-order slope term, which the design lowers (fivefold at 0.10 bins), over a second-order curvature floor that the spot width fixes; the earlier reading that the curvature alone bounds pointing robustness is incomplete. Outcome: the aberration claim is met (1.435 times over three seeds, 1.439 over ten); pointing robustness stays an option, not claimed, measured negative at the acceptance budget and positive at five times that budget with a displacement prior alone; the original 2 times is not reached.
 
 Committed canonical bake (`data-pipeline/pipeline/cases/measured_ranges.json`, mean over 3 seeds with the range; each case has its own optics, listed in `data/derived/manifests/`; the bake gives B4 no aberration
 estimate, I1 report F5):
@@ -129,8 +128,6 @@ efficiency. On ideal cases (C01, C02, C07) B4's spread is 0.4 to 1.0 percent whi
 - Nogrette et al. 2014, Phys. Rev. X 4, 021034, https://arxiv.org/abs/1402.5329
 - Kim, Keesling, Omran, Levine, Bernien, Greiner, Lukin and Englund 2019, Opt. Lett. 44, 3178, https://doi.org/10.1364/OL.44.003178 (the nominal M07)
 
-## Update after the corrections of 2026-10-29
+## History before 0.02.004
 
-Re-measured against the corrected M07 (200-sample aberration ensemble, Noll 4 to 11 at 0.02 waves rms, 10x10 task, M07 30 iterations, B4 40 iterations, three seeds): the ratio of M07's 95th-percentile relative standard deviation to B4's is a median of 1.455 times (1.44 to 1.53), at 0.979 of M07's mean efficiency. The aberration claim holds in 3 of 3 seeds; the pointing negative stands.
-
-Second re-measurement, the same day, after the GS family of the beyond methods was made the ladder methods' own rules (B4's warm start is now M07 itself, `optim/_gs_family.py`): M07's 95th percentile 6.192, 5.983 and 6.068 percent, B4's 3.947, 4.220 and 4.230 percent, a median ratio of 1.435 times (1.418 to 1.569) at 0.982 of M07's mean efficiency (0.981 to 0.983). The aberration claim holds on 3 of 3 seeds. These numbers supersede the ones above.
+The measurements of 2026-10-28 to 2026-10-29 (the acceptance run before the rule corrections, the re-measurement against the corrected M07, and the second one after B4's warm start became M07 itself, `optim/_gs_family.py`) are superseded by the measured result above and are kept in the git history of this file. The aberration claim held on every seed in each of them, and the pointing negative stood.

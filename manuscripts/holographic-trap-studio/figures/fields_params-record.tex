@@ -1,0 +1,31 @@
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{params-record}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-params-record}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{case\_id} & string & yes & - & pattern\\
+\texttt{setup} & object & yes & - & -\\
+\texttt{setup.wavelength\_nm} & number & yes & nm & 300 to 2000\\
+\texttt{setup.focal\_mm} & number & yes & mm & 0.5 to 1000\\
+\texttt{setup.na} & number & yes & - & 0.05 to 1.5\\
+\texttt{setup.n\_imm} & number & yes & - & 1.0 to 1.6\\
+\texttt{setup.n\_pix} & enum & yes & - & \{64, 128, 256, 512, 1024\}\\
+\texttt{setup.pitch\_um} & number & yes & $\mu$m & 1 to 50\\
+\texttt{setup.pad} & integer & yes & - & 1 to 4\\
+\texttt{setup.beam} & object & yes & - & -\\
+\texttt{device} & object or null & yes & - & -\\
+\texttt{target} & object & yes & - & -\\
+\texttt{aberration} & object or null & yes & - & -\\
+\texttt{methods} & array of string & yes & - & 1 to 24 items\\
+\texttt{reference\_method} & string & yes & - & pattern\\
+\texttt{budget} & object & yes & - & -\\
+\texttt{budget.iterations} & integer & yes & - & 1 to 5000\\
+\texttt{budget.time\_s} & number or null & yes & s & 0.01 to 3600\\
+\texttt{seed} & integer & yes & - & 0 to 2147483647\\
+\texttt{feedback} & object or null & yes & - & -\\
+\texttt{dynamics} & object or null & yes & - & -\\
+\texttt{rearrangement} & object or null & yes & - & -\\
+\texttt{expect} & object & yes & - & -\\
+\bottomrule\end{longtable}
+\endgroup
+

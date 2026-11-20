@@ -1,6 +1,6 @@
 // What the Benchmark page computes from the committed documents: the rows of one cell of the protocol, the kind of every method, the
 // Pareto and hypervolume arithmetic and the verdict of each proposed-method claim. Pure functions of the benchmark document
-// (`data/derived/benchmark/results.json`, catalog row benchmark-results 1.0.0), so a test can plant a document and a page can show
+// (`data/derived/benchmark/results.json`, catalog row benchmark-results 2.0.0), so a test can plant a document and a page can show
 // whatever the document holds: a method, a geometry or a budget that is absent is absent from the page, never typed into it.
 import { KIND_NAME, kindOfTier, LADDER, type Kind } from '../methodology/ladder';
 import type { BenchmarkResults, BenchmarkRow, Text } from '../../lib/contract.types';
@@ -108,10 +108,39 @@ export const skippedIn = (res: BenchmarkResults, geometry?: string) =>
   (res.skipped ?? []).filter((s) => geometry === undefined || s.geometry === geometry).sort((a, b) => orderMethods(a.method, b.method));
 
 /**
+ * A time row whose median wall clock exceeds `OVER_BUDGET_FACTOR` times its budget is not at equal time (plan decision 10, requirement BM-017):
+ * it is shown and labelled, never the best of its kind and never part of a win. A time row without `time_s` has no evidence that it kept its
+ * budget and is read as over; iteration and converged rows are never over budget. The same rule, on the same fixture, as `is_over_budget` of the
+ * report's extract scripts.
+ */
+export const OVER_BUDGET_FACTOR = 1.5;
+export function isOverBudget(row: BenchmarkRow): boolean {
+  if (row.budget_kind !== 'time' || row.budget === undefined || row.budget === null) return false;
+  const t = (row as Partial<BenchmarkRow>).time_s?.median;
+  return t === undefined || t === null || t > OVER_BUDGET_FACTOR * row.budget;
+}
+
+/** The label of an over-budget row, "over budget: 6.4 s for 1 s", with the measured time; null for a row within its budget. */
+export function overBudgetText(row: BenchmarkRow, lang: Lang): string | null {
+  if (!isOverBudget(row)) return null;
+  const num = (v: number) => {
+    const t = String(Math.round(v * 1000) / 1000);
+    return lang === 'es' ? t.replace('.', ',') : t;
+  };
+  const measured = (row as Partial<BenchmarkRow>).time_s?.median;
+  const budget = num(row.budget);
+  if (measured === undefined || measured === null) {
+    return lang === 'es' ? `fuera de presupuesto: sin tiempo medido para ${budget} s` : `over budget: no measured time for ${budget} s`;
+  }
+  return lang === 'es' ? `fuera de presupuesto: ${num(measured)} s para ${budget} s` : `over budget: ${num(measured)} s for ${budget} s`;
+}
+
+/**
  * The method a cell calls the most uniform: the lowest relative standard deviation among the methods that keep at least half of the best
  * efficiency (the rule the bake's case summary uses, so a method that is uniform by wasting the light does not win).
  */
-export function mostUniform(rows: Picked[]): Picked | null {
+export function mostUniform(all: Picked[]): Picked | null {
+  const rows = all.filter((p) => !isOverBudget(p.row)); // an over-budget time row is never a best and does not set the efficiency floor
   if (!rows.length) return null;
   const best = Math.max(...rows.map((p) => p.row.efficiency.median));
   const kept = rows.filter((p) => p.row.efficiency.median >= best / 2);
@@ -122,6 +151,60 @@ export function mostUniform(rows: Picked[]): Picked | null {
 export const bestOfKind = (rows: Picked[], kind: Kind): Picked | null => mostUniform(rows.filter((p) => p.kind === kind));
 /** The strongest published method of a cell: the most uniform row among all the published methods (M01 to M19), the baseline of every proposed method. */
 export const bestPublished = (rows: Picked[]): Picked | null => bestOfKind(rows, 'published');
+
+// ---------------------------------------------------------------------------------------------------------------- the win rule
+
+/** Seeds behind the best method of each kind for a cell to be read as a win, and the least gap between the two medians, in percentage points. */
+export const WIN_MIN_SEEDS = 5;
+export const WIN_MIN_DIFF_PCT = 0.01;
+const EPS = 1e-9;
+
+export type Reading = 'published' | 'proposed' | 'tie';
+export interface CellReading {
+  published: Picked | null;
+  proposed: Picked | null;
+  result: Reading;
+  /** Why the cell is what it is, in English (the page words it in both languages from `result`). */
+  reason: string;
+}
+
+/**
+ * The reading of one cell (the rows of one geometry, device and budget): the best published and the best proposed method by `bestOfKind`, and a
+ * win of one kind only if both have at least `WIN_MIN_SEEDS` seeds, their interquartile ranges of `rel_std_pct` do not overlap (touching counts as
+ * overlapping) and their medians differ by at least `WIN_MIN_DIFF_PCT`; otherwise a tie. Iteration rows never produce a win: each method runs its
+ * own iterations there, so the cell is a tie. A row over its time budget (`isOverBudget`) is never a best and never part of a win; when every row of
+ * a kind is over budget the cell is a tie that says so. The same rule, on the same fixture, as `cell_result` of the report's extract scripts.
+ */
+export function cellReading(rows: Picked[]): CellReading {
+  const published = bestOfKind(rows, 'published');
+  const proposed = bestOfKind(rows, 'proposed');
+  const tie = (reason: string): CellReading => ({ published, proposed, result: 'tie', reason });
+  if (!published || !proposed) {
+    const everyOver = (['published', 'proposed'] as Kind[]).some((k) => (k === 'published' ? !published : !proposed) && rows.some((p) => p.kind === k && isOverBudget(p.row)));
+    return tie(everyOver ? 'every row of one kind is over its budget' : 'one kind has no row');
+  }
+  if (rows.some((p) => p.row.budget_kind === 'iterations')) return tie('iteration rows run each method at its own work and never produce a win');
+  if (Math.min(published.row.n_seeds, proposed.row.n_seeds) < WIN_MIN_SEEDS) return tie(`fewer than ${WIN_MIN_SEEDS} seeds`);
+  const a = published.row.rel_std_pct;
+  const b = proposed.row.rel_std_pct;
+  if (!(a.q3 < b.q1 || b.q3 < a.q1)) return tie('the interquartile ranges overlap');
+  if (Math.abs(a.median - b.median) < WIN_MIN_DIFF_PCT - EPS) return tie(`the medians differ by less than ${WIN_MIN_DIFF_PCT} percentage points`);
+  return { published, proposed, result: b.median < a.median ? 'proposed' : 'published', reason: 'the rule holds' };
+}
+
+/**
+ * Refuses a benchmark document of contract 1.x (rows without `evaluations`, or the pooled geometry G6) with a message that names the contract
+ * version, instead of guessing the missing field. Returns the document when it is of contract 2.0.0.
+ */
+export function requireBenchmarkContract(res: BenchmarkResults): BenchmarkResults {
+  const old = res.rows.some((r) => (r as Partial<BenchmarkRow>).evaluations === undefined) || res.geometries.some((g) => g.id === 'G6');
+  if (old) {
+    throw new Error(
+      'The benchmark document is of contract benchmark-results 1.x (rows without evaluations, or the pooled geometry G6); this build reads benchmark-results 2.0.0. Run the 0.02.004 benchmark. / El documento del benchmark es del contrato benchmark-results 1.x; esta versión lee benchmark-results 2.0.0.',
+    );
+  }
+  return res;
+}
 
 // ---------------------------------------------------------------------------------------------------------------- Pareto arithmetic
 
@@ -147,7 +230,7 @@ export function hypervolume(pts: Point[]): number {
   return area;
 }
 
-/** The front of B5 for a geometry, as points, ordered by lambda; empty when the document has none. */
+/** The continuation points of B5 for a geometry, as points, ordered by lambda; empty when the document has none. */
 export function frontOf(res: BenchmarkResults, geometry: string): { lambda: number; e: number; u: number }[] {
   const f = res.pareto.find((p) => p.geometry === geometry && p.method === ID.B5);
   return (f?.points ?? []).map((p) => ({ lambda: p.lambda, e: p.efficiency, u: p.uniformity })).sort((a, b) => a.lambda - b.lambda);
@@ -214,7 +297,7 @@ export const CRITERIA = {
 /** The strongest baseline of a proposed method in this benchmark's matrix, by the SDD row that names it (M07 for B1 and B4). */
 export const BASELINE_OF: Record<string, string> = { B1: ID.M07, B4: ID.M07 };
 
-/** The hypervolume test of B5 in one geometry: the front against the union of the published points of the SDD criterion, at one cell. */
+/** The hypervolume test of B5 in one geometry: the continuation points against the union of the published points of the SDD criterion, at one cell. */
 export const B5_PUBLISHED = [ID.M04, ID.M05, ID.M09, ID.M06] as const;
 export interface B5Cell {
   geometry: string;

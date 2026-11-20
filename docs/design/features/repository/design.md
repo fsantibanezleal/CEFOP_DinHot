@@ -29,8 +29,10 @@ neither probe installs or migrates a runtime.
 Authored stage_inputs are copied byte-for-byte, bound into source receipt identity and compared again before
 admission. They are authored inputs only (source tables, configuration): a version-stamped document, a JSON file whose
 top-level object carries engine_version or product_version (trained models' metrics, a manifest, readiness), is produced by the
-generation and never carried, so `authored_inputs` refuses it by name before any stage or generation command exists (on
-generation and on the --from-stage admission alike; RP-030). Without it a product finds the stale stamp only when
+generation and never carried when it lies inside a promoted folder, so `authored_inputs` refuses it by name before any stage
+or generation command exists (on generation and on the --from-stage admission alike; RP-030). A stamped document outside every
+promoted folder (a test fixture a readiness provider reads in the stage) is never promoted and never compared with VERSION, so
+it is carried (0.15.013). Without it a product finds the stale stamp only when
 validate_stage ends a full bake (CAOS_ChancaDEM 0.13.000, 97 minutes, #120). The template declares only params-record=partial and api=missing as exceptions to available states,
 and requires scripts/check_readiness.py to recompute the actual producer document. Both validate_stage and
 check_shipped use that same state admission and the template's real validator plan. Only read-only inventory

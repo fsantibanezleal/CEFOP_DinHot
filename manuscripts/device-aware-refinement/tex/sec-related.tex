@@ -1,0 +1,61 @@
+\section{Related work}\label{sec:related}
+
+\subsection{Analytic and iterative solvers for point traps}
+
+The point-trap model of Di Leonardo et al. computes the field at each trap as a sum over SLM pixels and compares the solvers on a ten by ten lattice on a 768 by 768 pixel SLM. In simulation,
+plain GS reaches an efficiency of 0.94 and a uniformity of 0.60, and the weighted form reaches 0.93 and 0.99 in about 30 steps, with efficiency above 90 percent already after 10 steps~\cite{dileonardo}. Bianchi and
+Di Leonardo moved the random-superposition start and the weighted iteration to a GPU~\cite{bianchi}. Direct search changes one pixel at a time: Polin et al. reached less than 5 percent deviation on 119 quasi-periodic
+traps where GS and the adaptive additive variant stayed above 50 percent~\cite{polin}, at a cost that Di Leonardo et al. measured as about three times that of GS for an eight-level phase~\cite{dileonardo}.
+For large arrays, Kim et al. observed that the weights lose their effect once the SLM-plane amplitude is replaced by the laser amplitude, and froze the focal-plane phases after an initial number of iterations; on 1500 foci they
+report a modulation efficiency of 91.2 percent and a non-uniformity below 0.5 percent in simulation~\cite{kim2019}. The same rule computed the holograms of the arrays of about 1000 tweezers~\cite{ebadi} and the weights of the
+array of 11,998 sites~\cite{manetsch}. The open library slmsuite implements the same weighted iteration with and without camera feedback and serves as an independent check of an implementation~\cite{slmsuite}. All of
+these solvers optimize on an ideal model: the field they equalize is not the field the device produces. The iteration of Di Leonardo et al.\ is the start of the method of this paper and its baseline.
+
+\subsection{Camera feedback}
+
+Feedback closes the gap between the model and the device by rescaling the target with the measured trap intensities. Nogrette et al. reduced the root-mean-square depth non-uniformity of ten by ten traps from 19 percent to 1.4 percent in 20
+iterations with a gain of about 0.7~\cite{nogrette}. Kim et al. reduced a 22 percent non-uniformity to 1.59 percent in three steps with the phase-fixed rule, against 6.47 percent for conventional WGS~\cite{kim2019}. Chew et al. report a
+relative standard deviation of 0.3 percent on a small array~\cite{chew}, and Wang et al. a non-uniformity below 1.1 percent for arrays above 1000 traps~\cite{wang}; both numbers are taken from abstracts. Feedback needs the experiment
+and several camera exposures, and it starts from the hologram that the solver returns. A solver whose output is already flat on the device would shorten the loop; this is an expectation that the present paper does not test, since no
+camera is in the loop here. The two loops start from different spreads, 19 and 22 percent, and both end at about one percent, so a start that is flat on the device model would begin the loop closer to its end than a start that is flat only on the ideal model. Schroff et al.\ combine their device model with camera feedback and report that the measured error converges within about 15 feedback iterations of 100 conjugate-gradient iterations each~\cite{schroff}; the device model and the feedback are therefore complements in their protocol, not substitutes.
+
+\subsection{Cost-function, shaped-field, optimal-transport and learned holography}
+
+Methods that minimize a cost over the full field serve shaped targets. The mixed-region amplitude freedom method of Pasienski and DeMarco lowers the error on six shaped targets to 0.015 to 0.039 against 0.21 to 0.36 for GS, at an efficiency of 0.18 to 0.45
+against 0.96 to 0.99~\cite{pasienski}. Conjugate-gradient minimization of a power of the intensity error removes the vortices that the basic cost leaves, reaching 0.07 percent after 13,000 iterations on a ring~\cite{harte}, and a later variant controls phase and
+amplitude together~\cite{bowman}. Optimal-transport initialization lowers the error of GS and of the mixed-region method on the same six targets, for example to 0.17 to 0.96 percent with an efficiency of 53 to 85 percent for the latter~\cite{swan}, and a dual
+formulation reduces the memory to a linear order so that a 1024 by 1024 problem runs in 76 s on a CPU~\cite{torchylo}. Gradient methods with Wirtinger derivatives optimize any differentiable propagation model~\cite{chakravarthula}, and neural holography adds a calibrated
+model and a camera in the loop~\cite{peng}. Learned generators are faster: DeepCGH is at least ten times faster than GS and 9 to 43 percent more accurate on multi-plane volumes~\cite{eybposh}, a network below 620 KB runs at video rate~\cite{shi}, and a network for about 20 tweezers
+needs 0.16 s per hologram against about 6 s for GS, with about 10 percent variation across sites~\cite{ren}. None of these reports the uniformity of hundreds of point traps against phase-fixed WGS on the same array. The conjugate-gradient cost of Harte et al.\ is the ideal-model special case of the loss of this paper (Section~\ref{sec:method}).
+
+\subsection{Device models inside the solver}
+
+The device appears in the optimization in three ways, and the first is the one the method of this paper shares. Schroff et al.\ model the pixel crosstalk by upscaling each SLM pixel to three by three computational pixels and convolving the phase with a kernel, the form of their Eq.~(4), whose width $1.24$ inverse pixels and order $1.80$ they found by a two-dimensional scan that minimized the measured error after 150 conjugate-gradient iterations for a disc target; they minimize the mean-squared error between the normalized simulated and target intensities, their Eq.~(3), with a nonlinear conjugate-gradient solver on a GPU and automatic differentiation, and they feed the result back with a camera~\cite{schroff}. They state that the model lowered the measured error of a large disc by a factor of about $0.4$, lowered the efficiency by about 20 percent, and made the calculation about six times longer (about 10 minutes for 15 feedback iterations of 100 conjugate-gradient iterations each). Their list of generated potentials includes a Gaussian spot array on a non-zero background with the crosstalk model in the loop, so the idea of a crosstalk model inside a conjugate-gradient refinement of a trap array is theirs. Their Table 1 collects the errors and efficiencies of other studies (conjugate gradient, mixed-region amplitude freedom and its offset variant) and holds no weighted GS and no run of another method on their data~\cite{schroff}. They cite earlier use of a crosstalk model to generate spot patterns~\cite{ronzitti} and a simple method to evaluate the crosstalk of the fringing field~\cite{moreno}; we characterize those two works only through that citation.
+
+Persson et al.\ modify a commonly used hologram generating algorithm to account for pixel crosstalk, introduce a method to characterize the crosstalk of a phase-only SLM, and report an improvement of the spot uniformity by more than 100 percent on a device with large crosstalk~\cite{persson}. The full text of that work could not be opened (the publisher page returned a bot challenge), so what it says about the mechanism, the quantizer and the point-trap comparison is not assessed here; the paper therefore does not claim that no earlier solver combines a crosstalk model with the weights of weighted GS. The flicker of a liquid-crystal device is a measured property: a twisted-nematic device shows phase fluctuations of about 120 degrees at one gray level~\cite{lizana}. Aberrations are the other device
+effect: a position-dependent correction extends the aberration-free field of view~\cite{machu,christen}.
+
+\subsection{Position of the method}
+
+Table~\ref{tab:related} lists the works that matter with what each assumes and where it falls short for the task of the paper, uniform point traps on a device. The device-aware refinement takes the weighted-GS start of Di Leonardo et al.\ and Kim et al., the device model and the conjugate-gradient minimization of Schroff et al., and the intensity-error cost of Harte et al., and it applies them to point traps on FFT bins with a closed-form gradient, an efficiency-level loss and a best-iterate safeguard. Schroff et al.\ already put a crosstalk model inside a conjugate-gradient refinement and generate a Gaussian spot array with it. The refinement is therefore a transposition of their approach, with three elements of its own that the paper tests against it, and it is reported as a negative result: none of the three improves on the normalized-error loss of Schroff et al.\ through the same device model and conjugate gradient. What the paper keeps as its own is the transposition to point-trap arrays, Proposition~\ref{prop:losses}, and the measurement that isolates the loss, the weights, the safeguard and the device model, together with the scope of the gain on the benchmark's geometries and its cost in time.
+
+\begin{table}[t]
+\centering\small
+\caption{Published methods that bound the problem: what each assumes and where it falls short for uniform point traps on a device. The last row is the method of the paper.}
+\label{tab:related}
+\begin{tabular}{@{}p{3.6cm} p{4.2cm} p{6.2cm}@{}}
+\toprule
+Work & Assumes & Falls short for the task\\
+\midrule
+Weighted GS~\cite{dileonardo} & ideal SLM model & equalizes the model; no crosstalk or quantizer in the loop\\
+Phase-fixed WGS~\cite{kim2019} & ideal model; camera feedback afterwards & spread set by the device; needs the experiment to close the gap\\
+Direct search~\cite{polin} & ideal model; one pixel at a time & cost scales with the pixel count; no device model\\
+Mixed-region amplitude freedom~\cite{pasienski} & shaped field; noise region & efficiency 0.18 to 0.45; not for sparse point traps\\
+Conjugate gradient~\cite{harte} & ideal model; full field & thousands of iterations; no device model\\
+Crosstalk with conjugate gradient~\cite{schroff} & shaped potentials and a spot array; autodiff; camera feedback & about 10 minutes for the feedback protocol; no weighted GS run on the same data\\
+Crosstalk in a hologram algorithm~\cite{persson} & crosstalk characterized on a device & abstract only: the mechanism and the comparison with phase-fixed WGS are not assessed\\
+Learned generators~\cite{ren,eybposh} & training set per geometry class & about 10 percent variation at 20 traps; no comparison at hundreds\\
+Device-aware refinement & device model, traps on bins & baked cost of minutes per hologram; scope measured in this paper\\
+\bottomrule
+\end{tabular}
+\end{table}

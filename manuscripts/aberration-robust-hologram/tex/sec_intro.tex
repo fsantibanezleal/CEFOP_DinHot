@@ -14,7 +14,7 @@ however. The aberration of a tweezer array depends on the position in the field:
 field of view from 50 to 500 micrometres~\cite{machu2025}, and per-site propagation kernels grouped into about 50 isoplanatic patches enlarge the field of view of a tweezer array eightfold~\cite{christen2025}.
 Whatever the correction, a residual remains, it differs from site to site and from one calibration to the next, and the hologram that was optimized for the nominal system meets it unprepared. A hologram
 can be made less sensitive to what the correction leaves; the sources read for this paper correct the aberration per site or with one global set, and none optimizes the hologram for a distribution of residual
-aberration.
+aberration. The robust inverse design of diffractive and photonic elements does optimize over fabrication variations (Section~\ref{sec:related}); the claim here is limited to the holograms of point-trap arrays.
 
 We propose that distribution-level design and test it. The aberration-robust hologram minimizes the expected trap-intensity loss over a prior on the residual Zernike coefficients, instead of the loss at the
 nominal system. The expectation is taken by a deterministic set of sigma points, which gives the optimizer a cost without sampling noise, and the minimization is a conjugate-gradient descent started from the
@@ -35,8 +35,7 @@ and a check of the first-order theory against the ensemble (Sections~\ref{sec:de
 \end{enumerate}
 
 The main result is a spread result in a simulated device and not a hardware measurement. Over an ensemble of 200 draws of eight residual Zernike modes (Noll 4 to 11) of \parAb{} waves standard deviation each, the 95th percentile of the
-relative standard deviation of the trap intensities of a $10\times10$ array is a median of \ratioMed{} times lower for the robust hologram than for phase-fixed WGS (\ratioMin{} to \ratioMax{} over three seeds of the holograms; median
-\ratioAllMed{} over \nSeedsAll{} seeds, bootstrap interval \ratioAllCiLo{} to \ratioAllCiHi), at a median \effRatioMed{} of the efficiency of phase-fixed WGS. The gain does not follow for random displacements of the traps in the configuration of the acceptance test: the same cost
+relative standard deviation of the trap intensities of a $10\times10$ array is a median of \ratioHeadAll{} times lower for the robust hologram than for phase-fixed WGS over \ratioHeadAllN{} seeds of the holograms (bootstrap interval of the median \ratioAllCiLo{} to \ratioAllCiHi; \ratioHeadThree{} over the first three seeds), at a median \effAllMed{} of the efficiency of phase-fixed WGS. The gain does not follow for random displacements of the traps in the configuration of the acceptance test: the same cost
 extended with a displacement prior gives \ptAccMed{} times (\ptAccMin{} to \ptAccMax) and at most \ptASampleMax{} times with 20 steps (Table~\ref{tab:pointing}). With a displacement prior alone and five times the budget the ratio is \poBLong{} at 0.10 focal bins, at \poBLongEff{} of the efficiency, and we show that the spread under displacement has a first-order
 slope term, which a design can lower, and a curvature floor, which the width of the focused spot fixes.
 

@@ -1,0 +1,14 @@
+{
+  "kind": "manuscript",
+  "title_support": [
+    "tab:main",
+    "tab:profile",
+    "fig:steps",
+    "tab:long",
+    "tab:bound",
+    "tab:ablation"
+  ],
+  "claims": {
+    "BS-2": "sec:flicker-method"
+  }
+}

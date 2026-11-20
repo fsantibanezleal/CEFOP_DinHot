@@ -122,8 +122,8 @@
     {
       "kind": "technical-report",
       "concept_doi": "10.5281/zenodo.23788731",
-      "title": "DinHot: A Holographic Optical Trap Studio Comparing Hologram Methods on a Device Model",
-      "version": "0.02.003",
+      "title": "DinHot: A Holographic Optical Trap Studio That Compares Hologram Methods at a One-Second Deadline on a Device Model, Where Most Benchmark Cells Tie",
+      "version": "0.02.004",
       "covers": [
         "BS-1",
         "BS-2",
@@ -135,18 +135,26 @@
     {
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.23788733",
-      "title": "Device-Aware Weighted Gerchberg-Saxton and Flicker-Bounded Phase-Continuous Sequences for Holographic Optical Trap Arrays",
-      "version": "0.04",
+      "title": "Device-Aware Conjugate-Gradient Refinement of Holographic Optical Trap Arrays: Neither the Efficiency-Level Loss nor the Weight Update Improves on the Normalized-Error Loss of Schroff et al., the Safeguard Never Acts, and the Device Model in the Loop Carries the Gain, in Simulation",
+      "version": "0.05",
       "covers": [
-        "BS-1",
+        "BS-1"
+      ]
+    },
+    {
+      "kind": "manuscript",
+      "concept_doi": "10.5281/zenodo.24267369",
+      "title": "Flicker-Bounded Phase-Continuous Hologram Sequences for Moving Optical Traps: Smaller Phase Steps than Per-Frame Gerchberg-Saxton, a Higher Transient Minimum with a Linear Time Profile on the Short Move and a Lower One with the Minimal-Jerk Profile",
+      "version": "0.02",
+      "covers": [
         "BS-2"
       ]
     },
     {
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.24022462",
-      "title": "A Weighted-Cost Continuation Adds the Efficient Side of the Efficiency-Uniformity Trade-off of Holographic Optical Trap Arrays: Larger Hypervolume on One Lattice, No Better Uniform End, Mixed Margins on the Benchmark",
-      "version": "0.01",
+      "title": "A Weighted-Cost Continuation Adds the Efficient Side of the Efficiency-Uniformity Trade-off of Holographic Optical Trap Arrays: Larger Hypervolume on One Lattice, No Better Uniform End, Two Spread Wins and One Loss on the Ideal Device and Two Losses on the Benchmark's Device at One Second, No Hypervolume Win on the Benchmark",
+      "version": "0.02",
       "covers": [
         "BS-5"
       ]
@@ -155,7 +163,7 @@
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.24022464",
       "title": "Aberration-Robust Holograms for Optical Trap Arrays: Expected-Cost Optimization Lowers the Tail of the Intensity Spread Under Residual Aberrations Drawn from Its Design Prior, in Simulation",
-      "version": "0.01",
+      "version": "0.02",
       "covers": [
         "BS-4"
       ]
@@ -164,7 +172,7 @@
       "kind": "manuscript",
       "concept_doi": "10.5281/zenodo.24022470",
       "title": "A Learned Warm Start for Phase-Fixed Weighted Gerchberg-Saxton Does Not Beat an Early Phase Freeze: A Measured Negative Result on Holographic Optical Trap Arrays",
-      "version": "0.01",
+      "version": "0.03",
       "covers": [
         "BS-3"
       ]

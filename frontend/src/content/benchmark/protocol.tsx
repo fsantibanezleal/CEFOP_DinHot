@@ -98,7 +98,7 @@ export function ProtocolTopic() {
       <P
         en={
           <>
-            Two quantities decide most of the comparisons below. The uniformity factor of a challenger against its baseline is the ratio of their relative standard deviations, and the efficiency ratio is the ratio of their efficiencies; a claim about a proposed method states a threshold on both, so a method that is uniform because it wastes the light does not pass. The efficiency-uniformity trade-off of a method that returns a whole front is compared by hypervolume against the point (0, 0), the area of the union of the rectangles under its points, which is the one scalar that grows when a front moves toward better efficiency, better uniformity or both. The medians over the seeds of the document, and not single runs, feed both.
+            Two quantities decide most of the comparisons below. The uniformity factor of a challenger against its baseline is the ratio of their relative standard deviations, and the efficiency ratio is the ratio of their efficiencies; a claim about a proposed method states a threshold on both, so a method that is uniform because it wastes the light does not pass. The efficiency-uniformity trade-off of a method that returns a whole trade-off curve is compared by hypervolume against the point (0, 0), the area of the union of the rectangles under its points, which is the one scalar that grows when a curve moves toward better efficiency, better uniformity or both. The medians over the seeds of the document, and not single runs, feed both.
           </>
         }
         es={

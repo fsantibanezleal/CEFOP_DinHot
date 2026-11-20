@@ -20,8 +20,8 @@ Sources, all committed with the product:
   * ``data/derived/readiness.json``: what is real in the build.
 
 ``UNIT_ACCEPTANCE`` below is read from ``acceptance.json``, written by ``acceptance.py`` (run it first, same folder), which measures
-the acceptance quantity of each published method and of the aberration-robust hologram and the efficiency-uniformity Pareto front as
-its gate test computes it, on the current engine. The rows of the device-aware weighted GS and the flicker-bounded sequence come from ``beyond.json``, measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` (``beyond_rows.py``).
+the acceptance quantity of each published method and of the aberration-robust hologram and the efficiency-uniformity continuation as
+its gate test computes it, on the current engine. The rows of the device-aware conjugate-gradient refinement and the flicker-bounded sequence come from ``beyond.json``, measured by ``manuscripts/device-aware-refinement/data/measure.py`` (``beyond_rows.py``).
 ``QUOTED_LIVE`` holds the browser measurements, which a standard-library script cannot repeat; each names the section of
 ``docs/design/measured-resources.md`` or of the SDD that records it. The count of engine fixtures and their loosest tolerance are
 read from ``tests/fixtures/engine``.
@@ -38,6 +38,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import beyond_rows  # noqa: E402
+from extract_methods import OVER_BUDGET_FACTOR, WIN_MIN_DIFF_PCT, WIN_MIN_SEEDS, cell_result, require_contract  # noqa: E402
 from method_names import ID, NAME, RUN, label_name, named, slug  # noqa: E402,F401
 
 ROOT = HERE.parents[2]
@@ -191,6 +192,7 @@ def best_of(cells: dict, geometry: str, device: str, methods: set[str]) -> dict 
 
 def benchmark_summary(ladder: list[dict]) -> dict:
     r = load(DERIVED / "benchmark" / "results.json")
+    require_contract(r, "extract.py")
     rows = r["rows"]
     methods = sorted({x["method"] for x in rows})
     tier = {row["id"]: row["tier"] for row in ladder}
@@ -202,16 +204,42 @@ def benchmark_summary(ladder: list[dict]) -> dict:
     all_methods = sorted({s["method"] for s in r["skipped"]} | set(methods))
     geos = r["geometries"]
     point = [g["id"] for g in geos if g["n_traps"]]
-    it100, t1 = bench_cells(rows, "iterations", 100), bench_cells(rows, "time", 1.0)
+    # a cell is read at the longest time budget of the protocol (1 s in the release run)
+    read_time = max(r["protocol"]["budgets"]["time_s"])
+    it100, t1 = bench_cells(rows, "iterations", 100), bench_cells(rows, "time", read_time)
     by_geometry = {}
     for g in geos:
         for device in ("ideal", "device"):
-            if not any(gg == g["id"] and d == device for (_, gg, d) in it100):
+            # a cell is read at the time row only (equal wall clock, every method at its deadline): the best of each kind and the
+            # win rule of extract_methods.cell_result; the iteration rows give each method's own iterations and never a win
+            rows_1s = [x for (m, gg, d), x in t1.items() if gg == g["id"] and d == device]
+            if not rows_1s:
                 continue
-            cell = {"best": best_of(it100, g["id"], device, set(methods)), "best_1s": best_of(t1, g["id"], device, set(methods))}
+            res = cell_result([{**x, "budget_kind": "time"} for x in rows_1s])
+            cell = {"result": res["result"], "reason": res["reason"]}
             for gr in GROUPS:
-                cell[gr] = best_of(it100, g["id"], device, {m for m in methods if group_of(tier_of[m]) == gr})
+                x = res[gr]
+                cell[gr] = None if x is None else {"method": x["method"], "sigma": x["rel_std_pct"]["median"],
+                                                   "eff": x["efficiency"]["median"], "n_seeds": x["n_seeds"]}
             by_geometry[f"{g['id']}/{device}"] = cell
+    # B-2 (0.02.004): the ring cell on the C08 device with the proposed method's efficiency, spread, time and seeds next to the best
+    # published method of the cell, at the equal-time row and at 100 iterations (each method at its own work), never a bare win
+    ring = {}
+    ring_geo = next((g["id"] for g in geos if "ring" in g["name"]["en"].lower()), None)
+    for kind_name, cells in (("time", t1), ("iterations_100", it100)):
+        rows_r = [x for (m, gg, d), x in cells.items() if gg == ring_geo and d == "device"]
+        if rows_r:
+            res = cell_result([{**x, "budget_kind": "time"} for x in rows_r])
+            ring[kind_name] = {"geometry": ring_geo, "result": res["result"], "reason": res["reason"]}
+            for gr in GROUPS:
+                x = res[gr]
+                ring[kind_name][gr] = None if x is None else {
+                    "method": x["method"], "sigma": x["rel_std_pct"]["median"], "eff": x["efficiency"]["median"],
+                    "time_s": x["time_s"]["median"], "n_seeds": x["n_seeds"]}
+            b1 = cells.get(("B1", ring_geo, "device"))
+            ring[kind_name]["B1"] = None if b1 is None else {
+                "sigma": b1["rel_std_pct"]["median"], "eff": b1["efficiency"]["median"], "time_s": b1["time_s"]["median"],
+                "n_seeds": b1["n_seeds"]}
     by_method = {}
     for m in methods:
         out = {"group": group_of(tier_of[m])}
@@ -221,14 +249,16 @@ def benchmark_summary(ladder: list[dict]) -> dict:
                 "n": len(xs), "sigma": statistics.median(x["rel_std_pct"]["median"] for x in xs),
                 "q1": statistics.median(x["rel_std_pct"]["q1"] for x in xs), "q3": statistics.median(x["rel_std_pct"]["q3"] for x in xs),
                 "eff": statistics.median(x["efficiency"]["median"] for x in xs),
+                "evals": statistics.median(x["evaluations"]["median"] for x in xs),
+                "its": statistics.median(x["iterations"]["median"] for x in xs),
                 "time_s": statistics.median(x["time_s"]["median"] for x in xs)}
         by_method[m] = out
     return {"schema": r["schema"], "engine_version": r["engine_version"], "grids": r["protocol"]["grids"],
-            "seeds": r["protocol"]["seeds"], "budgets": r["protocol"]["budgets"], "geometries": geos, "point_geometries": point,
+            "seeds": r["protocol"]["seeds"], "budgets": r["protocol"]["budgets"], "geometries": geos, "point_geometries": point, "read_time_s": read_time,
             "rows": len(rows), "methods_measured": methods, "methods_in_protocol": all_methods,
             "skipped": len(r["skipped"]), "skipped_reasons": skipped,
             "seeds_min": min((x["n_seeds"] for x in rows), default=0), "seeds_max": max((x["n_seeds"] for x in rows), default=0),
-            "by_geometry": by_geometry, "by_method": by_method, "pareto": r.get("pareto") or [],
+            "by_geometry": by_geometry, "by_method": by_method, "ring": ring, "pareto": r.get("pareto") or [],
             "grid_100": {f"{m}/{g}/{d}": x["rel_std_pct"]["median"] for (m, g, d), x in it100.items()}}
 
 
@@ -418,21 +448,49 @@ def sig2(x: float) -> str:
 
 
 def _cell(b: dict | None) -> str:
-    return "n/a" if not b else f"{tex_escape(RUN[b['method']])} {sig(b['sigma'])}"
+    return "n/a" if not b else f"{tex_escape(RUN[b['method']])} {sig(b['sigma'])} (n={b['n_seeds']})"
+
+
+def _result(c: dict) -> str:
+    return "tie" if c["result"] == "tie" else c["result"]
 
 
 def table_benchmark(bench: dict) -> str:
     names = {g["id"]: g["name"]["en"] for g in bench["geometries"]}
+    t = f"{bench['read_time_s']:g}"
     out = ["\\begin{table}[t]\\centering\\footnotesize\n",
-           "\\caption{Benchmark, per geometry and device: the published method and the proposed method with the lowest median relative standard deviation "
-           "$\\sigma$ (\\%) at 100 iterations among those that reach at least half of the best median efficiency of the cell, and the best "
-           "method of all at a time budget of 1~s. Default parameters, medians over the seeds of each cell.}\\label{tab:benchmark}\n",
-           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.2\\textwidth} l >{\\raggedright\\arraybackslash}p{0.17\\textwidth} >{\\raggedright\\arraybackslash}p{0.2\\textwidth} >{\\raggedright\\arraybackslash}p{0.2\\textwidth}@{}}\\toprule Geometry & Device & Published & Proposed & Best at 1 s\\\\\\midrule\n"]
+           f"\\caption{{Benchmark at equal wall clock, per geometry and device: every phase of every method checks the {t}~s deadline between units of work, and a row whose median time exceeds {OVER_BUDGET_FACTOR:g} times it is over budget. The published "
+           "method and the proposed method with the lowest median relative standard deviation $\\sigma$ (\\%) among those of their kind that reach at "
+           "least half of the best median efficiency of the kind, with the seeds behind each ($n$), and the reading of the cell: one kind wins only if both have "
+           f"at least {WIN_MIN_SEEDS} seeds, their interquartile ranges do not overlap and their medians differ by at least {WIN_MIN_DIFF_PCT} percentage "
+           "points; otherwise the cell is a tie. Default parameters, medians over the seeds of each cell.}\\label{tab:benchmark}\n",
+           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.2\\textwidth} l >{\\raggedright\\arraybackslash}p{0.2\\textwidth} >{\\raggedright\\arraybackslash}p{0.2\\textwidth} l@{}}\\toprule Geometry & Device & Published & Proposed & Reading\\\\\\midrule\n"]
     for key, c in bench["by_geometry"].items():
         g, device = key.split("/")
         dev = "ideal" if device == "ideal" else "C08"
         out.append(f"{g} {tex_escape(names[g])} & {dev} & {_cell(c['published'])} & {_cell(c['proposed'])} & "
-                   f"{_cell(c['best_1s'])}\\\\\n")
+                   f"{_result(c)}\\\\\n")
+    out.append("\\bottomrule\\end{tabular}\\end{table}\n")
+    return "".join(out)
+
+
+def table_ring(bench: dict) -> str:
+    """B-2: the ring on the C08 device, the proposed method and the best published one with efficiency, spread, time and seeds."""
+    ring = bench["ring"]
+    out = ["\\begin{table}[t]\\centering\\footnotesize\n",
+           "\\caption{The ring on the C08 device: efficiency $e$, relative standard deviation $\\sigma$ (\\%), wall-clock seconds per hologram and seeds $n$ "
+           "of the device-aware refinement and of the best published method of the cell, at the equal-time row and at 100 iterations "
+           "(each method at its own work); reading by the rule of the benchmark.}\\label{tab:ring}\n",
+           "\\begin{tabular}{@{}l l r r r r l@{}}\\toprule Row & Method & $e$ & $\\sigma$ & time (s) & $n$ & Reading\\\\\\midrule\n"]
+    for key, label in (("time", "equal time"), ("iterations_100", "100 iterations")):
+        r = ring.get(key)
+        if not r:
+            continue
+        reading = r["result"] if key == "time" else "not read as a win"
+        for who, b in (("published", r["published"]), ("device-aware", r["B1"])):
+            if b:
+                name = tex_escape(RUN[b["method"]]) if who == "published" else "device-aware refinement"
+                out.append(f"{label} & {name} & {f(b['eff'], 3)} & {sig(b['sigma'])} & {b['time_s']:.3g} & {b['n_seeds']} & {reading}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
 
@@ -443,21 +501,22 @@ def table_bench_methods(bench: dict) -> str:
            f"\\caption{{Benchmark, per method: medians over the point-trap geometries the method ran on (of {n}) at 100 iterations with "
            "the default parameters, on the ideal device and on the C08 device. $\\sigma$ relative standard deviation (\\%): the median over the "
            "geometries of the cell medians and, in brackets, the median over the geometries of the first and third quartiles over the seeds "
-           "of each cell; $e$ efficiency; time wall-clock seconds under shared load.}\\label{tab:benchmethods}\n",
-           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.3\\textwidth} r r r r r r@{}}\\toprule Method & Geometries & $\\sigma$ ideal & $e$ ideal & time (s) & $\\sigma$ C08 & "
-           "$e$ C08\\\\\\midrule\n"]
+           "of each cell; $e$ efficiency; time wall-clock seconds, per hologram, on the ideal device and on the C08 device (medians over the geometries of the cell medians).}\\label{tab:benchmethods}\n",
+           "\\begin{tabular}{@{}>{\\raggedright\\arraybackslash}p{0.3\\textwidth} r r r r r r r@{}}\\toprule Method & Geometries & $\\sigma$ ideal & $e$ ideal & time ideal (s) & $\\sigma$ C08 & "
+           "$e$ C08 & time C08 (s)\\\\\\midrule\n"]
     order = sorted(bench["by_method"], key=lambda m: (m.startswith("B"), m))
     last = None
     for m in order:
         v = bench["by_method"][m]
         if v["group"] != last:
             last = v["group"]
-            out.append(f"\\multicolumn{{7}}{{@{{}}l}}{{\\textit{{{GROUP_LABEL.get(last, '')}}}}}\\\\\n")
+            out.append(f"\\multicolumn{{8}}{{@{{}}l}}{{\\textit{{{GROUP_LABEL.get(last, '')}}}}}\\\\\n")
         i, d = v["ideal"], v["device"]
         secs = (f"{i['time_s']:.0f}" if i["time_s"] >= 100 else f"{i['time_s']:.2g}") if i else ""
         ideal = (f"{i['n']} & {sig(i['sigma'])} [{sig(i['q1'])}, {sig(i['q3'])}] & {f(i['eff'], 3)} & {secs}" if i
                  else "0 & n/a & n/a & n/a")
-        dev = f"{sig(d['sigma'])} [{sig(d['q1'])}, {sig(d['q3'])}] & {f(d['eff'], 3)}" if d else "n/a & n/a"
+        dsecs = (f"{d['time_s']:.0f}" if d["time_s"] >= 100 else f"{d['time_s']:.2g}") if d else ""
+        dev = f"{sig(d['sigma'])} [{sig(d['q1'])}, {sig(d['q3'])}] & {f(d['eff'], 3)} & {dsecs}" if d else "n/a & n/a & n/a"
         out.append(f"{tex_escape(NAME[m])} & {ideal} & {dev}\\\\\n")
     out.append("\\bottomrule\\end{tabular}\\end{table}\n")
     return "".join(out)
@@ -632,8 +691,10 @@ def main() -> int:
     L.append(macro("benchFiveLost", ", ".join(lost) if lost else "none"))
     L.append(macro("benchFiveMargin", f"{max((b - a for _, a, b in five), default=0.0):.3f}"))
     no_rows = [m for m in bench["methods_in_protocol"] if m not in bench["methods_measured"]]
-    # main.tex names the reasons of these three methods (a vortex charge, a rearrangement block, the learned model's geometry)
-    if bench["rows"] > 100 and set(no_rows) != {ID[x] for x in ("vortex", "rearrange", "cgnet")}:
+    # sec_protocol.tex names the reasons of these methods: three refuse every geometry by their specification (a vortex charge, a
+    # rearrangement block, the learned model's geometry) and the learned warm start is left out (its network is not released;
+    # decision 10 (c) of the 0.02.004 plan)
+    if bench["rows"] > 100 and set(no_rows) != {ID[x] for x in ("vortex", "rearrange", "cgnet", "warmstart")}:
         raise SystemExit(f"the methods without a benchmark row are {no_rows}: revise the sentence of main.tex that names their reasons")
     L.append(macro("benchNoRows", " , ".join(tex_escape(RUN[m]) for m in no_rows).replace(" , ", ", ") or "none"))
     L.append(macro("benchNNoRows", len(no_rows)))
@@ -643,14 +704,10 @@ def main() -> int:
     for device, nm in (("ideal", "Ideal"), ("device", "Device")):
         cells = [c for k, c in bench["by_geometry"].items() if k.endswith("/" + device)]
         L.append(macro(f"benchGeo{nm}", len(cells)))
-        # a cell whose best spreads of two or more tiers sit below the file's resolution is a tie, not a win of one tier
-        def tied(c: dict) -> bool:
-            return sum(1 for gr in GROUPS if c[gr] and c[gr]["sigma"] < 1e-3) >= 2
-
+        # the win rule of extract_methods.cell_result at the time row: seeds, interquartile ranges and the 0.01 point floor
         for gr, gn in (("published", "Published"), ("proposed", "Proposed")):
-            L.append(macro(f"benchWins{nm}{gn}", sum(1 for c in cells if c["best"] and not tied(c)
-                                                     and bench["by_method"][c["best"]["method"]]["group"] == gr)))
-        L.append(macro(f"benchTies{nm}", sum(1 for c in cells if tied(c))))
+            L.append(macro(f"benchWins{nm}{gn}", sum(1 for c in cells if c["result"] == gr)))
+        L.append(macro(f"benchTies{nm}", sum(1 for c in cells if c["result"] == "tie")))
         meds = [v[device] for v in bench["by_method"].values() if v[device]]
         top = max((v["eff"] for v in meds), default=0.0)
         kept = sorted(v["sigma"] for v in meds if v["eff"] >= 0.5 * top)
@@ -661,6 +718,36 @@ def main() -> int:
         L.append(macro(f"benchBest{nm}", tex_escape(RUN[lead["method"]]) if lead else "n/a"))
         L.append(macro(f"benchBest{nm}Sigma", sig(lead["sigma"]) if lead else "n/a"))
         L.append(macro(f"benchBest{nm}Eff", f(lead["eff"], 3) if lead else "n/a"))
+    for key, nm in (("time", "Time"), ("iterations_100", "Iter")):
+        r = bench["ring"].get(key)
+        if not r:
+            continue
+        for who, b, tag in (("published", r["published"], "Pub"), ("B1", r["B1"], "BOne")):
+            if b:
+                L.append(macro(f"ring{nm}{tag}Method", tex_escape(RUN[b["method"]]) if who == "published" else "device-aware refinement"))
+                L.append(macro(f"ring{nm}{tag}Eff", f(b["eff"], 3)))
+                L.append(macro(f"ring{nm}{tag}Sigma", sig(b["sigma"])))
+                L.append(macro(f"ring{nm}{tag}Sec", f"{b['time_s']:.3g}"))
+                L.append(macro(f"ring{nm}{tag}N", b["n_seeds"]))
+        L.append(macro(f"ring{nm}Reading", r["result"] if key == "time" else "not read as a win"))
+    for device, nm in (("ideal", "Ideal"), ("device", "Device")):
+        for mid, tag in (("B1", "BOne"), (ID["gs"], "GS"), (ID["pfwgs"], "PF")):
+            v = bench["by_method"].get(mid, {}).get(device)
+            if v:
+                L.append(macro(f"benchSec{nm}{tag}", f"{v['time_s']:.3g}"))
+    # M-3 and m-5: the warm-start control and the companion statistics, from the companion papers' own data and named as they state them
+    wn = (HERE.parents[1] / "learned-warm-start" / "data" / "warm_numbers.tex").read_text(encoding="utf-8")
+    wm = {k: v for k, v in re.findall(r"\\newcommand\{\\(\w+)\}\{([^}]*)\}", wn)}
+    wj = load(HERE.parents[1] / "learned-warm-start" / "data" / "warm.json")
+    rc = wj["ratios"]["R12_over_R3"]
+    for k, key in (("wsPaperN", "nGeo"), ("wsPaperRandomIt", "itRTwelve"), ("wsPaperControlIt", "itRThree"), ("wsPaperModelIt", "itNThree"),
+                   ("wsPaperNeverFull", "neverRTwelve"), ("wsPaperNeverControl", "neverRThree"), ("wsPaperNeverModel", "neverNThree"),
+                   ("wsPaperEffDiffControl", "effdRThree"), ("wsPaperEffDiffModel", "effdNThree")):
+        L.append(macro(k, wm[key]))
+    L.append(macro("wsPaperControlFactor", f(rc["ratio"], 2)))
+    L.append(macro("wsPaperControlFactorLo", f(rc["ci"][0], 2)))
+    L.append(macro("wsPaperControlFactorHi", f(rc["ci"][1], 2)))
+    L.append(macro("wsPaperStatistic", "median iterations to 1 percent over the geometries, ratio with its 95 percent bootstrap interval; source: the warm-start paper's warm.json"))
     # feedback
     for short, nm in (("C01", "COne"), ("C02", "CTwo"), ("C03", "CThree"), ("C13", "CThirteen")):
         s = fb[short]
@@ -735,6 +822,7 @@ def main() -> int:
     (HERE / "table_results.tex").write_text(table_results(cases), encoding="utf-8")
     (HERE / "table_benchmark.tex").write_text(table_benchmark(bench), encoding="utf-8")
     (HERE / "table_bench_methods.tex").write_text(table_bench_methods(bench), encoding="utf-8")
+    (HERE / "table_ring.tex").write_text(table_ring(bench), encoding="utf-8")
     print("wrote studio.json, studio_numbers.tex and 7 tables;", "tiers", tiers, "cases", len(cases), "baked", len(baked))
     return 0
 

@@ -1,0 +1,18 @@
+\begingroup\scriptsize
+\begin{longtable}{@{}l l c l l@{}}
+\caption{Nested fields of the contract \texttt{readiness}, generated from its schema file: the path of each field, its type, whether it is required, its unit and the range or constant the schema states.}\label{tab:fields-readiness}\\
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit & Range\\\midrule\endhead
+\texttt{schema} & const & yes & - & = example.readiness/v1\\
+\texttt{product\_version} & string & yes & - & pattern\\
+\texttt{catalog\_sha256} & string & yes & - & pattern\\
+\texttt{contracts} & array of object & yes & - & 1 to items\\
+\texttt{contracts[].id} & string & yes & - & pattern\\
+\texttt{contracts[].version} & string & yes & - & pattern\\
+\texttt{contracts[].status} & enum & yes & - & \{real, active\}\\
+\texttt{contracts[].provenance} & enum & yes & - & \{real, stub, simulator, fixture, baseline, ...\}\\
+\texttt{contracts[].state} & enum & yes & - & \{available, partial, stale, provider, training, ...\}\\
+\texttt{contracts[].reason} & object or null & yes & - & -\\
+\texttt{contracts[].missing} & array of string & yes & - & -\\
+\bottomrule\end{longtable}
+\endgroup

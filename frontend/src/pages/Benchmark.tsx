@@ -1,5 +1,5 @@
 // The Benchmark page of DinHot (ADR-0017 section 2.1, guide 07): the protocol, the comparison of every method on every geometry at the budget and
-// device the reader chooses, the three tiers against each other, the Pareto fronts, the beyond-the-state-of-the-art claims each with its
+// device the reader chooses, the three tiers against each other, the efficiency-uniformity continuation, the beyond-the-state-of-the-art claims each with its
 // measurement or its measured negative, the learned models against their baselines, the degradation curves, the in-browser timing of the live
 // engine, the provenance of every row and the limits. Every number is read at run time from the committed documents (the benchmark results and the
 // model metrics, through the artifact loaders); the acceptance measurements the matrix cannot reproduce are recorded in `content/benchmark/recorded.ts`
@@ -61,14 +61,14 @@ export function Benchmark() {
               {
                 id: 'others',
                 label: t('Volume, large and shaped, G5 to G7', 'Volumen, grandes y con forma, G5 a G7'),
-                tabs: ['G5', 'G6', 'G7'].map(geo),
+                tabs: ['G5', 'G6a', 'G6b', 'G7'].map(geo),
               },
               {
                 id: 'comparison',
                 label: t('Do the proposed methods improve on the published ones?', '¿Mejoran los métodos propuestos a los publicados?'),
                 tabs: [
                   { id: 'published-proposed', label: t('Published and proposed', 'Publicados y propuestos'), content: <PublishedProposedTopic /> },
-                  { id: 'pareto', label: t('Pareto fronts', 'Frentes de Pareto'), content: <ParetoTopic /> },
+                  { id: 'pareto', label: t('Efficiency-uniformity continuation', 'Continuación eficiencia-uniformidad'), content: <ParetoTopic /> },
                   { id: 'claims', label: t('Proposed-method claims', 'Afirmaciones de los métodos propuestos'), content: <ClaimsTopic /> },
                   { id: 'learned', label: t('Learned models', 'Modelos aprendidos'), content: <LearnedTopic /> },
                 ],

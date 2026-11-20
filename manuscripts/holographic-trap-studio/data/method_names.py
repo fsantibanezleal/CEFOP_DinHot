@@ -19,9 +19,9 @@ NAME = {
     "M14": "Zernike correction and sensorless modal recovery", "M15": "Laguerre-Gaussian vortex traps",
     "M16": "Hungarian assignment and linear phase interpolation", "M17": "Multi-plane CNN hologram",
     "M18": "Optimal-transport initialized MRAF", "M19": "Volumetric 3D GS",
-    "B1": "Device-aware weighted GS", "B2": "Flicker-bounded phase-continuous sequence",
+    "B1": "Device-aware conjugate-gradient refinement", "B2": "Flicker-bounded phase-continuous sequence",
     "B3": "Learned warm start for phase-fixed WGS", "B4": "Aberration- and pointing-robust hologram",
-    "B5": "Efficiency-uniformity Pareto front",
+    "B5": "Efficiency-uniformity continuation",
 }
 RUN = {
     "M01": "superposition of prisms and lenses", "M02": "random superposition", "M03": "random mask",
@@ -32,9 +32,9 @@ RUN = {
     "M14": "Zernike correction", "M15": "Laguerre-Gaussian vortex traps",
     "M16": "Hungarian assignment with phase interpolation", "M17": "multi-plane CNN hologram",
     "M18": "optimal-transport initialized MRAF", "M19": "volumetric 3D GS",
-    "B1": "device-aware weighted GS", "B2": "flicker-bounded phase-continuous sequence",
+    "B1": "device-aware conjugate-gradient refinement", "B2": "flicker-bounded phase-continuous sequence",
     "B3": "learned warm start", "B4": "aberration-robust hologram",
-    "B5": "efficiency-uniformity Pareto front",
+    "B5": "efficiency-uniformity continuation",
 }
 SLUG = {
     "M01": "prisms", "M02": "randsup", "M03": "randmask", "M04": "gs", "M05": "gaa", "M06": "wgs", "M07": "pfwgs",

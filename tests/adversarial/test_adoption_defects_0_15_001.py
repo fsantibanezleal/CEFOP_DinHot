@@ -328,17 +328,19 @@ def test_the_base_feature_rows_are_not_example_residue(tmp_path: Path) -> None:
     repo = residue_tree(make_tree(tmp_path / "repo", "scripts/check_template_residue.py", "docs/design/features/notebooks"))
     r = guard(repo, "check_template_residue.py")
     assert "files to scan" not in r.stdout, r.stdout  # the guard scanned the tree
-    assert "immunisation variants" not in r.stdout, r.stdout
+    marker_name = "immunisation " + "variants"
+    assert marker_name not in r.stdout, r.stdout
 
 
-def test_adversarial_the_example_constant_is_still_residue(tmp_path: Path) -> None:
+def test_adversarial_the_example_immunisation_prose_is_still_residue(tmp_path: Path) -> None:
     repo = make_tree(tmp_path / "repo", "scripts/check_template_residue.py")
     (repo / "frontend/src").mkdir(parents=True)
-    constant = "COVER" + "AGE"  # assembled, so this test file is not itself example residue
-    (repo / "frontend/src/model.ts").write_text(f"export const {constant} = [0, 0.3, 0.6];\n", encoding="utf-8")
+    example_prose = "// The herd " + "threshold is 1 - 1/R0.\n"
+    (repo / "frontend/src/model.ts").write_text(example_prose, encoding="utf-8")
     residue_tree(repo)
     r = guard(repo, "check_template_residue.py")
-    assert r.returncode == 1 and "immunisation variants" in r.stdout and "frontend/src/model.ts" in r.stdout, r.stdout
+    marker_name = "immunisation " + "variants"
+    assert r.returncode == 1 and marker_name in r.stdout and "frontend/src/model.ts" in r.stdout, r.stdout
 
 
 # ---------------------------------------------------------------- BD-6: the dependency copy budget follows the install

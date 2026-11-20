@@ -18,9 +18,9 @@ Eight topics, from simple to complex, in two trees:
 
 1. `01-fourier-optics`: where a phase pattern sends the light, the numbers that judge a trap array, and the engine-reference, readiness and API contracts.
 2. `02-analytic-holograms`: the one-step holograms, the baselines, and the Laguerre-Gaussian vortex traps.
-3. `03-gerchberg-saxton`: the Gerchberg-Saxton family, phase-fixed WGS against slmsuite, and device-aware WGS.
+3. `03-gerchberg-saxton`: the Gerchberg-Saxton family, phase-fixed WGS against slmsuite, and device-aware conjugate-gradient refinement.
 4. `04-shaped-potentials`: what a shaped potential asks, the signal and the noise region, MRAF and optimal-transport starts for shaped targets.
-5. `05-optimization`: conjugate gradient and Wirtinger-Adam on the explicit cost, and the efficiency-uniformity front.
+5. `05-optimization`: conjugate gradient and Wirtinger-Adam on the explicit cost, and the efficiency-uniformity continuation.
 6. `06-device-and-aberrations`: what the device costs, Zernike correction, crosstalk-aware descent and robust holograms.
 7. `07-feedback-and-dynamics`: a bead in the computed trap, atom rearrangement, camera feedback, flicker-bounded moves.
 8. `08-learned-holography`: what the released network takes and returns, how it learns without labels, the network against the volumetric GS, and the refused warm start.

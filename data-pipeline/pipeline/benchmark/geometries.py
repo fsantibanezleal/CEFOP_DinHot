@@ -3,14 +3,15 @@ code the bake uses (``core/score.py``) and runs methods through ``stages/infer.p
 
 Lengths are in Fourier units ``u = lambda f / (n_pix p)`` (one unit is ``pad`` focal bins). The benchmark optics keep ``u``
 and the focal bin fixed across grids (``f`` scales with ``n_pix``), so a geometry means the same thing at 64, 128, 256 and
-512 pixels. Grids: 128 for G1 to G5 and G7, 256 for G6 (the release protocol; the cases run at their own grids). ``reduced`` shrinks counts and grids for the tests only.
+512 pixels. Grids: 128 for G1 to G5 and G7, 256 for G6a and G6b (the release protocol; the cases run at their own grids). ``reduced`` shrinks counts and grids for the tests only.
 
 - G1 square 10 x 10 at 8 u; G2 ring of 36 traps; G3 random 100 traps with at least 3 u between them; G4 quasi-periodic 119
   (cut-and-project of Z^5 to a five-fold set, scaled 7 u: the quasi-periodic set of Polin et al. is not published as
   coordinates, so this set is DinHot's own); G5 3D lattice 5 x 5 x 3 at 8 u in the plane and 8 um between planes;
-  G6 large arrays, two targets pooled (the benchmark schema holds one geometry id per row, as for G7): seed ``s`` runs the
-  32 x 32 = 1024 lattice at 6 u when ``s`` is even and the disordered 819 set of Kim et al. 2019 (traps on integer bins at
-  least 5 bins apart, ``cases.library.disordered_set``, DinHot's own draw: the coordinates are not published) when odd; G7 shaped fields, four targets pooled (seed ``s`` runs shape ``s mod 4``): ring, disc,
+  G6a the 32 x 32 = 1024 lattice at 6 u and G6b the disordered 819 set of Kim et al. 2019 (traps on integer bins at least
+  5 bins apart, ``cases.library.disordered_set``, DinHot's own draw: the coordinates are not published): two geometries of
+  their own since 0.02.004 (contract benchmark-results 1.1.0), every seed runs both, so a row never mixes the two targets
+  (until 0.02.003 the two were pooled by seed parity and a median read one of each on 2 seeds); G7 shaped fields, four targets pooled (seed ``s`` runs shape ``s mod 4``): ring, disc,
   line, Laguerre-Gaussian ring.
 """
 from __future__ import annotations
@@ -31,10 +32,11 @@ GEOMETRIES = {
     "G3": ({"en": "Random 100 traps", "es": "100 trampas aleatorias"}, 100, 2),
     "G4": ({"en": "Quasi-periodic 119", "es": "Cuasiperiódica 119"}, 119, 2),
     "G5": ({"en": "3D lattice 5 x 5 x 3", "es": "Red 3D 5 x 5 x 3"}, 75, 3),
-    "G6": ({"en": "Large: 32 x 32 and disordered 819", "es": "Grande: 32 x 32 y desordenada de 819"}, 1024, 2),
+    "G6a": ({"en": "Large lattice 32 x 32", "es": "Red grande 32 x 32"}, 1024, 2),
+    "G6b": ({"en": "Disordered 819", "es": "Desordenada de 819"}, 819, 2),
     "G7": ({"en": "Shaped fields (ring, disc, line, LG ring)", "es": "Campos con forma (anillo, disco, línea, anillo LG)"}, 0, 2),
 }
-FULL_GRID = {"G1": 128, "G2": 128, "G3": 128, "G4": 128, "G5": 128, "G6": 256, "G7": 128}
+FULL_GRID = {"G1": 128, "G2": 128, "G3": 128, "G4": 128, "G5": 128, "G6a": 256, "G6b": 256, "G7": 128}
 DEVICE = {"bit_depth": 4, "crosstalk": {"sigma_per_px": 1.24, "q": 1.8}, "upsample": 3, "fill_factor": 0.85,
           "flicker_rad": 0.05, "lut_gamma": 1.0}   # the C08 device
 
@@ -118,13 +120,12 @@ def record(geometry: str, *, device: bool, seed: int, reduced: bool = False, sha
     elif geometry == "G5":
         n, sp = (2, 4) if small else (5, 8)
         traps = _records(T.lattice_3d(n, n, 3, sp * u, 8.0))
-    elif geometry == "G6":
+    elif geometry == "G6a":
         n, sp = (6, 3) if small else (32, 6)
-        if seed % 2 == 1:     # the disordered set (the lattice is the even seeds)
-            kw = dict(n=20, half_bins=12, min_bins=3, seed=GEOMETRY_SEED + 819) if small else dict(DISORDERED_819)
-            traps = disordered_set(s=setup_record(n_pix), **kw)
-        else:
-            traps = _records(T.square_grid(n, n, sp * u))
+        traps = _records(T.square_grid(n, n, sp * u))
+    elif geometry == "G6b":
+        kw = dict(n=20, half_bins=12, min_bins=3, seed=GEOMETRY_SEED + 819) if small else dict(DISORDERED_819)
+        traps = disordered_set(s=setup_record(n_pix), **kw)
     elif geometry == "G7":
         target = _shape_target(shape or SHAPES[seed % 4], n_pix)
         traps = None

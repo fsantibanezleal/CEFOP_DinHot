@@ -191,6 +191,42 @@ def test_adversarial_receipt_current_contract_and_recursive_pins(workflow, fixtu
         workflow.check_shipped(root, config)
 
 
+def strict_config(config):
+    """A copy of the product's config on the template's strict readiness path: without ``readiness_provider`` (RP-032) the
+    inventory and state rules below are the base's own, and a provider product whose record has the template shape keeps them."""
+    strict = json.loads(json.dumps(config))
+    strict.pop("readiness_provider", None)
+    return strict
+
+
+def has_template_shape(ready):
+    """The template's readiness record: a ``contracts`` list of rows with an ``id`` and a ``state``."""
+    rows = ready.get("contracts") if isinstance(ready, dict) else None
+    return isinstance(rows, list) and bool(rows) and all(isinstance(r, dict) and "id" in r and "state" in r for r in rows)
+
+
+def test_adversarial_provider_product_keeps_strict_refusals_on_a_provider_free_copy(workflow):
+    """RP-032: a declared provider delegates the inventory, so the planted refusals run on the config copy without it. This gate
+    never skips: it plants a provider on the checkout's own config and a template-shaped record built from its catalog."""
+    config = {**workflow.settings(ROOT), "readiness_provider": "scripts/local/provider.py"}
+    strict = strict_config(config)
+    assert "readiness_provider" in config and "readiness_provider" not in strict
+    raw = (ROOT / "docs/contracts/catalog.md").read_bytes().replace(b"\r\n", b"\n")
+    ids = sorted(catalog_ids(ROOT) - set(config.get("readiness_excludes", [])))
+    assert ids, "the checkout has no catalog rows to plant against"
+    ready = {"catalog_sha256": hashlib.sha256(raw).hexdigest(), "contracts": [{"id": i, "state": "available"} for i in ids]}
+    assert has_template_shape(ready) and not has_template_shape({"schema": "inverse-earth.readiness/v1", "state": "available"})
+    workflow.check_readiness_inventory(ROOT, strict, ready)
+    for bad in ({**ready, "contracts": ready["contracts"][:-1]}, {**ready, "catalog_sha256": "0" * 64}):
+        with pytest.raises(workflow.Failure):
+            workflow.check_readiness_inventory(ROOT, strict, bad)
+        workflow.check_readiness_inventory(ROOT, config, bad)  # the provider path returns: the product's checker judges
+    missing = json.loads(json.dumps(ready))
+    missing["contracts"][0]["state"] = "missing"
+    with pytest.raises(workflow.Failure, match="Partial readiness"):
+        workflow.check_readiness_states(ROOT, {**strict, "readiness_exceptions": {}}, missing, ROOT)
+
+
 def test_adversarial_actual_readiness_inventory(workflow, tmp_path):
     # Invoke the real compute API, preserving its genuine missing states. No engine solves.
     code = (
@@ -209,7 +245,13 @@ def test_adversarial_actual_readiness_inventory(workflow, tmp_path):
     assert result.returncode == 0, result.stderr
     ready = json.loads(result.stdout)
     config = workflow.settings(ROOT)
-    workflow.check_readiness_inventory(ROOT, config, ready)
+    strict = strict_config(config)
+    if config.get("readiness_provider"):
+        # RP-032: a declared provider delegates the inventory to the product's guarded checker, so the base function returns
+        workflow.check_readiness_inventory(ROOT, config, {"contracts": [{"id": "unknown", "state": "available"}]})
+        if not has_template_shape(ready):
+            pytest.skip("RP-032: the product's readiness record lacks the template shape (contracts rows with id and state)")
+    workflow.check_readiness_inventory(ROOT, strict, ready)
     # the inventory is the product's own catalog less its declared exclusions, never a count of the template's or another
     # product's, and never inferred from an optional pipeline module (#89, #102: ChancaDEM has a registry and 12 rows)
     expected = catalog_ids(ROOT) - set(config.get("readiness_excludes", []))
@@ -222,9 +264,9 @@ def test_adversarial_actual_readiness_inventory(workflow, tmp_path):
         ready["contracts"] + [{"id": "unknown", "state": "available"}],
     ):
         with pytest.raises(workflow.Failure, match="inventory"):
-            workflow.check_readiness_inventory(ROOT, config, {**ready, "contracts": bad_rows})
+            workflow.check_readiness_inventory(ROOT, strict, {**ready, "contracts": bad_rows})
     with pytest.raises(workflow.Failure, match="stale admission catalog"):
-        workflow.check_readiness_inventory(ROOT, config, {**ready, "catalog_sha256": "0" * 64})
+        workflow.check_readiness_inventory(ROOT, strict, {**ready, "catalog_sha256": "0" * 64})
 
 
 def test_adversarial_custom_product_provider_admits_shipped_readiness_shape(workflow, fixture_repo):
@@ -631,18 +673,24 @@ def test_adversarial_real_product_generation_admission(workflow, monkeypatch):
     runtime = (ROOT / config["primary_environment"]).resolve(strict=True)
     monkeypatch.setenv("CAOS_VENVS_ROOT", str(runtime.parents[1]))
     ready = json.loads((ROOT / "data/derived/readiness.json").read_text(encoding="utf-8"))
+    # the positive admission runs with the real config: under a provider (RP-032) it runs the product's checker on the shipped files
     workflow.check_readiness_inventory(ROOT, config, ready)
     workflow.check_readiness_states(ROOT, config, ready, ROOT)
-    available = next(row["id"] for row in ready["contracts"] if row["state"] == "available")
-    for state in ("missing", None, "dormant", "partial"):
-        bad = json.loads(json.dumps(ready))
-        next(row for row in bad["contracts"] if row["id"] == available)["state"] = state
-        with pytest.raises(workflow.Failure, match="Partial readiness"):
-            workflow.check_readiness_states(ROOT, config, bad, ROOT)
-    declared = config.get("readiness_exceptions", {})
-    assert all(any(row["id"] == name and row["state"] == state for row in ready["contracts"])
-               for name, state in declared.items())
+    shaped = has_template_shape(ready)
+    if shaped:
+        strict = strict_config(config)
+        available = next(row["id"] for row in ready["contracts"] if row["state"] == "available")
+        for state in ("missing", None, "dormant", "partial"):
+            bad = json.loads(json.dumps(ready))
+            next(row for row in bad["contracts"] if row["id"] == available)["state"] = state
+            with pytest.raises(workflow.Failure, match="Partial readiness"):
+                workflow.check_readiness_states(ROOT, strict, bad, ROOT)
+        declared = config.get("readiness_exceptions", {})
+        assert all(any(row["id"] == name and row["state"] == state for row in ready["contracts"])
+                   for name, state in declared.items())
     assert all((ROOT / name).is_file() for name in config.get("stage_inputs", []))
+    if not shaped:
+        pytest.skip("RP-032: the planted-state refusals need the template-shaped record; the provider admission above ran")
 
 
 def test_adversarial_dinhot_readiness_admission(workflow, monkeypatch):

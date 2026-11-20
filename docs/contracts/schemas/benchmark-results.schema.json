@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "benchmark-results.schema.json",
   "title": "BenchmarkResults",
-  "description": "Contract 2 (artifact), catalog row benchmark-results 1.0.0: the protocol's table, method by geometry by budget, written by data-pipeline/pipeline/stages/benchmark.py to data/derived/benchmark/results.json. Missing data: a cell that was not run is absent from rows and listed in skipped.",
+  "description": "Contract 2 (artifact), catalog row benchmark-results 2.0.0: the protocol's table, method by geometry by budget, written by data-pipeline/pipeline/stages/benchmark.py to data/derived/benchmark/results.json. Missing data: a cell that was not run is absent from rows and listed in skipped.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -80,7 +80,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^G[1-7]$"
+            "pattern": "^G([1-5]|6[ab]|7)$"
           },
           "name": {
             "$ref": "#/$defs/text"
@@ -114,7 +114,8 @@
           "uniformity",
           "rel_std_pct",
           "time_s",
-          "iterations"
+          "iterations",
+          "evaluations"
         ],
         "properties": {
           "method": {
@@ -122,7 +123,7 @@
           },
           "geometry": {
             "type": "string",
-            "pattern": "^G[1-7]$"
+            "pattern": "^G([1-5]|6[ab]|7)$"
           },
           "device": {
             "enum": [
@@ -163,6 +164,9 @@
           },
           "iterations": {
             "$ref": "#/$defs/stat"
+          },
+          "evaluations": {
+            "$ref": "#/$defs/stat"
           }
         }
       }
@@ -180,7 +184,7 @@
         "properties": {
           "geometry": {
             "type": "string",
-            "pattern": "^G[1-7]$"
+            "pattern": "^G([1-5]|6[ab]|7)$"
           },
           "method": {
             "const": "B5"
@@ -227,7 +231,7 @@
           },
           "geometry": {
             "type": "string",
-            "pattern": "^G[1-7]$"
+            "pattern": "^G([1-5]|6[ab]|7)$"
           },
           "reason": {
             "$ref": "#/$defs/text"

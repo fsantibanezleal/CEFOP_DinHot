@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure the acceptance quantity of every published method of DinHot, the aberration-robust hologram and the efficiency-uniformity Pareto front, and write ``acceptance.json``.
+"""Measure the acceptance quantity of every published method of DinHot, the aberration-robust hologram and the efficiency-uniformity continuation, and write ``acceptance.json``.
 
 Each ``measure_<id>`` below computes the quantity of its method's gate test, on the same setup, task, seeds and budget as that
 test, with the method modules and ``pipeline.model.holo.core`` of the current engine, and returns the numbers and the text of
@@ -7,7 +7,7 @@ its row of the acceptance table of the technical report (``extract.py`` reads th
 test each function mirrors is named in its docstring and in the ``source`` field of the row. The script measures, it does not
 assert a pass (ADR-0069): a number that misses its bar is written as measured.
 
-The device-aware weighted GS and the flicker-bounded sequence are measured by ``manuscripts/device-aware-flicker-bounded/data/measure.py`` and are not part of this table.
+The device-aware conjugate-gradient refinement and the flicker-bounded sequence are measured by ``manuscripts/device-aware-refinement/data/measure.py`` and are not part of this table.
 The multi-plane CNN hologram needs the released network, onnxruntime and the held-out file, which the pipeline environment does not have: its row takes
 the values from ``data/derived/models/metrics.json``, the committed artifact its gate test reads, and says so.
 
@@ -587,7 +587,7 @@ def measure_B5() -> dict:
     hv_base = B5.hypervolume(np.array(list(base.values())))
     dom = {n: int(np.sum((front[:, 0] >= base[n][0]) & (front[:, 1] > base[n][1]))) for n in (ID["gs"], ID["gaa"])}
     text = (f"hypervolume {res.meta['hypervolume']:.4f} against {hv_base:.4f} for the union of the {nm('gs')}, {nm('gaa')}, {nm('wgs')} and {nm('directsearch')} points; "
-            f"{dom[ID['gs']]} front points dominate {nm('gs')} and {dom[ID['gaa']]} dominate {nm('gaa')}")
+            f"{dom[ID['gs']]} points of the continuation's curve dominate {nm('gs')} and {dom[ID['gaa']]} dominate {nm('gaa')}")
     return row(ID["paretofront"], text, "1", T_BEYOND + "test_b5_pareto.py",
                {"hypervolume": float(res.meta["hypervolume"]), "hypervolume_base": float(hv_base), "dominating_m04": dom["M04"],
                 "dominating_m05": dom["M05"], "front_seconds": elapsed})

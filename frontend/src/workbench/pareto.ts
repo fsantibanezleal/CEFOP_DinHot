@@ -1,7 +1,7 @@
 // V6, the Pareto view: which benchmark cell it opens on, which method it recommends and why, and the seed intervals it draws. Pure functions
 // of the benchmark document (`benchmark-results`) and of the case, so the view shows whatever the document holds and a test can plant one.
 import { formatNumber } from '@fasl-work/caos-app-shell';
-import { nameOf, type Budget, type Device, type Picked } from '../content/benchmark/data';
+import { isOverBudget, nameOf, type Budget, type Device, type Picked } from '../content/benchmark/data';
 import type { BenchmarkResults } from '../lib/contract.types';
 
 type Lang = 'en' | 'es';
@@ -12,7 +12,7 @@ export const EFF_WINDOW = 0.05;
 /** The budget the view opens on: 100 iterations, the longest iteration budget of the protocol. */
 export const OPENING_BUDGET: Budget = { kind: 'iterations', value: 100 };
 
-/** One colour per series of the view (shell tokens), none repeated: the benchmark's methods, the front, this case's methods and the recommendation are told apart by colour and size. */
+/** One colour per series of the view (shell tokens), none repeated: the benchmark's methods, the continuation points of B5, this case's methods and the recommendation are told apart by colour and size. */
 export const SERIES_COLORS = {
   published: '--color-accent',
   proposed: '--color-accent-2',
@@ -91,7 +91,8 @@ export interface Recommendation {
 }
 
 /** The recommended method of a cell (see EFF_WINDOW), or null when the cell has no rows. Computed from the rows, never typed. */
-export function recommend(rows: readonly Picked[]): Recommendation | null {
+export function recommend(all: readonly Picked[]): Recommendation | null {
+  const rows = all.filter((p) => !isOverBudget(p.row)); // a time row past its budget is not at equal time: shown and labelled, never recommended
   if (!rows.length) return null;
   const best = rows.reduce((a, b) => (b.row.efficiency.median > a.row.efficiency.median ? b : a));
   const inside = rows.filter((p) => best.row.efficiency.median - p.row.efficiency.median <= EFF_WINDOW + 1e-12).sort((a, b) => a.row.rel_std_pct.median - b.row.rel_std_pct.median);
@@ -139,7 +140,7 @@ export function intervalDots(rows: readonly Picked[], k = 9): { x: number[]; y: 
   return { x, y };
 }
 
-/** A point of the view's chart: a method of the benchmark (published or proposed), a point of the front, or a method of this case. */
+/** A point of the view's chart: a method of the benchmark (published or proposed), a point of the efficiency-uniformity continuation, or a method of this case. */
 export interface ChartEntry {
   x: number;
   y: number;
@@ -147,13 +148,15 @@ export interface ChartEntry {
   method?: string;
 }
 
-/** One chart row per uniformity value: entries of different kinds at one x share a row, one column each; two entries of one kind at one x
- * keep separate rows (a column holds one value). The chart's cursor snaps to the first row at an x, so a second row at the same x could not
- * be read by the keyboard (gate G20 at 390 px, case C08: a published and a proposed method both at uniformity 0.717). Sorted by x. */
+/** One chart row per uniformity value: entries of different kinds at one x share a row, one column each, and so do entries of one kind at
+ * the same point (equal x and y: one mark drawn, every one named in the readout); two entries of one kind at one x with different y keep
+ * separate rows (a column holds one value). The chart's cursor snaps to the first row at an x, so a second row at the same x could not be
+ * read by the keyboard (gate G20 at 390 px, case C08: a published and a proposed method both at uniformity 0.717; gate G20 at every size,
+ * case C03 in 0.02.004: two published methods with the same median efficiency and uniformity on G6a). Sorted by x. */
 export function mergeTies(entries: readonly ChartEntry[]): { x: number; items: ChartEntry[] }[] {
   const rows: { x: number; items: ChartEntry[] }[] = [];
   for (const e of [...entries].sort((a, b) => a.x - b.x)) {
-    const row = rows.find((r) => r.x === e.x && !r.items.some((i) => i.kind === e.kind));
+    const row = rows.find((r) => r.x === e.x && r.items.every((i) => i.kind !== e.kind || i.y === e.y));
     if (row) row.items.push(e);
     else rows.push({ x: e.x, items: [e] });
   }

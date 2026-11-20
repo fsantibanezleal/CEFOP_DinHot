@@ -10,6 +10,8 @@ $$\phi_j = \Delta_j^{m(j)},\qquad I_l \cap I_m = \emptyset,\quad \textstyle\bigc
 The partition is a random permutation of the pixels drawn through ``rng`` (uniform keys, sorted). The dossier D1.1 rule
 ``phi_j = Delta_j^{m_j}`` with independent draws (Di Leonardo 2007, Table 1) is the same method with a binomial instead
 of an exact share. Published on the 10x10 task: e = 0.01 (about 1/M), u = 0.58, sigma = 16 percent at 768 x 768. Defaults: none.
+With a wall-clock budget the loop over the traps stops at the deadline (the first trap is always served): the pixels of the
+traps it did not reach keep phase 0 and ``meta['traps_served']`` says how many it reached. Without one every trap is served.
 ``meta['owner']`` is the ``n_pix x n_pix`` array of trap indices.
 """
 from __future__ import annotations
@@ -21,6 +23,7 @@ from ...core.geometry import wrap_phase
 from ...core.modes import grating_phase, lens_phase, vortex_phase
 from ...core.rng import Rng
 from ...core.types import Budget, MethodSpec, Result, Target
+from ..optim._common import deadline_of, expired
 from ._common import Recorder, require_kinds
 
 SPEC = MethodSpec(id="M03", name="Random mask", family="analytic", lane="live", targets=("traps",), dims=(2, 3))
@@ -41,9 +44,14 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
     require_kinds(target, SPEC.targets, SPEC.id)
     traps = target.traps
     rec = Recorder(budget, traps.weight)
+    deadline = deadline_of(budget.time_s)
     owner = _owner(setup.n_pix, traps.weight, rng)
     phi = np.zeros((setup.n_pix, setup.n_pix))
+    served = 0
     for k in range(len(traps)):
+        if k > 0 and expired(deadline):
+            break
+        served += 1
         sel = owner == k
         if not sel.any():
             continue
@@ -56,4 +64,4 @@ def run(setup, target: Target, *, device=None, budget: Budget, rng: Rng, init=No
     phi = wrap_phase(phi)
     v = point_trap_fields(phi, setup, traps)
     rec.add(1, v)
-    return Result(phi=phi, history=rec.history, fields=v, meta={"method": SPEC.id, "owner": owner})
+    return Result(phi=phi, history=rec.history, fields=v, meta={"method": SPEC.id, "owner": owner, "traps_served": served})
