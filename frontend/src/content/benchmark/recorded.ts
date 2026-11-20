@@ -109,9 +109,11 @@ export const RECORDED: Record<string, RecordedClaim> = {
       seeds: 3,
       efficiencyRatio: 0.982,
       ensemble: 200,
-      /** The same over ten seeds (the paper's headline): median, lowest seed, and the seeds whose own bootstrap interval clears the criterion. */
+      /** The same over ten seeds (the paper's headline): median with its bootstrap interval, the paper's statistic (robust_numbers.tex
+       *  ratioAllMed, ratioAllCiLo, ratioAllCiHi), and the seeds whose own bootstrap interval clears the criterion. */
       tenSeedMedian: 1.439,
-      tenSeedLow: 1.35,
+      tenSeedCiLo: 1.38,
+      tenSeedCiHi: 1.48,
       tenSeeds: 10,
       tenSeedsClear: 8,
       /** The factor against pointing errors: measured, reported, not claimed. */
