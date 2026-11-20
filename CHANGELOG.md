@@ -177,6 +177,9 @@ publications are revised from a new generation.
 - The App's trade-off view draws two methods of one kind at the same point (the same median uniformity and efficiency) on one chart row,
   named together in the readout, so the keyboard reaches every point: case C03 opens on G6a, where two published methods share the
   point (uniformity 0.956, efficiency 80.2 %), and the cursor could not step past them (gate G20 at every size).
+- The browser engine computes the dense kernel of each vortex trap (the cosine and sine of its delay over the SLM) once per run
+  instead of in both directions on every iteration: case C06's live run takes 0.62 s instead of 6.6 s on the CPU, with the same
+  result to the bit. The run had come within 0.1 s of the measured gate's 15 s settle window (gate G7 on C06 at every size).
 
 ## [0.02.003], 2026-11-15
 
