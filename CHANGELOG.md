@@ -3,7 +3,7 @@
 All notable changes to this product. Versions are X.XX.XXX (VERSION is the single source); every release is
 tagged.
 
-## [0.02.004], 2026-11-14
+## [0.02.004], 2026-11-20
 
 The benchmark compares the methods at equal wall clock, the first proposed method is what its measurements support, and the
 publications are revised from a new generation.
