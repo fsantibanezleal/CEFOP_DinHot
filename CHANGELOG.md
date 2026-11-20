@@ -172,6 +172,12 @@ publications are revised from a new generation.
 - The units gate bounds the relative standard deviation of a hologram by its mathematical maximum for the number of traps it was computed over, 100 times the square root of N minus 1 (all the light in one trap), instead of a fixed 1000 percent; a shaped target keeps its clipped 1000, and a benchmark row whose geometry the results document does not list is reported as a units problem. A random mask stopped at its time budget on a 119 or 819 trap array leaves traps dark and has a spread above 1000 percent, which is a measurement, not a unit error.
 - Every worker process of the bake and of the benchmark, and the calling process of their sequential paths, opts out of Windows power throttling, which had run the benchmark's workers at about half a core on an idle machine and so changed how many iterations a time-budgeted row gets; the benchmark's protocol text says so in English and Spanish.
 
+### Fixed
+
+- The App's trade-off view draws two methods of one kind at the same point (the same median uniformity and efficiency) on one chart row,
+  named together in the readout, so the keyboard reaches every point: case C03 opens on G6a, where two published methods share the
+  point (uniformity 0.956, efficiency 80.2 %), and the cursor could not step past them (gate G20 at every size).
+
 ## [0.02.003], 2026-11-15
 
 ### Changed

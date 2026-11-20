@@ -148,13 +148,15 @@ export interface ChartEntry {
   method?: string;
 }
 
-/** One chart row per uniformity value: entries of different kinds at one x share a row, one column each; two entries of one kind at one x
- * keep separate rows (a column holds one value). The chart's cursor snaps to the first row at an x, so a second row at the same x could not
- * be read by the keyboard (gate G20 at 390 px, case C08: a published and a proposed method both at uniformity 0.717). Sorted by x. */
+/** One chart row per uniformity value: entries of different kinds at one x share a row, one column each, and so do entries of one kind at
+ * the same point (equal x and y: one mark drawn, every one named in the readout); two entries of one kind at one x with different y keep
+ * separate rows (a column holds one value). The chart's cursor snaps to the first row at an x, so a second row at the same x could not be
+ * read by the keyboard (gate G20 at 390 px, case C08: a published and a proposed method both at uniformity 0.717; gate G20 at every size,
+ * case C03 in 0.02.004: two published methods with the same median efficiency and uniformity on G6a). Sorted by x. */
 export function mergeTies(entries: readonly ChartEntry[]): { x: number; items: ChartEntry[] }[] {
   const rows: { x: number; items: ChartEntry[] }[] = [];
   for (const e of [...entries].sort((a, b) => a.x - b.x)) {
-    const row = rows.find((r) => r.x === e.x && !r.items.some((i) => i.kind === e.kind));
+    const row = rows.find((r) => r.x === e.x && r.items.every((i) => i.kind !== e.kind || i.y === e.y));
     if (row) row.items.push(e);
     else rows.push({ x: e.x, items: [e] });
   }

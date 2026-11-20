@@ -152,6 +152,12 @@ describe('the chart rows of the Pareto view: one row per uniformity value', () =
     expect(rows).toHaveLength(2);
   });
 
+  it('puts two entries of one kind at the same point on one row, so the keyboard reads both (G20, case C03: M10 and M13 on G6a)', () => {
+    const rows = mergeTies([e(0.956388, 0.80234, 'published', 'M10'), e(0.956388, 0.80234, 'published', 'M13'), e(0.957499, 0.809649, 'published', 'M11')]);
+    expect(rows.map((r) => r.x)).toEqual([0.956388, 0.957499]);
+    expect(rows[0]!.items.map((i) => i.method)).toEqual(['M10', 'M13']);
+  });
+
   it('sorts by uniformity and keeps every entry', () => {
     const input = [e(0.9, 0.3, 'front'), e(0.2, 0.6, 'case', 'M04'), e(0.2, 0.5, 'published', 'M04'), e(0.5, 0.5, 'proposed', 'B1')];
     const rows = mergeTies(input);
